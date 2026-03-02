@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Sukie Cookie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+/* ══ TOKENS SUKIE COOKIE ═══════════════════════════════════════════════════ */
+:root {
+  --cream:        #FFF3CF;
+  --cream-dark:   #f5e8b8;
+  --cream-border: #e8d9a0;
+  --brown:        #3A3426;
+  --brown-mid:    #6b5e47;
+  --brown-light:  #9a8f7e;
+  --gold:         #d4a017;
+  --gold-light:   #f5cb53;
+  --white:        #FDFBF7;
+  --green:        #2e7d32;
+  --green-light:  #e8f5e9;
+  --red:          #c62828;
+  --red-light:    #ffebee;
+  --sidebar-w:    240px;
+  --radius:       16px;
+  --radius-sm:    10px;
+  --shadow:       0 4px 20px rgba(58,52,38,0.10);
+  --shadow-sm:    0 2px 8px rgba(58,52,38,0.07);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--cream);
+  color: var(--brown);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ══ LOGIN ══════════════════════════════════════════════════════════════════ */
+#loginScreen {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brown);
+}
+.login-box {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 44px 40px;
+  width: 100%; max-width: 380px;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.3);
+}
+.login-logo {
+  width: 110px; height: 110px;
+  border-radius: 50%; object-fit: cover;
+  margin: 0 auto 20px;
+  border: 3px solid var(--cream-border);
+}
+.login-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--brown);
+  margin-bottom: 4px;
+}
+.login-sub { font-size: 0.82rem; color: var(--brown-light); margin-bottom: 28px; font-weight: 500; }
+.pin-input {
+  width: 100%; padding: 15px 18px;
+  border: 2px solid var(--cream-border);
+  border-radius: 50px;
+  font-size: 1.6rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  text-align: center; letter-spacing: 10px;
+  outline: none; transition: border 0.2s;
+  margin-bottom: 14px; background: var(--cream);
+  color: var(--brown);
+}
+.pin-input:focus { border-color: var(--brown); background: #fff; }
+.login-btn {
+  width: 100%; padding: 15px;
+  background: var(--brown); color: var(--cream);
+  border: none; border-radius: 50px;
+  font-size: 1rem; font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.login-btn:hover { background: var(--brown-mid); transform: translateY(-1px); }
+.login-error { color: var(--red); font-size: 0.8rem; margin-top: 10px; display: none; }
+
+/* ══ LAYOUT ═════════════════════════════════════════════════════════════════ */
+#app { display: none; min-height: 100vh; }
+
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--brown);
+  color: var(--cream);
+  display: flex; flex-direction: column;
+  z-index: 200;
+}
+.sidebar-head {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,243,207,0.12);
+  display: flex; align-items: center; gap: 12px;
+}
+.sidebar-logo-img {
+  width: 42px; height: 42px; border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(255,243,207,0.25);
+  flex-shrink: 0;
+}
+.sidebar-brand { font-family: 'Playfair Display', serif; font-size: 1rem; line-height: 1.2; }
+.sidebar-brand-sub { font-size: 0.68rem; opacity: 0.55; font-weight: 300; margin-top: 1px; }
+
+.sidebar-nav { flex: 1; padding: 14px 10px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; color: rgba(255,243,207,0.65);
+  transition: all 0.15s; margin-bottom: 2px;
+  border: none; background: none;
+  width: 100%; text-align: left; font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem; font-weight: 500;
+}
+.nav-item:hover { background: rgba(255,243,207,0.1); color: var(--cream); }
+.nav-item.active {
+  background: var(--cream); color: var(--brown);
+  font-weight: 700; box-shadow: var(--shadow-sm);
+}
+.nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; background: var(--gold); color: #fff;
+  border-radius: 20px; font-size: 0.68rem; font-weight: 700;
+  padding: 1px 7px; min-width: 20px; text-align: center;
+}
+.sidebar-foot {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,243,207,0.12);
+  font-size: 0.7rem; color: rgba(255,243,207,0.35);
+}
+
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+
+.topbar {
+  background: var(--white);
+  border-bottom: 2px solid var(--cream-border);
+  padding: 0 28px; height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; color: var(--brown);
+}
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-pill {
+  background: var(--cream); border: 1px solid var(--cream-border);
+  border-radius: 50px; padding: 5px 14px;
+  font-size: 0.78rem; color: var(--brown); font-weight: 600;
+}
+.logout-btn {
+  background: none; border: 2px solid var(--cream-border);
+  border-radius: 50px; padding: 5px 14px;
+  font-size: 0.78rem; cursor: pointer; color: var(--brown-light);
+  transition: all 0.15s; font-family: 'Poppins', sans-serif; font-weight: 500;
+}
+.logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+.page { display: none; padding: 28px; }
+.page.active { display: block; }
+
+/* ══ CARDS & COMPONENTS ═════════════════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  border: 2px solid var(--cream-border);
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.stat-card::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--cream-border);
+}
+.stat-card.accent::after { background: var(--brown); }
+.stat-card.gold::after   { background: var(--gold); }
+.stat-card.green::after  { background: var(--green); }
+.stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brown-light); margin-bottom: 8px; font-weight: 600; }
+.stat-value { font-size: 2.2rem; font-weight: 800; color: var(--brown); line-height: 1; }
+.stat-sub   { font-size: 0.72rem; color: var(--brown-light); margin-top: 5px; }
+.stat-icon  { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 2.2rem; opacity: 0.08; }
+
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+.chart-card {
+  background: var(--white);
+  border-radius: var(--radius); border: 2px solid var(--cream-border);
+  padding: 20px; box-shadow: var(--shadow-sm);
+}
+.chart-lbl { font-size: 0.72rem; font-weight: 700; color: var(--brown-light); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; color: var(--brown); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Search row */
+.search-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-input {
+  flex: 1; min-width: 200px;
+  padding: 10px 16px;
+  border: 2px solid var(--cream-border);
+  border-radius: 50px; font-size: 0.875rem;
+  font-family: 'Poppins', sans-serif;
+  background: var(--white); outline: none; color: var(--brown);
+  transition: border 0.2s;
+}
+.search-input:focus { border-color: var(--brown); }
+.filter-sel {
+  padding: 10px 14px;
+  border: 2px solid var(--cream-border); border-radius: 50px;
+  font-family: 'Poppins', sans-serif; font-size: 0.82rem;
+  background: var(--white); cursor: pointer; outline: none; color: var(--brown);
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px; border: none; border-radius: 50px;
+  font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.btn-primary   { background: var(--brown); color: var(--cream); }
+.btn-primary:hover { background: var(--brown-mid); transform: translateY(-1px); }
+.btn-gold      { background: var(--gold); color: #fff; }
+.btn-gold:hover{ background: #b8880f; transform: translateY(-1px); }
+.btn-green     { background: var(--green); color: #fff; }
+.btn-green:hover { background: #1b5e20; transform: translateY(-1px); }
+.btn-red       { background: var(--red); color: #fff; }
+.btn-red:hover { background: #b71c1c; transform: translateY(-1px); }
+.btn-outline   { background: var(--white); border: 2px solid var(--cream-border); color: var(--brown); }
+.btn-outline:hover { border-color: var(--brown); }
+.btn-sm        { padding: 7px 14px; font-size: 0.78rem; }
+
+/* Table */
+.table-wrap {
+  background: var(--white); border-radius: var(--radius);
+  border: 2px solid var(--cream-border); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--cream); padding: 12px 16px;
+  text-align: left; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--brown-light); border-bottom: 2px solid var(--cream-border);
+  font-weight: 700; white-space: nowrap;
+}
+td { padding: 12px 16px; border-bottom: 1px solid var(--cream-border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--cream); }
+
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--cream); border: 2px solid var(--cream-border);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; color: var(--brown); font-size: 0.8rem;
+  margin-right: 8px; flex-shrink: 0;
+}
+.avatar.lg { width: 50px; height: 50px; font-size: 1rem; }
+.name-cell { display: flex; align-items: center; }
+.stamp-bar { display: flex; gap: 2px; align-items: center; }
+.stamp-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--cream-border); }
+.stamp-dot.filled { background: var(--brown); }
+
+.badge { display: inline-block; padding: 3px 9px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-gold  { background: #fff8e1; color: var(--gold); }
+.badge-gray  { background: var(--cream); color: var(--brown-light); border: 1px solid var(--cream-border); }
+.badge-brown { background: var(--brown); color: var(--cream); }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; gap: 4px; }
+.page-btn {
+  padding: 6px 12px; border: 2px solid var(--cream-border);
+  border-radius: 50px; background: var(--white);
+  cursor: pointer; font-size: 0.8rem; font-family: 'Poppins', sans-serif;
+  font-weight: 600; color: var(--brown); transition: all 0.15s;
+}
+.page-btn:hover, .page-btn.active { background: var(--brown); color: var(--cream); border-color: var(--brown); }
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-info { font-size: 0.78rem; color: var(--brown-light); }
+
+/* Modal */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(58,52,38,0.55); backdrop-filter: blur(3px);
+  z-index: 1000; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: 20px;
+  width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(58,52,38,0.25);
+  border: 2px solid var(--cream-border);
+}
+.modal-hd {
+  padding: 20px 24px 16px; border-bottom: 2px solid var(--cream-border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--white); z-index: 1;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--brown); }
+.modal-x { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--brown-light); line-height: 1; }
+.modal-bd { padding: 20px 24px; }
+.modal-ft { padding: 14px 24px; border-top: 2px solid var(--cream-border); display: flex; gap: 8px; flex-wrap: wrap; }
+.info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--cream-border); font-size: 0.86rem; }
+.info-row:last-child { border-bottom: none; }
+.info-lbl { color: var(--brown-light); font-weight: 500; }
+.info-val { font-weight: 700; text-align: right; }
+
+/* Stamp circles */
+.stamps-visual { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0; }
+.stamp-circle {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 2px solid var(--cream-border); background: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: var(--cream-border); transition: all 0.25s;
+}
+.stamp-circle.earned { background: var(--brown); border-color: var(--brown); color: var(--cream); }
+
+/* Stamp controls */
+.stamp-ctrl {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; background: var(--cream);
+  border-radius: var(--radius-sm); margin-bottom: 8px;
+  border: 1px solid var(--cream-border);
+}
+.stamp-num {
+  width: 60px; padding: 8px; border: 2px solid var(--cream-border);
+  border-radius: var(--radius-sm); text-align: center;
+  font-size: 1rem; font-weight: 800; font-family: 'Poppins', sans-serif;
+  outline: none; color: var(--brown); background: var(--white);
+}
+.stamp-num:focus { border-color: var(--brown); }
+.ctrl-lbl { font-size: 0.82rem; font-weight: 600; color: var(--brown); min-width: 70px; }
+
+/* History */
+.hist-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--cream-border); font-size: 0.82rem; }
+.hist-item:last-child { border-bottom: none; }
+.hist-icon { font-size: 1rem; width: 22px; text-align: center; }
+.hist-note { flex: 1; color: var(--brown-light); }
+.hist-date { font-size: 0.7rem; color: var(--brown-light); white-space: nowrap; }
+.hist-n { font-weight: 800; }
+.hist-n.pos { color: var(--green); }
+.hist-n.neg { color: var(--red); }
+
+/* Form */
+.form-g { margin-bottom: 16px; }
+.form-lbl { font-size: 0.8rem; font-weight: 700; display: block; margin-bottom: 6px; color: var(--brown); }
+.form-inp {
+  width: 100%; padding: 11px 16px;
+  border: 2px solid var(--cream-border); border-radius: 50px;
+  font-family: 'Poppins', sans-serif; font-size: 0.875rem;
+  background: var(--white); outline: none; color: var(--brown); transition: border 0.2s;
+}
+.form-inp:focus { border-color: var(--brown); }
+.form-hint { font-size: 0.72rem; color: var(--brown-light); margin-top: 4px; }
+
+/* Loading / empty */
+.loading { text-align: center; padding: 52px; color: var(--brown-light); }
+.spinner {
+  display: inline-block; width: 28px; height: 28px;
+  border: 3px solid var(--cream-border); border-top-color: var(--brown);
+  border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--brown); color: var(--cream);
+  padding: 12px 20px; border-radius: 50px;
+  font-family: 'Poppins', sans-serif; font-size: 0.875rem; font-weight: 600;
+  z-index: 9999; transform: translateY(100px); opacity: 0;
+  transition: all 0.3s; pointer-events: none; max-width: 340px;
+  box-shadow: 0 8px 24px rgba(58,52,38,0.25);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok  { background: var(--green); }
+.toast.err { background: var(--red); }
+
+/* Recent items */
+.recent-list { background: var(--white); border-radius: var(--radius); border: 2px solid var(--cream-border); overflow: hidden; box-shadow: var(--shadow-sm); }
+.recent-item {
+  display: flex; align-items: center; padding: 12px 16px;
+  border-bottom: 1px solid var(--cream-border);
+  gap: 12px; cursor: pointer; transition: background 0.15s;
+}
+.recent-item:last-child { border-bottom: none; }
+.recent-item:hover { background: var(--cream); }
+.r-info { flex: 1; }
+.r-name { font-weight: 700; font-size: 0.875rem; color: var(--brown); }
+.r-meta { font-size: 0.72rem; color: var(--brown-light); margin-top: 1px; }
+.r-stamps { font-weight: 800; color: var(--brown); font-size: 0.875rem; white-space: nowrap; }
+
+/* Stamp search result */
+.stamp-res {
+  padding: 10px 14px; background: var(--white);
+  border: 2px solid var(--cream-border); border-radius: var(--radius-sm);
+  margin-bottom: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px; font-size: 0.86rem;
+  transition: border-color 0.15s;
+}
+.stamp-res:hover { border-color: var(--brown); background: var(--cream); }
+
+/* Selected client card */
+.sel-card {
+  background: var(--cream); border-radius: var(--radius);
+  padding: 18px; border: 2px solid var(--cream-border);
+}
+
+/* Action card */
+.action-card {
+  background: var(--white); border: 2px solid var(--cream-border);
+  border-radius: var(--radius); padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Reward banner */
+.reward-row {
+  background: linear-gradient(135deg, var(--brown), var(--brown-mid));
+  border-radius: var(--radius); padding: 16px 20px; color: var(--cream);
+  margin-bottom: 24px; display: flex; align-items: center; gap: 16px;
+  box-shadow: var(--shadow);
+}
+.reward-row .r-icon { font-size: 2rem; }
+.reward-row h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 2px; }
+.reward-row p  { font-size: 0.78rem; opacity: 0.8; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 64px; }
+  .sidebar-head { padding: 16px; justify-content: center; }
+  .sidebar-logo-img { width: 36px; height: 36px; }
+  .sidebar-brand, .sidebar-brand-sub, .nav-item span:not(.nav-icon), .nav-badge, .sidebar-foot { display: none; }
+  .nav-item { justify-content: center; padding: 12px 0; }
+  .charts-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .page { padding: 14px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .hide-mob { display: none; }
+  th.hide-mob, td.hide-mob { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ═══════════════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <img class="login-logo"
+         src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314"
+         alt="Sukie Cookie" onerror="this.style.display='none'">
+    <div class="login-title">Sukie Cookie</div>
+    <div class="login-sub">Panel de Fidelización · Admin</div>
+    <input class="pin-input" type="password" id="pinInput"
+           placeholder="•••••" maxlength="10" autocomplete="off"
+           onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="loginErr">PIN incorrecto. Inténtalo de nuevo.</div>
+  </div>
+</div>
+
+<!-- ══ APP ══════════════════════════════════════════════════════════════════ -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <img class="sidebar-logo-img"
+           src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314"
+           alt="SC" onerror="this.style.display='none'">
+      <div>
+        <div class="sidebar-brand">Sukie Cookie</div>
+        <div class="sidebar-brand-sub">Panel Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">📊</span><span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-page="clientes" onclick="showPage('clientes',this)">
+        <span class="nav-icon">👥</span><span>Clientes</span>
+        <span class="nav-badge" id="navBadge">0</span>
+      </button>
+      <button class="nav-item" data-page="sellos" onclick="showPage('sellos',this)">
+        <span class="nav-icon">🍪</span><span>Gestión Sellos</span>
+      </button>
+      <button class="nav-item" data-page="nuevo" onclick="showPage('nuevo',this)">
+        <span class="nav-icon">✚</span><span>Nuevo Cliente</span>
+      </button>
+    </nav>
+    <div class="sidebar-foot">Sukie Card v2.0</div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="topTitle">Dashboard</div>
+      <div class="topbar-right">
+        <div class="topbar-pill" id="topPill">Cargando…</div>
+        <button class="logout-btn" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+
+    <!-- ══ DASHBOARD ══════════════════════════════════════════════════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="loading" id="dashLoad"><div class="spinner"></div><br>Cargando…</div>
+      <div id="dashContent" style="display:none">
+        <div class="reward-row" id="rewardRow" style="display:none">
+          <div class="r-icon">🎁</div>
+          <div>
+            <h3 id="rewardRowTitle">Premios disponibles</h3>
+            <p id="rewardRowSub"></p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card accent">
+            <div class="stat-label">Total Clientes</div>
+            <div class="stat-value" id="sTotal">—</div>
+            <div class="stat-sub">En el programa</div>
+            <span class="stat-icon">👥</span>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Sellos Totales</div>
+            <div class="stat-value" id="sStamps">—</div>
+            <div class="stat-sub">Acumulados histórico</div>
+            <span class="stat-icon">🍪</span>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label">Premios Canjeados</div>
+            <div class="stat-value" id="sRewards">—</div>
+            <div class="stat-sub">Total histórico</div>
+            <span class="stat-icon">🎁</span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Premios Disponibles</div>
+            <div class="stat-value" id="sActive">—</div>
+            <div class="stat-sub">Listos para canjear</div>
+            <span class="stat-icon">⭐</span>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-lbl">🍪 Distribución de sellos</div>
+            <canvas id="cStamp" height="180"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-lbl">📊 Estado de tarjetas</div>
+            <canvas id="cStatus" height="180"></canvas>
+          </div>
+        </div>
+
+        <div class="section-title">🕐 Últimos Clientes</div>
+        <div class="recent-list" id="recentList"></div>
+      </div>
+    </div>
+
+    <!-- ══ CLIENTES ═══════════════════════════════════════════════════════ -->
+    <div class="page" id="page-clientes">
+      <div class="search-row">
+        <input id="searchQ" class="search-input" placeholder="🔍 Buscar por nombre o email…" oninput="onSearch()" />
+        <select class="filter-sel" id="fReward" onchange="onSearch()">
+          <option value="">Todos los clientes</option>
+          <option value="yes">Con premio disponible</option>
+          <option value="no">Sin premio</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 Exportar CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="reloadData()">↺ Actualizar</button>
+      </div>
+      <div class="loading" id="clientLoad"><div class="spinner"></div><br>Cargando clientes…</div>
+      <div id="clientContent" style="display:none">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th class="hide-mob">Email</th>
+                <th>Sellos</th>
+                <th class="hide-mob">Total</th>
+                <th class="hide-mob">Premios</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="clientTbody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:8px;">
+          <div class="page-info" id="pageInfo"></div>
+          <div class="pagination" id="pagNav"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SELLOS ═════════════════════════════════════════════════════════ -->
+    <div class="page" id="page-sellos">
+      <div style="max-width:560px;margin:0 auto;">
+        <div class="action-card">
+          <div class="section-title" style="margin-bottom:18px;">🍪 Gestión de Sellos</div>
+          <div class="form-g">
+            <label class="form-lbl">Buscar cliente</label>
+            <input id="sSearch" class="form-inp" placeholder="Nombre o email…" oninput="onStampSearch()" autocomplete="off" />
+          </div>
+          <div id="sResults" style="margin-bottom:12px;"></div>
+
+          <div id="sSel" class="sel-card" style="display:none">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <div class="avatar lg" id="sSelAv">?</div>
+              <div style="flex:1">
+                <div style="font-weight:800;font-size:1rem;" id="sSelName">—</div>
+                <div style="font-size:0.78rem;color:var(--brown-light);" id="sSelEmail">—</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:1.8rem;font-weight:800;color:var(--brown);" id="sSelN">0</div>
+                <div style="font-size:0.7rem;color:var(--brown-light);" id="sSelMax">/ 10</div>
+              </div>
+            </div>
+            <div class="stamps-visual" id="sSelVisual"></div>
+
+            <div class="stamp-ctrl">
+              <span class="ctrl-lbl">Añadir:</span>
+              <input type="number" id="nAdd" class="stamp-num" value="1" min="1" max="20" />
+              <button class="btn btn-green btn-sm" onclick="doAdd()">＋ Añadir</button>
+            </div>
+            <div class="stamp-ctrl">
+              <span class="ctrl-lbl">Quitar:</span>
+              <input type="number" id="nRemove" class="stamp-num" value="1" min="1" max="20" />
+              <button class="btn btn-red btn-sm" onclick="doRemove()">－ Quitar</button>
+            </div>
+
+            <div id="redeemWrap" style="display:none;margin-top:12px;">
+              <div style="background:#fff8e1;border:2px solid var(--gold-light);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <div>
+                  <div style="font-weight:800;font-size:0.9rem;color:var(--brown);">🎁 Premio disponible</div>
+                  <div style="font-size:0.75rem;color:var(--brown-light);">Este cliente tiene una cookie gratis esperándole</div>
+                </div>
+                <button class="btn btn-gold btn-sm" onclick="doRedeem()">Canjear</button>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <button class="btn btn-outline btn-sm" onclick="toggleHistory()" id="histBtn">📋 Ver historial</button>
+            </div>
+            <div id="histWrap" style="display:none;margin-top:14px;">
+              <div style="font-size:0.72rem;font-weight:700;color:var(--brown-light);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Últimas transacciones</div>
+              <div id="histList"></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:0.78rem;color:var(--brown-light);padding:12px 16px;background:var(--white);border-radius:var(--radius-sm);border:2px solid var(--cream-border);">
+          💡 También puedes gestionar sellos desde el detalle de cada cliente en <strong>Clientes</strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NUEVO CLIENTE ══════════════════════════════════════════════════ -->
+    <div class="page" id="page-nuevo">
+      <div style="max-width:460px;margin:0 auto;">
+        <div class="action-card">
+          <div class="section-title" style="margin-bottom:20px;">✚ Nuevo Cliente</div>
+          <div class="form-g">
+            <label class="form-lbl">Nombre <span style="color:var(--red)">*</span></label>
+            <input type="text" id="nFirst" class="form-inp" placeholder="Nombre" />
+          </div>
+          <div class="form-g">
+            <label class="form-lbl">Apellidos</label>
+            <input type="text" id="nLast" class="form-inp" placeholder="Apellidos (opcional)" />
+          </div>
+          <div class="form-g">
+            <label class="form-lbl">Email <span style="color:var(--red)">*</span></label>
+            <input type="email" id="nEmail" class="form-inp" placeholder="email@ejemplo.com" />
+            <div class="form-hint">Identifica al cliente en el sistema</div>
+            <div id="nEmailErr" style="font-size:0.75rem;color:var(--red);margin-top:4px;display:none;">Este email ya está registrado.</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="doCreate()">
+            Crear Tarjeta de Fidelización
+          </button>
+        </div>
+
+        <div id="nResult" style="display:none;margin-top:14px;" class="action-card">
+          <div style="text-align:center;padding:12px 0;">
+            <div style="font-size:2.8rem;margin-bottom:10px;">🎉</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--brown);margin-bottom:6px;">¡Tarjeta creada!</div>
+            <div style="font-size:0.82rem;color:var(--brown-light);margin-bottom:18px;" id="nResultName">—</div>
+            <a id="nCardLink" href="#" target="_blank" class="btn btn-outline btn-sm" style="margin-bottom:12px;">🔗 Ver tarjeta del cliente</a>
+            <div style="font-size:0.72rem;color:var(--brown-light);word-break:break-all;" id="nCardUrl"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CLIENTE ════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="clientModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="mTitle">Cliente</div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-bd" id="mBody"></div>
+    <div class="modal-ft" id="mFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+const API   = 'https://web-production-cdaf7.up.railway.app';
+const SMAX  = 10;
+let PIN     = '';
+let clients = [];
+let filtered= [];
+let page    = 1;
+const PER   = 25;
+let selModal= null;
+let selStamp= null;
+let stampTimeout = null;
+let charts  = {};
+
+// ══ LOGIN ═══════════════════════════════════════════════════════════════════
+async function doLogin() {
+  const pin = document.getElementById('pinInput').value.trim();
+  if (!pin) return;
+  try {
+    const r = await fetch(`${API}/api/admin/customers?pin=${encodeURIComponent(pin)}`);
+    if (!r.ok) { showErr(); return; }
+    PIN = pin;
+    const d = await r.json();
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    load(d);
+  } catch(e) {
+    showErr('No se puede conectar. ¿Está el backend actualizado con CORS?');
+  }
+}
+function showErr(m) {
+  const el = document.getElementById('loginErr');
+  el.textContent = m || 'PIN incorrecto. Inténtalo de nuevo.';
+  el.style.display = 'block';
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinInput').focus();
+  setTimeout(() => el.style.display='none', 3500);
+}
+function doLogout() {
+  PIN=''; clients=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('pinInput').value='';
+}
+async function reloadData() {
+  try {
+    const r = await fetch(`${API}/api/admin/customers?pin=${PIN}`);
+    if (!r.ok) { toast('Error al recargar','err'); return; }
+    load(await r.json());
+    toast('Datos actualizados ✓','ok');
+  } catch(e) { toast('Error de conexión','err'); }
+}
+
+// ══ LOAD ════════════════════════════════════════════════════════════════════
+function load(d) {
+  clients  = (d.customers || []);
+  filtered = [...clients];
+  document.getElementById('navBadge').textContent = clients.length;
+  document.getElementById('topPill').textContent  = clients.length + ' clientes';
+  buildDash(d);
+  buildTable();
+}
+
+// ══ DASHBOARD ════════════════════════════════════════════════════════════════
+function buildDash(d) {
+  document.getElementById('dashLoad').style.display   = 'none';
+  document.getElementById('dashContent').style.display= 'block';
+  document.getElementById('sTotal').textContent   = clients.length;
+  document.getElementById('sStamps').textContent  = (d.total_stamps ||0).toLocaleString();
+  document.getElementById('sRewards').textContent = (d.total_rewards||0).toLocaleString();
+  document.getElementById('sActive').textContent  = (d.active_rewards||0).toLocaleString();
+
+  if ((d.active_rewards||0) > 0) {
+    document.getElementById('rewardRow').style.display = 'flex';
+    document.getElementById('rewardRowTitle').textContent = `${d.active_rewards} premio${d.active_rewards>1?'s':''} disponible${d.active_rewards>1?'s':''}`;
+    document.getElementById('rewardRowSub').textContent  = `${d.active_rewards===1?'Un cliente tiene':''+d.active_rewards+' clientes tienen'} su premio listo`;
+  }
+
+  // Chart stamps
+  const bins = new Array(SMAX+1).fill(0);
+  clients.forEach(c => bins[Math.min(c.stamps,SMAX)]++);
+  if (charts.s) charts.s.destroy();
+  charts.s = new Chart(document.getElementById('cStamp'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({length:SMAX+1},(_,i)=>String(i)),
+      datasets: [{ label:'Clientes', data:bins, backgroundColor:'#3A3426', borderRadius:6 }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{font:{size:10},color:'#9a8f7e'}}, x:{ticks:{font:{size:10},color:'#9a8f7e'}} } }
+  });
+
+  // Chart status
+  const withR = d.active_rewards||0, noR = clients.length - withR;
+  if (charts.t) charts.t.destroy();
+  charts.t = new Chart(document.getElementById('cStatus'), {
+    type: 'doughnut',
+    data: { labels:['Sin premio','Premio disponible'], datasets:[{ data:[noR,withR], backgroundColor:['#e8d9a0','#3A3426'], borderWidth:0 }] },
+    options: { plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, color:'#3A3426' } } }, cutout:'62%' }
+  });
+
+  // Recent
+  document.getElementById('recentList').innerHTML = clients.slice(0,8).map(c => `
+    <div class="recent-item" onclick="openModal('${c.card_id}')">
+      <div class="avatar">${ini(c)}</div>
+      <div class="r-info">
+        <div class="r-name">${name(c)}</div>
+        <div class="r-meta">${c.email}</div>
+      </div>
+      <div style="text-align:right">
+        ${dotsHTML(c.stamps)}
+        <div class="r-stamps">${c.stamps}/${SMAX} 🍪</div>
+      </div>
+    </div>`).join('') || '<div style="text-align:center;padding:32px;color:var(--brown-light)">Sin clientes aún 🍪</div>';
+}
+
+// ══ TABLE ════════════════════════════════════════════════════════════════════
+function buildTable() {
+  document.getElementById('clientLoad').style.display   = 'none';
+  document.getElementById('clientContent').style.display= 'block';
+  filtered = [...clients]; page=1; renderTable();
+}
+function onSearch() {
+  const q  = document.getElementById('searchQ').value.toLowerCase();
+  const fr = document.getElementById('fReward').value;
+  filtered = clients.filter(c => {
+    const mQ = !q || name(c).toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+    const mR = !fr||(fr==='yes'?c.reward_available:!c.reward_available);
+    return mQ && mR;
+  });
+  page=1; renderTable();
+}
+function renderTable() {
+  const s  = (page-1)*PER, pg = filtered.slice(s, s+PER);
+  document.getElementById('pageInfo').textContent =
+    `Mostrando ${filtered.length?s+1:0}–${Math.min(s+PER,filtered.length)} de ${filtered.length} clientes`;
+  document.getElementById('clientTbody').innerHTML = pg.length
+    ? pg.map(c=>`<tr>
+        <td><div class="name-cell"><div class="avatar">${ini(c)}</div><div><div style="font-weight:700">${name(c)}</div><div style="font-size:.7rem;color:var(--brown-light)">${fmtDate(c.created_at)}</div></div></div></td>
+        <td class="hide-mob" style="color:var(--brown-light);font-size:.8rem">${c.email}</td>
+        <td>${dotsHTML(c.stamps)}<span style="font-size:.7rem;color:var(--brown-light);margin-left:4px">${c.stamps}/${SMAX}</span></td>
+        <td class="hide-mob" style="font-size:.8rem;color:var(--brown-light)">${c.total_stamps}</td>
+        <td class="hide-mob">${c.rewards_redeemed>0?`<span class="badge badge-gold">🎁 ${c.rewards_redeemed}</span>`:'<span style="color:var(--brown-light)">0</span>'}</td>
+        <td>${c.reward_available?'<span class="badge badge-brown">⭐ Premio</span>':'<span class="badge badge-gray">En progreso</span>'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="openModal('${c.card_id}')">Ver</button></td>
+      </tr>`).join('')
+    : `<tr><td colspan="7" style="text-align:center;padding:36px;color:var(--brown-light)">No hay resultados 🍪</td></tr>`;
+  renderPag();
+}
+function renderPag() {
+  const tot = Math.ceil(filtered.length/PER), p = document.getElementById('pagNav');
+  if(tot<=1){p.innerHTML='';return;}
+  let h=`<button class="page-btn" onclick="goPg(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  const rng=[];
+  for(let i=1;i<=tot;i++){if(i===1||i===tot||(i>=page-2&&i<=page+2))rng.push(i);else if(rng[rng.length-1]!=='...')rng.push('...');}
+  rng.forEach(r=>{
+    if(r==='...')h+=`<span style="padding:0 4px;color:var(--brown-light)">…</span>`;
+    else h+=`<button class="page-btn ${r===page?'active':''}" onclick="goPg(${r})">${r}</button>`;
+  });
+  h+=`<button class="page-btn" onclick="goPg(${page+1})" ${page===tot?'disabled':''}>›</button>`;
+  p.innerHTML=h;
+}
+function goPg(p_){const m=Math.ceil(filtered.length/PER);if(p_<1||p_>m)return;page=p_;renderTable();window.scrollTo({top:110,behavior:'smooth'});}
+
+// ══ MODAL ════════════════════════════════════════════════════════════════════
+function openModal(cid) {
+  const c = clients.find(x=>x.card_id===cid); if(!c)return;
+  selModal=c;
+  document.getElementById('mTitle').textContent = name(c);
+  let sc='';
+  for(let i=0;i<SMAX;i++) sc+=`<div class="stamp-circle ${i<c.stamps?'earned':''}">🍪</div>`;
+  document.getElementById('mBody').innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div class="avatar lg">${ini(c)}</div>
+      <div style="flex:1"><div style="font-weight:800;font-size:1.05rem">${name(c)}</div><div style="font-size:.78rem;color:var(--brown-light)">${c.email}</div></div>
+      <div style="text-align:right"><div style="font-size:2rem;font-weight:800;color:var(--brown)">${c.stamps}</div><div style="font-size:.7rem;color:var(--brown-light)">/ ${SMAX} sellos</div></div>
+    </div>
+    <div style="background:var(--cream);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;border:1px solid var(--cream-border);">
+      <div style="font-size:.7rem;font-weight:700;color:var(--brown-light);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Sellos (${c.stamps}/${SMAX})</div>
+      <div class="stamps-visual">${sc}</div>
+    </div>
+    <div class="info-row"><span class="info-lbl">Email</span><span class="info-val">${c.email}</span></div>
+    <div class="info-row"><span class="info-lbl">Total sellos histórico</span><span class="info-val">🍪 ${c.total_stamps}</span></div>
+    <div class="info-row"><span class="info-lbl">Premios canjeados</span><span class="info-val">🎁 ${c.rewards_redeemed}</span></div>
+    <div class="info-row"><span class="info-lbl">Estado</span><span class="info-val">${c.reward_available?'<span class="badge badge-brown">⭐ Premio disponible</span>':'<span class="badge badge-gray">En progreso</span>'}</span></div>
+    <div class="info-row"><span class="info-lbl">Registrado</span><span class="info-val">${fmtDate(c.created_at)}</span></div>
+    ${c.card_url?`<div style="margin-top:14px;"><a href="${c.card_url}" target="_blank" style="color:var(--brown);font-size:.82rem;font-weight:700;text-decoration:none">🔗 Ver tarjeta del cliente →</a></div>`:''}
+  `;
+  document.getElementById('mFoot').innerHTML=`
+    <button class="btn btn-green btn-sm" onclick="mAdd(1)">＋1 Sello</button>
+    <button class="btn btn-green btn-sm" onclick="mAdd(3)">＋3 Sellos</button>
+    <button class="btn btn-red btn-sm" onclick="mRemove(1)">－1 Sello</button>
+    ${c.reward_available?`<button class="btn btn-gold btn-sm" onclick="mRedeem()">🎁 Canjear</button>`:''}
+    <button class="btn btn-outline btn-sm" onclick="goStampClient('${c.card_id}')">Gestión →</button>
+  `;
+  document.getElementById('clientModal').classList.add('open');
+}
+function closeModal(){document.getElementById('clientModal').classList.remove('open');selModal=null;}
+document.getElementById('clientModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+async function mAdd(n){if(!selModal)return;const r=await apiAdd(selModal.card_id,n);if(r)await refreshModal(selModal.card_id);}
+async function mRemove(n){if(!selModal)return;const r=await apiRemove(selModal.card_id,n);if(r)await refreshModal(selModal.card_id);}
+async function mRedeem(){if(!selModal)return;const r=await apiRedeem(selModal.card_id);if(r)await refreshModal(selModal.card_id);}
+async function refreshModal(cid) {
+  try {
+    const r=await fetch(`${API}/api/cards/${cid}`), d=await r.json();
+    const idx=clients.findIndex(c=>c.card_id===cid);
+    if(idx>=0){clients[idx].stamps=d.stamps;clients[idx].total_stamps=d.total_stamps;clients[idx].rewards_redeemed=d.rewards_redeemed;clients[idx].reward_available=d.reward_available;}
+    closeModal(); openModal(cid); renderTable(); updateStatNums();
+  } catch(e){toast('Error actualizando','err');}
+}
+function goStampClient(cid){closeModal();const c=clients.find(x=>x.card_id===cid);if(c){showPage('sellos',document.querySelector('[data-page="sellos"]'));selStampById(cid);}}
+
+// ══ STAMPS PAGE ═════════════════════════════════════════════════════════════
+function onStampSearch() {
+  clearTimeout(stampTimeout);
+  const q=document.getElementById('sSearch').value.trim().toLowerCase();
+  if(q.length<2){document.getElementById('sResults').innerHTML='';document.getElementById('sSel').style.display='none';selStamp=null;return;}
+  stampTimeout=setTimeout(()=>{
+    const m=clients.filter(c=>name(c).toLowerCase().includes(q)||c.email.toLowerCase().includes(q)).slice(0,6);
+    document.getElementById('sResults').innerHTML=m.length
+      ? m.map(c=>`<div class="stamp-res" onclick="selStampById('${c.card_id}')"><div class="avatar" style="width:30px;height:30px;font-size:.75rem">${ini(c)}</div><div><div style="font-weight:700">${name(c)}</div><div style="font-size:.72rem;color:var(--brown-light)">${c.email} · ${c.stamps}/${SMAX}</div></div>${c.reward_available?'<span class="badge badge-brown" style="margin-left:auto">⭐</span>':''}</div>`).join('')
+      : '<div style="font-size:.82rem;color:var(--brown-light);padding:8px 0">Sin resultados</div>';
+  },250);
+}
+function selStampById(cid){const c=clients.find(x=>x.card_id===cid);if(c)selStampClient(c);}
+function selStampClient(c) {
+  selStamp=c;
+  document.getElementById('sResults').innerHTML='';
+  document.getElementById('sSearch').value=name(c);
+  document.getElementById('sSelAv').textContent=ini(c);
+  document.getElementById('sSelName').textContent=name(c);
+  document.getElementById('sSelEmail').textContent=c.email;
+  document.getElementById('sSelN').textContent=c.stamps;
+  document.getElementById('sSelMax').textContent=`/ ${SMAX} sellos`;
+  let sv='';for(let i=0;i<SMAX;i++)sv+=`<div class="stamp-circle ${i<c.stamps?'earned':''}">🍪</div>`;
+  document.getElementById('sSelVisual').innerHTML=sv;
+  document.getElementById('redeemWrap').style.display=c.reward_available?'block':'none';
+  document.getElementById('sSel').style.display='block';
+  document.getElementById('histWrap').style.display='none';
+  document.getElementById('histBtn').textContent='📋 Ver historial';
+}
+async function doAdd(){if(!selStamp)return;const r=await apiAdd(selStamp.card_id,parseInt(document.getElementById('nAdd').value)||1);if(r)refreshStamp(r);}
+async function doRemove(){if(!selStamp)return;const r=await apiRemove(selStamp.card_id,parseInt(document.getElementById('nRemove').value)||1);if(r)refreshStamp(r);}
+async function doRedeem(){if(!selStamp)return;const r=await apiRedeem(selStamp.card_id);if(r)refreshStamp(r);}
+function refreshStamp(res){
+  const idx=clients.findIndex(c=>c.card_id===selStamp.card_id);
+  if(idx>=0){
+    clients[idx].stamps=res.stamps!==undefined?res.stamps:(res.stamps_remaining||0);
+    if(res.total_stamps!==undefined)clients[idx].total_stamps=res.total_stamps;
+    if(res.rewards_redeemed!==undefined)clients[idx].rewards_redeemed=res.rewards_redeemed;
+    clients[idx].reward_available=res.reward_available!==undefined?res.reward_available:(clients[idx].stamps>=SMAX);
+    selStamp=clients[idx]; selStampClient(selStamp);
+  }
+  updateStatNums();
+}
+async function toggleHistory(){
+  const w=document.getElementById('histWrap'),b=document.getElementById('histBtn');
+  if(w.style.display!=='none'){w.style.display='none';b.textContent='📋 Ver historial';return;}
+  b.textContent='⏳ Cargando…';
+  try{
+    const r=await fetch(`${API}/api/cards/${selStamp.card_id}/history?pin=${PIN}`), d=await r.json();
+    const txs=d.transactions||[];
+    document.getElementById('histList').innerHTML=txs.length
+      ? txs.map(t=>{const pos=t.stamps_added>0,icon=t.note==='Premio canjeado'?'🎁':pos?'➕':'➖';return `<div class="hist-item"><span class="hist-icon">${icon}</span><span class="hist-n ${pos?'pos':'neg'}">${pos?'+':''}${t.stamps_added}</span><span class="hist-note">${t.note||''}</span><span class="hist-date">${fmtDate(t.created_at)}</span></div>`;}).join('')
+      : '<div style="font-size:.8rem;color:var(--brown-light);text-align:center;padding:12px">Sin transacciones aún</div>';
+    w.style.display='block'; b.textContent='📋 Ocultar historial';
+  }catch(e){toast('Error historial','err');b.textContent='📋 Ver historial';}
+}
+
+// ══ NUEVO CLIENTE ════════════════════════════════════════════════════════════
+async function doCreate(){
+  const fn=document.getElementById('nFirst').value.trim();
+  const ln=document.getElementById('nLast').value.trim();
+  const em=document.getElementById('nEmail').value.trim().toLowerCase();
+  const eErr=document.getElementById('nEmailErr');
+  if(!fn||!em){toast('Nombre y email son obligatorios','err');return;}
+  eErr.style.display='none';
+  try{
+    const r=await fetch(`${API}/api/admin/customers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,first_name:fn,last_name:ln,email:em})});
+    const d=await r.json();
+    if(r.status===409){eErr.style.display='block';return;}
+    if(!r.ok){toast(d.detail||'Error al crear','err');return;}
+    clients.unshift({card_id:d.card_id,customer_id:d.customer_id,first_name:d.first_name,last_name:d.last_name||'',email:d.email,stamps:0,total_stamps:0,rewards_redeemed:0,reward_available:false,stamps_per_reward:SMAX,card_url:d.card_url,created_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+    filtered=[...clients];
+    document.getElementById('navBadge').textContent=clients.length;
+    document.getElementById('nResultName').textContent=`${d.first_name} ${d.last_name||''}`.trim()+' — '+d.email;
+    document.getElementById('nCardLink').href=d.card_url;
+    document.getElementById('nCardUrl').textContent=d.card_url;
+    document.getElementById('nResult').style.display='block';
+    document.getElementById('nFirst').value='';
+    document.getElementById('nLast').value='';
+    document.getElementById('nEmail').value='';
+    toast(`✓ Tarjeta creada para ${d.first_name}`,'ok');
+    updateStatNums();
+  }catch(e){toast('Error de conexión','err');}
+}
+
+// ══ API ══════════════════════════════════════════════════════════════════════
+async function apiAdd(cid,n){
+  try{const r=await fetch(`${API}/api/cards/${cid}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});const d=await r.json();if(r.ok&&d.success){toast(`＋${n} sello${n>1?'s':''} añadido${n>1?'s':''} (total ${d.stamps}/${SMAX})`,'ok');return d;}else{toast(d.detail||'Error','err');return null;}}catch(e){toast('Error de conexión','err');return null;}
+}
+async function apiRemove(cid,n){
+  try{const r=await fetch(`${API}/api/cards/${cid}/remove-stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});const d=await r.json();if(r.ok&&d.success){toast(`－${d.stamps_removed} sello${d.stamps_removed>1?'s':''} quitado${d.stamps_removed>1?'s':''} (total ${d.stamps}/${SMAX})`,'ok');return d;}else{toast(d.detail||'Error','err');return null;}}catch(e){toast('Error de conexión','err');return null;}
+}
+async function apiRedeem(cid){
+  try{const r=await fetch(`${API}/api/cards/${cid}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});const d=await r.json();if(r.ok&&d.success){toast(`🎁 ¡Premio canjeado! Sellos restantes: ${d.stamps_remaining}`,'ok');return{stamps:d.stamps_remaining,rewards_redeemed:d.rewards_redeemed,reward_available:d.stamps_remaining>=SMAX};}else{toast(d.detail||'Error','err');return null;}}catch(e){toast('Error de conexión','err');return null;}
+}
+
+// ══ EXPORT ═══════════════════════════════════════════════════════════════════
+function exportCSV(){
+  const h=['Nombre','Apellidos','Email','Sellos','Total sellos','Premios canjeados','Premio disponible','Registrado'];
+  const rows=filtered.map(c=>[c.first_name,c.last_name,c.email,c.stamps,c.total_stamps,c.rewards_redeemed,c.reward_available?'Sí':'No',fmtDate(c.created_at)]);
+  const csv=[h,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`sukie_clientes_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); toast('CSV descargado ✓','ok');
+}
+
+// ══ UTILS ════════════════════════════════════════════════════════════════════
+function name(c){return `${c.first_name} ${c.last_name||''}`.trim()||c.email;}
+function ini(c){const p=name(c).split(' ');return ((p[0]||'?')[0]+((p[1]||'')[0]||'')).toUpperCase();}
+function dotsHTML(n){let h='<div class="stamp-bar">';for(let i=0;i<SMAX;i++)h+=`<div class="stamp-dot ${i<n?'filled':''}"></div>`;return h+'</div>';}
+function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function toast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type==='ok'?'ok':type==='err'?'err':'');setTimeout(()=>t.className='toast',3200);}
+function updateStatNums(){
+  const ts=clients.reduce((s,c)=>s+c.total_stamps,0);
+  const tr=clients.reduce((s,c)=>s+c.rewards_redeemed,0);
+  const ar=clients.filter(c=>c.reward_available).length;
+  document.getElementById('sTotal').textContent=clients.length;
+  document.getElementById('sStamps').textContent=ts.toLocaleString();
+  document.getElementById('sRewards').textContent=tr.toLocaleString();
+  document.getElementById('sActive').textContent=ar.toLocaleString();
+  document.getElementById('navBadge').textContent=clients.length;
+  document.getElementById('topPill').textContent=clients.length+' clientes';
+}
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const titles={dashboard:'Dashboard',clientes:'Clientes',sellos:'Gestión de Sellos',nuevo:'Nuevo Cliente'};
+  document.getElementById('topTitle').textContent=titles[name]||name;
+}
+
+// ══ INIT ═════════════════════════════════════════════════════════════════════
+document.getElementById('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('pinInput').focus();
+</script>
+</body>
+</html>
