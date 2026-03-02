@@ -88,7 +88,10 @@ def run_migrations():
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS tier VARCHAR DEFAULT 'bronze'",
         # ZubCard SaaS Platform
         "CREATE TABLE IF NOT EXISTS businesses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR NOT NULL, slug VARCHAR UNIQUE NOT NULL, email VARCHAR UNIQUE NOT NULL, google_id VARCHAR UNIQUE, plan VARCHAR DEFAULT 'free', card_title VARCHAR DEFAULT 'Mi Tarjeta', stamps_per_reward INTEGER DEFAULT 10, admin_pin VARCHAR NOT NULL, api_key VARCHAR NOT NULL, active BOOLEAN DEFAULT TRUE, logo_url VARCHAR, primary_color VARCHAR DEFAULT '#3A3426', accent_color VARCHAR DEFAULT '#FFF5B6', industry VARCHAR, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())",
-        "INSERT INTO businesses (id, name, slug, email, admin_pin, api_key, plan, primary_color, accent_color, industry, card_title, stamps_per_reward) VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Sukie Cookie', 'sukiecookie', 'zubbigpt@gmail.com', '5678', 'sukie-cookie-2026-secret', 'pro', '#3A3426', '#FFF5B6', 'bakery', 'Sukie Card', 10) ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email, admin_pin=EXCLUDED.admin_pin, api_key=EXCLUDED.api_key, plan=EXCLUDED.plan",
+        # Force-seed Sukie Cookie: delete any conflicting rows first, then insert fresh
+        "DELETE FROM businesses WHERE email='zubbigpt@gmail.com' AND slug != 'sukiecookie'",
+        "DELETE FROM businesses WHERE id='00000000-0000-0000-0000-000000000001'::uuid AND slug != 'sukiecookie'",
+        "INSERT INTO businesses (id, name, slug, email, admin_pin, api_key, plan, primary_color, accent_color, industry, card_title, stamps_per_reward) VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Sukie Cookie', 'sukiecookie', 'zubbigpt@gmail.com', '5678', 'sukie-cookie-2026-secret', 'pro', '#3A3426', '#FFF5B6', 'bakery', 'Sukie Card', 10) ON CONFLICT (slug) DO UPDATE SET id='00000000-0000-0000-0000-000000000001'::uuid, name='Sukie Cookie', email='zubbigpt@gmail.com', admin_pin='5678', api_key='sukie-cookie-2026-secret', plan='pro'",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
         "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
         "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
@@ -1472,6 +1475,18 @@ def list_businesses(pin: str = "", db: Session = Depends(get_db)):
             "created_at": b.created_at.isoformat() if b.created_at else "",
         })
     return {"businesses": result, "total": len(result)}
+
+
+@app.get("/api/debug/db")
+def debug_db(pin: str = "", db: Session = Depends(get_db)):
+    """Temporary debug: raw SQL check of businesses table"""
+    if pin != ADMIN_PIN:
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    try:
+        rows = db.execute(text("SELECT id, name, slug, email, admin_pin, plan FROM businesses")).fetchall()
+        return {"count": len(rows), "rows": [dict(r._mapping) for r in rows]}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/dashboard", response_class=HTMLResponse)

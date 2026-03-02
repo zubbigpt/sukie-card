@@ -25,6 +25,7 @@ class Customer(Base):
     channel      = Column(String, nullable=True)       # canal de alta
     language     = Column(String, default="es")
     anniversary_date = Column(String, nullable=True)   # fecha aniversario
+    business_id  = Column(UUID(as_uuid=True), ForeignKey("businesses.id"), nullable=True)
     created_at   = Column(DateTime(timezone=True), server_default=func.now())
     updated_at   = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
