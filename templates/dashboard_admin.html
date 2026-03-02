@@ -673,35 +673,51 @@ async function refreshAll(){
 async function loadStats(){
   const r = await fetch(`${BASE}/api/admin/stats?pin=${PIN}`);
   const d = await r.json();
+  // Map backend keys (snake_case) to dashboard labels
+  const totalClients  = d.total_customers||d.total_clients||0;
+  const totalStamps   = d.total_stamps||0;
+  const totalRewards  = d.total_redeemed||d.total_rewards||0;
+  const activeAwards  = d.award_balance||d.active_awards||0;
+  const new30d        = d.new_clients_30d||0;
+  const stamps30d     = d.stamps_last_30d||d.stamps_30d||0;
+  const stampsPrev    = d.stamps_prev_30d||0;
+  const newPrev       = d.new_clients_prev||0;
+
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('s-clients',d.total_clients||0);
-  set('s-stamps',d.total_stamps||0);
-  set('s-rewards',d.total_rewards||0);
-  set('s-active-awards',d.active_awards||0);
-  set('s-new30',d.new_clients_30d||0);
+  set('s-clients',totalClients);
+  set('s-stamps',totalStamps);
+  set('s-rewards',totalRewards);
+  set('s-active-awards',activeAwards);
+  set('s-new30',new30d);
 
   // Deltas
   const deltaEl=(id,curr,prev)=>{
-    const el=document.getElementById(id); if(!el||prev===undefined) return;
+    const el=document.getElementById(id); if(!el) return;
     const diff=curr-prev; const pct=prev>0?Math.round(Math.abs(diff)/prev*100):0;
-    const arrow=diff>=0?'▲':'▼';
-    el.textContent=`${arrow} ${Math.abs(diff)} vs mes ant. (${pct}%)`;
-    el.className='stat-delta '+(diff>=0?'delta-up':diff<0?'delta-down':'delta-neu');
+    const arrow=diff>0?'▲':diff<0?'▼':'–';
+    el.textContent=prev>0?`${arrow} ${Math.abs(diff)} vs mes ant. (${pct}%)`:(diff>0?`+${diff} este mes`:'');
+    el.className='stat-delta '+(diff>0?'delta-up':diff<0?'delta-down':'delta-neu');
   };
-  deltaEl('s-clients-d',d.total_clients,d.total_clients-(d.new_clients_30d||0));
-  deltaEl('s-stamps-d',d.stamps_30d||0,d.stamps_prev_30d||0);
-  deltaEl('s-new30-d',d.new_clients_30d||0,d.new_clients_prev||0);
+  deltaEl('s-stamps-d',stamps30d,stampsPrev);
+  deltaEl('s-new30-d',new30d,newPrev);
 
   // Comparison row
   const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const now=new Date(); const cm=now.getMonth(); const cy=now.getFullYear();
   const pm=cm===0?11:cm-1; const py=cm===0?cy-1:cy;
-  document.getElementById('prev-stamps').textContent=d.stamps_prev_30d||0;
+  document.getElementById('prev-stamps').textContent=stampsPrev;
   document.getElementById('prev-stamps-label').textContent=monthNames[pm]+' '+py;
-  document.getElementById('curr-stamps').textContent=d.stamps_30d||0;
+  document.getElementById('curr-stamps').textContent=stamps30d;
   document.getElementById('curr-stamps-label').textContent=monthNames[cm]+' '+cy;
-  document.getElementById('prev-new').textContent=d.new_clients_prev||0;
-  document.getElementById('curr-new').textContent=d.new_clients_30d||0;
+  document.getElementById('prev-new').textContent=newPrev;
+  document.getElementById('curr-new').textContent=new30d;
+
+  // BI stats
+  const avgStamps = totalClients>0?(totalStamps/totalClients).toFixed(1):0;
+  const conversion = totalClients>0?Math.round(totalRewards/totalClients*100):0;
+  const biAvg=document.getElementById('bi-avg-stamps'); if(biAvg) biAvg.textContent=avgStamps;
+  const biConv=document.getElementById('bi-conversion'); if(biConv) biConv.textContent=conversion+'%';
+  const biActive=document.getElementById('bi-active-cards'); if(biActive) biActive.textContent=d.active_cards||totalClients;
 }
 
 // ── ACTIVITY CHART ─────────────────────────────────────────────────────────
@@ -785,11 +801,14 @@ async function loadBI(){
   const top = await topR.json();
 
   // KPI cards
-  const avgStamps = stats.total_clients>0?(stats.total_stamps/stats.total_clients).toFixed(1):0;
-  const conversion = stats.total_clients>0?Math.round((stats.total_rewards||0)/stats.total_clients*100):0;
+  const tc=stats.total_customers||stats.total_clients||0;
+  const ts=stats.total_stamps||0;
+  const tr=stats.total_redeemed||stats.total_rewards||0;
+  const avgStamps = tc>0?(ts/tc).toFixed(1):0;
+  const conversion = tc>0?Math.round(tr/tc*100):0;
   document.getElementById('bi-avg-stamps').textContent=avgStamps;
   document.getElementById('bi-conversion').textContent=conversion+'%';
-  document.getElementById('bi-active-cards').textContent=stats.total_clients||0;
+  document.getElementById('bi-active-cards').textContent=stats.active_cards||tc;
 
   // Monthly chart (aggregate by month)
   const monthlyMap={};
