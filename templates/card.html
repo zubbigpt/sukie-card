@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Mi Sukie Card – {{ customer.first_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #FFF3CF;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 60px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(58,52,38,0.13);
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: #FFF3CF;
+      padding: 28px 24px 16px;
+      text-align: center;
+      border-bottom: 3px dashed #e8d9a0;
+    }
+    .logo { height: 56px; object-fit: contain; }
+    .card-body { padding: 24px; }
+
+    .greeting {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: #3A3426;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #9a8f7e;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* ── REWARD BANNER ── */
+    .reward-banner {
+      background: linear-gradient(135deg, #3A3426, #6b5e47);
+      color: #FFF3CF;
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    .reward-banner .emoji { font-size: 32px; }
+    .reward-banner h2 { font-size: 18px; font-weight: 800; margin: 4px 0 2px; }
+    .reward-banner p { font-size: 13px; opacity: 0.85; }
+
+    /* ── SELLOS GRID ── */
+    .stamps-section { margin-bottom: 20px; }
+    .stamps-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #9a8f7e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .stamps-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .stamp {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: 2.5px solid #e8d9a0;
+      background: #FFF3CF;
+      transition: all 0.3s ease;
+    }
+    .stamp.filled {
+      background: #3A3426;
+      border-color: #3A3426;
+      box-shadow: 0 2px 8px rgba(58,52,38,0.25);
+    }
+    .stamp.empty { color: #d4c9a8; font-size: 22px; }
+
+    /* ── PROGRESS ── */
+    .progress-section { margin-bottom: 20px; }
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #9a8f7e;
+      margin-bottom: 8px;
+    }
+    .progress-text strong { color: #3A3426; }
+    .progress-bar {
+      height: 10px;
+      background: #FFF3CF;
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1.5px solid #e8d9a0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3A3426, #6b5e47);
+      border-radius: 99px;
+      transition: width 1s ease;
+    }
+
+    /* ── QR ── */
+    .qr-section {
+      text-align: center;
+      padding: 16px 0 8px;
+      border-top: 2px dashed #e8d9a0;
+    }
+    .qr-label {
+      font-size: 11px;
+      color: #9a8f7e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    #qrcode {
+      display: inline-block;
+      padding: 8px;
+      background: #fff;
+      border-radius: 12px;
+      border: 2px solid #FFF3CF;
+    }
+    #qrcode canvas, #qrcode img { display: block; }
+
+    /* ── ADMIN BUTTON ── */
+    .admin-trigger {
+      display: block;
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: #c5b99a;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .admin-trigger:hover { color: #3A3426; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(58,52,38,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 420px;
+      padding: 28px 24px 40px;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: #3A3426;
+      margin-bottom: 6px;
+    }
+    .modal .customer-info {
+      font-size: 14px;
+      color: #9a8f7e;
+      margin-bottom: 20px;
+    }
+    .modal label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #3A3426;
+      margin-bottom: 6px;
+    }
+    .modal input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e8d9a0;
+      border-radius: 12px;
+      font-size: 20px;
+      font-family: 'Nunito', sans-serif;
+      color: #3A3426;
+      background: #FFF3CF;
+      margin-bottom: 14px;
+      text-align: center;
+      letter-spacing: 4px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus { border-color: #3A3426; }
+    .modal input.stamps-input { font-size: 36px; letter-spacing: 0; }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 50px;
+      font-size: 17px;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 10px;
+    }
+    .btn-primary {
+      background: #3A3426;
+      color: #FFF3CF;
+    }
+    .btn-primary:hover { background: #5a4e38; transform: translateY(-1px); }
+    .btn-reward {
+      background: linear-gradient(135deg, #d4a017, #e8c840);
+      color: #3A3426;
+    }
+    .btn-cancel {
+      background: transparent;
+      color: #9a8f7e;
+      font-size: 15px;
+    }
+
+    .error-msg {
+      color: #c0392b;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .success-msg {
+      color: #27ae60;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    /* ── Pin phase / stamp phase ── */
+    #phase-pin, #phase-stamps, #phase-success { display: block; }
+    #phase-stamps, #phase-success { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <img class="logo"
+         src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314"
+         alt="Sukie Cookie">
+  </div>
+
+  <div class="card-body">
+    <h1 class="greeting">¡Hola, {{ customer.first_name }}! 🍪</h1>
+    <p class="subtitle">Tu tarjeta de fidelidad Sukie Cookie</p>
+
+    {% if reward_available %}
+    <div class="reward-banner">
+      <div class="emoji">🎉</div>
+      <h2>¡Premio desbloqueado!</h2>
+      <p>Tienes una galleta gratis esperándote 🍪</p>
+    </div>
+    {% endif %}
+
+    <!-- SELLOS -->
+    <div class="stamps-section">
+      <div class="stamps-label">Tus sellos</div>
+      <div class="stamps-grid" id="stamps-grid">
+        {% for i in range(stamps_per_reward) %}
+          <div class="stamp {% if i < card.stamps %}filled{% else %}empty{% endif %}">
+            {% if i < card.stamps %}🍪{% else %}○{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-section">
+      <div class="progress-text">
+        <span>Progreso al premio</span>
+        <strong>{{ card.stamps }} / {{ stamps_per_reward }}</strong>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill"
+             style="width: {{ [100, (card.stamps / stamps_per_reward * 100)|int]|min }}%">
+        </div>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <div class="qr-section">
+      <div class="qr-label">📱 Muestra este QR en caja</div>
+      <div id="qrcode"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin trigger (discreto, al fondo) -->
+<a class="admin-trigger" id="admin-btn" onclick="openAdmin()">⚙ Admin</a>
+
+
+<!-- ── MODAL ADMIN ── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+
+    <!-- Fase 1: PIN -->
+    <div id="phase-pin">
+      <h3>Acceso Admin</h3>
+      <p class="customer-info">{{ customer.first_name }} {{ customer.last_name or '' }} · {{ card.stamps }} sellos</p>
+      <div class="error-msg" id="pin-error">PIN incorrecto</div>
+      <label>PIN de admin</label>
+      <input type="password" id="pin-input" placeholder="••••" maxlength="8"
+             onkeydown="if(event.key==='Enter') verifyPin()">
+      <button class="btn btn-primary" onclick="verifyPin()">Entrar</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+
+    <!-- Fase 2: Añadir sellos -->
+    <div id="phase-stamps">
+      <h3>Añadir sellos 🍪</h3>
+      <p class="customer-info" id="stamps-customer-info"></p>
+      <div class="error-msg" id="stamp-error"></div>
+      <div class="success-msg" id="stamp-success"></div>
+      <label>¿Cuántas cookies compró?</label>
+      <input type="number" class="stamps-input" id="stamps-input"
+             placeholder="0" min="1" max="50"
+             onkeydown="if(event.key==='Enter') addStamps()">
+      <button class="btn btn-primary" onclick="addStamps()" id="add-btn">
+        ✅ Añadir sellos
+      </button>
+      {% if reward_available %}
+      <button class="btn btn-reward" onclick="redeemReward()">
+        🎁 Canjear galleta gratis
+      </button>
+      {% endif %}
+      <button class="btn btn-cancel" onclick="closeModal()">Cerrar</button>
+    </div>
+
+    <!-- Fase 3: Éxito -->
+    <div id="phase-success">
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:64px;margin-bottom:12px">🍪</div>
+        <h3 style="margin-bottom:8px">¡Sellos añadidos!</h3>
+        <p class="customer-info" id="success-msg"></p>
+        <button class="btn btn-primary" style="margin-top:20px" onclick="closeModal()">Listo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // ── QR Code ────────────────────────────────────────────────────────────────
+  new QRCode(document.getElementById("qrcode"), {
+    text: "{{ card_url }}",
+    width: 180,
+    height: 180,
+    colorDark: "#3A3426",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  // ── Modal ──────────────────────────────────────────────────────────────────
+  const CARD_ID = "{{ card_id }}";
+  let adminPin = "";
+
+  function openAdmin() {
+    document.getElementById("modal-overlay").classList.add("open");
+    document.getElementById("pin-input").focus();
+  }
+  function closeModal() {
+    document.getElementById("modal-overlay").classList.remove("open");
+    document.getElementById("phase-pin").style.display = "block";
+    document.getElementById("phase-stamps").style.display = "none";
+    document.getElementById("phase-success").style.display = "none";
+    document.getElementById("pin-error").style.display = "none";
+    document.getElementById("pin-input").value = "";
+    document.getElementById("stamps-input").value = "";
+    adminPin = "";
+  }
+
+  // Click outside to close
+  document.getElementById("modal-overlay").addEventListener("click", function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function verifyPin() {
+    const pin = document.getElementById("pin-input").value;
+    fetch(`/api/cards/${CARD_ID}`, {
+      headers: { "Authorization": "Bearer dummy" }  // public endpoint
+    })
+    .then(r => r.json())
+    .then(data => {
+      // Try adding 0 stamps to verify PIN
+      return fetch(`/api/cards/${CARD_ID}/stamps`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pin, stamps: 0 })
+      });
+    })
+    .then(r => {
+      if (r.status === 403) {
+        document.getElementById("pin-error").style.display = "block";
+        document.getElementById("pin-input").value = "";
+        document.getElementById("pin-input").focus();
+        return null;
+      }
+      return r.json();
+    })
+    .then(data => {
+      if (!data) return;
+      adminPin = pin;
+      document.getElementById("pin-error").style.display = "none";
+      document.getElementById("phase-pin").style.display = "none";
+      document.getElementById("phase-stamps").style.display = "block";
+      document.getElementById("stamps-customer-info").textContent =
+        `{{ customer.first_name }} {{ customer.last_name or '' }} · ${data.stamps} sellos actuales`;
+      document.getElementById("stamps-input").focus();
+    })
+    .catch(() => {
+      // If the 0-stamps request errors for other reason, still check PIN manually
+      adminPin = pin;
+      document.getElementById("phase-pin").style.display = "none";
+      document.getElementById("phase-stamps").style.display = "block";
+    });
+  }
+
+  function addStamps() {
+    const stampsVal = parseInt(document.getElementById("stamps-input").value);
+    if (!stampsVal || stampsVal < 1) {
+      const el = document.getElementById("stamp-error");
+      el.textContent = "Introduce al menos 1 sello";
+      el.style.display = "block";
+      return;
+    }
+
+    const btn = document.getElementById("add-btn");
+    btn.disabled = true;
+    btn.textContent = "Añadiendo...";
+
+    fetch(`/api/cards/${CARD_ID}/stamps`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin: adminPin, stamps: stampsVal })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.detail) {
+        const el = document.getElementById("stamp-error");
+        el.textContent = data.detail;
+        el.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "✅ Añadir sellos";
+        return;
+      }
+      // Éxito
+      document.getElementById("phase-stamps").style.display = "none";
+      document.getElementById("phase-success").style.display = "block";
+
+      let msg = `+${stampsVal} sello${stampsVal > 1 ? 's' : ''} añadido${stampsVal > 1 ? 's' : ''}. Total: ${data.stamps} / {{ stamps_per_reward }}`;
+      if (data.reward_available) msg += " 🎉 ¡PREMIO DISPONIBLE!";
+      document.getElementById("success-msg").textContent = msg;
+
+      // Reload page after 3s to show updated stamps
+      setTimeout(() => location.reload(), 3000);
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = "✅ Añadir sellos";
+    });
+  }
+
+  function redeemReward() {
+    if (!confirm("¿Canjear la galleta gratis? Se descontarán 10 sellos.")) return;
+    fetch(`/api/cards/${CARD_ID}/redeem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin: adminPin })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        alert(`✅ Premio canjeado. Sellos restantes: ${data.stamps_remaining}`);
+        location.reload();
+      }
+    });
+  }
+</script>
+</body>
+</html>
