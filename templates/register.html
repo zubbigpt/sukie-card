@@ -229,7 +229,7 @@ async function doRegister(){
     const ss = document.getElementById('success-screen');
     ss.style.display = 'block';
     document.getElementById('success-text').textContent =
-      `¡Hola ${first_name}! Tu tarjeta SukieCookie está lista. Muéstrala en caja para empezar a acumular sellos. ¡Por cada ${{{ stamps_per_reward }}} cookies, una de regalo!`;
+      `¡Hola ${first_name}! Tu tarjeta SukieCookie está lista. Muéstrala en caja para empezar a acumular sellos. ¡Por cada {{ stamps_per_reward }} cookies, una de regalo!`;
     document.getElementById('view-card-btn').href = d.card_url || '/card/'+d.card_id;
 
   } catch(e){
