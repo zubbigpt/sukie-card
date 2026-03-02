@@ -1549,7 +1549,7 @@ async function exportCSV(){
 
 // ── EDIT API KEY (patch for PUT) ───────────────────────────────────────────
 // Since we use PIN auth for PUT as well, we patch the API key placeholder
-const API_KEY_PLACEHOLDER = 'sukie-cookie-2026-secret';
+const API_KEY_PLACEHOLDER = '{{ biz_api_key or "sukie-cookie-2026-secret" }}';
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
 function showMsg(id,msg,color){
