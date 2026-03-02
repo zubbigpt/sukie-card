@@ -174,7 +174,7 @@ def get_or_create_referral_code(card_id, db: Session) -> str:
 def get_business_by_slug(slug: str, db: Session):
     return db.query(models.Business).filter(
         models.Business.slug == slug,
-        models.Business.active != False  # treat NULL as active
+        or_(models.Business.active == True, models.Business.active == None)
     ).first()
 
 
