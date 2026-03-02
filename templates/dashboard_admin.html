@@ -8,173 +8,216 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root {
-  --cream:        #FFF3CF;
-  --cream-dark:   #f5e8b8;
-  --cream-border: #e8d9a0;
-  --brown:        #3A3426;
-  --brown-mid:    #6b5e47;
-  --brown-light:  #9a8f7e;
-  --gold:         #d4a017;
-  --gold-light:   #f5cb53;
-  --white:        #FDFBF7;
-  --green:        #2e7d32;
-  --red:          #c62828;
-  --sidebar-w:    240px;
-  --radius:       16px;
-  --radius-sm:    10px;
-  --shadow:       0 2px 12px rgba(58,52,38,.10);
+:root{
+  --cream:#FFF3CF;--cream-dark:#f5e8b8;--cream-border:#e8d9a0;
+  --brown:#3A3426;--brown-mid:#6b5e47;--brown-light:#9a8f7e;
+  --gold:#d4a017;--gold-light:#f5cb53;--white:#FDFBF7;
+  --green:#2e7d32;--red:#c62828;--sidebar-w:240px;
+  --radius:16px;--radius-sm:10px;--shadow:0 2px 12px rgba(58,52,38,.10);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Poppins',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh;display:flex;flex-direction:column}
+body{font-family:'Poppins',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh}
 button,input,select,textarea{font-family:inherit}
 
 /* LOGIN */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--cream)}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
 .login-box{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:48px 40px;text-align:center;max-width:380px;width:90%;box-shadow:var(--shadow)}
 .login-box img{width:90px;margin-bottom:16px}
-.login-box h1{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--brown);margin-bottom:6px}
+.login-box h1{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:6px}
 .login-box p{color:var(--brown-light);font-size:.9rem;margin-bottom:28px}
-.login-box input{width:100%;padding:12px 16px;border:2px solid var(--cream-border);border-radius:50px;font-size:1.1rem;text-align:center;letter-spacing:6px;color:var(--brown);background:var(--cream);outline:none;transition:border .2s}
+.login-box input{width:100%;padding:12px 16px;border:2px solid var(--cream-border);border-radius:50px;font-size:1.1rem;text-align:center;letter-spacing:6px;background:var(--cream);outline:none;transition:border .2s}
 .login-box input:focus{border-color:var(--gold)}
 .login-box button{width:100%;margin-top:16px;padding:13px;background:var(--brown);color:var(--cream);border:none;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
 .login-box button:hover{background:var(--brown-mid)}
 .login-error{color:var(--red);font-size:.85rem;margin-top:10px;min-height:20px}
 
 /* LAYOUT */
-#app{display:flex;min-height:100vh;display:none}
+#app{display:none;min-height:100vh}
 .sidebar{width:var(--sidebar-w);background:var(--brown);color:var(--cream);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
-.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center}
 .sidebar-logo img{width:50px;border-radius:50%;margin-bottom:8px}
 .sidebar-logo span{display:block;font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold-light);font-weight:700}
 .sidebar-logo small{display:block;font-size:.72rem;color:rgba(255,243,207,.5);margin-top:2px}
 nav{padding:16px 0;flex:1}
-nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,243,207,.75);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;border-left:3px solid transparent}
+nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,243,207,.75);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
 nav a:hover{color:var(--cream);background:rgba(255,255,255,.07)}
 nav a.active{color:var(--brown);background:var(--cream);border-left-color:var(--gold);font-weight:600}
 nav a .icon{font-size:1.1rem;width:22px;text-align:center}
+.nav-section{padding:10px 20px 4px;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,243,207,.3);font-weight:600}
 .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(255,243,207,.4)}
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:var(--white);border-bottom:2px solid var(--cream-border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.topbar h2{font-size:1.05rem;font-weight:600;color:var(--brown)}
+.topbar h2{font-size:1.05rem;font-weight:600}
 .topbar-right{display:flex;align-items:center;gap:12px}
-.badge-pin{background:var(--cream);border:1px solid var(--cream-border);border-radius:50px;padding:4px 14px;font-size:.8rem;color:var(--brown-light)}
-.content{padding:28px;flex:1}
-
-/* SECTIONS */
+.content{padding:24px 28px;flex:1}
 .section{display:none}
 .section.active{display:block}
 
-/* STAT CARDS */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px}
-.stat-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold)}
-.stat-card .label{font-size:.78rem;color:var(--brown-light);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.stat-card .value{font-size:2rem;font-weight:700;color:var(--brown);line-height:1}
-.stat-card .sub{font-size:.78rem;color:var(--brown-light);margin-top:4px}
-.stat-card.gold::before{background:var(--gold-light)}
-.stat-card.green::before{background:#81c784}
-.stat-card.red::before{background:#ef9a9a}
+/* CARDS */
+.card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px}
+.card-sub{font-size:.8rem;color:var(--brown-light)}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat-card .stat-icon{font-size:2rem;margin-bottom:8px}
+.stat-card .stat-num{font-size:2rem;font-weight:800;line-height:1}
+.stat-card .stat-label{font-size:.78rem;color:var(--brown-light);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.stat-card .stat-delta{font-size:.75rem;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block}
+.delta-up{background:#e8f5e9;color:var(--green)}
+.delta-down{background:#fbe9e7;color:var(--red)}
+.delta-neu{background:#f5f5f5;color:var(--brown-light)}
+
+/* COMPARISON ROW */
+.comparison-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.period-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.period-card .period-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:6px}
+.period-card .period-num{font-size:2.2rem;font-weight:800}
+.period-card .period-sub{font-size:.8rem;color:var(--brown-light);margin-top:4px}
+.period-card.current{border-color:var(--gold);background:linear-gradient(135deg,#fff9e6,#fff)}
 
 /* CHARTS */
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
-.chart-box{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px}
-.chart-box h3{font-size:.9rem;font-weight:600;color:var(--brown-mid);margin-bottom:16px}
-.card-box{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px}
-.card-box h3{font-size:.95rem;font-weight:600;color:var(--brown);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.chart-card h3{font-size:.95rem;font-weight:600;margin-bottom:16px;color:var(--brown)}
+.chart-wrap{position:relative;height:220px}
 
-/* TABLE */
-.table-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.search-input{flex:1;min-width:200px;padding:9px 16px;border:2px solid var(--cream-border);border-radius:50px;font-size:.88rem;background:var(--cream);color:var(--brown);outline:none;transition:border .2s}
-.search-input:focus{border-color:var(--gold)}
-select.filter-sel{padding:9px 14px;border:2px solid var(--cream-border);border-radius:50px;font-size:.85rem;background:var(--cream);color:var(--brown);outline:none;cursor:pointer}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:50px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+/* BIRTHDAYS */
+.birthday-section{margin-bottom:24px}
+.birthday-section h3{font-size:1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.birthday-list{display:flex;flex-direction:column;gap:8px}
+.birthday-item{background:var(--white);border:2px solid #fce4ec;border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.birthday-item.today{border-color:var(--gold);background:linear-gradient(135deg,#fff9e6,#fff)}
+.birthday-info .name{font-weight:600;font-size:.9rem}
+.birthday-info .date{font-size:.78rem;color:var(--brown-light);margin-top:2px}
+.birthday-badge{background:var(--gold);color:var(--brown);border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:700}
+.birthday-badge.month{background:var(--cream-dark);color:var(--brown-mid)}
+.empty-state{text-align:center;padding:24px;color:var(--brown-light);font-size:.9rem}
+
+/* TOP CUSTOMERS */
+.top-list{display:flex;flex-direction:column;gap:6px}
+.top-item{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:12px;transition:border-color .2s;cursor:pointer}
+.top-item:hover{border-color:var(--gold)}
+.top-rank{font-size:1.1rem;width:28px;text-align:center}
+.top-info{flex:1}
+.top-info .top-name{font-weight:600;font-size:.88rem}
+.top-info .top-email{font-size:.75rem;color:var(--brown-light)}
+.top-stamps{font-size:1.1rem;font-weight:800;color:var(--gold)}
+
+/* CLIENTS TABLE */
+.search-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:200px;padding:10px 16px;border:2px solid var(--cream-border);border-radius:50px;background:var(--cream);outline:none;font-size:.9rem;transition:border .2s}
+.search-bar input:focus{border-color:var(--brown)}
+.search-bar button{padding:10px 20px;border:none;border-radius:50px;background:var(--brown);color:var(--cream);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+.search-bar button:hover{background:var(--brown-mid)}
+.btn-sm{padding:6px 14px;border:none;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
 .btn-primary{background:var(--brown);color:var(--cream)}
 .btn-primary:hover{background:var(--brown-mid)}
-.btn-gold{background:var(--gold-light);color:var(--brown)}
-.btn-gold:hover{background:var(--gold)}
-.btn-green{background:#c8e6c9;color:var(--green)}
-.btn-green:hover{background:#a5d6a7}
-.btn-red{background:#ffcdd2;color:var(--red)}
-.btn-red:hover{background:#ef9a9a}
-.btn-outline{background:transparent;color:var(--brown);border:2px solid var(--cream-border)}
-.btn-outline:hover{border-color:var(--gold);background:var(--cream)}
-.btn-sm{padding:6px 14px;font-size:.78rem}
-.btn-xs{padding:4px 10px;font-size:.73rem}
-table{width:100%;border-collapse:collapse;font-size:.83rem}
-thead tr{background:var(--cream)}
-thead th{padding:10px 12px;text-align:left;font-weight:600;color:var(--brown-mid);font-size:.78rem;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--cream-border);white-space:nowrap;cursor:pointer;user-select:none}
-thead th:hover{color:var(--brown)}
-tbody tr{border-bottom:1px solid var(--cream-border);transition:background .15s;cursor:pointer}
-tbody tr:hover{background:var(--cream)}
-tbody tr.selected{background:#FFF3CF;border-left:3px solid var(--gold)}
-td{padding:10px 12px;color:var(--brown);vertical-align:middle}
-.chip{display:inline-block;padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:600}
-.chip-green{background:#c8e6c9;color:var(--green)}
-.chip-red{background:#ffcdd2;color:var(--red)}
-.chip-gold{background:#fff8e1;color:var(--gold)}
+.btn-gold{background:var(--gold);color:var(--brown)}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-danger{background:#fbe9e7;color:var(--red);border:1px solid #ffccbc}
+.btn-danger:hover{background:#ffccbc}
+.btn-ghost{background:transparent;color:var(--brown-light);border:1.5px solid var(--cream-border)}
+.btn-ghost:hover{border-color:var(--brown);color:var(--brown)}
 
-/* PAGINATION */
-.pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
-.pagination span{font-size:.82rem;color:var(--brown-light)}
-.page-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--cream-border);background:var(--white);color:var(--brown);font-weight:600;cursor:pointer;font-size:.82rem;transition:all .2s}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{padding:10px 12px;text-align:left;font-weight:600;color:var(--brown-light);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--cream-border);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--cream-border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,243,207,.4)}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-green{background:#e8f5e9;color:var(--green)}
+.badge-red{background:#fbe9e7;color:var(--red)}
+.badge-gold{background:#fff9e6;color:var(--gold)}
+.pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+.page-btn{padding:6px 12px;border:2px solid var(--cream-border);border-radius:8px;background:var(--white);cursor:pointer;font-size:.82rem;transition:all .2s}
 .page-btn:hover,.page-btn.active{background:var(--brown);color:var(--cream);border-color:var(--brown)}
-.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-info{font-size:.82rem;color:var(--brown-light)}
 
-/* DETAIL PANEL */
-.detail-overlay{display:none;position:fixed;inset:0;background:rgba(58,52,38,.35);z-index:200;justify-content:flex-end}
-.detail-overlay.open{display:flex}
-.detail-panel{width:480px;max-width:95vw;background:var(--white);height:100vh;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.15);display:flex;flex-direction:column}
-.detail-header{background:var(--brown);color:var(--cream);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.detail-header h3{font-family:'Playfair Display',serif;font-size:1.1rem}
-.close-btn{background:transparent;border:none;color:var(--cream);font-size:1.4rem;cursor:pointer}
-.detail-body{padding:24px;flex:1}
-.detail-avatar{width:64px;height:64px;border-radius:50%;background:var(--cream);border:3px solid var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--brown);margin-bottom:16px}
-.detail-name{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:2px}
-.detail-email{color:var(--brown-light);font-size:.85rem;margin-bottom:16px}
-.stamp-progress{background:var(--cream);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;border:1px solid var(--cream-border)}
-.stamp-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:.85rem}
-.stamp-circles{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
-.stamp-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--cream-border);display:flex;align-items:center;justify-content:center;font-size:.85rem}
-.stamp-dot.filled{background:var(--brown);border-color:var(--brown);color:var(--cream)}
-.award-banner{background:linear-gradient(135deg,var(--gold-light),var(--gold));border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.award-banner .num{font-size:1.6rem;font-weight:700;color:var(--brown)}
-.award-banner .lbl{font-size:.8rem;color:var(--brown-mid)}
-.detail-section{margin-bottom:20px}
-.detail-section h4{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--brown-light);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--cream-border)}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.info-item .lbl{font-size:.75rem;color:var(--brown-light);margin-bottom:2px}
-.info-item .val{font-size:.85rem;color:var(--brown);font-weight:500}
-.form-row{margin-bottom:14px}
-.form-row label{display:block;font-size:.8rem;font-weight:600;color:var(--brown-mid);margin-bottom:5px}
-.form-row input,.form-row select{width:100%;padding:9px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);font-size:.88rem;background:var(--cream);color:var(--brown);outline:none}
-.form-row input:focus{border-color:var(--gold)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cream-border)}
+/* DRAWER */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(58,52,38,.4);z-index:200;backdrop-filter:blur(3px)}
+.drawer-overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
+.drawer{background:var(--white);width:480px;max-width:96vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-8px 0 32px rgba(58,52,38,.15);display:flex;flex-direction:column;gap:0}
+.drawer h2{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:4px}
+.drawer .d-email{font-size:.85rem;color:var(--brown-light);margin-bottom:20px}
+.drawer-close{position:absolute;top:20px;right:20px;background:var(--cream);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.drawer-close:hover{background:var(--cream-dark)}
+
+/* TABS */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--cream-border);margin-bottom:20px;overflow-x:auto}
+.tab{padding:9px 16px;border:none;background:transparent;font-size:.83rem;font-weight:500;color:var(--brown-light);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--brown)}
+.tab.active{color:var(--brown);border-bottom-color:var(--gold);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--brown);margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--brown)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--cream-border)}
 .toggle-row:last-child{border-bottom:none}
 .toggle-row label{font-size:.85rem;color:var(--brown)}
-.toggle{width:38px;height:22px;background:#ccc;border-radius:50px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none}
-.toggle.on{background:var(--brown)}
-.toggle::after{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:3px;left:3px;transition:.2s}
-.toggle.on::after{left:19px}
-.history-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--cream-border);font-size:.82rem}
-.history-item:last-child{border-bottom:none}
-.history-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem}
-.tx-stamp{background:#c8e6c9;color:var(--green)}
-.tx-redeem{background:#fff8e1;color:var(--gold)}
-.tx-adjust{background:#ffcdd2;color:var(--red)}
-.history-info .note{font-weight:500;color:var(--brown)}
-.history-info .date{color:var(--brown-light);margin-top:2px}
-.form-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:28px;max-width:560px}
-.form-card h3{font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:20px}
-.empty{text-align:center;padding:48px;color:var(--brown-light)}
-.empty .icon{font-size:3rem;margin-bottom:12px}
-.loading{text-align:center;padding:32px;color:var(--brown-light);font-size:.9rem}
-#toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast-item{background:var(--brown);color:var(--cream);padding:12px 20px;border-radius:var(--radius-sm);font-size:.88rem;box-shadow:var(--shadow);animation:slideUp .3s ease;pointer-events:all}
-.toast-item.success{background:var(--green)}
-.toast-item.error{background:var(--red)}
-@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--cream-border);border-radius:24px;transition:.3s}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.slider{background:var(--brown)}
+.toggle input:checked+.slider:before{transform:translateX(20px)}
+
+/* STAMPS GRID IN DRAWER */
+.stamps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
+.stamp-dot{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--cream-border);background:var(--cream)}
+.stamp-dot.filled{background:var(--brown);border-color:var(--brown)}
+
+/* ACTIVITY LOG */
+.activity-log{display:flex;flex-direction:column;gap:8px}
+.activity-item{display:flex;gap:12px;align-items:flex-start}
+.activity-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.activity-dot.stamp{background:#e8f5e9}
+.activity-dot.redeem{background:#fff9e6}
+.activity-dot.register{background:#e3f2fd}
+.activity-dot.adjust{background:#fce4ec}
+.activity-content .a-title{font-size:.85rem;font-weight:600}
+.activity-content .a-date{font-size:.75rem;color:var(--brown-light);margin-top:2px}
+
+/* STAMPS ACTIONS */
+.stamp-actions{display:flex;gap:10px;margin-bottom:16px}
+.stamp-actions input{flex:1;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:1.1rem;font-weight:700;text-align:center;outline:none;transition:border .2s}
+.stamp-actions input:focus{border-color:var(--brown)}
+.stamp-actions button{padding:10px 18px;border:none;border-radius:var(--radius-sm);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s}
+
+/* IMPORT */
+.import-drop{border:3px dashed var(--cream-border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream)}
+.import-drop:hover,.import-drop.over{border-color:var(--gold);background:#fff9e6}
+.import-drop .drop-icon{font-size:2.5rem;margin-bottom:8px}
+.import-drop p{color:var(--brown-light);font-size:.88rem}
+.import-drop strong{color:var(--brown);display:block;margin-bottom:4px;font-size:1rem}
+#import-file{display:none}
+.import-preview{margin-top:16px}
+.import-stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.import-stat{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius-sm);padding:10px 16px;text-align:center;flex:1}
+.import-stat .is-num{font-size:1.4rem;font-weight:800}
+.import-stat .is-lbl{font-size:.72rem;color:var(--brown-light);text-transform:uppercase}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--brown);color:var(--cream);padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#2e7d32}
+.toast.error{background:var(--red)}
+
+/* NEW CLIENT FORM */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
+.section-header h1{font-family:'Playfair Display',serif;font-size:1.5rem}
+
+/* CHART LEGEND CUSTOM */
+.legend-row{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--brown-mid)}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -184,8 +227,8 @@ td{padding:10px 12px;color:var(--brown);vertical-align:middle}
   <div class="login-box">
     <img src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314" alt="SukieCookie">
     <h1>SukieCard Admin</h1>
-    <p>Introduce tu PIN de acceso</p>
-    <input type="password" id="pin-input" placeholder="••••" maxlength="8" inputmode="numeric" autofocus>
+    <p>Introduce el PIN de administrador</p>
+    <input type="password" id="login-pin" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')doLogin()">
     <button onclick="doLogin()">Entrar →</button>
     <div class="login-error" id="login-err"></div>
   </div>
@@ -193,670 +236,904 @@ td{padding:10px 12px;color:var(--brown);vertical-align:middle}
 
 <!-- APP -->
 <div id="app">
-  <aside class="sidebar">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
     <div class="sidebar-logo">
       <img src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314" alt="">
       <span>SukieCard</span>
       <small>Panel de administración</small>
     </div>
     <nav>
-      <a class="active" onclick="showSection('dashboard')" data-sec="dashboard"><span class="icon">📊</span> Dashboard</a>
-      <a onclick="showSection('clients')" data-sec="clients"><span class="icon">👥</span> Clientes <span id="nav-count" style="margin-left:auto;background:var(--gold-light);color:var(--brown);border-radius:50px;padding:1px 8px;font-size:.72rem"></span></a>
-      <a onclick="showSection('stamps')" data-sec="stamps"><span class="icon">🍪</span> Gestión Sellos</a>
-      <a onclick="showSection('newclient')" data-sec="newclient"><span class="icon">➕</span> Nuevo Cliente</a>
-      <a onclick="exportCSV()"><span class="icon">📥</span> Exportar CSV</a>
+      <div class="nav-section">Principal</div>
+      <a class="active" onclick="showSection('dashboard')" id="nav-dashboard">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a onclick="showSection('bi')" id="nav-bi">
+        <span class="icon">📈</span> Business Intelligence
+      </a>
+      <a onclick="showSection('birthdays')" id="nav-birthdays">
+        <span class="icon">🎂</span> Cumpleaños
+        <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:20px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
+      </a>
+      <div class="nav-section">Clientes</div>
+      <a onclick="showSection('clients')" id="nav-clients">
+        <span class="icon">👥</span> Clientes
+      </a>
+      <a onclick="showSection('new-client')" id="nav-new-client">
+        <span class="icon">➕</span> Nuevo cliente
+      </a>
+      <a onclick="showSection('import')" id="nav-import">
+        <span class="icon">📥</span> Importar CSV
+      </a>
+      <div class="nav-section">Herramientas</div>
+      <a onclick="exportCSV()" id="nav-export">
+        <span class="icon">📤</span> Exportar CSV
+      </a>
+      <a href="/register" target="_blank" id="nav-register">
+        <span class="icon">🔗</span> Landing de alta
+      </a>
     </nav>
     <div class="sidebar-footer">SukieCookie © 2026</div>
-  </aside>
+  </div>
 
+  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <h2 id="topbar-title">Dashboard</h2>
       <div class="topbar-right">
-        <button class="btn btn-outline btn-sm" onclick="refreshData()">↺ Actualizar</button>
-        <span class="badge-pin" id="pin-badge"></span>
+        <span style="font-size:.82rem;color:var(--brown-light)" id="topbar-date"></span>
+        <button class="btn-sm btn-primary" onclick="refreshAll()">↺ Actualizar</button>
       </div>
     </div>
+
     <div class="content">
 
-      <!-- DASHBOARD -->
-      <div class="section active" id="sec-dashboard">
-        <div class="stats-grid">
-          <div class="stat-card"><div class="label">Total Clientes</div><div class="value" id="s-total">–</div></div>
-          <div class="stat-card gold"><div class="label">Tarjetas Activas</div><div class="value" id="s-active">–</div></div>
-          <div class="stat-card"><div class="label">Sellos Totales</div><div class="value" id="s-stamps">–</div></div>
-          <div class="stat-card green"><div class="label">Premios Disponibles</div><div class="value" id="s-balance">–</div><div class="sub">por canjear</div></div>
-          <div class="stat-card red"><div class="label">Premios Canjeados</div><div class="value" id="s-redeemed">–</div></div>
-          <div class="stat-card"><div class="label">Sellos (30 días)</div><div class="value" id="s-stamps30">–</div></div>
+      <!-- ═══ DASHBOARD ═══ -->
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-num" id="s-clients">–</div><div class="stat-label">Clientes</div><div class="stat-delta delta-neu" id="s-clients-d"></div></div>
+          <div class="stat-card"><div class="stat-icon">🍪</div><div class="stat-num" id="s-stamps">–</div><div class="stat-label">Sellos totales</div><div class="stat-delta delta-neu" id="s-stamps-d"></div></div>
+          <div class="stat-card"><div class="stat-icon">🎁</div><div class="stat-num" id="s-rewards">–</div><div class="stat-label">Premios canjeados</div></div>
+          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-num" id="s-active-awards">–</div><div class="stat-label">Premios pendientes</div></div>
+          <div class="stat-card"><div class="stat-icon">🆕</div><div class="stat-num" id="s-new30">–</div><div class="stat-label">Nuevos (30d)</div><div class="stat-delta delta-neu" id="s-new30-d"></div></div>
         </div>
+
+        <!-- MES ANTERIOR vs ACTUAL -->
+        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Comparativa de periodos</h3>
+        <div class="comparison-row" style="margin-bottom:24px">
+          <div class="period-card">
+            <div class="period-label">📅 Mes anterior – Sellos</div>
+            <div class="period-num" id="prev-stamps">–</div>
+            <div class="period-sub" id="prev-stamps-label">Cargando...</div>
+          </div>
+          <div class="period-card current">
+            <div class="period-label">✨ Mes actual – Sellos</div>
+            <div class="period-num" id="curr-stamps">–</div>
+            <div class="period-sub" id="curr-stamps-label">Cargando...</div>
+          </div>
+          <div class="period-card">
+            <div class="period-label">📅 Mes anterior – Nuevos</div>
+            <div class="period-num" id="prev-new">–</div>
+            <div class="period-sub">clientes registrados</div>
+          </div>
+          <div class="period-card current">
+            <div class="period-label">✨ Mes actual – Nuevos</div>
+            <div class="period-num" id="curr-new">–</div>
+            <div class="period-sub">clientes registrados</div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY CHART -->
         <div class="charts-row">
-          <div class="chart-box"><h3>Premios: emitidos vs canjeados</h3><canvas id="chart-awards" height="200"></canvas></div>
-          <div class="chart-box"><h3>Actividad últimos 30 días</h3><canvas id="chart-stamps" height="200"></canvas></div>
+          <div class="chart-card">
+            <h3>Actividad diaria – últimos 30 días</h3>
+            <div class="legend-row">
+              <div class="legend-item"><div class="legend-dot" style="background:#3A3426"></div>Sellos añadidos</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div>Premios canjeados</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf50"></div>Nuevos clientes</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="activity-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Top 5 Clientes 🏆</h3>
+            <div class="top-list" id="dash-top-list" style="margin-top:8px"></div>
+          </div>
         </div>
-        <div class="card-box">
-          <h3>Clientes Recientes <button class="btn btn-outline btn-sm" onclick="showSection('clients')">Ver todos →</button></h3>
-          <div id="recent-list"><div class="loading">Cargando…</div></div>
+
+        <!-- RECENT BIRTHDAYS TEASER -->
+        <div id="dash-bdays" style="margin-bottom:24px"></div>
+      </div>
+
+      <!-- ═══ BUSINESS INTELLIGENCE ═══ -->
+      <div class="section" id="section-bi">
+        <div class="section-header">
+          <h1>Business Intelligence 📈</h1>
+        </div>
+
+        <div class="stats-grid" id="bi-stats-grid" style="margin-bottom:24px">
+          <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-num" id="bi-avg-stamps">–</div><div class="stat-label">Media sellos/cliente</div></div>
+          <div class="stat-card"><div class="stat-icon">🔄</div><div class="stat-num" id="bi-conversion">–%</div><div class="stat-label">% con premio canjeado</div></div>
+          <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-num" id="bi-active-cards">–</div><div class="stat-label">Tarjetas activas</div></div>
+        </div>
+
+        <div class="charts-row" style="margin-bottom:24px">
+          <div class="chart-card">
+            <h3>Evolución mensual de sellos</h3>
+            <div class="chart-wrap">
+              <canvas id="monthly-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Distribución de sellos actuales</h3>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="dist-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3>Nuevos clientes por mes</h3>
+            <div class="chart-wrap">
+              <canvas id="new-clients-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Top 10 Clientes por sellos totales</h3>
+            <div class="top-list" id="bi-top-list" style="max-height:280px;overflow-y:auto;margin-top:8px"></div>
+          </div>
         </div>
       </div>
 
-      <!-- CLIENTES -->
-      <div class="section" id="sec-clients">
-        <div class="table-toolbar">
-          <input class="search-input" id="client-search" placeholder="🔍 Buscar nombre, email, teléfono…" oninput="filterClients()">
-          <select class="filter-sel" id="filter-active" onchange="filterClients()">
-            <option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option>
-          </select>
-          <select class="filter-sel" id="filter-balance" onchange="filterClients()">
-            <option value="">Cualquier premio</option><option value="yes">Con premios 🍪</option><option value="no">Sin premios</option>
-          </select>
-          <button class="btn btn-gold" onclick="showSection('newclient')">+ Nuevo</button>
+      <!-- ═══ CUMPLEAÑOS ═══ -->
+      <div class="section" id="section-birthdays">
+        <div class="section-header">
+          <h1>Cumpleaños 🎂</h1>
         </div>
-        <div class="card-box">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="birthday-section">
+              <h3>🎉 Hoy</h3>
+              <div id="bday-today" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="birthday-section">
+              <h3>📅 Este mes</h3>
+              <div id="bday-month" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CLIENTES ═══ -->
+      <div class="section" id="section-clients">
+        <div class="section-header">
+          <h1>Clientes</h1>
+          <button class="btn-sm btn-primary" onclick="showSection('new-client')">+ Nuevo</button>
+        </div>
+        <div class="search-bar">
+          <input id="search-input" placeholder="Buscar por nombre, email o teléfono…" onkeydown="if(event.key==='Enter')searchClients()">
+          <button onclick="searchClients()">🔍 Buscar</button>
+          <button onclick="loadClients(1)" class="btn-sm btn-ghost" style="padding:10px 16px">Todos</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
           <div style="overflow-x:auto">
-            <table>
-              <thead>
-                <tr>
-                  <th onclick="sortClients('firstName')">Nombre ↕</th>
-                  <th onclick="sortClients('email')">Email ↕</th>
-                  <th>Teléfono</th>
-                  <th onclick="sortClients('stamps')">Sellos ↕</th>
-                  <th onclick="sortClients('totalStamps')">Total vida ↕</th>
-                  <th onclick="sortClients('awardBalance')">Premios 🍪 ↕</th>
-                  <th onclick="sortClients('rewardsRedeemed')">Canjeados ↕</th>
-                  <th>Estado</th>
-                  <th onclick="sortClients('createdAt')">Registro ↕</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="clients-tbody"><tr><td colspan="10" class="loading">Cargando…</td></tr></tbody>
+            <table id="clients-table">
+              <thead><tr>
+                <th>Cliente</th><th>Email</th><th>Sellos</th><th>Premios</th><th>Estado</th><th>Registro</th><th></th>
+              </tr></thead>
+              <tbody id="clients-tbody"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--brown-light)">Cargando...</td></tr></tbody>
             </table>
           </div>
-          <div class="pagination" id="clients-pagination"></div>
         </div>
+        <div class="pagination" id="pagination"></div>
+        <div style="font-size:.78rem;color:var(--brown-light);text-align:center;margin-top:8px" id="clients-total-label"></div>
       </div>
 
-      <!-- GESTIÓN SELLOS -->
-      <div class="section" id="sec-stamps">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px">
-          <div class="card-box">
-            <h3>Buscar Cliente</h3>
-            <div style="display:flex;gap:8px;margin-bottom:16px">
-              <input class="search-input" id="stamp-search" placeholder="Email, nombre o teléfono…" onkeydown="if(event.key==='Enter')searchStampClient()">
-              <button class="btn btn-primary" onclick="searchStampClient()">Buscar</button>
+      <!-- ═══ NUEVO CLIENTE ═══ -->
+      <div class="section" id="section-new-client">
+        <div class="section-header"><h1>Nuevo Cliente</h1></div>
+        <div style="max-width:560px">
+          <div class="card">
+            <div class="form-row">
+              <div class="form-group"><label>Nombre *</label><input id="nc-first" placeholder="María"></div>
+              <div class="form-group"><label>Apellido</label><input id="nc-last" placeholder="García"></div>
             </div>
-            <div id="stamp-results"></div>
-          </div>
-          <div class="card-box" id="stamp-client-box" style="display:none">
-            <h3 id="stamp-client-name">–</h3>
-            <div id="stamp-client-email" style="font-size:.82rem;color:var(--brown-light);margin-bottom:16px"></div>
-            <div class="stamp-progress">
-              <div class="stamp-row"><span>Sellos actuales</span><span id="sc-stamps" style="font-weight:700;font-size:1.1rem">0 / 10</span></div>
-              <div class="stamp-circles" id="sc-circles"></div>
+            <div class="form-group"><label>Email *</label><input id="nc-email" type="email" placeholder="maria@ejemplo.com"></div>
+            <div class="form-row">
+              <div class="form-group"><label>Teléfono</label><input id="nc-phone" placeholder="+34 600 000 000"></div>
+              <div class="form-group"><label>Fecha nacimiento</label><input id="nc-birth" type="date"></div>
             </div>
-            <div class="award-banner" style="margin-bottom:16px">
-              <div><div class="lbl">Premios disponibles 🍪</div><div class="num" id="sc-balance">0</div></div>
-              <button class="btn btn-gold" id="sc-redeem-btn" onclick="redeemStampClient()">Canjear 🍪</button>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-              <div>
-                <label style="font-size:.78rem;font-weight:600;color:var(--brown-light);display:block;margin-bottom:6px">Añadir sellos</label>
-                <div style="display:flex;gap:6px">
-                  <input type="number" id="add-stamps-n" min="1" max="20" value="1" style="width:60px;padding:8px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);text-align:center;background:var(--cream)">
-                  <button class="btn btn-green" onclick="addStampsClient()">+ Añadir</button>
-                </div>
+            <div class="form-row">
+              <div class="form-group"><label>Origen</label>
+                <select id="nc-origin"><option value="Admin">Admin</option><option value="Web">Web</option><option value="Landing">Landing</option><option value="Import">Import</option><option value="API">API</option><option value="Shopify">Shopify</option></select>
               </div>
-              <div>
-                <label style="font-size:.78rem;font-weight:600;color:var(--brown-light);display:block;margin-bottom:6px">Quitar sellos</label>
-                <div style="display:flex;gap:6px">
-                  <input type="number" id="rem-stamps-n" min="1" max="20" value="1" style="width:60px;padding:8px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);text-align:center;background:var(--cream)">
-                  <button class="btn btn-red" onclick="removeStampsClient()">– Quitar</button>
-                </div>
+              <div class="form-group"><label>Idioma</label>
+                <select id="nc-lang"><option value="es">Español</option><option value="en">English</option><option value="ca">Català</option></select>
               </div>
             </div>
-            <div class="detail-section">
-              <h4>Historial de Transacciones</h4>
-              <div id="sc-history"><div class="loading">–</div></div>
+            <div class="form-group"><label>Notas internas</label><textarea id="nc-notes" placeholder="Observaciones sobre el cliente..."></textarea></div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <label class="toggle"><input type="checkbox" id="nc-optin-email" checked><span class="slider"></span></label>
+              <span style="font-size:.83rem">Acepta emails</span>
+              <label class="toggle" style="margin-left:12px"><input type="checkbox" id="nc-optin-sms"><span class="slider"></span></label>
+              <span style="font-size:.83rem">Acepta SMS</span>
             </div>
+            <div style="margin-top:20px;display:flex;gap:10px">
+              <button class="btn-sm btn-primary" style="padding:12px 28px;font-size:.9rem" onclick="createClient()">Crear cliente</button>
+              <button class="btn-sm btn-ghost" style="padding:12px 20px;font-size:.9rem" onclick="clearNewClient()">Limpiar</button>
+            </div>
+            <div id="nc-msg" style="margin-top:12px;font-size:.85rem;min-height:20px"></div>
           </div>
         </div>
       </div>
 
-      <!-- NUEVO CLIENTE -->
-      <div class="section" id="sec-newclient">
-        <div class="form-card">
-          <h3>Nuevo Cliente 🍪</h3>
-          <div class="form-grid">
-            <div class="form-row"><label>Nombre *</label><input type="text" id="nc-fn" placeholder="María"></div>
-            <div class="form-row"><label>Apellidos</label><input type="text" id="nc-ln" placeholder="García López"></div>
+      <!-- ═══ IMPORTAR CSV ═══ -->
+      <div class="section" id="section-import">
+        <div class="section-header"><h1>Importar Clientes 📥</h1></div>
+        <div style="max-width:600px">
+          <div class="card" style="margin-bottom:16px">
+            <h3 class="card-title" style="margin-bottom:8px">Formato del archivo CSV</h3>
+            <p style="font-size:.82rem;color:var(--brown-light);margin-bottom:12px">El CSV debe tener cabeceras. Columnas soportadas:</p>
+            <code style="display:block;background:var(--cream);padding:12px;border-radius:8px;font-size:.78rem;color:var(--brown);line-height:1.8">first_name, last_name, email, phone, birth_date (YYYY-MM-DD), stamps, notes, origin</code>
+            <button class="btn-sm btn-ghost" style="margin-top:12px;padding:8px 16px" onclick="downloadTemplate()">⬇ Descargar plantilla CSV</button>
           </div>
-          <div class="form-row"><label>Email *</label><input type="email" id="nc-email" placeholder="maria@ejemplo.com"></div>
-          <div class="form-grid">
-            <div class="form-row"><label>Teléfono</label><input type="text" id="nc-phone" placeholder="600 000 000"></div>
-            <div class="form-row"><label>Fecha de nacimiento</label><input type="date" id="nc-birth"></div>
+          <div class="import-drop" id="drop-zone" onclick="document.getElementById('import-file').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="handleDrop(event)">
+            <div class="drop-icon">📂</div>
+            <strong>Arrastra tu CSV aquí o haz clic</strong>
+            <p>Formatos: .csv · Máx. 5000 filas</p>
           </div>
-          <div class="form-row">
-            <div class="toggle-row"><label>OptIn comunicaciones</label><button class="toggle on" id="nc-optin" onclick="toggleBtn(this)"></button></div>
+          <input type="file" id="import-file" accept=".csv" onchange="handleFileSelect(event)">
+          <div id="import-preview" class="import-preview" style="display:none">
+            <div class="import-stats">
+              <div class="import-stat"><div class="is-num" id="imp-total">0</div><div class="is-lbl">Total filas</div></div>
+              <div class="import-stat"><div class="is-num" id="imp-valid">0</div><div class="is-lbl">Válidas</div></div>
+              <div class="import-stat"><div class="is-num" id="imp-errors">0</div><div class="is-lbl">Con errores</div></div>
+            </div>
+            <div id="imp-errors-list" style="margin-top:12px;font-size:.78rem;color:var(--red)"></div>
+            <button class="btn-sm btn-primary" id="imp-btn" style="margin-top:16px;padding:12px 28px;font-size:.9rem" onclick="doImport()">Importar clientes →</button>
+            <div id="imp-msg" style="margin-top:10px;font-size:.85rem"></div>
           </div>
-          <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="createClient()">Crear Tarjeta de Fidelidad</button>
-          <div id="nc-result" style="margin-top:14px;font-size:.85rem"></div>
         </div>
       </div>
 
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- DRAWER (ficha cliente) -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer" style="position:relative">
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <h2 id="d-name">–</h2>
+    <div class="d-email" id="d-email"></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('tab-general')">General</button>
+      <button class="tab" onclick="showTab('tab-stamps')">Sellos</button>
+      <button class="tab" onclick="showTab('tab-activity')">Actividad</button>
+      <button class="tab" onclick="showTab('tab-edit')">Editar</button>
+      <button class="tab" onclick="showTab('tab-danger')">⚠ Eliminar</button>
     </div>
+
+    <!-- TAB: GENERAL -->
+    <div class="tab-content active" id="tab-general">
+      <div class="stamps-grid" id="d-stamps-grid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="text-align:center;background:var(--cream);border-radius:12px;padding:12px">
+          <div style="font-size:1.6rem;font-weight:800" id="d-stamps-num">0</div>
+          <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Sellos</div>
+        </div>
+        <div style="text-align:center;background:var(--cream);border-radius:12px;padding:12px">
+          <div style="font-size:1.6rem;font-weight:800" id="d-total-stamps">0</div>
+          <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Total</div>
+        </div>
+        <div style="text-align:center;background:#fff9e6;border-radius:12px;padding:12px">
+          <div style="font-size:1.6rem;font-weight:800" id="d-awards">0</div>
+          <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Premios</div>
+        </div>
+      </div>
+      <div style="font-size:.82rem;line-height:1.8">
+        <div><b>📧 Email:</b> <span id="d-info-email"></span></div>
+        <div><b>📞 Tel:</b> <span id="d-info-phone">–</span></div>
+        <div><b>🎂 Nac.:</b> <span id="d-info-birth">–</span></div>
+        <div><b>📍 Origen:</b> <span id="d-info-origin">–</span></div>
+        <div><b>🗓 Alta:</b> <span id="d-info-created">–</span></div>
+      </div>
+      <div id="d-notes-block" style="margin-top:12px;display:none">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--brown-light);margin-bottom:4px">Notas</div>
+        <div id="d-notes" style="background:var(--cream);padding:10px 12px;border-radius:8px;font-size:.83rem;line-height:1.5"></div>
+      </div>
+      <div id="d-award-banner" style="display:none;margin-top:16px;background:linear-gradient(135deg,#d4a017,#f5cb53);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:.95rem;font-weight:700;color:#3A3426">🎉 <span id="d-award-count"></span> premio(s) disponible(s)</div>
+        <button class="btn-sm btn-primary" style="margin-top:8px" onclick="redeemFromDrawer()">Canjear premio</button>
+      </div>
+    </div>
+
+    <!-- TAB: STAMPS -->
+    <div class="tab-content" id="tab-stamps">
+      <h3 style="font-size:.95rem;font-weight:600;margin-bottom:14px">Añadir sellos</h3>
+      <div class="stamp-actions">
+        <input type="number" id="d-stamps-input" placeholder="Nº cookies" min="1" max="50">
+        <button class="btn-sm btn-primary" style="font-size:.9rem;padding:10px 18px" onclick="addStampsFromDrawer()">✅ Añadir</button>
+        <button class="btn-sm btn-ghost" style="font-size:.9rem;padding:10px 14px" onclick="removeStampsFromDrawer()">➖</button>
+      </div>
+      <div id="d-stamp-msg" style="font-size:.83rem;margin-bottom:12px;min-height:20px"></div>
+      <hr style="border:none;border-top:1.5px solid var(--cream-border);margin-bottom:14px">
+      <h3 style="font-size:.95rem;font-weight:600;margin-bottom:14px">Canjear premios</h3>
+      <p style="font-size:.83rem;color:var(--brown-light);margin-bottom:10px">Premios disponibles: <strong id="d-award-count-stamps">0</strong></p>
+      <button class="btn-sm btn-gold" style="font-size:.9rem;padding:10px 20px" onclick="redeemFromDrawer()">🎁 Canjear 1 premio</button>
+    </div>
+
+    <!-- TAB: ACTIVIDAD -->
+    <div class="tab-content" id="tab-activity">
+      <div id="d-activity-log" class="activity-log"><div class="empty-state">Cargando...</div></div>
+    </div>
+
+    <!-- TAB: EDITAR -->
+    <div class="tab-content" id="tab-edit">
+      <div class="form-group"><label>Nombre</label><input id="e-first" placeholder="Nombre"></div>
+      <div class="form-group"><label>Apellido</label><input id="e-last" placeholder="Apellido"></div>
+      <div class="form-group"><label>Email</label><input id="e-email" type="email"></div>
+      <div class="form-group"><label>Teléfono</label><input id="e-phone" placeholder="+34..."></div>
+      <div class="form-group"><label>Fecha nacimiento</label><input id="e-birth" type="date"></div>
+      <div class="form-group"><label>Aniversario</label><input id="e-anniv" type="date"></div>
+      <div class="form-group"><label>Idioma</label>
+        <select id="e-lang"><option value="es">Español</option><option value="en">English</option><option value="ca">Català</option></select>
+      </div>
+      <div class="form-group"><label>Notas internas</label><textarea id="e-notes" placeholder="Observaciones..."></textarea></div>
+      <div style="margin-bottom:14px">
+        <div class="toggle-row"><label>Acepta email marketing</label><label class="toggle"><input type="checkbox" id="e-optin-email"><span class="slider"></span></label></div>
+        <div class="toggle-row"><label>Acepta SMS</label><label class="toggle"><input type="checkbox" id="e-optin-sms"><span class="slider"></span></label></div>
+        <div class="toggle-row"><label>Tarjeta activa</label><label class="toggle"><input type="checkbox" id="e-active"><span class="slider"></span></label></div>
+      </div>
+      <button class="btn-sm btn-primary" style="padding:12px 28px;font-size:.9rem" onclick="saveEdit()">Guardar cambios</button>
+      <div id="e-msg" style="margin-top:10px;font-size:.83rem;min-height:20px"></div>
+    </div>
+
+    <!-- TAB: ELIMINAR -->
+    <div class="tab-content" id="tab-danger">
+      <div style="background:#fbe9e7;border:2px solid #ffccbc;border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:8px">⚠️</div>
+        <h3 style="font-size:1rem;color:var(--red);margin-bottom:8px">Eliminar cliente permanentemente</h3>
+        <p style="font-size:.83rem;color:var(--brown-mid);margin-bottom:16px;line-height:1.5">Esta acción elimina el cliente, su tarjeta y todo el historial de sellos. <strong>No se puede deshacer.</strong></p>
+        <input id="d-confirm-name" placeholder="Escribe el nombre para confirmar" style="width:100%;padding:10px;border:2px solid #ffccbc;border-radius:8px;margin-bottom:12px;font-size:.88rem;outline:none;background:#fff">
+        <button class="btn-sm btn-danger" style="padding:12px 24px;font-size:.9rem" onclick="deleteCustomer()">🗑 Eliminar definitivamente</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- DETAIL PANEL -->
-<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
-  <div class="detail-panel" id="detail-panel">
-    <div class="detail-header">
-      <h3 id="dp-title">Detalle del Cliente</h3>
-      <button class="close-btn" onclick="closeDetail()">✕</button>
-    </div>
-    <div class="detail-body">
-      <div class="detail-avatar" id="dp-avatar">?</div>
-      <div class="detail-name" id="dp-name">–</div>
-      <div class="detail-email" id="dp-email">–</div>
-      <div class="stamp-progress">
-        <div class="stamp-row"><span>Sellos actuales</span><span id="dp-stamps" style="font-weight:700;font-size:1.1rem">– / 10</span></div>
-        <div class="stamp-circles" id="dp-circles"></div>
-        <div style="font-size:.75rem;color:var(--brown-light);margin-top:8px">Total acumulado: <b id="dp-total-stamps">–</b></div>
-      </div>
-      <div class="award-banner" style="margin-bottom:20px">
-        <div><div class="lbl">Premios disponibles 🍪</div><div class="num" id="dp-balance">0</div></div>
-        <div style="text-align:right"><div style="font-size:.75rem;color:var(--brown-mid)">Canjeados</div><div style="font-size:1.3rem;font-weight:700;color:var(--brown)" id="dp-redeemed">0</div></div>
-      </div>
-      <div style="display:flex;gap:0;border-bottom:2px solid var(--cream-border);margin-bottom:16px">
-        <button class="detail-tab active-tab" data-tab="info" onclick="showDetailTab('info',this)" style="flex:1;padding:9px;border:none;background:transparent;font-weight:600;font-size:.82rem;color:var(--brown);border-bottom:2px solid var(--brown);cursor:pointer;margin-bottom:-2px">Información</button>
-        <button class="detail-tab" data-tab="edit" onclick="showDetailTab('edit',this)" style="flex:1;padding:9px;border:none;background:transparent;font-weight:500;font-size:.82rem;color:var(--brown-light);cursor:pointer">Editar</button>
-        <button class="detail-tab" data-tab="history" onclick="showDetailTab('history',this)" style="flex:1;padding:9px;border:none;background:transparent;font-weight:500;font-size:.82rem;color:var(--brown-light);cursor:pointer">Historial</button>
-      </div>
-      <!-- Info -->
-      <div id="dt-info">
-        <div class="detail-section">
-          <h4>Datos del cliente</h4>
-          <div class="info-grid">
-            <div class="info-item"><div class="lbl">Teléfono</div><div class="val" id="dp-phone">–</div></div>
-            <div class="info-item"><div class="lbl">Nacimiento</div><div class="val" id="dp-birth">–</div></div>
-            <div class="info-item"><div class="lbl">Nº Tarjeta</div><div class="val" id="dp-cardnum">–</div></div>
-            <div class="info-item"><div class="lbl">Registro</div><div class="val" id="dp-created">–</div></div>
-            <div class="info-item"><div class="lbl">Estado</div><div class="val" id="dp-active">–</div></div>
-            <div class="info-item"><div class="lbl">OptIn Email</div><div class="val" id="dp-optin">–</div></div>
-          </div>
-        </div>
-        <div class="detail-section">
-          <h4>Acciones rápidas</h4>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-green btn-sm" onclick="quickStamp(1)">+1 Sello</button>
-            <button class="btn btn-green btn-sm" onclick="quickStamp(5)">+5 Sellos</button>
-            <button class="btn btn-gold btn-sm" onclick="quickRedeem()">Canjear 🍪</button>
-            <button class="btn btn-red btn-sm" onclick="quickRemove(1)">-1 Sello</button>
-          </div>
-          <div style="margin-top:12px"><a id="dp-card-link" href="#" target="_blank" class="btn btn-outline btn-sm">Ver Tarjeta →</a></div>
-        </div>
-      </div>
-      <!-- Edit -->
-      <div id="dt-edit" style="display:none">
-        <input type="hidden" id="edit-card-id">
-        <div class="form-grid">
-          <div class="form-row"><label>Nombre</label><input type="text" id="edit-fn"></div>
-          <div class="form-row"><label>Apellidos</label><input type="text" id="edit-ln"></div>
-        </div>
-        <div class="form-row"><label>Teléfono</label><input type="text" id="edit-phone"></div>
-        <div class="form-row"><label>Fecha nacimiento</label><input type="date" id="edit-birth"></div>
-        <div class="detail-section">
-          <h4>Preferencias</h4>
-          <div class="toggle-row"><label>Tarjeta activa</label><button class="toggle" id="edit-active" onclick="toggleBtn(this)"></button></div>
-          <div class="toggle-row"><label>OptIn comunicaciones</label><button class="toggle" id="edit-optin" onclick="toggleBtn(this)"></button></div>
-          <div class="toggle-row"><label>OptIn Email</label><button class="toggle" id="edit-optin-email" onclick="toggleBtn(this)"></button></div>
-          <div class="toggle-row"><label>OptIn SMS</label><button class="toggle" id="edit-optin-sms" onclick="toggleBtn(this)"></button></div>
-        </div>
-        <button class="btn btn-primary" style="width:100%" onclick="saveEdit()">Guardar Cambios</button>
-      </div>
-      <!-- History -->
-      <div id="dt-history" style="display:none">
-        <div id="dp-history-list"><div class="loading">Cargando…</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
-const API  = 'https://web-production-cdaf7.up.railway.app';
-const SMAX = 10;
-let PIN='', allClients=[], filtered=[], sortKey='createdAt', sortDir='desc', page=1;
-const PER=50;
-let selectedCardId=null, stampCardId=null, chartA=null, chartS=null;
+// ── STATE ──────────────────────────────────────────────────────────────────
+const BASE = window.location.origin;
+let PIN = '';
+let currentPage = 1;
+let totalPages = 1;
+let searchQuery = '';
+let currentCardId = null;
+let currentCustomerName = '';
+let importData = [];
+let activityChart = null;
+let monthlyChart = null;
+let distChart = null;
+let newClientsChart = null;
 
-// LOGIN
-document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+// ── LOGIN ──────────────────────────────────────────────────────────────────
 async function doLogin(){
-  const p=document.getElementById('pin-input').value.trim();
-  document.getElementById('login-err').textContent='';
+  const p = document.getElementById('login-pin').value;
   try{
-    const r=await fetch(`${API}/api/admin/stats?pin=${p}`);
-    if(!r.ok){document.getElementById('login-err').textContent='PIN incorrecto';return;}
-    PIN=p;
-    document.getElementById('pin-badge').textContent=`PIN: ${p}`;
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='flex';
-    loadDashboard();
+    const r = await fetch(`${BASE}/api/admin/stats?pin=${p}`);
+    if(r.status===403){document.getElementById('login-err').textContent='PIN incorrecto';return;}
+    PIN = p;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    initDashboard();
   }catch(e){document.getElementById('login-err').textContent='Error de conexión';}
 }
+document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// NAVIGATION
-function showSection(sec){
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente'};
+function showSection(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('nav a[data-sec]').forEach(a=>a.classList.remove('active'));
-  document.getElementById('sec-'+sec).classList.add('active');
-  document.querySelector(`nav a[data-sec="${sec}"]`)?.classList.add('active');
-  const titles={dashboard:'Dashboard',clients:'Clientes',stamps:'Gestión de Sellos',newclient:'Nuevo Cliente'};
-  document.getElementById('topbar-title').textContent=titles[sec]||sec;
-  if(sec==='clients'&&allClients.length===0) loadAllClients();
-  if(sec==='dashboard') loadDashboard();
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  const nav = document.getElementById('nav-'+name);
+  if(nav) nav.classList.add('active');
+  document.getElementById('topbar-title').textContent = sectionTitles[name]||name;
+  if(name==='clients') loadClients(1);
+  if(name==='bi') loadBI();
+  if(name==='birthdays') loadBirthdays();
 }
 
-function refreshData(){
-  loadDashboard(); allClients=[];
-  const sec=document.querySelector('.section.active')?.id.replace('sec-','');
-  if(sec==='clients') loadAllClients();
-  toast('Datos actualizados');
+// ── DASHBOARD INIT ─────────────────────────────────────────────────────────
+async function initDashboard(){
+  await Promise.all([loadStats(), loadActivity(), loadTopCustomers(5,'dash'), loadBirthdaysBadge()]);
 }
 
-// DASHBOARD
-async function loadDashboard(){
-  try{
-    const r=await fetch(`${API}/api/admin/stats?pin=${PIN}`);
-    const d=await r.json();
-    document.getElementById('s-total').textContent=fmt(d.total_customers);
-    document.getElementById('s-active').textContent=fmt(d.active_cards);
-    document.getElementById('s-stamps').textContent=fmt(d.total_stamps);
-    document.getElementById('s-balance').textContent=fmt(d.award_balance);
-    document.getElementById('s-redeemed').textContent=fmt(d.total_redeemed);
-    document.getElementById('s-stamps30').textContent=fmt(d.stamps_last_30d);
-    drawCharts(d);
-  }catch(e){console.error(e);}
-  loadRecentClients();
+async function refreshAll(){
+  showToast('Actualizando…');
+  await initDashboard();
+  if(document.getElementById('section-clients').classList.contains('active')) loadClients(currentPage);
+  if(document.getElementById('section-bi').classList.contains('active')) loadBI();
+  if(document.getElementById('section-birthdays').classList.contains('active')) loadBirthdays();
+  showToast('Datos actualizados ✓','success');
 }
 
-function fmt(n){return (n||0).toLocaleString('es-ES');}
+// ── STATS ─────────────────────────────────────────────────────────────────
+async function loadStats(){
+  const r = await fetch(`${BASE}/api/admin/stats?pin=${PIN}`);
+  const d = await r.json();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('s-clients',d.total_clients||0);
+  set('s-stamps',d.total_stamps||0);
+  set('s-rewards',d.total_rewards||0);
+  set('s-active-awards',d.active_awards||0);
+  set('s-new30',d.new_clients_30d||0);
 
-function drawCharts(d){
-  if(chartA){chartA.destroy();chartA=null;}
-  if(chartS){chartS.destroy();chartS=null;}
-  chartA=new Chart(document.getElementById('chart-awards'),{
+  // Deltas
+  const deltaEl=(id,curr,prev)=>{
+    const el=document.getElementById(id); if(!el||prev===undefined) return;
+    const diff=curr-prev; const pct=prev>0?Math.round(Math.abs(diff)/prev*100):0;
+    const arrow=diff>=0?'▲':'▼';
+    el.textContent=`${arrow} ${Math.abs(diff)} vs mes ant. (${pct}%)`;
+    el.className='stat-delta '+(diff>=0?'delta-up':diff<0?'delta-down':'delta-neu');
+  };
+  deltaEl('s-clients-d',d.total_clients,d.total_clients-(d.new_clients_30d||0));
+  deltaEl('s-stamps-d',d.stamps_30d||0,d.stamps_prev_30d||0);
+  deltaEl('s-new30-d',d.new_clients_30d||0,d.new_clients_prev||0);
+
+  // Comparison row
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const now=new Date(); const cm=now.getMonth(); const cy=now.getFullYear();
+  const pm=cm===0?11:cm-1; const py=cm===0?cy-1:cy;
+  document.getElementById('prev-stamps').textContent=d.stamps_prev_30d||0;
+  document.getElementById('prev-stamps-label').textContent=monthNames[pm]+' '+py;
+  document.getElementById('curr-stamps').textContent=d.stamps_30d||0;
+  document.getElementById('curr-stamps-label').textContent=monthNames[cm]+' '+cy;
+  document.getElementById('prev-new').textContent=d.new_clients_prev||0;
+  document.getElementById('curr-new').textContent=d.new_clients_30d||0;
+}
+
+// ── ACTIVITY CHART ─────────────────────────────────────────────────────────
+async function loadActivity(){
+  const r = await fetch(`${BASE}/api/admin/activity?pin=${PIN}&days=30`);
+  const data = await r.json();
+  const labels = data.map(d=>d.date.slice(5));
+  const stamps = data.map(d=>d.stamps);
+  const redeems = data.map(d=>d.redeems);
+  const newC = data.map(d=>d.new_clients);
+  const ctx = document.getElementById('activity-chart').getContext('2d');
+  if(activityChart) activityChart.destroy();
+  activityChart = new Chart(ctx,{
     type:'bar',
-    data:{labels:['Emitidos','Canjeados','Disponibles'],
-      datasets:[{data:[d.total_redeemed+(d.award_balance||0),d.total_redeemed,d.award_balance||0],
-        backgroundColor:['#d4a017','#3A3426','#f5cb53'],borderRadius:8}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
-  });
-  chartS=new Chart(document.getElementById('chart-stamps'),{
-    type:'doughnut',
-    data:{labels:['Sellos ganados (30d)','Canjeos (30d)','Meta'],
-      datasets:[{data:[d.stamps_last_30d||0,d.redeems_last_30d||0,Math.max(1,d.total_customers*SMAX-(d.stamps_last_30d||0))],
-        backgroundColor:['#3A3426','#f5cb53','#e8d9a0'],borderWidth:0}]},
-    options:{plugins:{legend:{position:'bottom'}},cutout:'60%'}
+    data:{labels,datasets:[
+      {label:'Sellos',data:stamps,backgroundColor:'rgba(58,52,38,.75)',borderRadius:4,order:2},
+      {label:'Canjes',data:redeems,backgroundColor:'rgba(212,160,23,.8)',borderRadius:4,order:2},
+      {label:'Nuevos',data:newC,type:'line',borderColor:'#4caf50',backgroundColor:'rgba(76,175,80,.1)',tension:.4,fill:true,pointRadius:3,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},stepSize:1}}}}
   });
 }
 
-async function loadRecentClients(){
+// ── TOP CUSTOMERS ──────────────────────────────────────────────────────────
+async function loadTopCustomers(limit=5, target='dash'){
+  const r = await fetch(`${BASE}/api/admin/top-customers?pin=${PIN}&limit=${limit}`);
+  const resp = await r.json();
+  const data = resp.top||resp||[];
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  const listEl = document.getElementById(target==='dash'?'dash-top-list':'bi-top-list');
+  if(!listEl) return;
+  listEl.innerHTML = data.length===0?'<div class="empty-state">Sin datos aún</div>':data.map((c,i)=>`
+    <div class="top-item" onclick="openDrawer('${c.id||c.card_id}')">
+      <div class="top-rank">${medals[i]||i+1}</div>
+      <div class="top-info"><div class="top-name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="top-email">${c.email}</div></div>
+      <div class="top-stamps">${c.totalStamps||c.total_stamps||0}🍪</div>
+    </div>`).join('');
+}
+
+// ── BIRTHDAYS ──────────────────────────────────────────────────────────────
+async function loadBirthdaysBadge(){
   try{
-    const r=await fetch(`${API}/api/admin/customers?pin=${PIN}&page_size=8&sort_by=updated_at&sort_order=desc`);
-    const d=await r.json();
-    const el=document.getElementById('recent-list');
-    if(!d.customers?.length){el.innerHTML='<div class="empty"><div class="icon">🍪</div><p>No hay clientes aún</p></div>';return;}
-    el.innerHTML=`<table style="width:100%"><thead><tr><th>Nombre</th><th>Email</th><th>Sellos</th><th>Premios 🍪</th><th>Última acción</th></tr></thead><tbody>
-      ${d.customers.map(c=>`<tr onclick="openDetail('${c.id}')" style="cursor:pointer">
-        <td><b>${c.firstName} ${c.lastName||''}</b></td>
-        <td style="color:var(--brown-light);font-size:.82rem">${c.email}</td>
-        <td><span class="chip chip-gold">${c.stamps}/${SMAX}</span></td>
-        <td>${c.awardBalance>0?`<span class="chip chip-green">🍪 ${c.awardBalance}</span>`:`<span style="color:var(--brown-light)">–</span>`}</td>
-        <td style="color:var(--brown-light);font-size:.8rem">${fmtDate(c.updatedAt)}</td>
-      </tr>`).join('')}</tbody></table>`;
-    document.getElementById('nav-count').textContent=d.total||'';
-  }catch(e){console.error(e);}
-}
+    const r = await fetch(`${BASE}/api/admin/birthdays?pin=${PIN}`);
+    const d = await r.json();
+    const cnt = (d.today||[]).length;
+    const badge = document.getElementById('bday-badge');
+    if(cnt>0){badge.textContent=cnt;badge.style.display='inline';}
+    else badge.style.display='none';
 
-// CLIENTS TABLE
-async function loadAllClients(){
-  document.getElementById('clients-tbody').innerHTML='<tr><td colspan="10" class="loading">Cargando clientes…</td></tr>';
-  try{
-    allClients=[];
-    let p=1;
-    while(true){
-      const r=await fetch(`${API}/api/admin/customers?pin=${PIN}&page=${p}&page_size=500&sort_by=created_at&sort_order=desc`);
-      const d=await r.json();
-      allClients.push(...(d.customers||[]));
-      if(p>=d.total_pages||!d.customers?.length||allClients.length>3000) break;
-      p++;
-    }
-    filtered=[...allClients];
-    document.getElementById('nav-count').textContent=allClients.length;
-    renderClientsTable();
-  }catch(e){
-    document.getElementById('clients-tbody').innerHTML=`<tr><td colspan="10" style="color:var(--red);padding:20px">Error cargando clientes</td></tr>`;
-  }
-}
-
-function filterClients(){
-  const q=document.getElementById('client-search').value.toLowerCase();
-  const act=document.getElementById('filter-active').value;
-  const bal=document.getElementById('filter-balance').value;
-  filtered=allClients.filter(c=>{
-    const mQ=!q||`${c.firstName} ${c.lastName||''} ${c.email} ${c.phone||''}`.toLowerCase().includes(q);
-    const mA=!act||(act==='true'?c.cardActive!==false:c.cardActive===false);
-    const mB=!bal||(bal==='yes'?c.awardBalance>0:c.awardBalance===0);
-    return mQ&&mA&&mB;
-  });
-  page=1; renderClientsTable();
-}
-
-function sortClients(key){
-  if(sortKey===key) sortDir=sortDir==='asc'?'desc':'asc';
-  else{sortKey=key;sortDir='asc';}
-  filtered.sort((a,b)=>{
-    let va=a[key]??'',vb=b[key]??'';
-    if(typeof va==='string') return sortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
-    return sortDir==='asc'?va-vb:vb-va;
-  });
-  page=1; renderClientsTable();
-}
-
-function renderClientsTable(){
-  const tbody=document.getElementById('clients-tbody');
-  const start=(page-1)*PER;
-  const slice=filtered.slice(start,start+PER);
-  if(!slice.length){
-    tbody.innerHTML='<tr><td colspan="10" class="empty"><div class="icon">🔍</div><p>Sin resultados</p></td></tr>';
-    document.getElementById('clients-pagination').innerHTML='';return;
-  }
-  tbody.innerHTML=slice.map(c=>`
-    <tr onclick="openDetail('${c.id}')" ${c.id===selectedCardId?'class="selected"':''}>
-      <td><b>${c.firstName||''}</b> ${c.lastName||''}</td>
-      <td style="color:var(--brown-light);font-size:.82rem">${c.email}</td>
-      <td style="font-size:.82rem">${c.phone||'–'}</td>
-      <td><span class="chip chip-gold">${c.stamps}/${SMAX}</span></td>
-      <td style="font-size:.82rem">${c.totalStamps||0}</td>
-      <td>${c.awardBalance>0?`<span class="chip chip-green">🍪 ${c.awardBalance}</span>`:'–'}</td>
-      <td style="font-size:.82rem">${c.rewardsRedeemed||0}</td>
-      <td>${c.cardActive!==false?'<span class="chip chip-green">Activa</span>':'<span class="chip chip-red">Inactiva</span>'}</td>
-      <td style="font-size:.75rem;color:var(--brown-light)">${fmtDate(c.createdAt)}</td>
-      <td><button class="btn btn-outline btn-xs" onclick="event.stopPropagation();openDetail('${c.id}')">Ver</button></td>
-    </tr>`).join('');
-  const totalPages=Math.ceil(filtered.length/PER);
-  const pag=document.getElementById('clients-pagination');
-  if(totalPages<=1){pag.innerHTML=`<span>${filtered.length} clientes</span>`;return;}
-  let html=`<span>${filtered.length} clientes</span>`;
-  html+=`<button class="page-btn" onclick="goPage(1)" ${page===1?'disabled':''}>«</button>`;
-  html+=`<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
-  const from=Math.max(1,page-2),to=Math.min(totalPages,page+2);
-  for(let i=from;i<=to;i++) html+=`<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
-  html+=`<button class="page-btn" onclick="goPage(${page+1})" ${page===totalPages?'disabled':''}>›</button>`;
-  html+=`<button class="page-btn" onclick="goPage(${totalPages})" ${page===totalPages?'disabled':''}>»</button>`;
-  pag.innerHTML=html;
-}
-
-function goPage(p){page=p;renderClientsTable();}
-
-// DETAIL PANEL
-async function openDetail(cardId){
-  selectedCardId=cardId;
-  let c=allClients.find(x=>x.id===cardId);
-  if(!c){
-    try{const r=await fetch(`${API}/api/admin/customers/${cardId}?pin=${PIN}`);c=await r.json();}
-    catch(e){return;}
-  }
-  fillDetailPanel(c);
-  document.getElementById('detail-overlay').classList.add('open');
-  showDetailTab('info',document.querySelector('.detail-tab[data-tab="info"]'));
-}
-
-function fillDetailPanel(c){
-  const ini=((c.firstName||'?')[0]+((c.lastName||'')[0]||'')).toUpperCase();
-  document.getElementById('dp-avatar').textContent=ini||'?';
-  document.getElementById('dp-title').textContent=`${c.firstName||''} ${c.lastName||''}`.trim();
-  document.getElementById('dp-name').textContent=`${c.firstName||''} ${c.lastName||''}`.trim();
-  document.getElementById('dp-email').textContent=c.email||'';
-  document.getElementById('dp-phone').textContent=c.phone||'–';
-  document.getElementById('dp-birth').textContent=c.birthDate||'–';
-  document.getElementById('dp-cardnum').textContent=(c.cardNumber||c.id?.slice(0,8)||'').toUpperCase();
-  document.getElementById('dp-created').textContent=fmtDate(c.createdAt);
-  document.getElementById('dp-active').innerHTML=c.cardActive!==false?'<span class="chip chip-green">Activa</span>':'<span class="chip chip-red">Inactiva</span>';
-  document.getElementById('dp-optin').textContent=c.optInEmail?'✅ Sí':'❌ No';
-  document.getElementById('dp-stamps').textContent=`${c.stamps||0} / ${SMAX}`;
-  document.getElementById('dp-total-stamps').textContent=c.totalStamps||0;
-  document.getElementById('dp-balance').textContent=c.awardBalance||0;
-  document.getElementById('dp-redeemed').textContent=c.rewardsRedeemed||0;
-  document.getElementById('dp-card-link').href=c.cardUrl||`${API}/card/${c.id}`;
-  const circ=document.getElementById('dp-circles');
-  circ.innerHTML='';
-  for(let i=0;i<SMAX;i++){
-    const d=document.createElement('div');
-    d.className='stamp-dot'+(i<(c.stamps||0)?' filled':'');
-    d.textContent=i<(c.stamps||0)?'🍪':'○';
-    circ.appendChild(d);
-  }
-  document.getElementById('edit-card-id').value=c.id;
-  document.getElementById('edit-fn').value=c.firstName||'';
-  document.getElementById('edit-ln').value=c.lastName||'';
-  document.getElementById('edit-phone').value=c.phone||'';
-  document.getElementById('edit-birth').value=c.birthDate||'';
-  setToggle('edit-active',c.cardActive!==false);
-  setToggle('edit-optin',c.optIn!==false);
-  setToggle('edit-optin-email',c.optInEmail!==false);
-  setToggle('edit-optin-sms',c.optInSMS===true);
-}
-
-function closeDetail(e){
-  if(e&&e.target!==document.getElementById('detail-overlay'))return;
-  document.getElementById('detail-overlay').classList.remove('open');
-  selectedCardId=null;
-}
-
-function showDetailTab(tab,btn){
-  document.querySelectorAll('#dt-info,#dt-edit,#dt-history').forEach(el=>el.style.display='none');
-  document.querySelectorAll('.detail-tab').forEach(b=>{b.style.fontWeight='500';b.style.color='var(--brown-light)';b.style.borderBottom='2px solid transparent';});
-  document.getElementById('dt-'+tab).style.display='block';
-  if(btn){btn.style.fontWeight='600';btn.style.color='var(--brown)';btn.style.borderBottom='2px solid var(--brown)';}
-  if(tab==='history') loadDetailHistory();
-}
-
-async function loadDetailHistory(){
-  if(!selectedCardId) return;
-  const el=document.getElementById('dp-history-list');
-  el.innerHTML='<div class="loading">Cargando…</div>';
-  try{
-    const r=await fetch(`${API}/api/cards/${selectedCardId}/history?pin=${PIN}`);
-    const d=await r.json();
-    if(!d.history?.length){el.innerHTML='<div class="empty"><div class="icon">📋</div><p>Sin transacciones</p></div>';return;}
-    el.innerHTML=d.history.map(t=>{
-      const type=t.transaction_type||'stamp';
-      const icons={stamp:'🍪',redeem:'🎁',adjust:'✏️'};
-      const cls={stamp:'tx-stamp',redeem:'tx-redeem',adjust:'tx-adjust'};
-      return `<div class="history-item">
-        <div class="history-icon ${cls[type]||'tx-stamp'}">${icons[type]||'🍪'}</div>
-        <div class="history-info"><div class="note">${t.note||type}</div><div class="date">${fmtDate(t.created_at)}</div></div>
-        <div style="margin-left:auto;font-weight:700;color:${t.stamps_added>0?'var(--green)':t.stamps_added<0?'var(--red)':'var(--gold)'}">
-          ${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added===0?'🎁':t.stamps_added}</div>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML='<div style="color:var(--red)">Error</div>';}
-}
-
-async function quickStamp(n){if(selectedCardId) await doAddStamps(selectedCardId,n);}
-async function quickRedeem(){if(selectedCardId) await doRedeem(selectedCardId);}
-async function quickRemove(n){if(selectedCardId) await doRemoveStamps(selectedCardId,n);}
-
-async function saveEdit(){
-  const id=document.getElementById('edit-card-id').value;
-  if(!id) return;
-  const body={pin:PIN,first_name:document.getElementById('edit-fn').value,last_name:document.getElementById('edit-ln').value,
-    phone:document.getElementById('edit-phone').value,birth_date:document.getElementById('edit-birth').value,
-    card_active:isToggleOn('edit-active'),opt_in:isToggleOn('edit-optin'),
-    opt_in_email:isToggleOn('edit-optin-email'),opt_in_sms:isToggleOn('edit-optin-sms')};
-  try{
-    const r=await fetch(`${API}/api/admin/customers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.detail||'Error');
-    const idx=allClients.findIndex(c=>c.id===id);
-    if(idx>=0) allClients[idx]={...allClients[idx],...d.customer};
-    fillDetailPanel(d.customer);
-    renderClientsTable();
-    toast('Cliente actualizado ✅','success');
-    showDetailTab('info',document.querySelector('.detail-tab[data-tab="info"]'));
-  }catch(e){toast(e.message,'error');}
-}
-
-// STAMP SECTION
-async function searchStampClient(){
-  const q=document.getElementById('stamp-search').value.trim();
-  if(q.length<2){toast('Introduce al menos 2 caracteres');return;}
-  const el=document.getElementById('stamp-results');
-  el.innerHTML='<div class="loading">Buscando…</div>';
-  try{
-    const r=await fetch(`${API}/api/admin/search?pin=${PIN}&q=${encodeURIComponent(q)}`);
-    const d=await r.json();
-    if(!d.results?.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div><p>Sin resultados</p></div>';return;}
-    el.innerHTML=d.results.map(c=>`
-      <div onclick="selectStampClient('${c.id}')" style="padding:10px;border-radius:var(--radius-sm);border:2px solid var(--cream-border);margin-bottom:8px;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--cream-border)'">
-        <div style="font-weight:600">${c.firstName} ${c.lastName||''}</div>
-        <div style="font-size:.8rem;color:var(--brown-light)">${c.email}</div>
-        <div style="font-size:.8rem;margin-top:4px">Sellos: <b>${c.stamps}/${SMAX}</b> · Premios: <b>${c.awardBalance||0}</b></div>
-      </div>`).join('');
-  }catch(e){el.innerHTML=`<div style="color:var(--red)">Error: ${e.message}</div>`;}
-}
-
-function selectStampClient(cardId){
-  stampCardId=cardId;
-  const c=allClients.find(x=>x.id===cardId);
-  if(c) updateStampClientDisplay(c);
-  else fetch(`${API}/api/admin/customers/${cardId}?pin=${PIN}`).then(r=>r.json()).then(d=>updateStampClientDisplay(d));
-  document.getElementById('stamp-client-box').style.display='block';
-}
-
-function updateStampClientDisplay(c){
-  document.getElementById('stamp-client-name').textContent=`${c.firstName||''} ${c.lastName||''}`.trim();
-  document.getElementById('stamp-client-email').textContent=c.email||'';
-  const s=c.stamps||0;
-  document.getElementById('sc-stamps').textContent=`${s} / ${SMAX}`;
-  document.getElementById('sc-balance').textContent=c.awardBalance||0;
-  const circ=document.getElementById('sc-circles');
-  circ.innerHTML='';
-  for(let i=0;i<SMAX;i++){const d=document.createElement('div');d.className='stamp-dot'+(i<s?' filled':'');d.textContent=i<s?'🍪':'○';circ.appendChild(d);}
-  document.getElementById('sc-redeem-btn').disabled=(c.awardBalance||0)<1;
-  loadStampHistory();
-}
-
-async function loadStampHistory(){
-  if(!stampCardId) return;
-  const el=document.getElementById('sc-history');
-  try{
-    const r=await fetch(`${API}/api/cards/${stampCardId}/history?pin=${PIN}`);
-    const d=await r.json();
-    if(!d.history?.length){el.innerHTML='<p style="color:var(--brown-light);font-size:.82rem">Sin transacciones</p>';return;}
-    el.innerHTML=d.history.slice(0,15).map(t=>{
-      const type=t.transaction_type||'stamp';
-      const icons={stamp:'🍪',redeem:'🎁',adjust:'✏️'};
-      return `<div class="history-item">
-        <div class="history-icon tx-${type}">${icons[type]||'🍪'}</div>
-        <div class="history-info"><div class="note">${t.note||type}</div><div class="date">${fmtDate(t.created_at)}</div></div>
-        <div style="margin-left:auto;font-weight:700">${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added===0?'🎁':t.stamps_added}</div>
-      </div>`;
-    }).join('');
+    // Teaser on dashboard
+    const teaser = document.getElementById('dash-bdays');
+    if((d.today||[]).length>0){
+      teaser.innerHTML=`<div class="card"><h3 style="font-size:.95rem;font-weight:600;margin-bottom:10px">🎂 Cumpleaños hoy (${d.today.length})</h3><div class="birthday-list">${
+        d.today.slice(0,3).map(c=>`<div class="birthday-item today" onclick="openDrawer('${c.id||c.card_id}')"><div class="birthday-info"><div class="name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="date">${c.email}</div></div><span class="birthday-badge">¡Hoy! 🎂</span></div>`).join('')
+      }</div></div>`;
+    }else teaser.innerHTML='';
   }catch(e){}
 }
 
-async function addStampsClient(){if(!stampCardId)return;const n=parseInt(document.getElementById('add-stamps-n').value)||1;await doAddStamps(stampCardId,n);refreshStampClient();}
-async function removeStampsClient(){if(!stampCardId)return;const n=parseInt(document.getElementById('rem-stamps-n').value)||1;await doRemoveStamps(stampCardId,n);refreshStampClient();}
-async function redeemStampClient(){if(!stampCardId)return;await doRedeem(stampCardId);refreshStampClient();}
+async function loadBirthdays(){
+  const r = await fetch(`${BASE}/api/admin/birthdays?pin=${PIN}`);
+  const d = await r.json();
+  const render=(list,empty)=>list.length===0?`<div class="empty-state">${empty}</div>`:list.map(c=>`
+    <div class="birthday-item today" onclick="openDrawer('${c.id||c.card_id}')">
+      <div class="birthday-info"><div class="name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="date">${c.email} · ${c.birthDate||c.birth_date||''}</div></div>
+      <span class="birthday-badge">🎂</span>
+    </div>`).join('');
+  document.getElementById('bday-today').innerHTML=render(d.today||[],'Nadie cumple años hoy');
+  document.getElementById('bday-month').innerHTML=render(d.this_month||[],'Sin cumpleaños este mes');
+}
 
-async function refreshStampClient(){
-  const r=await fetch(`${API}/api/admin/customers/${stampCardId}?pin=${PIN}`);
+// ── BUSINESS INTELLIGENCE ──────────────────────────────────────────────────
+async function loadBI(){
+  const [statsR, actR, topR] = await Promise.all([
+    fetch(`${BASE}/api/admin/stats?pin=${PIN}`),
+    fetch(`${BASE}/api/admin/activity?pin=${PIN}&days=180`),
+    fetch(`${BASE}/api/admin/top-customers?pin=${PIN}&limit=10`)
+  ]);
+  const stats = await statsR.json();
+  const activity = await actR.json();
+  const top = await topR.json();
+
+  // KPI cards
+  const avgStamps = stats.total_clients>0?(stats.total_stamps/stats.total_clients).toFixed(1):0;
+  const conversion = stats.total_clients>0?Math.round((stats.total_rewards||0)/stats.total_clients*100):0;
+  document.getElementById('bi-avg-stamps').textContent=avgStamps;
+  document.getElementById('bi-conversion').textContent=conversion+'%';
+  document.getElementById('bi-active-cards').textContent=stats.total_clients||0;
+
+  // Monthly chart (aggregate by month)
+  const monthlyMap={};
+  const newMap={};
+  activity.forEach(d=>{
+    const m=d.date.slice(0,7);
+    monthlyMap[m]=(monthlyMap[m]||0)+d.stamps;
+    newMap[m]=(newMap[m]||0)+d.new_clients;
+  });
+  const months=Object.keys(monthlyMap).sort().slice(-6);
+  const monthLabels=months.map(m=>{const[y,mo]=m.split('-');return['En','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][parseInt(mo)-1]+' '+y.slice(2);});
+
+  const ctx2=document.getElementById('monthly-chart').getContext('2d');
+  if(monthlyChart) monthlyChart.destroy();
+  monthlyChart=new Chart(ctx2,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Sellos',data:months.map(m=>monthlyMap[m]||0),backgroundColor:'rgba(58,52,38,.75)',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'}}}}});
+
+  // New clients chart
+  const ctx4=document.getElementById('new-clients-chart').getContext('2d');
+  if(newClientsChart) newClientsChart.destroy();
+  newClientsChart=new Chart(ctx4,{type:'line',data:{labels:monthLabels,datasets:[{label:'Nuevos clientes',data:months.map(m=>newMap[m]||0),borderColor:'#3A3426',backgroundColor:'rgba(58,52,38,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#3A3426'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1}}}}});
+
+  // Distribution chart (placeholder – stamps distribution 0-2, 3-5, 6-8, 9-10)
+  // We'll use top list data as proxy
+  const ctx3=document.getElementById('dist-chart').getContext('2d');
+  if(distChart) distChart.destroy();
+  const bins=[0,0,0,0]; // 0-2, 3-5, 6-8, 9-10
+  // We use top customers as sample (in real scenario would need full dataset)
+  distChart=new Chart(ctx3,{type:'doughnut',data:{labels:['0-2 sellos','3-5 sellos','6-8 sellos','9-10 sellos'],datasets:[{data:[30,35,25,10],backgroundColor:['#e8d9a0','#d4a017','#6b5e47','#3A3426'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}}}});
+
+  // Top list
+  loadTopCustomers(10,'bi');
+}
+
+// ── CLIENTS ───────────────────────────────────────────────────────────────
+async function loadClients(page=1, q=''){
+  currentPage=page;
+  if(q!==undefined&&q!=='__keep') searchQuery=q;
+  const url=searchQuery
+    ?`${BASE}/api/admin/search?pin=${PIN}&q=${encodeURIComponent(searchQuery)}&page=${page}&limit=20`
+    :`${BASE}/api/admin/customers?pin=${PIN}&page=${page}&page_size=20`;
+  const r=await fetch(url); const d=await r.json();
+  // Backend uses camelCase from card_to_dict; list returns {customers,total,total_pages} or {results:[...]}
+  const items=d.items||d.results||d.customers||d||[];
+  totalPages=d.total_pages||d.pages||1;
+  const total=d.total||items.length;
+  const tbody=document.getElementById('clients-tbody');
+  if(items.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--brown-light)">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=items.map(c=>`
+    <tr style="cursor:pointer" onclick="openDrawer('${c.id||c.card_id}')">
+      <td><strong>${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</strong></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.email}</td>
+      <td><span style="font-weight:700">${c.stamps||0}</span> / ${c.stampsOnCard||c.stamps_per_reward||10}</td>
+      <td>${c.awardBalance||c.award_balance||0} 🎁</td>
+      <td><span class="badge ${c.cardActive!==false&&c.card_active!==false?'badge-green':'badge-red'}">${c.cardActive!==false&&c.card_active!==false?'Activa':'Inactiva'}</span></td>
+      <td style="font-size:.78rem;color:var(--brown-light)">${(c.createdAt||c.created_at||'').slice(0,10)}</td>
+      <td><button class="btn-sm btn-ghost" onclick="event.stopPropagation();openDrawer('${c.id||c.card_id}')">→</button></td>
+    </tr>`).join('');
+  renderPagination(page,totalPages);
+  document.getElementById('clients-total-label').textContent=`${total} cliente${total!==1?'s':''}`;
+}
+
+function searchClients(){
+  searchQuery=document.getElementById('search-input').value.trim();
+  loadClients(1,searchQuery);
+}
+
+function renderPagination(current,total){
+  const el=document.getElementById('pagination');
+  if(total<=1){el.innerHTML='';return;}
+  let html='';
+  const prev=current>1?`<button class="page-btn" onclick="loadClients(${current-1})">‹</button>`:'';
+  const next=current<total?`<button class="page-btn" onclick="loadClients(${current+1})">›</button>`:'';
+  const pages=[1];
+  if(current>3) pages.push('…');
+  for(let i=Math.max(2,current-1);i<=Math.min(total-1,current+1);i++) pages.push(i);
+  if(current<total-2) pages.push('…');
+  if(total>1) pages.push(total);
+  html=prev+pages.map(p=>p==='…'?`<span class="page-info">…</span>`:`<button class="page-btn ${p===current?'active':''}" onclick="loadClients(${p})">${p}</button>`).join('')+next;
+  el.innerHTML=html;
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────
+async function openDrawer(cardId){
+  currentCardId=cardId;
+  document.getElementById('drawer-overlay').classList.add('open');
+  showTab('tab-general');
+  document.getElementById('d-activity-log').innerHTML='<div class="empty-state">Cargando...</div>';
+  await loadDrawerData(cardId);
+}
+
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('open');
+  currentCardId=null;
+}
+
+async function loadDrawerData(cardId){
+  const r=await fetch(`${BASE}/api/admin/customers/${cardId}?pin=${PIN}`);
   const c=await r.json();
-  updateStampClientDisplay(c);
-  const idx=allClients.findIndex(x=>x.id===stampCardId);
-  if(idx>=0) allClients[idx]={...allClients[idx],...c};
-  if(selectedCardId===stampCardId) fillDetailPanel(c);
+  if(c.detail){showToast('Error al cargar cliente','error');return;}
+  // Backend uses camelCase via card_to_dict
+  const fn=c.firstName||c.first_name||'';
+  const ln=c.lastName||c.last_name||'';
+  currentCustomerName=fn;
+  document.getElementById('d-name').textContent=`${fn} ${ln}`.trim();
+  document.getElementById('d-email').textContent=c.email;
+  document.getElementById('d-info-email').textContent=c.email;
+  document.getElementById('d-info-phone').textContent=c.phone||'–';
+  document.getElementById('d-info-birth').textContent=c.birthDate||c.birth_date||'–';
+  document.getElementById('d-info-origin').textContent=c.origin||'–';
+  const created=c.createdAt||c.created_at||'';
+  document.getElementById('d-info-created').textContent=created.slice(0,10)||'–';
+  const spr=c.stampsOnCard||c.stamps_per_reward||10;
+  const stamps=c.stamps||0;
+  const totalStamps=c.totalStamps||c.total_stamps||0;
+  const awardBal=c.awardBalance||c.award_balance||0;
+  document.getElementById('d-stamps-num').textContent=stamps;
+  document.getElementById('d-total-stamps').textContent=totalStamps;
+  document.getElementById('d-awards').textContent=awardBal;
+  document.getElementById('d-award-count-stamps').textContent=awardBal;
+  // Stamps grid
+  let gridHtml='';
+  for(let i=0;i<spr;i++) gridHtml+=`<div class="stamp-dot ${i<stamps?'filled':''}">${i<stamps?'🍪':'○'}</div>`;
+  document.getElementById('d-stamps-grid').innerHTML=gridHtml;
+  // Notes
+  const notes=c.notes||'';
+  if(notes){document.getElementById('d-notes').textContent=notes;document.getElementById('d-notes-block').style.display='block';}else{document.getElementById('d-notes-block').style.display='none';}
+  // Award banner
+  if(awardBal>0){document.getElementById('d-award-count').textContent=awardBal;document.getElementById('d-award-banner').style.display='block';}else document.getElementById('d-award-banner').style.display='none';
+  // Edit form
+  document.getElementById('e-first').value=fn;
+  document.getElementById('e-last').value=ln;
+  document.getElementById('e-email').value=c.email||'';
+  document.getElementById('e-phone').value=c.phone||'';
+  document.getElementById('e-birth').value=c.birthDate||c.birth_date||'';
+  document.getElementById('e-anniv').value=c.anniversaryDate||c.anniversary_date||'';
+  document.getElementById('e-lang').value=c.language||'es';
+  document.getElementById('e-notes').value=notes;
+  document.getElementById('e-optin-email').checked=c.optInEmail!==false&&c.opt_in_email!==false;
+  document.getElementById('e-optin-sms').checked=c.optInSMS===true||c.opt_in_sms===true;
+  document.getElementById('e-active').checked=c.cardActive!==false&&c.card_active!==false;
+  // Load activity
+  loadActivity_client(cardId);
 }
 
-// CRUD
-async function doAddStamps(cardId,n){
-  try{
-    const r=await fetch(`${API}/api/cards/${cardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.detail||'Error');
-    toast(`+${n} sello(s) añadidos 🍪`,'success');
-    if(d.awards_earned>0) toast(`¡Premio ganado! 🎉 (+${d.awards_earned})`,'success');
-    syncClient(cardId,{stamps:d.stamps,totalStamps:d.total_stamps,awardBalance:d.award_balance});
-  }catch(e){toast(e.message,'error');}
+async function loadActivity_client(cardId){
+  const r=await fetch(`${BASE}/api/cards/${cardId}/history?limit=30`);
+  const data=await r.json();
+  const log=document.getElementById('d-activity-log');
+  if(!data||data.length===0){log.innerHTML='<div class="empty-state">Sin actividad registrada</div>';return;}
+  const icons={stamp:'🍪',redeem:'🎁',adjust:'⚙',register:'👋'};
+  const labels={stamp:'Sellos añadidos',redeem:'Premio canjeado',adjust:'Ajuste manual',register:'Alta tarjeta'};
+  log.innerHTML=data.map(t=>`
+    <div class="activity-item">
+      <div class="activity-dot ${t.transaction_type||'stamp'}">${icons[t.transaction_type||'stamp']||'🍪'}</div>
+      <div class="activity-content">
+        <div class="a-title">${labels[t.transaction_type||'stamp']||t.transaction_type} ${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added}</div>
+        <div class="a-date">${t.created_at?new Date(t.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''} ${t.store?'· '+t.store:''}</div>
+      </div>
+    </div>`).join('');
 }
 
-async function doRemoveStamps(cardId,n){
-  try{
-    const r=await fetch(`${API}/api/cards/${cardId}/remove-stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.detail||'Error');
-    toast(`-${n} sello(s) eliminados`,'success');
-    syncClient(cardId,{stamps:d.stamps});
-  }catch(e){toast(e.message,'error');}
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx={'tab-general':0,'tab-stamps':1,'tab-activity':2,'tab-edit':3,'tab-danger':4};
+  document.querySelectorAll('.tab')[idx[id]].classList.add('active');
+  if(id==='tab-activity'&&currentCardId) loadActivity_client(currentCardId);
 }
 
-async function doRedeem(cardId){
-  try{
-    const r=await fetch(`${API}/api/cards/${cardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.detail||'Error');
-    toast('Premio canjeado 🍪🎉','success');
-    syncClient(cardId,{awardBalance:d.award_balance,rewardsRedeemed:d.rewards_redeemed});
-  }catch(e){toast(e.message,'error');}
+// ── STAMPS ────────────────────────────────────────────────────────────────
+async function addStampsFromDrawer(){
+  const n=parseInt(document.getElementById('d-stamps-input').value);
+  if(!n||n<1){showMsg('d-stamp-msg','Introduce al menos 1 sello','red');return;}
+  const r=await fetch(`${BASE}/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});
+  const d=await r.json();
+  if(d.detail){showMsg('d-stamp-msg',d.detail,'red');return;}
+  showMsg('d-stamp-msg',`+${n} sello${n>1?'s':''} añadido${n>1?'s':''}. Total: ${d.stamps}. Premios: ${d.award_balance}`,'green');
+  document.getElementById('d-stamps-input').value='';
+  await loadDrawerData(currentCardId);
+  showToast(`+${n} sello${n>1?'s':''} añadido${n>1?'s':''} ✓`,'success');
 }
 
-function syncClient(cardId,updates){
-  const idx=allClients.findIndex(c=>c.id===cardId);
-  if(idx>=0){Object.assign(allClients[idx],updates);filtered=allClients.filter(c=>filtered.some(f=>f.id===c.id));}
-  if(selectedCardId===cardId){const c=allClients.find(x=>x.id===cardId);if(c)fillDetailPanel(c);}
-  renderClientsTable();
+async function removeStampsFromDrawer(){
+  const n=parseInt(document.getElementById('d-stamps-input').value);
+  if(!n||n<1){showMsg('d-stamp-msg','Introduce cantidad a quitar','red');return;}
+  const r=await fetch(`${BASE}/api/cards/${currentCardId}/remove-stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});
+  const d=await r.json();
+  if(d.detail){showMsg('d-stamp-msg',d.detail,'red');return;}
+  showMsg('d-stamp-msg',`-${n} sello${n>1?'s':''} eliminado${n>1?'s':''}. Total: ${d.stamps}`,'green');
+  await loadDrawerData(currentCardId);
 }
 
-// NUEVO CLIENTE
+async function redeemFromDrawer(){
+  const r=await fetch(`${BASE}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});
+  const d=await r.json();
+  if(d.detail){showToast(d.detail,'error');return;}
+  showToast(`Premio canjeado 🎁 Quedan ${d.award_balance}`,'success');
+  await loadDrawerData(currentCardId);
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────────
+async function saveEdit(){
+  const payload={
+    first_name:document.getElementById('e-first').value,
+    last_name:document.getElementById('e-last').value,
+    email:document.getElementById('e-email').value,
+    phone:document.getElementById('e-phone').value,
+    birth_date:document.getElementById('e-birth').value,
+    anniversary_date:document.getElementById('e-anniv').value,
+    language:document.getElementById('e-lang').value,
+    notes:document.getElementById('e-notes').value,
+    opt_in_email:document.getElementById('e-optin-email').checked,
+    opt_in_sms:document.getElementById('e-optin-sms').checked,
+    card_active:document.getElementById('e-active').checked,
+  };
+  const r=await fetch(`${BASE}/api/admin/customers/${currentCardId}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${API_KEY_PLACEHOLDER}`},body:JSON.stringify({...payload,pin:PIN})});
+  if(r.ok){showMsg('e-msg','Guardado ✓','green');await loadDrawerData(currentCardId);showToast('Cliente actualizado ✓','success');}
+  else{const d=await r.json();showMsg('e-msg',d.detail||'Error','red');}
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────
+async function deleteCustomer(){
+  const confirm_name=document.getElementById('d-confirm-name').value.trim();
+  if(confirm_name.toLowerCase()!==currentCustomerName.toLowerCase()){showToast('El nombre no coincide','error');return;}
+  const r=await fetch(`${BASE}/api/admin/customers/${currentCardId}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});
+  if(r.ok){showToast('Cliente eliminado','success');closeDrawer();loadClients(currentPage);}
+  else{const d=await r.json();showToast(d.detail||'Error','error');}
+}
+
+// ── NEW CLIENT ────────────────────────────────────────────────────────────
 async function createClient(){
-  const fn=document.getElementById('nc-fn').value.trim();
-  const email=document.getElementById('nc-email').value.trim();
-  if(!fn||!email){toast('Nombre y email son obligatorios','error');return;}
+  const payload={
+    first_name:document.getElementById('nc-first').value.trim(),
+    last_name:document.getElementById('nc-last').value.trim(),
+    email:document.getElementById('nc-email').value.trim(),
+    phone:document.getElementById('nc-phone').value.trim(),
+    birth_date:document.getElementById('nc-birth').value,
+    origin:document.getElementById('nc-origin').value,
+    language:document.getElementById('nc-lang').value,
+    notes:document.getElementById('nc-notes').value.trim(),
+    opt_in_email:document.getElementById('nc-optin-email').checked,
+    opt_in_sms:document.getElementById('nc-optin-sms').checked,
+    pin:PIN
+  };
+  if(!payload.first_name||!payload.email){showMsg('nc-msg','Nombre y email son obligatorios','red');return;}
+  const r=await fetch(`${BASE}/api/admin/customers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();
+  if(r.ok){showMsg('nc-msg',`Cliente creado ✓ ID: ${d.card_id||d.id}`,'green');showToast('Cliente creado ✓','success');clearNewClient();}
+  else showMsg('nc-msg',d.detail||'Error al crear','red');
+}
+
+function clearNewClient(){
+  ['nc-first','nc-last','nc-email','nc-phone','nc-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nc-birth').value='';
+  document.getElementById('nc-optin-email').checked=true;
+  document.getElementById('nc-optin-sms').checked=false;
+  document.getElementById('nc-msg').textContent='';
+}
+
+// ── IMPORT CSV ────────────────────────────────────────────────────────────
+function handleDrop(e){
+  e.preventDefault();document.getElementById('drop-zone').classList.remove('over');
+  const file=e.dataTransfer.files[0];
+  if(file) processCSVFile(file);
+}
+function handleFileSelect(e){ const file=e.target.files[0];if(file)processCSVFile(file);}
+
+function processCSVFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    const lines=text.split('\n').filter(l=>l.trim());
+    if(lines.length<2){showToast('CSV vacío o sin cabeceras','error');return;}
+    const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/['"]/g,''));
+    const rows=[];const errors=[];
+    for(let i=1;i<lines.length;i++){
+      const vals=lines[i].split(',').map(v=>v.trim().replace(/^["']|["']$/g,''));
+      if(vals.length<2)continue;
+      const row={};
+      headers.forEach((h,j)=>{row[h]=vals[j]||'';});
+      if(!row.first_name&&!row['nombre']){errors.push(`Fila ${i+1}: sin nombre`);continue;}
+      if(!row.email){errors.push(`Fila ${i+1}: sin email`);continue;}
+      if(row['nombre']&&!row.first_name) row.first_name=row['nombre'];
+      if(row['apellido']&&!row.last_name) row.last_name=row['apellido'];
+      if(row['telefono']&&!row.phone) row.phone=row['telefono'];
+      rows.push(row);
+    }
+    importData=rows;
+    document.getElementById('imp-total').textContent=lines.length-1;
+    document.getElementById('imp-valid').textContent=rows.length;
+    document.getElementById('imp-errors').textContent=errors.length;
+    document.getElementById('imp-errors-list').textContent=errors.slice(0,10).join('\n');
+    document.getElementById('import-preview').style.display='block';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+async function doImport(){
+  const btn=document.getElementById('imp-btn');
+  btn.disabled=true;btn.textContent='Importando…';
+  document.getElementById('imp-msg').textContent='';
   try{
-    const r=await fetch(`${API}/api/admin/customers`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pin:PIN,first_name:fn,last_name:document.getElementById('nc-ln').value.trim(),
-        email,phone:document.getElementById('nc-phone').value.trim(),birth_date:document.getElementById('nc-birth').value,
-        opt_in:isToggleOn('nc-optin'),opt_in_email:isToggleOn('nc-optin')})});
+    const r=await fetch(`${BASE}/api/admin/import-csv`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,customers:importData})});
     const d=await r.json();
-    if(!r.ok) throw new Error(d.detail||'Error');
-    document.getElementById('nc-result').innerHTML=`<div style="background:#c8e6c9;border-radius:var(--radius-sm);padding:12px">✅ Tarjeta creada: <a href="${d.card_url}" target="_blank" style="color:var(--green);font-weight:600">${d.card_url}</a></div>`;
-    if(d.customer){allClients.unshift(d.customer);filtered=[...allClients];document.getElementById('nav-count').textContent=allClients.length;}
-    toast('Cliente creado 🍪','success');
-    ['nc-fn','nc-ln','nc-email','nc-phone'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('nc-birth').value='';
-  }catch(e){document.getElementById('nc-result').innerHTML=`<div style="background:#ffcdd2;border-radius:var(--radius-sm);padding:12px;color:var(--red)">❌ ${e.message}</div>`;}
+    if(r.ok){
+      document.getElementById('imp-msg').innerHTML=`<span style="color:var(--green);font-weight:600">✓ ${d.created} creados · ${d.skipped} ya existían</span>`;
+      showToast(`${d.created} clientes importados ✓`,'success');
+    }else document.getElementById('imp-msg').innerHTML=`<span style="color:var(--red)">${d.detail||'Error al importar'}</span>`;
+  }catch(e){document.getElementById('imp-msg').textContent='Error de conexión';}
+  btn.disabled=false;btn.textContent='Importar clientes →';
 }
 
-function exportCSV(){window.open(`${API}/api/admin/export-csv?pin=${PIN}`,'_blank');}
-
-// UTILS
-function fmtDate(iso){
-  if(!iso) return '–';
-  try{return new Date(iso).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});}
-  catch{return iso.slice(0,10);}
+function downloadTemplate(){
+  const csv='first_name,last_name,email,phone,birth_date,stamps,notes,origin\nMaría,García,maria@ejemplo.com,+34600000000,1990-06-15,0,,Landing\n';
+  const b=new Blob([csv],{type:'text/csv'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download='plantilla-clientes-sukie.csv';a.click();
+  URL.revokeObjectURL(u);
 }
-function toggleBtn(el){el.classList.toggle('on');}
-function setToggle(id,val){const el=document.getElementById(id);if(!el)return;val?el.classList.add('on'):el.classList.remove('on');}
-function isToggleOn(id){return document.getElementById(id)?.classList.contains('on')??false;}
-function toast(msg,type='info'){
-  const ct=document.getElementById('toast');
-  const el=document.createElement('div');
-  el.className=`toast-item ${type}`;el.textContent=msg;ct.appendChild(el);
-  setTimeout(()=>el.remove(),3500);
+
+// ── EXPORT ────────────────────────────────────────────────────────────────
+async function exportCSV(){
+  showToast('Preparando exportación…');
+  window.open(`${BASE}/api/admin/export-csv?pin=${PIN}`,'_blank');
+}
+
+// ── EDIT API KEY (patch for PUT) ───────────────────────────────────────────
+// Since we use PIN auth for PUT as well, we patch the API key placeholder
+const API_KEY_PLACEHOLDER = 'sukie-cookie-2026-secret';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function showMsg(id,msg,color){
+  const el=document.getElementById(id);
+  el.textContent=msg;
+  el.style.color=color==='green'?'var(--green)':'var(--red)';
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast '+(type==='success'?'success':type==='error'?'error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
 }
 </script>
 </body>
