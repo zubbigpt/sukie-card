@@ -1020,7 +1020,8 @@ tr:hover td{background:rgba(255,243,207,.4)}
 
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────
-const BASE = window.location.origin;
+const BASE = '{{ biz_api_base or "" }}' || window.location.origin;
+const BIZ_SLUG = '{{ biz_slug or "" }}';
 let PIN = '';
 let currentPage = 1;
 let totalPages = 1;

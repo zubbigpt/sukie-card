@@ -82,3 +82,25 @@ class Referral(Base):
     bonus_stamps  = Column(Integer, default=2)
     created_at    = Column(DateTime(timezone=True), server_default=func.now())
     used_at       = Column(DateTime(timezone=True), nullable=True)
+
+
+class Business(Base):
+    __tablename__ = "businesses"
+
+    id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name            = Column(String, nullable=False)          # "Sukie Cookie"
+    slug            = Column(String, unique=True, nullable=False)  # "sukiecookie"
+    email           = Column(String, unique=True, nullable=False)  # owner email
+    google_id       = Column(String, nullable=True, unique=True)   # Google OAuth sub
+    plan            = Column(String, default="free")           # free | pro | enterprise
+    card_title      = Column(String, default="Mi Tarjeta")
+    stamps_per_reward = Column(Integer, default=10)
+    admin_pin       = Column(String, nullable=False)           # hashed or plain for now
+    api_key         = Column(String, nullable=False)
+    active          = Column(Boolean, default=True)
+    logo_url        = Column(String, nullable=True)
+    primary_color   = Column(String, default="#3A3426")
+    accent_color    = Column(String, default="#FFF5B6")
+    industry        = Column(String, nullable=True)            # café | retail | beauty | other
+    created_at      = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

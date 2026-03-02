@@ -13,6 +13,7 @@ from datetime import datetime, timezone, timedelta, date
 
 import smtplib
 import secrets
+import hashlib
 import string
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -85,6 +86,14 @@ def run_migrations():
         "CREATE TABLE IF NOT EXISTS referrals (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), referrer_card UUID REFERENCES loyalty_cards(id), referred_card UUID REFERENCES loyalty_cards(id), code VARCHAR(12) UNIQUE NOT NULL, used BOOLEAN DEFAULT FALSE, bonus_stamps INTEGER DEFAULT 2, created_at TIMESTAMPTZ DEFAULT NOW(), used_at TIMESTAMPTZ)",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS referral_bonus_total INTEGER DEFAULT 0",
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS tier VARCHAR DEFAULT 'bronze'",
+        # ZubCard SaaS Platform
+        "CREATE TABLE IF NOT EXISTS businesses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR NOT NULL, slug VARCHAR UNIQUE NOT NULL, email VARCHAR UNIQUE NOT NULL, google_id VARCHAR UNIQUE, plan VARCHAR DEFAULT 'free', card_title VARCHAR DEFAULT 'Mi Tarjeta', stamps_per_reward INTEGER DEFAULT 10, admin_pin VARCHAR NOT NULL, api_key VARCHAR NOT NULL, active BOOLEAN DEFAULT TRUE, logo_url VARCHAR, primary_color VARCHAR DEFAULT '#3A3426', accent_color VARCHAR DEFAULT '#FFF5B6', industry VARCHAR, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())",
+        "INSERT INTO businesses (id, name, slug, email, admin_pin, api_key, plan, primary_color, accent_color, industry, card_title, stamps_per_reward) SELECT '00000000-0000-0000-0000-000000000001'::uuid, 'Sukie Cookie', 'sukiecookie', 'zubbigpt@gmail.com', '5678', 'sukie-cookie-2026-secret', 'pro', '#3A3426', '#FFF5B6', 'bakery', 'Sukie Card', 10 WHERE NOT EXISTS (SELECT 1 FROM businesses WHERE slug='sukiecookie')",
+        "ALTER TABLE customers ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
+        "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
+        "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
+        "UPDATE card_config SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
+
     ]
     from database import SessionLocal
     db = SessionLocal()
@@ -151,6 +160,41 @@ def get_or_create_referral_code(card_id, db: Session) -> str:
         db.commit()
         db.refresh(ref)
     return ref.code
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ZUBCARD BUSINESS HELPERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_business_by_slug(slug: str, db: Session):
+    return db.query(models.Business).filter(
+        models.Business.slug == slug,
+        models.Business.active == True
+    ).first()
+
+
+def business_api_key_auth(request: Request, business: models.Business):
+    auth = request.headers.get("Authorization", "")
+    if auth != f"Bearer {business.api_key}" and auth != f"Bearer {API_KEY}":
+        raise HTTPException(status_code=401, detail="No autorizado")
+
+
+def generate_api_key() -> str:
+    return "zub-" + secrets.token_urlsafe(24)
+
+
+def generate_slug(name: str) -> str:
+    import re as regex_mod
+    slug = name.lower()
+    slug = regex_mod.sub(r'[áàäâ]', 'a', slug)
+    slug = regex_mod.sub(r'[éèëê]', 'e', slug)
+    slug = regex_mod.sub(r'[íìïî]', 'i', slug)
+    slug = regex_mod.sub(r'[óòöô]', 'o', slug)
+    slug = regex_mod.sub(r'[úùüû]', 'u', slug)
+    slug = regex_mod.sub(r'[ñ]', 'n', slug)
+    slug = regex_mod.sub(r'[^a-z0-9]', '', slug)
+    return slug[:30]
+
 
 
 def send_email(to_email: str, subject: str, html_body: str) -> bool:
@@ -1250,6 +1294,184 @@ def get_card_tier(card_id: str, db: Session = Depends(get_db)):
 def get_vapid_public():
     return {"key": VAPID_PUBLIC or None}
 
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ZUBCARD SAAS PLATFORM
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/", response_class=HTMLResponse)
+async def zubcard_landing(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/app/login", response_class=HTMLResponse)
+async def app_login(request: Request):
+    return templates.TemplateResponse("app_login.html", {"request": request})
+
+
+@app.get("/app/register", response_class=HTMLResponse)
+async def app_register_page(request: Request):
+    return templates.TemplateResponse("app_register.html", {"request": request})
+
+
+@app.post("/api/app/register")
+async def register_business(request: Request, db: Session = Depends(get_db)):
+    """Register a new business on ZubCard"""
+    body = await request.json()
+    name  = (body.get("name") or "").strip()
+    email = (body.get("email") or "").strip().lower()
+    pin   = str(body.get("pin") or "").strip()
+    industry = body.get("industry", "retail")
+    
+    if not name or not email or len(pin) < 4:
+        raise HTTPException(status_code=400, detail="Nombre, email y PIN (4 dígitos) requeridos")
+    
+    if db.query(models.Business).filter(models.Business.email == email).first():
+        raise HTTPException(status_code=409, detail="Ya existe una cuenta con ese email")
+    
+    # Generate unique slug
+    base_slug = generate_slug(name)
+    slug = base_slug
+    counter = 1
+    while db.query(models.Business).filter(models.Business.slug == slug).first():
+        slug = f"{base_slug}{counter}"
+        counter += 1
+    
+    business = models.Business(
+        name      = name,
+        slug      = slug,
+        email     = email,
+        admin_pin = pin,
+        api_key   = generate_api_key(),
+        industry  = industry,
+        plan      = "free",
+    )
+    db.add(business)
+    db.commit()
+    db.refresh(business)
+    
+    # Create their default card config
+    db.execute(text(
+        "INSERT INTO card_config (id, config, business_id) VALUES (gen_random_uuid(), '{}', :bid)"
+    ), {"bid": str(business.id)})
+    db.commit()
+    
+    return {
+        "message":  "Negocio registrado",
+        "slug":     slug,
+        "name":     name,
+        "dashboard_url": f"/biz/{slug}/dashboard",
+        "api_key":  business.api_key,
+    }
+
+
+@app.post("/api/app/login")
+async def login_business(request: Request, db: Session = Depends(get_db)):
+    """Login to business account"""
+    body  = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    pin   = str(body.get("pin") or "").strip()
+    
+    biz = db.query(models.Business).filter(
+        models.Business.email == email,
+        models.Business.active == True
+    ).first()
+    
+    if not biz or biz.admin_pin != pin:
+        raise HTTPException(status_code=401, detail="Email o PIN incorrectos")
+    
+    return {
+        "message":       "Login correcto",
+        "slug":          biz.slug,
+        "name":          biz.name,
+        "plan":          biz.plan,
+        "dashboard_url": f"/biz/{biz.slug}/dashboard",
+    }
+
+
+@app.get("/biz/{slug}/dashboard", response_class=HTMLResponse)
+async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Business-specific admin dashboard"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return templates.TemplateResponse("dashboard_admin.html", {
+        "request":    request,
+        "biz_slug":   slug,
+        "biz_api_base": BASE_URL,
+        "biz_name":   biz.name,
+        "biz_id":     str(biz.id),
+        "biz_pin":    "",  # don't expose - let JS handle login
+        "biz_api_key": biz.api_key,
+        "stamps_per_reward": biz.stamps_per_reward,
+        "card_title": biz.card_title,
+    })
+
+
+@app.get("/biz/{slug}/register", response_class=HTMLResponse)
+async def biz_register_page(slug: str, request: Request, ref: str = "", db: Session = Depends(get_db)):
+    """Business-specific customer registration page"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return templates.TemplateResponse("register.html", {
+        "request":           request,
+        "card_title":        biz.card_title,
+        "api_base":          BASE_URL,
+        "stamps_per_reward": biz.stamps_per_reward,
+        "biz_slug":          slug,
+        "ref":               ref,
+    })
+
+
+@app.get("/biz/{slug}/card/{card_id}", response_class=HTMLResponse)
+async def biz_card(slug: str, card_id: str, request: Request, db: Session = Depends(get_db)):
+    """Business-specific customer card page"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    name = customer.first_name if customer else "Cliente"
+    return templates.TemplateResponse("card.html", {
+        "request":           request,
+        "card_id":           card_id,
+        "name":              name,
+        "stamps":            card.stamps or 0,
+        "stamps_per_reward": biz.stamps_per_reward,
+        "rewards_redeemed":  card.rewards_redeemed or 0,
+        "award_balance":     card.award_balance or 0,
+        "total_stamps":      card.total_stamps or 0,
+        "biz_name":          biz.name,
+        "biz_slug":          slug,
+        "primary_color":     biz.primary_color,
+        "accent_color":      biz.accent_color,
+    })
+
+
+@app.get("/api/app/businesses")
+def list_businesses(pin: str = "", db: Session = Depends(get_db)):
+    """Super admin: list all businesses (only accessible with master PIN)"""
+    if pin != ADMIN_PIN:
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    bizs = db.query(models.Business).order_by(models.Business.created_at.desc()).all()
+    result = []
+    for b in bizs:
+        count = db.query(models.Customer).filter(
+            models.Customer.business_id == b.id
+        ).count() if b.id else 0
+        result.append({
+            "id":         str(b.id),
+            "name":       b.name,
+            "slug":       b.slug,
+            "email":      b.email,
+            "plan":       b.plan,
+            "industry":   b.industry,
+            "customers":  count,
+            "dashboard":  f"/biz/{b.slug}/dashboard",
+            "created_at": b.created_at.isoformat() if b.created_at else "",
+        })
+    return {"businesses": result, "total": len(result)}
 
 
 @app.get("/dashboard", response_class=HTMLResponse)

@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>ZubCard - Plataforma de Fidelización Digital para Negocios</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --dark: #1a1714;
+      --cream: #FFF5B6;
+      --gold: #c8a84b;
+      --white: #ffffff;
+      --light-bg: #f8f6f2;
+      --border: #e8e5e0;
+      --text-dark: #2c2420;
+      --text-light: #888888;
+      --green: #4caf50;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      color: var(--text-dark);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    NAVBAR
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .navbar {
+      background: var(--white);
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span {
+      color: var(--gold);
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-center a {
+      text-decoration: none;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .nav-center a:hover {
+      color: var(--gold);
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-login {
+      background: transparent;
+      color: var(--text-dark);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-login:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-primary {
+      background: var(--dark);
+      color: var(--cream);
+    }
+
+    .btn-primary:hover {
+      background: var(--text-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(26,23,20,0.2);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    HERO SECTION
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .hero {
+      background: var(--dark);
+      color: var(--white);
+      padding: 80px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(200,168,75,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -5%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(200,168,75,0.05) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,245,182,0.15);
+      border: 1px solid rgba(200,168,75,0.3);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--cream);
+      letter-spacing: 0.5px;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      line-height: 1.1;
+      margin: 20px 0;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .hero h1 .highlight {
+      background: linear-gradient(120deg, var(--cream), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,245,182,0.85);
+      margin: 24px 0 40px 0;
+      line-height: 1.5;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+      background: var(--cream);
+      color: var(--dark);
+      padding: 14px 32px;
+      font-weight: 700;
+    }
+
+    .btn-hero-primary:hover {
+      background: white;
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(255,245,182,0.3);
+    }
+
+    .btn-hero-secondary {
+      background: transparent;
+      color: var(--cream);
+      border: 2px solid var(--cream);
+      padding: 12px 30px;
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(255,245,182,0.1);
+      transform: translateY(-3px);
+    }
+
+    .hero-trust {
+      font-size: 0.9rem;
+      color: rgba(255,245,182,0.7);
+      margin: 40px 0;
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-mockup {
+      margin: 60px 0 0 0;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,245,182,0.2);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    .card-mockup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--cream);
+    }
+
+    .card-mockup-stamps {
+      display: flex;
+      gap: 8px;
+      font-size: 1.5rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    SOCIAL PROOF
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .social-proof {
+      background: var(--light-bg);
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .social-proof-title {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      font-weight: 600;
+      margin-bottom: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .logos-grid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .logo-item {
+      font-size: 1rem;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    FEATURES SECTION
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .features {
+      background: var(--white);
+      padding: 80px 40px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+      color: var(--dark);
+      font-weight: 800;
+    }
+
+    .section-header p {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: var(--light-bg);
+      padding: 32px;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+    }
+
+    .feature-icon {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      color: var(--dark);
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    HOW IT WORKS
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .how-it-works {
+      background: var(--light-bg);
+      padding: 80px 40px;
+    }
+
+    .steps-grid {
+      display: grid;
+      gap: 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .step:nth-child(2) {
+      direction: rtl;
+    }
+
+    .step:nth-child(2) > * {
+      direction: ltr;
+    }
+
+    .step-content h3 {
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+      color: var(--dark);
+      font-weight: 800;
+    }
+
+    .step-content p {
+      font-size: 1rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    .step-visual {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      font-size: 4rem;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .step {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .step:nth-child(2) {
+        direction: ltr;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    PRICING SECTION
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .pricing {
+      background: var(--white);
+      padding: 80px 40px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--light-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .pricing-card.featured {
+      background: var(--dark);
+      color: var(--white);
+      border-color: var(--gold);
+      transform: scale(1.05);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .pricing-card.featured .pricing-price {
+      color: var(--cream);
+    }
+
+    .pricing-card.featured .pricing-feature {
+      color: rgba(255,245,182,0.8);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -12px;
+      right: 24px;
+      background: var(--gold);
+      color: var(--dark);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .pricing-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .pricing-price {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin: 20px 0;
+      color: var(--dark);
+    }
+
+    .pricing-price span {
+      font-size: 1rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .pricing-card.featured .pricing-price span {
+      color: rgba(255,245,182,0.7);
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin: 30px 0;
+    }
+
+    .pricing-feature {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pricing-card.featured .pricing-feature {
+      border-bottom-color: rgba(255,245,182,0.1);
+    }
+
+    .pricing-feature::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .pricing-card.featured .pricing-feature::before {
+      color: var(--cream);
+    }
+
+    .pricing-cta {
+      width: 100%;
+      padding: 14px;
+      margin-top: 30px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .pricing-cta-light {
+      background: var(--dark);
+      color: var(--cream);
+    }
+
+    .pricing-cta-light:hover {
+      background: var(--text-dark);
+      transform: translateY(-2px);
+    }
+
+    .pricing-cta-dark {
+      background: var(--cream);
+      color: var(--dark);
+    }
+
+    .pricing-cta-dark:hover {
+      background: white;
+      transform: translateY(-2px);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    TESTIMONIALS
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .testimonials {
+      background: var(--light-bg);
+      padding: 80px 40px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .testimonial {
+      background: var(--white);
+      padding: 32px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+    }
+
+    .testimonial-stars {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: #FFD700;
+    }
+
+    .testimonial-text {
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .testimonial-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dark);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .testimonial-info h4 {
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .testimonial-info p {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    FINAL CTA
+    ══════════════════════════════════════════════════════════════════════════════ */
+    .final-cta {
+      background: var(--dark);
+      color: var(--white);
+      padding: 80px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle, rgba(200,168,75,0.1) 0%, transparent 70%);
+    }
+
+    .final-cta-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .final-cta h2 {
+      font-size: 2.4rem;
+      margin-bottom: 24px;
+      font-weight: 800;
+    }
+
+    .final-cta p {
+      font-size: 1.1rem;
+      color: rgba(255,245,182,0.85);
+      margin-bottom: 32px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    FOOTER
+    ══════════════════════════════════════════════════════════════════════════════ */
+    footer {
+      background: var(--dark);
+      color: rgba(255,245,182,0.6);
+      padding: 40px;
+      text-align: center;
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255,245,182,0.1);
+    }
+
+    footer .footer-logo {
+      color: var(--cream);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    footer .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    footer a {
+      color: rgba(255,245,182,0.7);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    footer a:hover {
+      color: var(--cream);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+    RESPONSIVE
+    ══════════════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 12px 20px;
+      }
+
+      .nav-center {
+        display: none;
+      }
+
+      .hero {
+        padding: 60px 20px;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+
+      .hero-trust {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .section-header h2 {
+        font-size: 1.8rem;
+      }
+
+      .pricing-card.featured {
+        transform: scale(1);
+      }
+
+      .hero-ctas {
+        flex-direction: column;
+      }
+
+      .btn-hero-primary, .btn-hero-secondary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+NAVBAR
+════════════════════════════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="logo">Zub<span>Card</span></div>
+  <div class="nav-center">
+    <a href="#features">Características</a>
+    <a href="#pricing">Precios</a>
+    <a href="#howitworks">Cómo funciona</a>
+  </div>
+  <div class="nav-right">
+    <a href="/app/login" class="btn btn-login">Iniciar sesión</a>
+    <a href="/app/register" class="btn btn-primary">Empieza gratis →</a>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+HERO SECTION
+════════════════════════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🚀 Plataforma de fidelización nº 1</div>
+    <h1>Fideliza clientes.<br><span class="highlight">Haz crecer tu negocio.</span></h1>
+    <p class="hero-subtitle">
+      Crea tarjetas de sellos digitales, gestiona clientes y automatiza tus comunicaciones. Todo en un lugar.
+    </p>
+    <div class="hero-ctas">
+      <a href="/app/register" class="btn btn-hero-primary">Empezar gratis →</a>
+      <button class="btn btn-hero-secondary" onclick="document.getElementById('howitworks').scrollIntoView({behavior:'smooth'})">Ver demo</button>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-item">✓ Sin tarjeta de crédito</div>
+      <div class="trust-item">✓ Configuración en 5 min</div>
+      <div class="trust-item">✓ Cancelación gratuita</div>
+    </div>
+    <div class="card-mockup">
+      <div class="card-mockup-header">
+        <span>SUKIE CARD · 🍪</span>
+      </div>
+      <div class="card-mockup-stamps">
+        <span>🍪</span>
+        <span>🍪</span>
+        <span>🍪</span>
+        <span>○</span>
+        <span>○</span>
+        <span>○</span>
+        <span>○</span>
+        <span>○</span>
+        <span>○</span>
+        <span>○</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+SOCIAL PROOF
+════════════════════════════════════════════════════════════════════════════════ -->
+<section class="social-proof">
+  <div class="social-proof-title">USADO POR NEGOCIOS COMO:</div>
+  <div class="logos-grid">
+    <div class="logo-item">☕ Café Mirador</div>
+    <div class="logo-item">🍪 Sukie Cookie</div>
+    <div class="logo-item">💆 Spa Luna</div>
+    <div class="logo-item">🍕 Pizzería Marco</div>
+    <div class="logo-item">💇 Estudio Miel</div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+FEATURES SECTION
+════════════════════════════════════════════════════════════════════════════════ -->
+<section id="features" class="features">
+  <div class="section-header">
+    <h2>Todo lo que necesitas para fidelizar</h2>
+    <p>Herramientas poderosas para retener clientes y aumentar sus compras</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎴</div>
+      <h3>Tarjetas digitales</h3>
+      <p>Crea tarjetas de sellos personalizadas con tu marca. Tus clientes las llevan en el móvil, sin apps.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📧</div>
+      <h3>Email & notificaciones</h3>
+      <p>Envía bienvenidas automáticas, felicitaciones de cumpleaños y alertas de premios.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Analytics en tiempo real</h3>
+      <p>Conoce tus clientes más fieles, tendencias de sellos, y el ROI de tu programa.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>Programa de referidos</h3>
+      <p>Tus clientes traen nuevos clientes. Recompensa a ambos automáticamente.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏆</div>
+      <h3>Sistema de tiers</h3>
+      <p>Bronce, Plata y Oro. Motiva a tus mejores clientes a seguir comprando.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>Compatible con Wallet</h3>
+      <p>Apple Wallet y Google Wallet. La tarjeta siempre a mano.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+HOW IT WORKS
+════════════════════════════════════════════════════════════════════════════════ -->
+<section id="howitworks" class="how-it-works">
+  <div class="section-header">
+    <h2>Cómo funciona</h2>
+    <p>Tres pasos simples para empezar</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-content">
+        <h3>1. Crea tu tarjeta</h3>
+        <p>Elige el logo, colores, cantidad de sellos y premio. Listo en 5 minutos. Sin código, sin complicaciones.</p>
+      </div>
+      <div class="step-visual">⚙️</div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h3>2. Tus clientes se registran</h3>
+        <p>Comparte el link de alta con un código QR. Tus clientes se registran, y ya tienen su tarjeta digital lista para usar.</p>
+      </div>
+      <div class="step-visual">📱</div>
+    </div>
+    <div class="step">
+      <div class="step-content">
+        <h3>3. Gestiona todo desde tu panel</h3>
+        <p>Ve quién tiene sellos, envía emails personalizados, analiza el rendimiento y toma decisiones basadas en datos.</p>
+      </div>
+      <div class="step-visual">📈</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+PRICING SECTION
+════════════════════════════════════════════════════════════════════════════════ -->
+<section id="pricing" class="pricing">
+  <div class="section-header">
+    <h2>Planes simples y justos</h2>
+    <p>Elige el plan perfecto para tu negocio</p>
+  </div>
+  <div class="pricing-grid">
+    <!-- GRATIS -->
+    <div class="pricing-card">
+      <div class="pricing-name">Gratis</div>
+      <div class="pricing-price">€0<span>/mes</span></div>
+      <ul class="pricing-features">
+        <li class="pricing-feature">Hasta 100 clientes</li>
+        <li class="pricing-feature">1 tarjeta de sellos</li>
+        <li class="pricing-feature">Email básico</li>
+        <li class="pricing-feature">Sin tarjeta de crédito</li>
+      </ul>
+      <button class="pricing-cta pricing-cta-light" onclick="window.location.href='/app/register'">Comenzar</button>
+    </div>
+
+    <!-- PRO -->
+    <div class="pricing-card featured">
+      <div class="pricing-badge">⭐ MÁS POPULAR</div>
+      <div class="pricing-name">Pro</div>
+      <div class="pricing-price">€29<span>/mes</span></div>
+      <ul class="pricing-features">
+        <li class="pricing-feature">Clientes ilimitados</li>
+        <li class="pricing-feature">3 tarjetas de sellos</li>
+        <li class="pricing-feature">Email + Push</li>
+        <li class="pricing-feature">Analytics completos</li>
+        <li class="pricing-feature">Programa de referidos</li>
+      </ul>
+      <button class="pricing-cta pricing-cta-dark" onclick="window.location.href='/app/register'">Empezar ahora</button>
+    </div>
+
+    <!-- EMPRESA -->
+    <div class="pricing-card">
+      <div class="pricing-name">Empresa</div>
+      <div class="pricing-price">€99<span>/mes</span></div>
+      <ul class="pricing-features">
+        <li class="pricing-feature">Todo en Pro</li>
+        <li class="pricing-feature">Multi-local/sucursales</li>
+        <li class="pricing-feature">API acceso</li>
+        <li class="pricing-feature">White-label</li>
+        <li class="pricing-feature">Soporte prioritario</li>
+      </ul>
+      <button class="pricing-cta pricing-cta-light" onclick="alert('Contacta con sales@zubcard.es')">Contactar</button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+TESTIMONIALS
+════════════════════════════════════════════════════════════════════════════════ -->
+<section class="testimonials">
+  <div class="section-header">
+    <h2>Lo que dicen nuestros clientes</h2>
+    <p>Historias reales de negocios que crecen con ZubCard</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">
+        "ZubCard cambió la forma en que fidelizamos clientes. Hemos visto un 35% de aumento en compras repetidas. La facilidad de uso es increíble."
+      </p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">CM</div>
+        <div class="testimonial-info">
+          <h4>Carlos Martínez</h4>
+          <p>Café Mirador</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">
+        "Pasamos de hojas de Excel a un sistema profesional en minutos. Nuestros clientes aman poder ver sus sellos en el móvil."
+      </p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">AL</div>
+        <div class="testimonial-info">
+          <h4>Alicia López</h4>
+          <p>Sukie Cookie</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">
+        "El panel de analytics nos permite entender realmente quiénes son nuestros mejores clientes. Invaluable para nuestro spa."
+      </p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">MP</div>
+        <div class="testimonial-info">
+          <h4>María Ponce</h4>
+          <p>Spa Luna</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+FINAL CTA
+════════════════════════════════════════════════════════════════════════════════ -->
+<section class="final-cta">
+  <div class="final-cta-content">
+    <h2>¿Listo para fidelizar a tus clientes?</h2>
+    <p>Crea tu cuenta en menos de 5 minutos. Sin tarjeta de crédito. Cancela cuando quieras.</p>
+    <a href="/app/register" class="btn btn-hero-primary">Crear mi cuenta gratis →</a>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════════════
+FOOTER
+════════════════════════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-logo">ZubCard</div>
+  <div class="footer-links">
+    <a href="/">Inicio</a>
+    <a href="#features">Características</a>
+    <a href="#pricing">Precios</a>
+    <a href="/app/login">Login</a>
+  </div>
+  <p>© 2026 ZubCard · Hecho con ❤️ en España</p>
+</footer>
+
+</body>
+</html>
