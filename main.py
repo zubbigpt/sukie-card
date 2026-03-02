@@ -91,7 +91,9 @@ def run_migrations():
         # Force-seed Sukie Cookie: delete any conflicting rows first, then insert fresh
         "DELETE FROM businesses WHERE email='zubbigpt@gmail.com' AND slug != 'sukiecookie'",
         "DELETE FROM businesses WHERE id='00000000-0000-0000-0000-000000000001'::uuid AND slug != 'sukiecookie'",
-        "INSERT INTO businesses (id, name, slug, email, admin_pin, api_key, plan, primary_color, accent_color, industry, card_title, stamps_per_reward) VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Sukie Cookie', 'sukiecookie', 'zubbigpt@gmail.com', '5678', 'sukie-cookie-2026-secret', 'pro', '#3A3426', '#FFF5B6', 'bakery', 'Sukie Card', 10) ON CONFLICT (slug) DO UPDATE SET id='00000000-0000-0000-0000-000000000001'::uuid, name='Sukie Cookie', email='zubbigpt@gmail.com', admin_pin='5678', api_key='sukie-cookie-2026-secret', plan='pro'",
+        "INSERT INTO businesses (id, name, slug, email, admin_pin, api_key, plan, primary_color, accent_color, industry, card_title, stamps_per_reward, active) VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Sukie Cookie', 'sukiecookie', 'zubbigpt@gmail.com', '5678', 'sukie-cookie-2026-secret', 'pro', '#3A3426', '#FFF5B6', 'bakery', 'Sukie Card', 10, TRUE) ON CONFLICT (slug) DO UPDATE SET id='00000000-0000-0000-0000-000000000001'::uuid, name='Sukie Cookie', email='zubbigpt@gmail.com', admin_pin='5678', api_key='sukie-cookie-2026-secret', plan='pro', active=TRUE",
+        # Also force-update via plain UPDATE as safety net
+        "UPDATE businesses SET active=TRUE, admin_pin='5678', email='zubbigpt@gmail.com' WHERE slug='sukiecookie'",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
         "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
         "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
@@ -172,7 +174,7 @@ def get_or_create_referral_code(card_id, db: Session) -> str:
 def get_business_by_slug(slug: str, db: Session):
     return db.query(models.Business).filter(
         models.Business.slug == slug,
-        models.Business.active == True
+        models.Business.active != False  # treat NULL as active
     ).first()
 
 
@@ -1483,7 +1485,7 @@ def debug_db(pin: str = "", db: Session = Depends(get_db)):
     if pin != ADMIN_PIN:
         raise HTTPException(status_code=403, detail="Acceso denegado")
     try:
-        rows = db.execute(text("SELECT id, name, slug, email, admin_pin, plan FROM businesses")).fetchall()
+        rows = db.execute(text("SELECT id, name, slug, email, admin_pin, plan, active FROM businesses")).fetchall()
         return {"count": len(rows), "rows": [dict(r._mapping) for r in rows]}
     except Exception as e:
         return {"error": str(e)}
