@@ -218,6 +218,47 @@ tr:hover td{background:rgba(255,243,207,.4)}
 .legend-row{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--brown-mid)}
 .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.cfg-tab-btn {
+  padding: 8px 18px;
+  border: 2px solid #3A3426;
+  background: white;
+  color: #3A3426;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.cfg-tab-btn.active {
+  background: #3A3426;
+  color: white;
+}
+.card-box {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+}
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85em;
+  color: #555;
+  font-weight: 500;
+}
+.field-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9em;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field-input:focus {
+  border-color: #3A3426;
+}
 </style>
 </head>
 <body>
@@ -271,6 +312,9 @@ tr:hover td{background:rgba(255,243,207,.4)}
       </a>
       <a href="/register" target="_blank" id="nav-register">
         <span class="icon">🔗</span> Landing de alta
+      </a>
+      <a onclick="showSection('config')" id="nav-config">
+        <span class="icon">⚙️</span> Configuración
       </a>
     </nav>
     <div class="sidebar-footer">SukieCookie © 2026</div>
@@ -499,6 +543,346 @@ tr:hover td{background:rgba(255,243,207,.4)}
           </div>
         </div>
       </div>
+      <!-- ═══════════════════════ CONFIGURACIÓN ═══════════════════════ -->
+      <div id="section-config" class="section" style="display:none">
+        <div class="section-header">
+          <h2>⚙️ Configuración de Tarjeta</h2>
+          <p style="color:#666;font-size:0.9em">Personaliza todos los aspectos de tu Sukie Card</p>
+        </div>
+
+        <!-- Config sub-tabs -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+          <button class="cfg-tab-btn active" onclick="showCfgTab('general')" id="cfgtab-general">📋 General</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('programa')" id="cfgtab-programa">🎯 Programa</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('landing')" id="cfgtab-landing">🌐 Landing de Alta</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('diseno')" id="cfgtab-diseno">🎨 Diseño</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('comunicaciones')" id="cfgtab-comunicaciones">✉️ Comunicaciones</button>
+        </div>
+
+        <!-- ── TAB: GENERAL ── -->
+        <div id="cfgpanel-general" class="cfg-panel">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">📋 General</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Nombre de tarjeta<input type="text" id="cfg-card_name" class="field-input" placeholder="Sellos"></label>
+              <label class="field-label">Título tarjeta<input type="text" id="cfg-card_title" class="field-input" placeholder="Sukie Card"></label>
+              <label class="field-label">Emisor<input type="text" id="cfg-issuer" class="field-input" placeholder="Sukie Cookie"></label>
+              <label class="field-label">Prefijo numeración<input type="text" id="cfg-card_prefix" class="field-input" placeholder="C521"></label>
+            </div>
+            <label class="field-label" style="margin-top:12px">Descripción
+              <textarea id="cfg-description" class="field-input" rows="3" placeholder="Tarjeta de sellos Sukie Cookie" style="resize:vertical"></textarea>
+            </label>
+            <h4 style="margin:20px 0 12px;color:#3A3426">Vencimiento</h4>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="cfg-expiry" value="never" id="cfg-expiry-never"> Sin fecha de vencimiento
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="cfg-expiry" value="date" id="cfg-expiry-date"> A fecha determinada
+                <input type="date" id="cfg-expiry_date" class="field-input" style="width:180px;margin-left:8px">
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="cfg-expiry" value="days_from_register" id="cfg-expiry-days"> Plazo fijo desde alta
+                <input type="number" id="cfg-expiry_days" class="field-input" style="width:100px;margin-left:8px" placeholder="365"> días
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: PROGRAMA ── -->
+        <div id="cfgpanel-programa" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">🎯 Programa de Sellos</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Sellos por premio
+                <input type="number" id="cfg-stamps_per_reward" class="field-input" min="1" max="100" placeholder="10">
+              </label>
+              <label class="field-label">Nombre del premio
+                <input type="text" id="cfg-reward_name" class="field-input" placeholder="Cookie Gratis">
+              </label>
+            </div>
+            <label class="field-label" style="margin-top:12px">Mensaje al conseguir 1 sello
+              <input type="text" id="cfg-msg_single" class="field-input" placeholder="{nombre} has conseguido 1 sello">
+              <small style="color:#999">Variables: {nombre}</small>
+            </label>
+            <label class="field-label" style="margin-top:12px">Mensaje al conseguir varios sellos
+              <input type="text" id="cfg-msg_multiple" class="field-input" placeholder="{nombre} has conseguido {#} sellos">
+              <small style="color:#999">Variables: {nombre}, {#}</small>
+            </label>
+
+            <h4 style="margin:24px 0 12px;color:#3A3426">🎂 Programa de Cumpleaños</h4>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="cfg-birthday_enabled"> Activar programa de cumpleaños
+            </label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Mensaje push cumpleaños
+                <input type="text" id="cfg-birthday_msg_push" class="field-input" placeholder="¡Feliz Cumpleaños!">
+              </label>
+              <label class="field-label">Hora de envío
+                <input type="time" id="cfg-birthday_time" class="field-input" value="07:00">
+              </label>
+            </div>
+
+            <h4 style="margin:24px 0 12px;color:#3A3426">🎉 Aniversario de Afiliación</h4>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="cfg-anniversary_enabled"> Activar programa de aniversario
+            </label>
+          </div>
+        </div>
+
+        <!-- ── TAB: LANDING ── -->
+        <div id="cfgpanel-landing" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">🌐 Landing de Alta</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Título del formulario
+                <input type="text" id="cfg-form_title" class="field-input" placeholder="Únete a la Sukie Card">
+              </label>
+              <label class="field-label">Texto del botón
+                <input type="text" id="cfg-button_text" class="field-input" placeholder="Registrarse">
+              </label>
+            </div>
+            <label class="field-label" style="margin-top:12px">Texto encabezado
+              <input type="text" id="cfg-header_text" class="field-input" placeholder="Regístrate y acumula cookies gratis">
+            </label>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Colores</h4>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <label class="field-label">Fondo
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-bg_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-bg_color_text" class="field-input" style="width:90px" placeholder="#FFF5B6">
+                </div>
+              </label>
+              <label class="field-label">Textos
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-text_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-text_color_text" class="field-input" style="width:90px" placeholder="#280011">
+                </div>
+              </label>
+              <label class="field-label">Botón
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-button_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-button_color_text" class="field-input" style="width:90px" placeholder="#280011">
+                </div>
+              </label>
+              <label class="field-label">Enlaces
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-link_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-link_color_text" class="field-input" style="width:90px" placeholder="#A0006B">
+                </div>
+              </label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Campos del formulario</h4>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9em">
+              <thead>
+                <tr style="background:#f5f5f5">
+                  <th style="padding:8px;text-align:left;border:1px solid #ddd">Campo</th>
+                  <th style="padding:8px;text-align:center;border:1px solid #ddd">Visible</th>
+                  <th style="padding:8px;text-align:center;border:1px solid #ddd">Obligatorio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Nombre</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_name" checked disabled></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_name_required"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Apellidos</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_lastname"></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_lastname_required"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Email</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_email" checked disabled></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_email_required" checked disabled></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Teléfono</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_phone"></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_phone_required"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Fecha de nacimiento</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_birthdate"></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_birthdate_required"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Datos legales de empresa</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+              <label class="field-label">Empresa<input type="text" id="cfg-company_name" class="field-input" placeholder="Nombre empresa"></label>
+              <label class="field-label">Email<input type="email" id="cfg-company_email" class="field-input" placeholder="email@empresa.com"></label>
+              <label class="field-label">Teléfono<input type="text" id="cfg-company_phone" class="field-input" placeholder="600000000"></label>
+            </div>
+            <label class="field-label" style="margin-top:12px">URL Términos y Condiciones
+              <input type="url" id="cfg-terms_url" class="field-input" placeholder="https://...">
+            </label>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Restricciones</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Fecha límite de registro
+                <input type="date" id="cfg-register_limit_date" class="field-input">
+              </label>
+              <label class="field-label">Acceso al formulario
+                <select id="cfg-access_type" class="field-input">
+                  <option value="public">Público / Abierto</option>
+                  <option value="private">Privado</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: DISEÑO ── -->
+        <div id="cfgpanel-diseno" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">🎨 Diseño de Tarjeta</h3>
+            <label class="field-label">Nombre comercial
+              <input type="text" id="cfg-commercial_name" class="field-input" placeholder="Sukie Cookie">
+            </label>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Colores de tarjeta</h4>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              <label class="field-label">Fondo tarjeta
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-card_bg_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-card_bg_color_text" class="field-input" style="flex:1" placeholder="#FFFFC6">
+                </div>
+              </label>
+              <label class="field-label">Color etiquetas
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-label_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-label_color_text" class="field-input" style="flex:1" placeholder="#220015">
+                </div>
+              </label>
+              <label class="field-label">Color textos
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-diseno_text_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-diseno_text_color_text" class="field-input" style="flex:1" placeholder="#220015">
+                </div>
+              </label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Colores de sellos</h4>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <label class="field-label">Fondo sello
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_bg_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_bg_color_text" class="field-input" style="flex:1" placeholder="#22000F">
+                </div>
+              </label>
+              <label class="field-label">Icono sello
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_icon_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_icon_color_text" class="field-input" style="flex:1" placeholder="#FFF5B6">
+                </div>
+              </label>
+              <label class="field-label">Borde sello
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_border_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_border_color_text" class="field-input" style="flex:1" placeholder="#FFF5B6">
+                </div>
+              </label>
+              <label class="field-label">Sello con premio
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_filled_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_filled_color_text" class="field-input" style="flex:1" placeholder="#FF6B9D">
+                </div>
+              </label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Campos frontales de tarjeta</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label class="field-label">Etiqueta campo 1<input type="text" id="cfg-front_field1_label" class="field-input" placeholder="Titular"></label>
+              <label class="field-label">Valor campo 1<input type="text" id="cfg-front_field1_value" class="field-input" placeholder="NOMBRE Y APELLIDOS"></label>
+              <label class="field-label">Etiqueta campo 2<input type="text" id="cfg-front_field2_label" class="field-input" placeholder="Cookies disponibles"></label>
+              <label class="field-label">Valor campo 2<input type="text" id="cfg-front_field2_value" class="field-input" placeholder="Premios/Vales Disponibles"></label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Enlaces</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label class="field-label">Instagram<input type="url" id="cfg-link_instagram" class="field-input" placeholder="https://instagram.com/..."></label>
+              <label class="field-label">Web<input type="url" id="cfg-link_web" class="field-input" placeholder="https://..."></label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Textos parte trasera</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label class="field-label">Título actualizaciones<input type="text" id="cfg-back_title_updates" class="field-input"></label>
+              <label class="field-label">Título titular<input type="text" id="cfg-back_title_holder" class="field-input"></label>
+              <label class="field-label">Premios para canjear<input type="text" id="cfg-back_title_rewards_pending" class="field-input"></label>
+              <label class="field-label">Premios ganados<input type="text" id="cfg-back_title_rewards_won" class="field-input"></label>
+              <label class="field-label">Cómo conseguir sellos<input type="text" id="cfg-back_title_how" class="field-input"></label>
+              <label class="field-label">Detalles del premio<input type="text" id="cfg-back_title_reward_detail" class="field-input"></label>
+              <label class="field-label">Enlaces de interés<input type="text" id="cfg-back_title_links" class="field-input"></label>
+              <label class="field-label">Preguntas<input type="text" id="cfg-back_title_questions" class="field-input"></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: COMUNICACIONES ── -->
+        <div id="cfgpanel-comunicaciones" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">✉️ Email de Bienvenida</h3>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="cfg-welcome_email_enabled"> Activar email de bienvenida al registrarse
+            </label>
+            <label class="field-label">Asunto
+              <input type="text" id="cfg-welcome_email_subject" class="field-input" placeholder="¡Bienvenido/a!">
+            </label>
+            <label class="field-label" style="margin-top:12px">Cuerpo del email
+              <textarea id="cfg-welcome_email_body" class="field-input" rows="6" style="resize:vertical;font-family:monospace;font-size:0.85em"></textarea>
+              <small style="color:#999">Variables: {nombre}, {link_tarjeta}</small>
+            </label>
+          </div>
+          <div class="card-box" style="margin-top:16px">
+            <h3 style="margin-bottom:16px;color:#3A3426">🎂 Email de Cumpleaños</h3>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="cfg-birthday_email_enabled"> Activar email de cumpleaños
+            </label>
+            <label class="field-label">Asunto
+              <input type="text" id="cfg-birthday_email_subject" class="field-input" placeholder="¡Feliz Cumpleaños!">
+            </label>
+            <label class="field-label" style="margin-top:12px">Cuerpo del email
+              <textarea id="cfg-birthday_email_body" class="field-input" rows="6" style="resize:vertical;font-family:monospace;font-size:0.85em"></textarea>
+              <small style="color:#999">Variables: {nombre}</small>
+            </label>
+          </div>
+
+          <!-- Distribución masiva -->
+          <div class="card-box" style="margin-top:16px">
+            <h3 style="margin-bottom:16px;color:#3A3426">📤 Distribución</h3>
+            <p style="color:#666;margin-bottom:16px">Envía la tarjeta por email a tus clientes. Se usa la plantilla de bienvenida.</p>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="dist-target" value="new" checked id="dist-new"> Solo nuevos clientes (sin email enviado)
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="dist-target" value="all" id="dist-all"> Todos los clientes
+              </label>
+            </div>
+            <div style="margin-top:16px">
+              <button onclick="sendDistribution()" style="background:#3A3426;color:white;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.95em">
+                📨 Enviar distribución
+              </button>
+            </div>
+            <div id="dist-result" style="margin-top:12px;display:none"></div>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <div style="margin-top:24px;display:flex;gap:12px;align-items:center">
+          <button onclick="saveConfig()" style="background:#3A3426;color:white;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:1em;font-weight:600">
+            💾 Guardar configuración
+          </button>
+          <span id="cfg-save-msg" style="display:none;color:#2e7d32;font-weight:600">✅ Guardado correctamente</span>
+          <span id="cfg-err-msg" style="display:none;color:#c62828;font-weight:600">❌ Error al guardar</span>
+        </div>
+      </div>
+
 
     </div><!-- /content -->
   </div><!-- /main -->
@@ -642,7 +1026,7 @@ async function doLogin(){
 document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
-const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente'};
+const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente','config':'Configuración'};
 function showSection(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
@@ -652,6 +1036,7 @@ function showSection(name){
   document.getElementById('topbar-title').textContent = sectionTitles[name]||name;
   if(name==='clients') loadClients(1);
   if(name==='bi') loadBI();
+  if(name==='config') loadConfig();
   if(name==='birthdays') loadBirthdays();
 }
 
@@ -1155,6 +1540,245 @@ function showToast(msg,type=''){
   t.className='toast '+(type==='success'?'success':type==='error'?'error':'');
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── CONFIG ──────────────────────────────────────────────────────────────
+function showCfgTab(tab) {
+  document.querySelectorAll('.cfg-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cfg-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('cfgtab-' + tab).classList.add('active');
+  document.getElementById('cfgpanel-' + tab).style.display = '';
+}
+
+async function loadConfig() {
+  try {
+    const r = await fetch(`${BASE}/api/admin/config?pin=${PIN}`);
+    if (!r.ok) return;
+    const cfg = await r.json();
+    // General
+    const g = cfg.general || {};
+    setVal('cfg-card_name', g.card_name);
+    setVal('cfg-card_title', g.card_title);
+    setVal('cfg-issuer', g.issuer);
+    setVal('cfg-description', g.description);
+    setVal('cfg-card_prefix', g.card_prefix);
+    const et = g.expiry_type || 'never';
+    const radio = document.querySelector(`input[name="cfg-expiry"][value="${et}"]`);
+    if (radio) radio.checked = true;
+    setVal('cfg-expiry_date', g.expiry_date);
+    setVal('cfg-expiry_days', g.expiry_days);
+    // Programa
+    const p = cfg.programa || {};
+    setVal('cfg-stamps_per_reward', p.stamps_per_reward);
+    setVal('cfg-reward_name', p.reward_name);
+    setVal('cfg-msg_single', p.msg_single);
+    setVal('cfg-msg_multiple', p.msg_multiple);
+    setCheck('cfg-birthday_enabled', p.birthday_enabled);
+    setVal('cfg-birthday_msg_push', p.birthday_msg_push);
+    setVal('cfg-birthday_time', p.birthday_time);
+    setCheck('cfg-anniversary_enabled', p.anniversary_enabled);
+    // Landing
+    const l = cfg.landing || {};
+    setVal('cfg-form_title', l.form_title);
+    setVal('cfg-header_text', l.header_text);
+    setVal('cfg-button_text', l.button_text);
+    setColorPair('cfg-bg_color', l.bg_color);
+    setColorPair('cfg-text_color', l.text_color);
+    setColorPair('cfg-button_color', l.button_color);
+    setColorPair('cfg-link_color', l.link_color);
+    setCheck('cfg-field_name', l.field_name);
+    setCheck('cfg-field_lastname', l.field_lastname);
+    setCheck('cfg-field_phone', l.field_phone);
+    setCheck('cfg-field_birthdate', l.field_birthdate);
+    setCheck('cfg-field_name_required', l.field_name_required);
+    setCheck('cfg-field_lastname_required', l.field_lastname_required);
+    setCheck('cfg-field_phone_required', l.field_phone_required);
+    setCheck('cfg-field_birthdate_required', l.field_birthdate_required);
+    setVal('cfg-company_name', l.company_name);
+    setVal('cfg-company_email', l.company_email);
+    setVal('cfg-company_phone', l.company_phone);
+    setVal('cfg-terms_url', l.terms_url);
+    setVal('cfg-register_limit_date', l.register_limit_date);
+    setVal('cfg-access_type', l.access_type);
+    // Diseño
+    const d = cfg.diseno || {};
+    setVal('cfg-commercial_name', d.commercial_name);
+    setColorPair('cfg-card_bg_color', d.card_bg_color);
+    setColorPair('cfg-label_color', d.label_color);
+    setColorPair('cfg-diseno_text_color', d.text_color);
+    setColorPair('cfg-stamp_bg_color', d.stamp_bg_color);
+    setColorPair('cfg-stamp_icon_color', d.stamp_icon_color);
+    setColorPair('cfg-stamp_border_color', d.stamp_border_color);
+    setColorPair('cfg-stamp_filled_color', d.stamp_filled_color);
+    setVal('cfg-front_field1_label', d.front_field1_label);
+    setVal('cfg-front_field1_value', d.front_field1_value);
+    setVal('cfg-front_field2_label', d.front_field2_label);
+    setVal('cfg-front_field2_value', d.front_field2_value);
+    setVal('cfg-link_instagram', d.link_instagram);
+    setVal('cfg-link_web', d.link_web);
+    setVal('cfg-back_title_updates', d.back_title_updates);
+    setVal('cfg-back_title_holder', d.back_title_holder);
+    setVal('cfg-back_title_rewards_pending', d.back_title_rewards_pending);
+    setVal('cfg-back_title_rewards_won', d.back_title_rewards_won);
+    setVal('cfg-back_title_how', d.back_title_how);
+    setVal('cfg-back_title_reward_detail', d.back_title_reward_detail);
+    setVal('cfg-back_title_links', d.back_title_links);
+    setVal('cfg-back_title_questions', d.back_title_questions);
+    // Comunicaciones
+    const c = cfg.comunicaciones || {};
+    setCheck('cfg-welcome_email_enabled', c.welcome_email_enabled);
+    setVal('cfg-welcome_email_subject', c.welcome_email_subject);
+    setVal('cfg-welcome_email_body', c.welcome_email_body);
+    setCheck('cfg-birthday_email_enabled', c.birthday_email_enabled);
+    setVal('cfg-birthday_email_subject', c.birthday_email_subject);
+    setVal('cfg-birthday_email_body', c.birthday_email_body);
+  } catch(e) { console.error('loadConfig error', e); }
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+function setCheck(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.checked = !!val;
+}
+function setColorPair(id, val) {
+  if (!val) return;
+  const picker = document.getElementById(id);
+  const text   = document.getElementById(id + '_text');
+  if (picker) picker.value = val;
+  if (text)   text.value   = val;
+}
+function getColorPair(id) {
+  const text = document.getElementById(id + '_text');
+  const picker = document.getElementById(id);
+  return (text && text.value) || (picker && picker.value) || '';
+}
+
+// Sync color pickers ↔ text inputs
+document.addEventListener('DOMContentLoaded', () => {
+  ['cfg-bg_color','cfg-text_color','cfg-button_color','cfg-link_color',
+   'cfg-card_bg_color','cfg-label_color','cfg-diseno_text_color',
+   'cfg-stamp_bg_color','cfg-stamp_icon_color','cfg-stamp_border_color','cfg-stamp_filled_color'
+  ].forEach(id => {
+    const picker = document.getElementById(id);
+    const text   = document.getElementById(id + '_text');
+    if (picker && text) {
+      picker.addEventListener('input', () => { text.value = picker.value; });
+      text.addEventListener('input',   () => {
+        if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+      });
+    }
+  });
+});
+
+async function saveConfig() {
+  const expiryRadio = document.querySelector('input[name="cfg-expiry"]:checked');
+  const payload = {
+    pin: PIN,
+    general: {
+      card_name: document.getElementById('cfg-card_name')?.value || '',
+      card_title: document.getElementById('cfg-card_title')?.value || '',
+      issuer: document.getElementById('cfg-issuer')?.value || '',
+      description: document.getElementById('cfg-description')?.value || '',
+      card_prefix: document.getElementById('cfg-card_prefix')?.value || '',
+      expiry_type: expiryRadio?.value || 'never',
+      expiry_date: document.getElementById('cfg-expiry_date')?.value || '',
+      expiry_days: parseInt(document.getElementById('cfg-expiry_days')?.value || '365'),
+      barcode_type: 'QR',
+    },
+    programa: {
+      stamps_per_reward: parseInt(document.getElementById('cfg-stamps_per_reward')?.value || '10'),
+      reward_name: document.getElementById('cfg-reward_name')?.value || '',
+      msg_single: document.getElementById('cfg-msg_single')?.value || '',
+      msg_multiple: document.getElementById('cfg-msg_multiple')?.value || '',
+      birthday_enabled: document.getElementById('cfg-birthday_enabled')?.checked || false,
+      birthday_msg_push: document.getElementById('cfg-birthday_msg_push')?.value || '',
+      birthday_time: document.getElementById('cfg-birthday_time')?.value || '07:00',
+      anniversary_enabled: document.getElementById('cfg-anniversary_enabled')?.checked || false,
+    },
+    landing: {
+      form_title: document.getElementById('cfg-form_title')?.value || '',
+      header_text: document.getElementById('cfg-header_text')?.value || '',
+      button_text: document.getElementById('cfg-button_text')?.value || '',
+      bg_color: getColorPair('cfg-bg_color'),
+      text_color: getColorPair('cfg-text_color'),
+      button_color: getColorPair('cfg-button_color'),
+      link_color: getColorPair('cfg-link_color'),
+      field_name: document.getElementById('cfg-field_name')?.checked || false,
+      field_lastname: document.getElementById('cfg-field_lastname')?.checked || false,
+      field_phone: document.getElementById('cfg-field_phone')?.checked || false,
+      field_birthdate: document.getElementById('cfg-field_birthdate')?.checked || false,
+      field_name_required: document.getElementById('cfg-field_name_required')?.checked || false,
+      field_lastname_required: document.getElementById('cfg-field_lastname_required')?.checked || false,
+      field_phone_required: document.getElementById('cfg-field_phone_required')?.checked || false,
+      field_birthdate_required: document.getElementById('cfg-field_birthdate_required')?.checked || false,
+      company_name: document.getElementById('cfg-company_name')?.value || '',
+      company_email: document.getElementById('cfg-company_email')?.value || '',
+      company_phone: document.getElementById('cfg-company_phone')?.value || '',
+      terms_url: document.getElementById('cfg-terms_url')?.value || '',
+      register_limit_date: document.getElementById('cfg-register_limit_date')?.value || '',
+      access_type: document.getElementById('cfg-access_type')?.value || 'public',
+    },
+    diseno: {
+      commercial_name: document.getElementById('cfg-commercial_name')?.value || '',
+      card_bg_color: getColorPair('cfg-card_bg_color'),
+      label_color: getColorPair('cfg-label_color'),
+      text_color: getColorPair('cfg-diseno_text_color'),
+      stamp_bg_color: getColorPair('cfg-stamp_bg_color'),
+      stamp_icon_color: getColorPair('cfg-stamp_icon_color'),
+      stamp_border_color: getColorPair('cfg-stamp_border_color'),
+      stamp_filled_color: getColorPair('cfg-stamp_filled_color'),
+      front_field1_label: document.getElementById('cfg-front_field1_label')?.value || '',
+      front_field1_value: document.getElementById('cfg-front_field1_value')?.value || '',
+      front_field2_label: document.getElementById('cfg-front_field2_label')?.value || '',
+      front_field2_value: document.getElementById('cfg-front_field2_value')?.value || '',
+      link_instagram: document.getElementById('cfg-link_instagram')?.value || '',
+      link_web: document.getElementById('cfg-link_web')?.value || '',
+      back_title_updates: document.getElementById('cfg-back_title_updates')?.value || '',
+      back_title_holder: document.getElementById('cfg-back_title_holder')?.value || '',
+      back_title_rewards_pending: document.getElementById('cfg-back_title_rewards_pending')?.value || '',
+      back_title_rewards_won: document.getElementById('cfg-back_title_rewards_won')?.value || '',
+      back_title_how: document.getElementById('cfg-back_title_how')?.value || '',
+      back_title_reward_detail: document.getElementById('cfg-back_title_reward_detail')?.value || '',
+      back_title_links: document.getElementById('cfg-back_title_links')?.value || '',
+      back_title_questions: document.getElementById('cfg-back_title_questions')?.value || '',
+    },
+    comunicaciones: {
+      welcome_email_enabled: document.getElementById('cfg-welcome_email_enabled')?.checked || false,
+      welcome_email_subject: document.getElementById('cfg-welcome_email_subject')?.value || '',
+      welcome_email_body: document.getElementById('cfg-welcome_email_body')?.value || '',
+      birthday_email_enabled: document.getElementById('cfg-birthday_email_enabled')?.checked || false,
+      birthday_email_subject: document.getElementById('cfg-birthday_email_subject')?.value || '',
+      birthday_email_body: document.getElementById('cfg-birthday_email_body')?.value || '',
+    }
+  };
+
+  try {
+    const r = await fetch(`${BASE}/api/admin/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const ok = r.ok;
+    document.getElementById('cfg-save-msg').style.display = ok ? '' : 'none';
+    document.getElementById('cfg-err-msg').style.display  = ok ? 'none' : '';
+    if (ok) setTimeout(() => { document.getElementById('cfg-save-msg').style.display = 'none'; }, 3000);
+  } catch(e) {
+    document.getElementById('cfg-err-msg').style.display = '';
+    document.getElementById('cfg-save-msg').style.display = 'none';
+  }
+}
+
+async function sendDistribution() {
+  const target = document.querySelector('input[name="dist-target"]:checked')?.value || 'new';
+  const el = document.getElementById('dist-result');
+  el.style.display = '';
+  el.innerHTML = '<em>⏳ Procesando...</em>';
+  // Placeholder - in production this would send emails
+  await new Promise(r => setTimeout(r, 800));
+  el.innerHTML = `<span style="color:#2e7d32">✅ Distribución programada para clientes (${target === 'new' ? 'nuevos' : 'todos'}). Esta función requiere integración de email.</span>`;
 }
 </script>
 </body>

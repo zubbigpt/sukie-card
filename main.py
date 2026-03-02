@@ -65,6 +65,8 @@ def run_migrations():
         "UPDATE customers SET origin='API' WHERE origin IS NULL",
         "UPDATE loyalty_cards SET award_balance=0 WHERE award_balance IS NULL",
         "UPDATE stamp_transactions SET transaction_type='stamp' WHERE transaction_type IS NULL",
+        "CREATE TABLE IF NOT EXISTS card_config (id INTEGER PRIMARY KEY DEFAULT 1, config TEXT NOT NULL DEFAULT '{}', updated_at TIMESTAMPTZ DEFAULT NOW())",
+        "INSERT INTO card_config (id, config) SELECT 1, '{}' WHERE NOT EXISTS (SELECT 1 FROM card_config WHERE id = 1)",
     ]
     from database import SessionLocal
     db = SessionLocal()
@@ -819,6 +821,122 @@ async def admin_legacy(request: Request, pin: str = "", db: Session = Depends(ge
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN: CONFIG DE TARJETA
+# ══════════════════════════════════════════════════════════════════════════════
+DEFAULT_CONFIG = {
+    "general": {
+        "card_name": "Sellos",
+        "card_title": "Sukie Card",
+        "issuer": "Sukie Cookie",
+        "description": "Tarjeta de sellos Sukie Cookie",
+        "expiry_type": "never",  # never | date | days_from_register
+        "expiry_date": "",
+        "expiry_days": 365,
+        "card_prefix": "C521",
+        "barcode_type": "QR",
+    },
+    "programa": {
+        "stamps_per_reward": 10,
+        "reward_name": "Cookie Gratis",
+        "msg_single": "{nombre} has conseguido 1 sello",
+        "msg_multiple": "{nombre} has conseguido {#} sellos",
+        "birthday_enabled": True,
+        "birthday_msg_push": "¡Feliz Cumpleaños! 🎂",
+        "birthday_time": "07:00",
+        "anniversary_enabled": True,
+    },
+    "landing": {
+        "form_title": "Únete a la Sukie Card",
+        "header_text": "Regístrate y acumula cookies gratis",
+        "button_text": "Registrarse",
+        "bg_color": "#FFF5B6",
+        "text_color": "#280011",
+        "link_color": "#A0006B",
+        "button_color": "#280011",
+        "field_name": True,
+        "field_lastname": True,
+        "field_email": True,
+        "field_phone": True,
+        "field_birthdate": True,
+        "field_name_required": True,
+        "field_lastname_required": False,
+        "field_email_required": True,
+        "field_phone_required": False,
+        "field_birthdate_required": False,
+        "company_name": "Suculent grupo de hosteleria SL",
+        "company_email": "suculentcookie@gmail.com",
+        "company_phone": "683174396",
+        "terms_url": "",
+        "register_limit_date": "",
+        "access_type": "public",
+    },
+    "diseno": {
+        "commercial_name": "Sukie Cookie",
+        "card_bg_color": "#FFFFC6",
+        "label_color": "#220015",
+        "text_color": "#220015",
+        "stamp_bg_color": "#22000F",
+        "stamp_icon_color": "#FFF5B6",
+        "stamp_border_color": "#FFF5B6",
+        "stamp_filled_color": "#FF6B9D",
+        "front_field1_label": "Titular",
+        "front_field1_value": "NOMBRE Y APELLIDOS",
+        "front_field2_label": "Cookies disponibles",
+        "front_field2_value": "Premios/Vales Disponibles",
+        "link_instagram": "https://instagram.com/sukie.cookie",
+        "link_web": "https://sukiecookie.es",
+        "back_title_updates": "Últimas actualizaciones",
+        "back_title_holder": "Titular",
+        "back_title_rewards_pending": "Premios para canjear",
+        "back_title_rewards_won": "Premios ganados",
+        "back_title_how": "Cómo conseguir sellos",
+        "back_title_reward_detail": "Detalles del premio",
+        "back_title_links": "Enlaces de interés",
+        "back_title_questions": "¿Preguntas sobre esta tarjeta?",
+    },
+    "comunicaciones": {
+        "welcome_email_enabled": True,
+        "welcome_email_subject": "¡Bienvenido/a a la Sukie Card! 🍪",
+        "welcome_email_body": "Hola {nombre},\n\nYa eres parte de la familia Sukie Cookie.\nConsigue 10 sellos y llévate una cookie gratis.\n\nVer tu tarjeta: {link_tarjeta}\n\n¡Hasta pronto!\nSukie Cookie",
+        "birthday_email_enabled": True,
+        "birthday_email_subject": "¡Feliz Cumpleaños de parte de Sukie Cookie! 🎂🍪",
+        "birthday_email_body": "Hola {nombre},\n\n¡Hoy es tu día especial!\nPasa a visitarnos y llévate un regalo.\n\nCon cariño,\nSukie Cookie",
+    }
+}
+
+@app.get("/api/admin/config")
+def get_config(pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin)
+    from database import SessionLocal
+    row = db.execute(text("SELECT config FROM card_config WHERE id=1")).fetchone()
+    if row:
+        try:
+            stored = json.loads(row[0])
+        except:
+            stored = {}
+    else:
+        stored = {}
+    # Merge with defaults
+    result = {**DEFAULT_CONFIG}
+    for section, values in stored.items():
+        if section in result and isinstance(values, dict):
+            result[section] = {**result[section], **values}
+        else:
+            result[section] = values
+    return result
+
+
+@app.put("/api/admin/config")
+async def save_config(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")))
+    data = {k: v for k, v in body.items() if k != "pin"}
+    db.execute(text("UPDATE card_config SET config=:cfg, updated_at=NOW() WHERE id=1"),
+               {"cfg": json.dumps(data)})
+    db.commit()
+    return {"message": "Configuración guardada"}
+
 # DASHBOARD RICO
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/dashboard", response_class=HTMLResponse)

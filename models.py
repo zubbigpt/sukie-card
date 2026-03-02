@@ -52,3 +52,11 @@ class StampTransaction(Base):
     note             = Column(Text, nullable=True)
     store            = Column(String, nullable=True)
     created_at       = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class CardConfig(Base):
+    __tablename__ = "card_config"
+
+    id         = Column(Integer, primary_key=True, default=1)
+    config     = Column(Text, nullable=False, default="{}")  # JSON blob
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
