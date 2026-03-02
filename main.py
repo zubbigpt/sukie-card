@@ -11,6 +11,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text, or_, func as sqlfunc
 from datetime import datetime, timezone, timedelta, date
 
+import smtplib
+import secrets
+import string
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import models
 from database import engine, get_db
 
@@ -36,6 +41,15 @@ BASE_URL          = os.environ.get("BASE_URL", "http://localhost:8000")
 API_KEY           = os.environ.get("API_KEY", "sukie-secret-key")
 CARD_TITLE        = os.environ.get("CARD_TITLE", "SukieCookie")
 REWARD_NAME       = os.environ.get("REWARD_NAME", "Cookie Gratis 🍪")
+
+# SMTP CONFIG
+SMTP_HOST     = os.environ.get("SMTP_HOST", "")
+SMTP_PORT     = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER     = os.environ.get("SMTP_USER", "")
+SMTP_PASS     = os.environ.get("SMTP_PASS", "")
+SMTP_FROM     = os.environ.get("SMTP_FROM", "noreply@sukiecookie.es")
+VAPID_PUBLIC  = os.environ.get("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE = os.environ.get("VAPID_PRIVATE_KEY", "")
 
 
 # ── MIGRACIÓN AUTOMÁTICA ──────────────────────────────────────────────────────
@@ -67,6 +81,10 @@ def run_migrations():
         "UPDATE stamp_transactions SET transaction_type='stamp' WHERE transaction_type IS NULL",
         "CREATE TABLE IF NOT EXISTS card_config (id INTEGER PRIMARY KEY DEFAULT 1, config TEXT NOT NULL DEFAULT '{}', updated_at TIMESTAMPTZ DEFAULT NOW())",
         "INSERT INTO card_config (id, config) SELECT 1, '{}' WHERE NOT EXISTS (SELECT 1 FROM card_config WHERE id = 1)",
+        "CREATE TABLE IF NOT EXISTS push_subscriptions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), card_id UUID REFERENCES loyalty_cards(id), endpoint TEXT NOT NULL UNIQUE, p256dh TEXT NOT NULL, auth TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())",
+        "CREATE TABLE IF NOT EXISTS referrals (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), referrer_card UUID REFERENCES loyalty_cards(id), referred_card UUID REFERENCES loyalty_cards(id), code VARCHAR(12) UNIQUE NOT NULL, used BOOLEAN DEFAULT FALSE, bonus_stamps INTEGER DEFAULT 2, created_at TIMESTAMPTZ DEFAULT NOW(), used_at TIMESTAMPTZ)",
+        "ALTER TABLE customers ADD COLUMN IF NOT EXISTS referral_bonus_total INTEGER DEFAULT 0",
+        "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS tier VARCHAR DEFAULT 'bronze'",
     ]
     from database import SessionLocal
     db = SessionLocal()
@@ -105,6 +123,77 @@ def verify_pin(pin: str):
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
 
+def get_tier(total_stamps: int) -> dict:
+    """Returns tier info based on total lifetime stamps"""
+    if total_stamps >= 150:
+        return {"name": "Oro", "color": "#FFD700", "emoji": "🥇", "next": None, "next_at": None}
+    elif total_stamps >= 50:
+        return {"name": "Plata", "color": "#C0C0C0", "emoji": "🥈", "next": "Oro", "next_at": 150}
+    else:
+        return {"name": "Bronce", "color": "#CD7F32", "emoji": "🥉", "next": "Plata", "next_at": 50}
+
+
+def generate_referral_code(length=8) -> str:
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
+
+
+def get_or_create_referral_code(card_id, db: Session) -> str:
+    card_uuid = uuid.UUID(str(card_id))
+    ref = db.query(models.Referral).filter(models.Referral.referrer_card == card_uuid).first()
+    if not ref:
+        code = generate_referral_code()
+        # ensure unique
+        while db.query(models.Referral).filter(models.Referral.code == code).first():
+            code = generate_referral_code()
+        ref = models.Referral(referrer_card=card_uuid, code=code)
+        db.add(ref)
+        db.commit()
+        db.refresh(ref)
+    return ref.code
+
+
+def send_email(to_email: str, subject: str, html_body: str) -> bool:
+    """Send email via SMTP. Returns True if sent, False if config missing."""
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+        print(f"Email NOT sent (SMTP not configured): to={to_email}, subject={subject}")
+        return False
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"]    = SMTP_FROM
+        msg["To"]      = to_email
+        msg.attach(MIMEText(html_body, "html", "utf-8"))
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_FROM, [to_email], msg.as_string())
+        print(f"✅ Email sent: to={to_email}")
+        return True
+    except Exception as e:
+        print(f"❌ Email error: {e}")
+        return False
+
+
+def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_code: str = "", referral_url: str = "") -> str:
+    """Render welcome email HTML"""
+    template = templates.get_template("email_welcome.html")
+    return template.render(
+        name=name,
+        card_url=card_url,
+        stamps=stamps,
+        referral_code=referral_code,
+        referral_url=referral_url,
+        subject="¡Bienvenido/a a la Sukie Card! 🍪",
+    )
+
+
+def render_birthday_email(name: str, card_url: str) -> str:
+    template = templates.get_template("email_birthday.html")
+    return template.render(name=name, card_url=card_url)
+
+
 def card_to_dict(card: models.LoyaltyCard, customer: models.Customer) -> dict:
     full_name = f"{customer.first_name or ''} {customer.last_name or ''}".strip()
     return {
@@ -134,6 +223,7 @@ def card_to_dict(card: models.LoyaltyCard, customer: models.Customer) -> dict:
         "awardBalance":   card.award_balance or 0,
         "rewardsRedeemed": card.rewards_redeemed or 0,
         "awardTotal":     (card.rewards_redeemed or 0) + (card.award_balance or 0),
+        "tier":           get_tier(card.total_stamps or 0),
         "createdAt":      customer.created_at.isoformat() if customer.created_at else "",
         "updatedAt":      card.updated_at.isoformat() if card.updated_at else "",
     }
@@ -151,12 +241,12 @@ def health():
 # TARJETA PÚBLICA
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/card/{card_id}", response_class=HTMLResponse)
-def show_card(card_id: str, db: Session = Depends(get_db)):
+def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     name = customer.first_name if customer else "Cliente"
     return templates.TemplateResponse("card.html", {
-        "request":        {},
+        "request":        request,
         "card_id":        card_id,
         "name":           name,
         "stamps":         card.stamps or 0,
@@ -221,6 +311,29 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
     db.add(tx)
     db.commit()
     db.refresh(card)
+
+    # Handle referral
+    ref_code = body.get("ref", "").strip().upper()
+    if ref_code:
+        ref = db.query(models.Referral).filter(
+            models.Referral.code == ref_code,
+            models.Referral.used == False
+        ).first()
+        if ref and str(ref.referrer_card) != str(card.id):
+            ref.used = True
+            ref.referred_card = card.id
+            ref.used_at = datetime.now(timezone.utc)
+            # Give bonus stamps to referrer
+            referrer_card = db.query(models.LoyaltyCard).filter(
+                models.LoyaltyCard.id == ref.referrer_card).first()
+            if referrer_card:
+                referrer_card.stamps       = (referrer_card.stamps or 0) + ref.bonus_stamps
+                referrer_card.total_stamps = (referrer_card.total_stamps or 0) + ref.bonus_stamps
+            # Give bonus stamps to new user too
+            card.stamps       = (card.stamps or 0) + ref.bonus_stamps
+            card.total_stamps = (card.total_stamps or 0) + ref.bonus_stamps
+            db.commit()
+
 
     return {
         "message":  "Tarjeta creada",
@@ -939,6 +1052,206 @@ async def save_config(request: Request, db: Session = Depends(get_db)):
 
 # DASHBOARD RICO
 # ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
+# EMAIL PREVIEW & SEND
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/email-preview/{card_id}", response_class=HTMLResponse)
+def email_preview(card_id: str, db: Session = Depends(get_db)):
+    """Preview the welcome email in browser"""
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    name = customer.first_name if customer else "Cliente"
+    card_url = f"{BASE_URL}/card/{card_id}"
+    ref_code = get_or_create_referral_code(card_id, db)
+    ref_url  = f"{BASE_URL}/register?ref={ref_code}"
+    html = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url)
+    return HTMLResponse(content=html)
+
+
+@app.get("/email-preview-birthday/{card_id}", response_class=HTMLResponse)
+def email_preview_birthday(card_id: str, db: Session = Depends(get_db)):
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    name = customer.first_name if customer else "Cliente"
+    html = render_birthday_email(name, f"{BASE_URL}/card/{card_id}")
+    return HTMLResponse(content=html)
+
+
+@app.post("/api/admin/send-email/{card_id}")
+async def send_email_to_customer(card_id: str, request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")))
+    email_type = body.get("type", "welcome")  # welcome | birthday
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    name     = customer.first_name or "Cliente"
+    card_url = f"{BASE_URL}/card/{card_id}"
+    if email_type == "birthday":
+        html    = render_birthday_email(name, card_url)
+        subject = f"¡Feliz Cumpleaños {name}! 🎂🍪"
+    else:
+        ref_code = get_or_create_referral_code(card_id, db)
+        ref_url  = f"{BASE_URL}/register?ref={ref_code}"
+        html    = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url)
+        subject = "¡Bienvenido/a a la Sukie Card! 🍪"
+    sent = send_email(customer.email, subject, html)
+    return {"sent": sent, "to": customer.email, "type": email_type,
+            "note": "SMTP no configurado - configura en Railway env vars" if not sent else "Email enviado"}
+
+
+@app.post("/api/admin/send-email-all")
+async def send_email_all(request: Request, db: Session = Depends(get_db)):
+    """Send welcome email to all customers (or just new ones)"""
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")))
+    target = body.get("target", "new")  # new | all
+    rows = (db.query(models.LoyaltyCard, models.Customer)
+            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+            .filter(models.Customer.email != "PLACEHOLDER@sukie.internal").all())
+    sent_count = 0
+    for card, cust in rows:
+        if cust.email and "@" in cust.email:
+            ref_code = get_or_create_referral_code(str(card.id), db)
+            ref_url  = f"{BASE_URL}/register?ref={ref_code}"
+            html    = render_welcome_email(cust.first_name or "Cliente",
+                                           f"{BASE_URL}/card/{card.id}",
+                                           card.stamps or 0, ref_code, ref_url)
+            if send_email(cust.email, "Tu Sukie Card está esperándote 🍪", html):
+                sent_count += 1
+    return {"sent": sent_count, "total": len(rows)}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# REFERIDOS
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/api/cards/{card_id}/referral")
+def get_referral(card_id: str, db: Session = Depends(get_db)):
+    """Get or create referral code for a card"""
+    get_card_or_404(card_id, db)
+    code = get_or_create_referral_code(card_id, db)
+    used = db.query(models.Referral).filter(
+        models.Referral.referrer_card == uuid.UUID(card_id),
+        models.Referral.used == True
+    ).count()
+    return {
+        "referral_code": code,
+        "referral_url":  f"{BASE_URL}/register?ref={code}",
+        "referrals_used": used,
+        "bonus_stamps_earned": used * 2,
+    }
+
+
+@app.get("/api/admin/referrals")
+def admin_referrals(pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin)
+    refs = db.query(models.Referral).filter(models.Referral.used == True).all()
+    return {"total_referrals": len(refs), "total_bonus_stamps": sum(r.bonus_stamps for r in refs)}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PUSH NOTIFICATIONS
+# ══════════════════════════════════════════════════════════════════════════════
+@app.post("/api/push/subscribe")
+async def push_subscribe(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    card_id_str = body.get("card_id")
+    endpoint    = body.get("endpoint", "")
+    p256dh      = body.get("keys", {}).get("p256dh", "")
+    auth_key    = body.get("keys", {}).get("auth", "")
+    if not endpoint or not p256dh or not auth_key:
+        raise HTTPException(status_code=400, detail="Datos de suscripción incompletos")
+    # Upsert subscription
+    existing = db.query(models.PushSubscription).filter(
+        models.PushSubscription.endpoint == endpoint).first()
+    if existing:
+        if card_id_str:
+            existing.card_id = uuid.UUID(card_id_str)
+        db.commit()
+        return {"message": "Suscripción actualizada"}
+    sub = models.PushSubscription(
+        endpoint=endpoint,
+        p256dh=p256dh,
+        auth=auth_key,
+        card_id=uuid.UUID(card_id_str) if card_id_str else None,
+    )
+    db.add(sub)
+    db.commit()
+    return {"message": "Suscripción creada"}
+
+
+@app.post("/api/admin/push/send")
+async def admin_push_send(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")))
+    title   = body.get("title", "Sukie Cookie")
+    message = body.get("message", "")
+    # Log intent - actual sending requires pywebpush + VAPID keys
+    subs = db.query(models.PushSubscription).count()
+    return {
+        "message": f"Push programado: '{title}' → '{message}'",
+        "subscribers": subs,
+        "note": "Para envíos reales, configura VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY en Railway y instala pywebpush",
+        "vapid_public": VAPID_PUBLIC or "NO CONFIGURADO"
+    }
+
+
+@app.get("/api/admin/push/stats")
+def push_stats(pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin)
+    total = db.query(models.PushSubscription).count()
+    return {"subscribers": total}
+
+
+@app.get("/sw.js", response_class=HTMLResponse)
+def service_worker():
+    """Service worker for push notifications"""
+    sw_code = """
+self.addEventListener('push', function(event) {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Sukie Cookie';
+  const options = {
+    body: data.body || '¡Tienes una notificación!',
+    icon: '/static/icon-192.png',
+    badge: '/static/badge-72.png',
+    data: { url: data.url || '/' },
+    requireInteraction: false,
+    vibrate: [200, 100, 200]
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  const url = event.notification.data && event.notification.data.url ? event.notification.data.url : '/';
+  event.waitUntil(clients.openWindow(url));
+});
+"""
+    from fastapi.responses import Response
+    return Response(content=sw_code, media_type="application/javascript")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TIER INFO
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/api/cards/{card_id}/tier")
+def get_card_tier(card_id: str, db: Session = Depends(get_db)):
+    card = get_card_or_404(card_id, db)
+    tier = get_tier(card.total_stamps or 0)
+    return {
+        "tier": tier,
+        "total_stamps": card.total_stamps or 0,
+    }
+
+
+@app.get("/api/push/vapid-public")
+def get_vapid_public():
+    return {"key": VAPID_PUBLIC or None}
+
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_rich(request: Request):
     return templates.TemplateResponse("dashboard_admin.html", {"request": request})

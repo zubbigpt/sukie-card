@@ -60,3 +60,25 @@ class CardConfig(Base):
     id         = Column(Integer, primary_key=True, default=1)
     config     = Column(Text, nullable=False, default="{}")  # JSON blob
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+    id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    card_id    = Column(UUID(as_uuid=True), ForeignKey("loyalty_cards.id"), nullable=True)
+    endpoint   = Column(Text, nullable=False, unique=True)
+    p256dh     = Column(Text, nullable=False)
+    auth       = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Referral(Base):
+    __tablename__ = "referrals"
+    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    referrer_card = Column(UUID(as_uuid=True), ForeignKey("loyalty_cards.id"), nullable=False)
+    referred_card = Column(UUID(as_uuid=True), ForeignKey("loyalty_cards.id"), nullable=True)
+    code          = Column(String(12), unique=True, nullable=False)
+    used          = Column(Boolean, default=False)
+    bonus_stamps  = Column(Integer, default=2)
+    created_at    = Column(DateTime(timezone=True), server_default=func.now())
+    used_at       = Column(DateTime(timezone=True), nullable=True)

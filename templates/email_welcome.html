@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{{ subject }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Arial,sans-serif">
+
+<!-- WRAPPER -->
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8">
+<tr><td align="center" style="padding:20px 10px">
+
+<!-- MAIN CONTAINER -->
+<table width="100%" max-width="520" cellpadding="0" cellspacing="0" style="max-width:520px;background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+
+<!-- HEADER -->
+<tr><td style="background:#FFF5B6;padding:24px 20px 16px;text-align:center">
+  <div style="font-size:28px;font-weight:700;color:#3A3426;letter-spacing:1px">🍪 SUKIE</div>
+  <div style="font-size:14px;color:#6B5D45;margin-top:4px">Tarjeta de Fidelidad</div>
+</td></tr>
+
+<!-- HERO -->
+<tr><td style="background:#3A3426;padding:32px 20px;text-align:center;color:white">
+  <div style="font-size:24px;font-weight:700;margin-bottom:8px">¡Bienvenida/o a la familia! 🍪</div>
+  <div style="font-size:16px;line-height:1.4">Hola, <strong>{{ name }}</strong>!</div>
+  <div style="font-size:14px;opacity:0.9;margin-top:8px">Tu tarjeta de fidelidad está lista para empezar</div>
+</td></tr>
+
+<!-- CARD VISUAL -->
+<tr><td style="padding:24px 20px;background:#fafaf8">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFC6;border-radius:12px;border:2px solid #3A3426;overflow:hidden">
+  <tr><td style="padding:16px 20px;background:#3A3426;color:#FFF5B6;font-size:14px;font-weight:700;text-align:center">SUKIE CARD – TARJETA FIDELIZACIÓN</td></tr>
+  <tr><td style="padding:20px">
+    <div style="text-align:center;color:#3A3426">
+      <div style="font-size:12px;color:#999;margin-bottom:12px;text-transform:uppercase">TUS SELLOS</div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+      <tr>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 1 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 2 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 3 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 4 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 5 %}🍪{% endif %}</span></td>
+      </tr>
+      <tr>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 6 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 7 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 8 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 9 %}🍪{% endif %}</span></td>
+        <td width="20%" style="text-align:center;padding:4px"><span style="display:inline-block;width:32px;height:32px;border-radius:6px;background:#3A3426;border:2px solid #3A3426;line-height:32px;color:#FFF5B6;font-size:16px">{% if stamps >= 10 %}🍪{% endif %}</span></td>
+      </tr>
+      </table>
+      <div style="font-size:14px;font-weight:700;color:#3A3426;margin-bottom:12px">{{ stamps }}/10 sellos</div>
+      <div style="font-size:12px;color:#666;font-style:italic">Cookie Gratis cuando completes 10 sellos</div>
+    </div>
+  </td></tr>
+  </table>
+</td></tr>
+
+<!-- CTA BUTTONS -->
+<tr><td style="padding:24px 20px;background:white">
+  <table width="100%" cellpadding="0" cellspacing="0">
+  <tr><td style="text-align:center;margin-bottom:12px">
+    <a href="{{ card_url }}" style="display:inline-block;background:#000;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">🎫 Ver Mi Tarjeta</a>
+  </td></tr>
+  <tr><td style="text-align:center">
+    <a href="{{ card_url }}" style="display:inline-block;background:#FFF5B6;color:#3A3426;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">➕ Añadir a Apple Wallet</a>
+  </td></tr>
+  </table>
+</td></tr>
+
+<!-- HOW IT WORKS -->
+<tr><td style="padding:24px 20px;background:#f9f7f3">
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-size:16px;font-weight:700;color:#3A3426;margin-bottom:16px">Cómo funciona</div>
+    <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td width="33%" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">🛍️</div>
+        <div style="font-size:12px;font-weight:600;color:#3A3426">Compra</div>
+      </td>
+      <td width="33%" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">🍪</div>
+        <div style="font-size:12px;font-weight:600;color:#3A3426">Acumula sellos</div>
+      </td>
+      <td width="33%" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">🎁</div>
+        <div style="font-size:12px;font-weight:600;color:#3A3426">Canjea regalo</div>
+      </td>
+    </tr>
+    </table>
+  </div>
+</td></tr>
+
+<!-- REFERRAL SECTION -->
+{% if referral_code %}
+<tr><td style="padding:24px 20px;background:white;border-top:1px solid #e0e0e0">
+  <div style="background:#FFF5B6;border-radius:12px;padding:16px 20px">
+    <div style="font-size:16px;font-weight:700;color:#3A3426;margin-bottom:8px">🎁 Invita a tus amigos</div>
+    <div style="font-size:13px;color:#666;margin-bottom:12px;line-height:1.4">Comparte tu código <strong>{{ referral_code }}</strong> y ambos recibiréis 2 sellos extra</div>
+    <a href="{{ referral_url }}" style="display:inline-block;background:#3A3426;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;font-size:12px">Compartir código</a>
+  </div>
+</td></tr>
+{% endif %}
+
+<!-- FOOTER -->
+<tr><td style="padding:20px;background:#3A3426;color:#FFF5B6;text-align:center;font-size:11px;border-top:1px solid #5C4A32">
+  <div style="margin-bottom:10px">
+    <div style="font-weight:700;margin-bottom:4px">Sukie Cookie</div>
+    <div style="opacity:0.8">Tarjeta de Fidelización © 2026</div>
+  </div>
+  <div style="opacity:0.6;font-size:10px;margin-top:8px">
+    <a href="#" style="color:#FFF5B6;text-decoration:none">Gestionar preferencias</a>
+  </div>
+</td></tr>
+
+</table>
+
+</td></tr>
+</table>
+
+</body>
+</html>

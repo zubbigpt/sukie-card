@@ -2,272 +2,407 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
   <title>Mi SukieCard – {{ name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#FFF3CF;font-family:'Poppins',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px}
-
-    .card{background:#fff;border-radius:24px;box-shadow:0 8px 32px rgba(58,52,38,.13);width:100%;max-width:400px;overflow:hidden}
-    .card-header{background:#FFF3CF;padding:24px 24px 16px;text-align:center;border-bottom:3px dashed #e8d9a0}
-    .logo{height:56px;object-fit:contain}
-    .card-body{padding:24px}
-
-    .greeting{font-family:'Playfair Display',serif;font-size:22px;color:#3A3426;text-align:center;margin-bottom:4px}
-    .subtitle{font-size:13px;color:#9a8f7e;text-align:center;margin-bottom:20px}
-
-    /* AWARD BANNER – disponible */
-    .award-available{background:linear-gradient(135deg,#d4a017,#f5cb53);border-radius:16px;padding:18px 20px;text-align:center;margin-bottom:20px;animation:pulse 2s ease-in-out infinite}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
-    .award-available .emoji{font-size:36px}
-    .award-available h2{font-size:18px;font-weight:800;margin:4px 0 2px;color:#3A3426}
-    .award-available p{font-size:13px;color:#6b5e47}
-    .award-count{background:#3A3426;color:#FFF3CF;border-radius:50px;padding:3px 14px;font-size:1.1rem;font-weight:700;display:inline-block;margin-top:4px}
-
-    /* SELLOS */
-    .stamps-section{margin-bottom:20px}
-    .stamps-label{font-size:12px;font-weight:700;color:#9a8f7e;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;text-align:center}
-    .stamps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-    .stamp{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;border:2.5px solid #e8d9a0;background:#FFF3CF;transition:all .3s}
-    .stamp.filled{background:#3A3426;border-color:#3A3426;box-shadow:0 2px 8px rgba(58,52,38,.25)}
-    .stamp.empty{color:#d4c9a8;font-size:20px}
-
-    /* PROGRESS */
-    .progress-section{margin-bottom:20px}
-    .progress-text{display:flex;justify-content:space-between;font-size:13px;color:#9a8f7e;margin-bottom:8px}
-    .progress-text strong{color:#3A3426}
-    .progress-bar{height:10px;background:#FFF3CF;border-radius:99px;overflow:hidden;border:1.5px solid #e8d9a0}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#3A3426,#6b5e47);border-radius:99px;transition:width 1s ease}
-
-    /* STATS ROW */
-    .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-    .stat-pill{background:#FFF3CF;border:1.5px solid #e8d9a0;border-radius:12px;padding:10px;text-align:center}
-    .stat-pill .num{font-size:1.4rem;font-weight:800;color:#3A3426}
-    .stat-pill .lbl{font-size:.68rem;color:#9a8f7e;text-transform:uppercase;letter-spacing:.5px}
-
+    body{background:#f0ebe0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 12px 40px}
+    
+    /* WALLET CARD */
+    .wallet-card{
+      width:100%;max-width:380px;
+      background:linear-gradient(145deg,#FFFFC6 0%,#FFF5B6 100%);
+      border-radius:20px;
+      padding:0;
+      box-shadow:0 20px 60px rgba(58,52,38,0.25),0 4px 12px rgba(0,0,0,0.08);
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+    .card-header{
+      background:#3A3426;
+      padding:16px 20px 14px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .card-brand{font-size:1.1rem;font-weight:700;color:#FFF5B6;letter-spacing:0.5px}
+    .card-type{font-size:0.7rem;color:rgba(255,245,182,0.7);text-transform:uppercase;letter-spacing:1px}
+    .tier-badge{
+      background:var(--tier-color,#CD7F32);
+      color:white;
+      font-size:0.7rem;
+      font-weight:700;
+      padding:3px 8px;
+      border-radius:20px;
+      display:flex;align-items:center;gap:4px;
+      text-transform:uppercase;letter-spacing:0.5px;
+    }
+    .card-body{padding:20px}
+    .card-owner{font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .card-name{font-size:1.25rem;font-weight:700;color:#3A3426;margin-bottom:16px}
+    
+    /* STAMPS */
+    .stamps-label{font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+    .stamps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+    .stamp{
+      aspect-ratio:1;
+      border-radius:10px;
+      border:2px solid #3A3426;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;
+      background:rgba(58,52,38,0.05);
+      transition:all 0.2s;
+      position:relative;
+    }
+    .stamp.filled{background:#3A3426;border-color:#3A3426}
+    .stamp.reward{background:#FFD700;border-color:#B8860B}
+    .stamp-number{font-size:0.55rem;color:#ccc;position:absolute;bottom:2px;right:4px;font-weight:600}
+    .stamp.filled .stamp-number{color:rgba(255,255,255,0.5)}
+    
+    /* PROGRESS BAR */
+    .progress-wrap{margin-bottom:16px}
+    .progress-bar-bg{height:6px;background:rgba(58,52,38,0.12);border-radius:3px;overflow:hidden}
+    .progress-bar-fill{height:100%;background:linear-gradient(90deg,#3A3426,#6B5D45);border-radius:3px;transition:width 0.8s ease}
+    .progress-text{font-size:0.75rem;color:#888;margin-top:5px;text-align:right}
+    
+    /* STATS */
+    .card-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+    .stat-box{background:rgba(58,52,38,0.06);border-radius:10px;padding:10px;text-align:center}
+    .stat-num{font-size:1.4rem;font-weight:700;color:#3A3426}
+    .stat-lbl{font-size:0.65rem;color:#999;text-transform:uppercase;letter-spacing:0.5px}
+    
+    /* AWARD BALANCE */
+    .award-box{background:#3A3426;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .award-box.empty{background:rgba(58,52,38,0.08)}
+    .award-text{color:white;font-size:0.85rem;font-weight:600}
+    .award-text.empty{color:#999}
+    .award-count{background:#FFF5B6;color:#3A3426;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem}
+    .award-count.empty{background:rgba(58,52,38,0.15);color:#bbb}
+    
     /* QR */
-    .qr-section{text-align:center;padding:16px 0 8px;border-top:2px dashed #e8d9a0}
-    .qr-label{font-size:11px;color:#9a8f7e;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
-    #qrcode{display:inline-block;padding:8px;background:#fff;border-radius:12px;border:2px solid #FFF3CF}
-
-    /* ADMIN TRIGGER */
-    .admin-trigger{display:block;text-align:center;margin-top:28px;font-size:12px;color:#c5b99a;cursor:pointer;text-decoration:none;transition:color .2s}
-    .admin-trigger:hover{color:#3A3426}
-
-    /* MODAL */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(58,52,38,.6);backdrop-filter:blur(4px);z-index:100;align-items:flex-end;justify-content:center}
-    .modal-overlay.open{display:flex}
-    .modal{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:28px 24px 40px;animation:slideUp .3s ease}
-    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    .modal h3{font-family:'Playfair Display',serif;font-size:20px;color:#3A3426;margin-bottom:6px}
-    .modal .cinfo{font-size:14px;color:#9a8f7e;margin-bottom:20px}
-    .modal label{display:block;font-size:13px;font-weight:700;color:#3A3426;margin-bottom:6px}
-    .modal input{width:100%;padding:14px 16px;border:2px solid #e8d9a0;border-radius:12px;font-size:20px;font-family:'Poppins',sans-serif;color:#3A3426;background:#FFF3CF;margin-bottom:14px;text-align:center;letter-spacing:4px;outline:none;transition:border-color .2s}
-    .modal input:focus{border-color:#3A3426}
-    .modal input.stamps-input{font-size:36px;letter-spacing:0}
-    .btn{width:100%;padding:16px;border:none;border-radius:50px;font-size:17px;font-weight:800;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;margin-bottom:10px}
-    .btn-primary{background:#3A3426;color:#FFF3CF}
-    .btn-primary:hover{background:#5a4e38;transform:translateY(-1px)}
-    .btn-reward{background:linear-gradient(135deg,#d4a017,#e8c840);color:#3A3426}
-    .btn-cancel{background:transparent;color:#9a8f7e;font-size:15px}
-    .error-msg{color:#c0392b;font-size:13px;text-align:center;margin-bottom:10px;display:none}
-    .success-msg{color:#27ae60;font-size:15px;font-weight:700;text-align:center;margin-bottom:10px;display:none}
+    .qr-section{border-top:1px dashed rgba(58,52,38,0.2);padding-top:16px;text-align:center}
+    .qr-label{font-size:0.65rem;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+    #qrcode{display:flex;justify-content:center}
+    
+    /* ACTIONS */
+    .actions{width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+    .btn-wallet{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      padding:14px 20px;border-radius:12px;font-size:0.95rem;font-weight:600;
+      text-decoration:none;cursor:pointer;border:none;width:100%;
+      transition:all 0.2s;
+    }
+    .btn-apple{background:#000;color:white}
+    .btn-apple:hover{background:#222;transform:translateY(-1px)}
+    .btn-google{background:white;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.12);border:1px solid #e0e0e0}
+    .btn-google:hover{box-shadow:0 4px 12px rgba(0,0,0,0.15);transform:translateY(-1px)}
+    .btn-share{background:#FFF5B6;color:#3A3426;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+    .btn-share:hover{background:#ffe066;transform:translateY(-1px)}
+    
+    /* REFERRAL CARD */
+    .referral-card{
+      width:100%;max-width:380px;
+      background:white;border-radius:16px;padding:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom:16px;
+    }
+    .ref-title{font-size:0.85rem;font-weight:700;color:#3A3426;margin-bottom:6px}
+    .ref-desc{font-size:0.78rem;color:#666;margin-bottom:12px}
+    .ref-code-box{
+      background:#f5f0e8;border-radius:8px;padding:10px 14px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .ref-code{font-size:1.1rem;font-weight:700;color:#3A3426;letter-spacing:2px}
+    .btn-copy{background:#3A3426;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:0.75rem;cursor:pointer}
+    
+    /* TIER INFO */
+    .tier-card{
+      width:100%;max-width:380px;
+      background:white;border-radius:16px;padding:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom:16px;
+    }
+    .tier-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .tier-icon{font-size:1.8rem}
+    .tier-info h3{font-size:1rem;font-weight:700;color:#3A3426}
+    .tier-info p{font-size:0.75rem;color:#888}
+    .tier-progress{background:#f0ebe0;border-radius:8px;overflow:hidden;height:8px;margin-top:8px}
+    .tier-fill{height:100%;border-radius:8px;transition:width 1s ease}
+    .tier-next{font-size:0.72rem;color:#888;margin-top:6px;text-align:right}
+    
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3A3426;color:white;padding:10px 20px;border-radius:20px;font-size:0.85rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap}
+    .toast.show{opacity:1}
+    
+    /* PUSH */
+    .push-card{
+      width:100%;max-width:380px;
+      background:white;border-radius:16px;padding:14px 16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom:16px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .push-text{font-size:0.82rem;color:#3A3426;font-weight:500}
+    .btn-push{background:#3A3426;color:white;border:none;padding:7px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer}
+    
+    .footer{font-size:0.7rem;color:#bbb;text-align:center;margin-top:8px}
   </style>
 </head>
 <body>
 
-<div class="card">
+<!-- WALLET CARD -->
+<div class="wallet-card" id="walletCard">
   <div class="card-header">
-    <img class="logo" src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314" alt="Sukie Cookie">
+    <div>
+      <div class="card-brand">🍪 SUKIE CARD</div>
+      <div class="card-type">Tarjeta de Fidelidad</div>
+    </div>
+    <div class="tier-badge" id="tierBadge" style="--tier-color:#CD7F32">🥉 Bronce</div>
   </div>
   <div class="card-body">
-    <h1 class="greeting">¡Hola, {{ name }}! 🍪</h1>
-    <p class="subtitle">Tu tarjeta de fidelidad Sukie Cookie</p>
-
-    {% if award_balance > 0 %}
-    <div class="award-available">
-      <div class="emoji">🎉</div>
-      <h2>¡Tienes {{ award_balance }} premio{{ 's' if award_balance > 1 else '' }}!</h2>
-      <p>Pídelo en caja y te lo canjeamos ahora 🍪</p>
-      <span class="award-count">🍪 × {{ award_balance }}</span>
+    <div class="card-owner">Titular</div>
+    <div class="card-name">{{ name }}</div>
+    
+    <div class="stamps-label">
+      <span>Tus sellos</span>
+      <span id="stampsCount">{{ stamps }}/{{ stamps_per_reward }}</span>
     </div>
-    {% endif %}
-
-    <!-- SELLOS GRID -->
-    <div class="stamps-section">
-      <div class="stamps-label">Tus sellos — {{ stamps }} / {{ stamps_per_reward }}</div>
-      <div class="stamps-grid">
-        {% for i in range(stamps_per_reward) %}
-          <div class="stamp {% if i < stamps %}filled{% else %}empty{% endif %}">
-            {% if i < stamps %}🍪{% else %}○{% endif %}
-          </div>
-        {% endfor %}
-      </div>
+    <div class="stamps-grid" id="stampsGrid">
+      <!-- Rendered by JS -->
     </div>
-
-    <!-- PROGRESS BAR -->
-    <div class="progress-section">
-      <div class="progress-text">
-        <span>Progreso al próximo premio</span>
-        <strong>{{ stamps }} / {{ stamps_per_reward }}</strong>
+    
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width:{{ [100, (stamps / stamps_per_reward * 100)|int]|min }}%"></div>
+      <div class="progress-text" id="progressText">Progreso al próximo premio</div>
+    </div>
+    
+    <div class="card-stats">
+      <div class="stat-box">
+        <div class="stat-num" id="totalStamps">{{ total_stamps }}</div>
+        <div class="stat-lbl">Sellos totales</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="redeemed">{{ rewards_redeemed }}</div>
+        <div class="stat-lbl">Premios canjeados</div>
       </div>
     </div>
-
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-pill">
-        <div class="num">{{ total_stamps }}</div>
-        <div class="lbl">Sellos totales</div>
-      </div>
-      <div class="stat-pill">
-        <div class="num">{{ rewards_redeemed }}</div>
-        <div class="lbl">Premios canjeados</div>
-      </div>
+    
+    <div class="award-box" id="awardBox">
+      <div class="award-text" id="awardText">Premios disponibles para canjear</div>
+      <div class="award-count" id="awardCount">{{ award_balance }}</div>
     </div>
-
-    <!-- QR -->
+    
     <div class="qr-section">
-      <div class="qr-label">📱 Muestra este QR en caja</div>
+      <div class="qr-label">Muestra este QR en caja</div>
       <div id="qrcode"></div>
     </div>
   </div>
 </div>
 
-<a class="admin-trigger" onclick="openAdmin()">⚙ Admin</a>
+<!-- WALLET BUTTONS -->
+<div class="actions">
+  <button class="btn-wallet btn-push" id="pushBtn" onclick="subscribePush()" style="background:#5C4A32;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px">
+    🔔 Activar notificaciones
+  </button>
+  <a class="btn-wallet btn-share" onclick="shareCard()">
+    🔗 Compartir mi tarjeta
+  </a>
+</div>
 
-<!-- MODAL ADMIN -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <!-- Fase 1: PIN -->
-    <div id="phase-pin">
-      <h3>Acceso Admin</h3>
-      <p class="cinfo">{{ name }} · {{ stamps }} sellos</p>
-      <div class="error-msg" id="pin-error">PIN incorrecto</div>
-      <label>PIN de admin</label>
-      <input type="password" id="pin-input" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')verifyPin()">
-      <button class="btn btn-primary" onclick="verifyPin()">Entrar</button>
-      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
-    </div>
-    <!-- Fase 2: Sellos -->
-    <div id="phase-stamps" style="display:none">
-      <h3>Añadir sellos 🍪</h3>
-      <p class="cinfo" id="stamps-cinfo"></p>
-      <div class="error-msg" id="stamp-error"></div>
-      <div class="success-msg" id="stamp-success"></div>
-      <label>¿Cuántas cookies compró?</label>
-      <input type="number" class="stamps-input" id="stamps-input" placeholder="1" min="1" max="50" onkeydown="if(event.key==='Enter')addStamps()">
-      <button class="btn btn-primary" onclick="addStamps()" id="add-btn">✅ Añadir sellos</button>
-      <div id="redeem-section" style="display:none">
-        <button class="btn btn-reward" onclick="redeemReward()">🎁 Canjear premio 🍪</button>
-      </div>
-      <button class="btn btn-cancel" onclick="closeModal()">Cerrar</button>
-    </div>
-    <!-- Fase 3: Éxito -->
-    <div id="phase-success" style="display:none">
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:64px;margin-bottom:12px">🍪</div>
-        <h3 style="margin-bottom:8px">¡Listo!</h3>
-        <p class="cinfo" id="success-msg"></p>
-        <button class="btn btn-primary" style="margin-top:20px" onclick="closeModal()">Cerrar</button>
-      </div>
+<!-- REFERRAL -->
+<div class="referral-card" id="referralSection" style="display:none">
+  <div class="ref-title">🎁 Invita a amigos y gana sellos</div>
+  <div class="ref-desc">Comparte tu código y cuando un amigo se registre, ¡ambos recibís 2 sellos extra!</div>
+  <div class="ref-code-box">
+    <span class="ref-code" id="refCode">...</span>
+    <button class="btn-copy" onclick="copyRef()">Copiar</button>
+  </div>
+  <div style="margin-top:8px;font-size:0.72rem;color:#999" id="refStats"></div>
+</div>
+
+<!-- TIER -->
+<div class="tier-card">
+  <div class="tier-row">
+    <div class="tier-icon" id="tierIcon">🥉</div>
+    <div class="tier-info">
+      <h3 id="tierName">Bronce</h3>
+      <p id="tierDesc">Nivel actual</p>
     </div>
   </div>
+  <div class="tier-progress">
+    <div class="tier-fill" id="tierFill" style="width:0%;background:#CD7F32"></div>
+  </div>
+  <div class="tier-next" id="tierNext"></div>
 </div>
+
+<div class="footer">Sukie Cookie · Tarjeta de fidelidad · <a href="/register" style="color:#bbb">Regístrate</a></div>
+<div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-const BASE = window.location.origin;
-const CARD_ID = "{{ card_id }}";
-let adminPin = "";
+const CARD_ID   = "{{ card_id }}";
+const STAMPS    = {{ stamps }};
+const MAX_STAMPS = {{ stamps_per_reward }};
+const AWARD_BAL = {{ award_balance }};
+const BASE_URL  = "{{ request.base_url | default('') }}".replace(/\/$/, '') || '';
 
-new QRCode(document.getElementById("qrcode"), {
-  text: window.location.href,
-  width: 180, height: 180,
-  colorDark: "#3A3426", colorLight: "#ffffff",
-  correctLevel: QRCode.CorrectLevel.M
-});
-
-function openAdmin(){document.getElementById("modal-overlay").classList.add("open");setTimeout(()=>document.getElementById("pin-input").focus(),200);}
-function closeModal(){
-  document.getElementById("modal-overlay").classList.remove("open");
-  document.getElementById("phase-pin").style.display="block";
-  document.getElementById("phase-stamps").style.display="none";
-  document.getElementById("phase-success").style.display="none";
-  document.getElementById("pin-error").style.display="none";
-  document.getElementById("pin-input").value="";
-  document.getElementById("stamps-input").value="";
-  adminPin="";
-}
-document.getElementById("modal-overlay").addEventListener("click",function(e){if(e.target===this)closeModal();});
-
-async function verifyPin(){
-  const pin=document.getElementById("pin-input").value;
-  try{
-    const r=await fetch(`${BASE}/api/cards/${CARD_ID}/stamps`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({pin,stamps:0})
-    });
-    if(r.status===403){
-      document.getElementById("pin-error").style.display="block";
-      document.getElementById("pin-input").value="";
-      return;
-    }
-    const d=await r.json();
-    adminPin=pin;
-    document.getElementById("pin-error").style.display="none";
-    document.getElementById("phase-pin").style.display="none";
-    document.getElementById("phase-stamps").style.display="block";
-    document.getElementById("stamps-cinfo").textContent=`{{ name }} · ${d.stamps} sellos · 🍪 ${d.award_balance} premios`;
-    document.getElementById("redeem-section").style.display=d.award_balance>0?"block":"none";
-    document.getElementById("stamps-input").focus();
-  }catch(e){
-    adminPin=pin;
-    document.getElementById("phase-pin").style.display="none";
-    document.getElementById("phase-stamps").style.display="block";
+// Render stamps
+function renderStamps() {
+  const grid = document.getElementById('stampsGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX_STAMPS; i++) {
+    const div = document.createElement('div');
+    div.className = 'stamp' + (i < STAMPS ? ' filled' : '');
+    div.innerHTML = (i < STAMPS ? '🍪' : '') + `<span class="stamp-number">${i+1}</span>`;
+    grid.appendChild(div);
+  }
+  // Progress
+  const pct = Math.round((STAMPS / MAX_STAMPS) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = 
+    STAMPS >= MAX_STAMPS ? '¡Premio disponible! 🎉' : `Faltan ${MAX_STAMPS - STAMPS} sellos para tu siguiente cookie`;
+  
+  // Award box
+  const aBox = document.getElementById('awardBox');
+  const aCount = document.getElementById('awardCount');
+  const aText = document.getElementById('awardText');
+  if (AWARD_BAL > 0) {
+    aBox.className = 'award-box';
+    aText.className = 'award-text';
+    aText.textContent = '🍪 ¡Tienes ' + AWARD_BAL + ' cookie' + (AWARD_BAL > 1 ? 's' : '') + ' gratis para canjear!';
+    aCount.className = 'award-count';
+  } else {
+    aBox.className = 'award-box empty';
+    aText.className = 'award-text empty';
+    aText.textContent = 'Acumula ' + MAX_STAMPS + ' sellos y canjea una cookie gratis';
+    aCount.className = 'award-count empty';
   }
 }
 
-async function addStamps(){
-  const n=parseInt(document.getElementById("stamps-input").value);
-  if(!n||n<1){showErr("stamp-error","Introduce al menos 1 sello");return;}
-  const btn=document.getElementById("add-btn");
-  btn.disabled=true;btn.textContent="Añadiendo...";
-  try{
-    const r=await fetch(`${BASE}/api/cards/${CARD_ID}/stamps`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({pin:adminPin,stamps:n})
-    });
-    const d=await r.json();
-    if(d.detail){showErr("stamp-error",d.detail);btn.disabled=false;btn.textContent="✅ Añadir sellos";return;}
-    document.getElementById("phase-stamps").style.display="none";
-    document.getElementById("phase-success").style.display="block";
-    let msg=`+${n} sello${n>1?'s':''} añadido${n>1?'s':''}. Total: ${d.stamps} / {{ stamps_per_reward }}`;
-    if(d.awards_earned>0) msg+=` 🎉 ¡Has ganado ${d.awards_earned} premio${d.awards_earned>1?'s':''}!`;
-    document.getElementById("success-msg").textContent=msg;
-    setTimeout(()=>location.reload(),3000);
-  }catch(e){btn.disabled=false;btn.textContent="✅ Añadir sellos";}
+// QR Code
+new QRCode(document.getElementById('qrcode'), {
+  text: window.location.href,
+  width: 140, height: 140,
+  colorDark: '#3A3426', colorLight: '#FFFFC6',
+  correctLevel: QRCode.CorrectLevel.M
+});
+
+// Load tier and referral
+async function loadCardData() {
+  try {
+    // Tier
+    const tierRes = await fetch('/api/cards/' + CARD_ID + '/tier');
+    if (tierRes.ok) {
+      const {tier, total_stamps} = await tierRes.json();
+      document.getElementById('tierBadge').textContent = tier.emoji + ' ' + tier.name;
+      document.getElementById('tierBadge').style.setProperty('--tier-color', tier.color);
+      document.getElementById('tierIcon').textContent = tier.emoji;
+      document.getElementById('tierName').textContent = tier.name;
+      document.getElementById('tierFill').style.background = tier.color;
+      
+      if (tier.next) {
+        const progress = ((total_stamps) / tier.next_at) * 100;
+        document.getElementById('tierFill').style.width = Math.min(progress, 100) + '%';
+        document.getElementById('tierNext').textContent = 
+          `${total_stamps}/${tier.next_at} sellos para ${tier.next} ${tier.next === 'Plata' ? '🥈' : '🥇'}`;
+        document.getElementById('tierDesc').textContent = 
+          `${tier.next_at - total_stamps} sellos para subir de nivel`;
+      } else {
+        document.getElementById('tierFill').style.width = '100%';
+        document.getElementById('tierNext').textContent = '¡Nivel máximo alcanzado! 🏆';
+        document.getElementById('tierDesc').textContent = 'Cliente VIP';
+      }
+    }
+    
+    // Referral
+    const refRes = await fetch('/api/cards/' + CARD_ID + '/referral');
+    if (refRes.ok) {
+      const ref = await refRes.json();
+      document.getElementById('referralSection').style.display = 'block';
+      document.getElementById('refCode').textContent = ref.referral_code;
+      if (ref.referrals_used > 0) {
+        document.getElementById('refStats').textContent = 
+          `✅ ${ref.referrals_used} amigo${ref.referrals_used > 1 ? 's' : ''} registrado${ref.referrals_used > 1 ? 's' : ''} · +${ref.bonus_stamps_earned} sellos ganados`;
+      }
+    }
+  } catch(e) { console.error(e); }
 }
 
-async function redeemReward(){
-  if(!confirm("¿Canjear un premio 🍪? Se confirmará el canje en caja."))return;
-  const r=await fetch(`${BASE}/api/cards/${CARD_ID}/redeem`,{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pin:adminPin})
+function copyRef() {
+  const code = document.getElementById('refCode').textContent;
+  const url = window.location.origin + '/register?ref=' + code;
+  navigator.clipboard.writeText(url).then(() => showToast('¡Enlace copiado! 🔗')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('¡Enlace copiado! 🔗');
   });
-  const d=await r.json();
-  if(d.detail){alert("Error: "+d.detail);return;}
-  document.getElementById("phase-stamps").style.display="none";
-  document.getElementById("phase-success").style.display="block";
-  document.getElementById("success-msg").textContent=`🍪 Premio canjeado. Premios restantes: ${d.award_balance}`;
-  setTimeout(()=>location.reload(),3000);
 }
 
-function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display="block";}
+function shareCard() {
+  const code = document.getElementById('refCode')?.textContent || '';
+  const shareUrl = code ? window.location.origin + '/register?ref=' + code : window.location.href;
+  if (navigator.share) {
+    navigator.share({
+      title: '🍪 Mi Sukie Card',
+      text: '¡Únete con mi código y nos llevamos sellos gratis!',
+      url: shareUrl
+    });
+  } else {
+    navigator.clipboard.writeText(shareUrl).then(() => showToast('¡Enlace copiado!'));
+  }
+}
+
+// Push notifications
+async function subscribePush() {
+  const btn = document.getElementById('pushBtn');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showToast('Tu navegador no soporta notificaciones'); return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { showToast('Permiso denegado'); return; }
+    
+    // Get VAPID key
+    const vapidRes = await fetch('/api/push/vapid-public');
+    const vapidKey = vapidRes.ok ? (await vapidRes.json()).key : null;
+    
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidKey || undefined
+    });
+    
+    const subData = sub.toJSON();
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        card_id: CARD_ID,
+        endpoint: subData.endpoint,
+        keys: subData.keys
+      })
+    });
+    
+    btn.textContent = '🔔 Notificaciones activadas ✓';
+    btn.style.background = '#2e7d32';
+    btn.disabled = true;
+    showToast('¡Notificaciones activadas! 🔔');
+  } catch(e) {
+    console.error(e);
+    showToast('Error al activar notificaciones');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Add vapid endpoint
+renderStamps();
+loadCardData();
 </script>
 </body>
 </html>

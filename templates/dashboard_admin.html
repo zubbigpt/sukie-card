@@ -825,6 +825,18 @@ tr:hover td{background:rgba(255,243,207,.4)}
 
         <!-- ── TAB: COMUNICACIONES ── -->
         <div id="cfgpanel-comunicaciones" class="cfg-panel" style="display:none">
+          <div class="card-box" style="margin-bottom:16px">
+            <h3 style="margin-bottom:16px;color:#3A3426">⚙️ Configuración SMTP (para enviar emails)</h3>
+            <p style="color:#666;font-size:0.82em;margin-bottom:14px">Configura estas variables en Railway → Variables de entorno:</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:12px;font-family:monospace;font-size:0.8em;color:#333">
+              SMTP_HOST=smtp.gmail.com<br>
+              SMTP_PORT=587<br>
+              SMTP_USER=tu@gmail.com<br>
+              SMTP_PASS=tu-app-password-gmail<br>
+              SMTP_FROM=noreply@sukiecookie.es
+            </div>
+            <p style="color:#888;font-size:0.75em;margin-top:10px">💡 Para Gmail: Activa la verificación en 2 pasos → Contraseñas de aplicación → Genera una contraseña</p>
+          </div>
           <div class="card-box">
             <h3 style="margin-bottom:16px;color:#3A3426">✉️ Email de Bienvenida</h3>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
@@ -870,6 +882,17 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </button>
             </div>
             <div id="dist-result" style="margin-top:12px;display:none"></div>
+            
+            <div style="margin-top:20px;border-top:1px solid #eee;padding-top:16px">
+              <h4 style="margin-bottom:10px;color:#3A3426">📧 Vista previa del email</h4>
+              <p style="color:#666;font-size:0.85em;margin-bottom:12px">Abre en el navegador cómo verá el email tu cliente:</p>
+              <button onclick="previewEmail()" style="background:#5C4A32;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-right:8px">
+                👁️ Ver preview email bienvenida
+              </button>
+              <button onclick="previewBirthdayEmail()" style="background:#5C4A32;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em">
+                🎂 Ver preview email cumpleaños
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1780,6 +1803,34 @@ async function sendDistribution() {
   await new Promise(r => setTimeout(r, 800));
   el.innerHTML = `<span style="color:#2e7d32">✅ Distribución programada para clientes (${target === 'new' ? 'nuevos' : 'todos'}). Esta función requiere integración de email.</span>`;
 }
+
+async function previewEmail() {
+  // Get first customer card
+  try {
+    const r = await fetch(`${BASE}/api/admin/customers?pin=${PIN}&page_size=1`);
+    const d = await r.json();
+    const custs = d.customers||[];
+    if (custs.length > 0) {
+      window.open(`${BASE}/email-preview/${custs[0].id}`, '_blank');
+    } else {
+      showToast('No hay clientes todavía');
+    }
+  } catch(e) { showToast('Error'); }
+}
+
+async function previewBirthdayEmail() {
+  try {
+    const r = await fetch(`${BASE}/api/admin/customers?pin=${PIN}&page_size=1`);
+    const d = await r.json();
+    const custs = d.customers||[];
+    if (custs.length > 0) {
+      window.open(`${BASE}/email-preview-birthday/${custs[0].id}`, '_blank');
+    } else {
+      showToast('No hay clientes todavía');
+    }
+  } catch(e) { showToast('Error'); }
+}
+
 </script>
 </body>
 </html>
