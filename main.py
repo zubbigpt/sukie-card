@@ -98,6 +98,7 @@ def run_migrations():
         "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
         "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
         "UPDATE card_config SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
+        "DELETE FROM customers WHERE email = 'placeholder_email' OR first_name = 'PLACEHOLDER_FNAME'",
 
     ]
     from database import SessionLocal
@@ -1064,7 +1065,68 @@ DEFAULT_CONFIG = {
         "birthday_email_enabled": True,
         "birthday_email_subject": "¡Feliz Cumpleaños de parte de Sukie Cookie! 🎂🍪",
         "birthday_email_body": "Hola {nombre},\n\n¡Hoy es tu día especial!\nPasa a visitarnos y llévate un regalo.\n\nCon cariño,\nSukie Cookie",
-    }
+    },
+    "club": {
+        "nombre": "Cookie VIP Club",
+        "descripcion": "Los mejores clientes merecen los mejores premios",
+        "tagline": "Sé parte de algo especial",
+        "activo": True
+    },
+    "tiers": [
+        {
+            "nombre": "Bronce",
+            "emoji": "🥉",
+            "color": "#CD7F32",
+            "bg_color": "#FFF3E6",
+            "min_sellos_totales": 0,
+            "sellos_por_premio": 10,
+            "premio_nombre": "Cookie gratis",
+            "premio_descripcion": "1 cookie de tu elección",
+            "premio_emoji": "🍪",
+            "beneficios": [
+                "1 cookie gratis cada 10 sellos",
+                "Sorpresa especial en tu cumpleaños",
+                "Acceso a ofertas exclusivas del club"
+            ]
+        },
+        {
+            "nombre": "Plata",
+            "emoji": "🥈",
+            "color": "#A8A8B3",
+            "bg_color": "#F5F5FF",
+            "min_sellos_totales": 50,
+            "sellos_por_premio": 8,
+            "premio_nombre": "Box de 6 cookies",
+            "premio_descripcion": "Elige 6 cookies de la vitrina",
+            "premio_emoji": "📦",
+            "beneficios": [
+                "Box 6 cookies cada 8 sellos",
+                "10% descuento en todas tus compras",
+                "Acceso anticipado a nuevas recetas",
+                "Doble sorpresa de cumpleaños",
+                "Badge exclusivo de miembro Plata"
+            ]
+        },
+        {
+            "nombre": "Oro",
+            "emoji": "👑",
+            "color": "#c8a84b",
+            "bg_color": "#FFFBF0",
+            "min_sellos_totales": 150,
+            "sellos_por_premio": 7,
+            "premio_nombre": "Box premium + bebida",
+            "premio_descripcion": "Box 12 cookies premium + bebida gratis a elegir",
+            "premio_emoji": "✨",
+            "beneficios": [
+                "Box premium + bebida cada 7 sellos",
+                "20% descuento permanente",
+                "Pedidos especiales y personalizados",
+                "Acceso VIP a eventos exclusivos",
+                "Regalo de aniversario como miembro",
+                "Línea directa WhatsApp prioritaria"
+            ]
+        }
+    ]
 }
 
 @app.get("/api/admin/config")
@@ -1292,6 +1354,72 @@ def get_card_tier(card_id: str, db: Session = Depends(get_db)):
     return {
         "tier": tier,
         "total_stamps": card.total_stamps or 0,
+    }
+
+
+@app.get("/api/cards/{card_id}/info")
+async def get_card_info(card_id: str, db: Session = Depends(get_db)):
+    """Returns basic card info for the card page"""
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    return {
+        "card_id": str(card.id),
+        "stamps": card.stamps,
+        "total_stamps": card.total_stamps,
+        "rewards_redeemed": card.rewards_redeemed,
+        "award_balance": card.award_balance,
+        "first_name": customer.first_name if customer else "",
+        "email": customer.email if customer else "",
+    }
+
+
+@app.get("/api/cards/{card_id}/club-info")
+async def get_club_info(card_id: str, db: Session = Depends(get_db)):
+    """Returns full club/tier config for a card"""
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    
+    config_row = db.query(models.CardConfig).first()
+    config = json.loads(config_row.config) if config_row else {}
+    
+    # Merge with defaults
+    default_tiers = DEFAULT_CONFIG.get("tiers", [])
+    tiers = config.get("tiers", default_tiers)
+    club = config.get("club", DEFAULT_CONFIG.get("club", {}))
+    
+    total = card.total_stamps or 0
+    current_tier = tiers[0] if tiers else {}
+    next_tier = None
+    
+    for i, t in enumerate(tiers):
+        if total >= t.get("min_sellos_totales", 0):
+            current_tier = t
+            next_tier = tiers[i+1] if i+1 < len(tiers) else None
+    
+    stamps_in_tier_cycle = card.stamps  # current stamps on card
+    stamps_per_reward = current_tier.get("sellos_por_premio", 10)
+    stamps_to_next_reward = max(0, stamps_per_reward - stamps_in_tier_cycle)
+    
+    stamps_to_next_tier = None
+    if next_tier:
+        stamps_to_next_tier = max(0, next_tier.get("min_sellos_totales", 0) - total)
+    
+    # Member number: count customers registered before or at same time as this one
+    member_number = db.query(models.Customer).filter(
+        models.Customer.created_at <= customer.created_at
+    ).count() if customer else 1
+    
+    return {
+        "club": club,
+        "current_tier": current_tier,
+        "next_tier": next_tier,
+        "total_stamps": total,
+        "stamps_on_card": stamps_in_tier_cycle,
+        "stamps_to_next_reward": stamps_to_next_reward,
+        "stamps_to_next_tier": stamps_to_next_tier,
+        "award_balance": card.award_balance,
+        "member_number": member_number,
+        "member_since": customer.created_at.strftime("%B %Y") if customer and customer.created_at else "",
     }
 
 

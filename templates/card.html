@@ -1,408 +1,785 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-  <title>Mi SukieCard – {{ name }}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#f0ebe0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 12px 40px}
-    
-    /* WALLET CARD */
-    .wallet-card{
-      width:100%;max-width:380px;
-      background:linear-gradient(145deg,#FFFFC6 0%,#FFF5B6 100%);
-      border-radius:20px;
-      padding:0;
-      box-shadow:0 20px 60px rgba(58,52,38,0.25),0 4px 12px rgba(0,0,0,0.08);
-      overflow:hidden;
-      margin-bottom:16px;
-    }
-    .card-header{
-      background:#3A3426;
-      padding:16px 20px 14px;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .card-brand{font-size:1.1rem;font-weight:700;color:#FFF5B6;letter-spacing:0.5px}
-    .card-type{font-size:0.7rem;color:rgba(255,245,182,0.7);text-transform:uppercase;letter-spacing:1px}
-    .tier-badge{
-      background:var(--tier-color,#CD7F32);
-      color:white;
-      font-size:0.7rem;
-      font-weight:700;
-      padding:3px 8px;
-      border-radius:20px;
-      display:flex;align-items:center;gap:4px;
-      text-transform:uppercase;letter-spacing:0.5px;
-    }
-    .card-body{padding:20px}
-    .card-owner{font-size:0.75rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-    .card-name{font-size:1.25rem;font-weight:700;color:#3A3426;margin-bottom:16px}
-    
-    /* STAMPS */
-    .stamps-label{font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-    .stamps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
-    .stamp{
-      aspect-ratio:1;
-      border-radius:10px;
-      border:2px solid #3A3426;
-      display:flex;align-items:center;justify-content:center;
-      font-size:1.3rem;
-      background:rgba(58,52,38,0.05);
-      transition:all 0.2s;
-      position:relative;
-    }
-    .stamp.filled{background:#3A3426;border-color:#3A3426}
-    .stamp.reward{background:#FFD700;border-color:#B8860B}
-    .stamp-number{font-size:0.55rem;color:#ccc;position:absolute;bottom:2px;right:4px;font-weight:600}
-    .stamp.filled .stamp-number{color:rgba(255,255,255,0.5)}
-    
-    /* PROGRESS BAR */
-    .progress-wrap{margin-bottom:16px}
-    .progress-bar-bg{height:6px;background:rgba(58,52,38,0.12);border-radius:3px;overflow:hidden}
-    .progress-bar-fill{height:100%;background:linear-gradient(90deg,#3A3426,#6B5D45);border-radius:3px;transition:width 0.8s ease}
-    .progress-text{font-size:0.75rem;color:#888;margin-top:5px;text-align:right}
-    
-    /* STATS */
-    .card-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-    .stat-box{background:rgba(58,52,38,0.06);border-radius:10px;padding:10px;text-align:center}
-    .stat-num{font-size:1.4rem;font-weight:700;color:#3A3426}
-    .stat-lbl{font-size:0.65rem;color:#999;text-transform:uppercase;letter-spacing:0.5px}
-    
-    /* AWARD BALANCE */
-    .award-box{background:#3A3426;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-    .award-box.empty{background:rgba(58,52,38,0.08)}
-    .award-text{color:white;font-size:0.85rem;font-weight:600}
-    .award-text.empty{color:#999}
-    .award-count{background:#FFF5B6;color:#3A3426;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem}
-    .award-count.empty{background:rgba(58,52,38,0.15);color:#bbb}
-    
-    /* QR */
-    .qr-section{border-top:1px dashed rgba(58,52,38,0.2);padding-top:16px;text-align:center}
-    .qr-label{font-size:0.65rem;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-    #qrcode{display:flex;justify-content:center}
-    
-    /* ACTIONS */
-    .actions{width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
-    .btn-wallet{
-      display:flex;align-items:center;justify-content:center;gap:10px;
-      padding:14px 20px;border-radius:12px;font-size:0.95rem;font-weight:600;
-      text-decoration:none;cursor:pointer;border:none;width:100%;
-      transition:all 0.2s;
-    }
-    .btn-apple{background:#000;color:white}
-    .btn-apple:hover{background:#222;transform:translateY(-1px)}
-    .btn-google{background:white;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.12);border:1px solid #e0e0e0}
-    .btn-google:hover{box-shadow:0 4px 12px rgba(0,0,0,0.15);transform:translateY(-1px)}
-    .btn-share{background:#FFF5B6;color:#3A3426;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-    .btn-share:hover{background:#ffe066;transform:translateY(-1px)}
-    
-    /* REFERRAL CARD */
-    .referral-card{
-      width:100%;max-width:380px;
-      background:white;border-radius:16px;padding:16px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.08);
-      margin-bottom:16px;
-    }
-    .ref-title{font-size:0.85rem;font-weight:700;color:#3A3426;margin-bottom:6px}
-    .ref-desc{font-size:0.78rem;color:#666;margin-bottom:12px}
-    .ref-code-box{
-      background:#f5f0e8;border-radius:8px;padding:10px 14px;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .ref-code{font-size:1.1rem;font-weight:700;color:#3A3426;letter-spacing:2px}
-    .btn-copy{background:#3A3426;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:0.75rem;cursor:pointer}
-    
-    /* TIER INFO */
-    .tier-card{
-      width:100%;max-width:380px;
-      background:white;border-radius:16px;padding:16px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.08);
-      margin-bottom:16px;
-    }
-    .tier-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-    .tier-icon{font-size:1.8rem}
-    .tier-info h3{font-size:1rem;font-weight:700;color:#3A3426}
-    .tier-info p{font-size:0.75rem;color:#888}
-    .tier-progress{background:#f0ebe0;border-radius:8px;overflow:hidden;height:8px;margin-top:8px}
-    .tier-fill{height:100%;border-radius:8px;transition:width 1s ease}
-    .tier-next{font-size:0.72rem;color:#888;margin-top:6px;text-align:right}
-    
-    /* TOAST */
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3A3426;color:white;padding:10px 20px;border-radius:20px;font-size:0.85rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap}
-    .toast.show{opacity:1}
-    
-    /* PUSH */
-    .push-card{
-      width:100%;max-width:380px;
-      background:white;border-radius:16px;padding:14px 16px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.08);
-      margin-bottom:16px;
-      display:flex;align-items:center;justify-content:space-between;
-    }
-    .push-text{font-size:0.82rem;color:#3A3426;font-weight:500}
-    .btn-push{background:#3A3426;color:white;border:none;padding:7px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer}
-    
-    .footer{font-size:0.7rem;color:#bbb;text-align:center;margin-top:8px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mi {{ card_title }} – {{ first_name }}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #f5f0e8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 16px 40px;
+}
+
+/* === CLUB HEADER === */
+.club-header {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 20px 16px 12px;
+}
+.club-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 4px;
+}
+.club-tagline {
+  font-size: 12px;
+  color: #b09070;
+}
+
+/* === MAIN CARD === */
+.card {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  margin-bottom: 16px;
+}
+.card-header {
+  background: #3A3426;
+  padding: 20px 20px 16px;
+  position: relative;
+}
+.card-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.card-brand {
+  display: flex;
+  flex-direction: column;
+}
+.card-title-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFF5B6;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.card-subtitle {
+  font-size: 10px;
+  color: rgba(255,245,182,0.6);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.tier-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.card-member-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.member-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.member-meta {
+  text-align: right;
+}
+.member-number {
+  font-size: 11px;
+  color: rgba(255,245,182,0.7);
+  font-family: monospace;
+}
+.member-since {
+  font-size: 10px;
+  color: rgba(255,245,182,0.5);
+}
+
+/* === CARD BODY === */
+.card-body {
+  background: #FFFCE8;
+  padding: 20px;
+}
+
+/* Stamps */
+.stamps-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.stamps-label span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+}
+.stamps-count {
+  font-size: 11px;
+  font-weight: 800;
+  color: #3A3426;
+  background: rgba(58,52,38,0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.stamps-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.stamp {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 2px solid #e8d9b8;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+.stamp.filled {
+  background: #3A3426;
+  border-color: #3A3426;
+  transform: scale(1.03);
+}
+.stamp.filled::after {
+  content: attr(data-emoji);
+  font-size: 22px;
+}
+.stamp:not(.filled)::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e8d9b8;
+}
+
+/* Progress to reward */
+.reward-progress {
+  background: rgba(200,168,75,0.12);
+  border: 1.5px solid rgba(200,168,75,0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reward-emoji-big { font-size: 28px; }
+.reward-info { flex: 1; }
+.reward-info-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3A3426;
+  margin-bottom: 2px;
+}
+.reward-info-sub {
+  font-size: 11px;
+  color: #8b7355;
+}
+.reward-badge {
+  background: #c8a84b;
+  color: white;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.reward-badge.has-reward {
+  background: #2d7a2d;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Stats */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.stat-box {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #f0e8d0;
+}
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #3A3426;
+}
+.stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #8b7355;
+  margin-top: 2px;
+}
+
+/* Tier progression */
+.tier-progression {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #f0e8d0;
+}
+.tier-prog-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 12px;
+}
+.tier-prog-bar-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+.tier-prog-bar-bg {
+  height: 8px;
+  background: #f0e8d0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.tier-prog-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+.tier-prog-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.tier-prog-label {
+  font-size: 10px;
+  color: #8b7355;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.tier-prog-info {
+  font-size: 11px;
+  color: #5a4830;
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Benefits */
+.benefits-section {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #f0e8d0;
+}
+.benefits-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: #3A3426;
+  border-bottom: 1px solid #f5f0e8;
+}
+.benefit-item:last-child { border-bottom: none; }
+.benefit-check {
+  width: 18px;
+  height: 18px;
+  background: #3A3426;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+  font-size: 10px;
+}
+
+/* Next tier preview */
+.next-tier-card {
+  background: linear-gradient(135deg, #f8f4ec, #fff9f0);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1.5px dashed #e8d9b8;
+}
+.next-tier-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 10px;
+}
+.next-tier-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.next-tier-emoji { font-size: 32px; }
+.next-tier-details { flex: 1; }
+.next-tier-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #3A3426;
+}
+.next-tier-reward {
+  font-size: 12px;
+  color: #8b7355;
+  margin-top: 2px;
+}
+.next-tier-stamps {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c8a84b;
+  background: rgba(200,168,75,0.15);
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* QR */
+.qr-section {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 14px;
+  border: 1px solid #f0e8d0;
+}
+.qr-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 10px;
+}
+#qrcode { display: flex; justify-content: center; }
+
+/* Referral */
+.referral-section {
+  background: #3A3426;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  text-align: center;
+  color: #FFF5B6;
+}
+.referral-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+.referral-code {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  font-family: monospace;
+  margin-bottom: 6px;
+}
+.referral-sub {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+.referral-copy-btn {
+  background: #FFF5B6;
+  color: #3A3426;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Action buttons */
+.action-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: #3A3426;
+  color: #FFF5B6;
+}
+.btn-secondary {
+  background: rgba(58,52,38,0.08);
+  color: #3A3426;
+  border: 1.5px solid rgba(58,52,38,0.2);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #3A3426;
+  color: #FFF5B6;
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999;
+  transition: transform 0.3s ease;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
 
-<!-- WALLET CARD -->
-<div class="wallet-card" id="walletCard">
-  <div class="card-header">
-    <div>
-      <div class="card-brand">🍪 SUKIE CARD</div>
-      <div class="card-type">Tarjeta de Fidelidad</div>
+<div class="club-header" id="club-header">
+  <div class="club-name" id="club-name">Cookie VIP Club</div>
+  <div class="club-tagline" id="club-tagline">Sé parte de algo especial</div>
+</div>
+
+<div class="card">
+  <div class="card-header" id="card-header">
+    <div class="card-header-top">
+      <div class="card-brand">
+        <div class="card-title-text">{{ card_title }}</div>
+        <div class="card-subtitle">Tarjeta de Fidelidad</div>
+      </div>
+      <div class="tier-badge" id="tier-badge">🥉 BRONCE</div>
     </div>
-    <div class="tier-badge" id="tierBadge" style="--tier-color:#CD7F32">🥉 Bronce</div>
+    <div class="card-member-info">
+      <div class="member-name">{{ first_name }}</div>
+      <div class="member-meta">
+        <div class="member-number" id="member-number">Miembro #001</div>
+        <div class="member-since" id="member-since"></div>
+      </div>
+    </div>
   </div>
+
   <div class="card-body">
-    <div class="card-owner">Titular</div>
-    <div class="card-name">{{ name }}</div>
-    
+    <!-- Stamps -->
     <div class="stamps-label">
-      <span>Tus sellos</span>
-      <span id="stampsCount">{{ stamps }}/{{ stamps_per_reward }}</span>
+      <span>Tus Sellos</span>
+      <span class="stamps-count" id="stamps-count">0/10</span>
     </div>
-    <div class="stamps-grid" id="stampsGrid">
-      <!-- Rendered by JS -->
-    </div>
-    
-    <div class="progress-wrap">
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    <div class="stamps-grid" id="stamps-grid"></div>
+
+    <!-- Reward box -->
+    <div class="reward-progress" id="reward-box">
+      <div class="reward-emoji-big" id="reward-emoji">🍪</div>
+      <div class="reward-info">
+        <div class="reward-info-title" id="reward-name">Cookie gratis</div>
+        <div class="reward-info-sub" id="reward-desc">1 cookie de tu elección</div>
       </div>
-      <div class="progress-text" id="progressText">Progreso al próximo premio</div>
+      <div class="reward-badge" id="reward-badge">10 más</div>
     </div>
-    
-    <div class="card-stats">
+
+    <!-- Stats -->
+    <div class="stats-row">
       <div class="stat-box">
-        <div class="stat-num" id="totalStamps">{{ total_stamps }}</div>
-        <div class="stat-lbl">Sellos totales</div>
+        <div class="stat-value" id="total-stamps">0</div>
+        <div class="stat-label">Sellos totales</div>
       </div>
       <div class="stat-box">
-        <div class="stat-num" id="redeemed">{{ rewards_redeemed }}</div>
-        <div class="stat-lbl">Premios canjeados</div>
+        <div class="stat-value" id="total-rewards">0</div>
+        <div class="stat-label">Premios canjeados</div>
       </div>
     </div>
-    
-    <div class="award-box" id="awardBox">
-      <div class="award-text" id="awardText">Premios disponibles para canjear</div>
-      <div class="award-count" id="awardCount">{{ award_balance }}</div>
+
+    <!-- Tier progression -->
+    <div class="tier-progression" id="tier-progression-box">
+      <div class="tier-prog-title">Progreso al siguiente nivel</div>
+      <div class="tier-prog-bar-wrap">
+        <div class="tier-prog-bar-bg">
+          <div class="tier-prog-bar-fill" id="tier-bar" style="width:0%;background:#c8a84b;"></div>
+        </div>
+      </div>
+      <div class="tier-prog-labels">
+        <div class="tier-prog-label" id="tier-from-label">🥉 Bronce</div>
+        <div class="tier-prog-label" id="tier-to-label">🥈 Plata</div>
+      </div>
+      <div class="tier-prog-info" id="tier-prog-info">Faltan 50 sellos para nivel Plata</div>
     </div>
-    
+
+    <!-- Benefits -->
+    <div class="benefits-section" id="benefits-box">
+      <div class="benefits-title" id="benefits-title">🏆 Tus beneficios Bronce</div>
+      <div id="benefits-list"></div>
+    </div>
+
+    <!-- Next tier -->
+    <div class="next-tier-card" id="next-tier-box">
+      <div class="next-tier-title">✨ Siguiente nivel</div>
+      <div class="next-tier-info">
+        <div class="next-tier-emoji" id="next-tier-emoji">🥈</div>
+        <div class="next-tier-details">
+          <div class="next-tier-name" id="next-tier-name">Plata</div>
+          <div class="next-tier-reward" id="next-tier-reward">Box de 6 cookies</div>
+        </div>
+        <div class="next-tier-stamps" id="next-tier-stamps">50 sellos</div>
+      </div>
+    </div>
+
+    <!-- QR -->
     <div class="qr-section">
       <div class="qr-label">Muestra este QR en caja</div>
       <div id="qrcode"></div>
     </div>
-  </div>
-</div>
 
-<!-- WALLET BUTTONS -->
-<div class="actions">
-  <button class="btn-wallet btn-push" id="pushBtn" onclick="subscribePush()" style="background:#5C4A32;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px">
-    🔔 Activar notificaciones
-  </button>
-  <a class="btn-wallet btn-share" onclick="shareCard()">
-    🔗 Compartir mi tarjeta
-  </a>
-</div>
-
-<!-- REFERRAL -->
-<div class="referral-card" id="referralSection" style="display:none">
-  <div class="ref-title">🎁 Invita a amigos y gana sellos</div>
-  <div class="ref-desc">Comparte tu código y cuando un amigo se registre, ¡ambos recibís 2 sellos extra!</div>
-  <div class="ref-code-box">
-    <span class="ref-code" id="refCode">...</span>
-    <button class="btn-copy" onclick="copyRef()">Copiar</button>
-  </div>
-  <div style="margin-top:8px;font-size:0.72rem;color:#999" id="refStats"></div>
-</div>
-
-<!-- TIER -->
-<div class="tier-card">
-  <div class="tier-row">
-    <div class="tier-icon" id="tierIcon">🥉</div>
-    <div class="tier-info">
-      <h3 id="tierName">Bronce</h3>
-      <p id="tierDesc">Nivel actual</p>
+    <!-- Referral -->
+    <div class="referral-section" id="referral-section" style="display:none">
+      <div class="referral-title">🔗 Invita a tus amigos</div>
+      <div class="referral-code" id="referral-code">XXXX</div>
+      <div class="referral-sub">Comparte tu código y gana 2 sellos extra</div>
+      <button class="referral-copy-btn" onclick="copyReferral()">Copiar código</button>
     </div>
   </div>
-  <div class="tier-progress">
-    <div class="tier-fill" id="tierFill" style="width:0%;background:#CD7F32"></div>
-  </div>
-  <div class="tier-next" id="tierNext"></div>
 </div>
 
-<div class="footer">Sukie Cookie · Tarjeta de fidelidad · <a href="/register" style="color:#bbb">Regístrate</a></div>
+<button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()">
+  🔔 Activar notificaciones
+</button>
+<button class="action-btn btn-secondary" onclick="shareCard()">
+  🔗 Compartir mi tarjeta
+</button>
+
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-const CARD_ID   = "{{ card_id }}";
-const STAMPS    = {{ stamps }};
-const MAX_STAMPS = {{ stamps_per_reward }};
-const AWARD_BAL = {{ award_balance }};
-const BASE_URL  = "{{ request.base_url | default('') }}".replace(/\/$/, '') || '';
-
-// Render stamps
-function renderStamps() {
-  const grid = document.getElementById('stampsGrid');
-  grid.innerHTML = '';
-  for (let i = 0; i < MAX_STAMPS; i++) {
-    const div = document.createElement('div');
-    div.className = 'stamp' + (i < STAMPS ? ' filled' : '');
-    div.innerHTML = (i < STAMPS ? '🍪' : '') + `<span class="stamp-number">${i+1}</span>`;
-    grid.appendChild(div);
-  }
-  // Progress
-  const pct = Math.round((STAMPS / MAX_STAMPS) * 100);
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = 
-    STAMPS >= MAX_STAMPS ? '¡Premio disponible! 🎉' : `Faltan ${MAX_STAMPS - STAMPS} sellos para tu siguiente cookie`;
-  
-  // Award box
-  const aBox = document.getElementById('awardBox');
-  const aCount = document.getElementById('awardCount');
-  const aText = document.getElementById('awardText');
-  if (AWARD_BAL > 0) {
-    aBox.className = 'award-box';
-    aText.className = 'award-text';
-    aText.textContent = '🍪 ¡Tienes ' + AWARD_BAL + ' cookie' + (AWARD_BAL > 1 ? 's' : '') + ' gratis para canjear!';
-    aCount.className = 'award-count';
-  } else {
-    aBox.className = 'award-box empty';
-    aText.className = 'award-text empty';
-    aText.textContent = 'Acumula ' + MAX_STAMPS + ' sellos y canjea una cookie gratis';
-    aCount.className = 'award-count empty';
-  }
-}
-
-// QR Code
-new QRCode(document.getElementById('qrcode'), {
-  text: window.location.href,
-  width: 140, height: 140,
-  colorDark: '#3A3426', colorLight: '#FFFFC6',
-  correctLevel: QRCode.CorrectLevel.M
-});
-
-// Load tier and referral
-async function loadCardData() {
-  try {
-    // Tier
-    const tierRes = await fetch('/api/cards/' + CARD_ID + '/tier');
-    if (tierRes.ok) {
-      const {tier, total_stamps} = await tierRes.json();
-      document.getElementById('tierBadge').textContent = tier.emoji + ' ' + tier.name;
-      document.getElementById('tierBadge').style.setProperty('--tier-color', tier.color);
-      document.getElementById('tierIcon').textContent = tier.emoji;
-      document.getElementById('tierName').textContent = tier.name;
-      document.getElementById('tierFill').style.background = tier.color;
-      
-      if (tier.next) {
-        const progress = ((total_stamps) / tier.next_at) * 100;
-        document.getElementById('tierFill').style.width = Math.min(progress, 100) + '%';
-        document.getElementById('tierNext').textContent = 
-          `${total_stamps}/${tier.next_at} sellos para ${tier.next} ${tier.next === 'Plata' ? '🥈' : '🥇'}`;
-        document.getElementById('tierDesc').textContent = 
-          `${tier.next_at - total_stamps} sellos para subir de nivel`;
-      } else {
-        document.getElementById('tierFill').style.width = '100%';
-        document.getElementById('tierNext').textContent = '¡Nivel máximo alcanzado! 🏆';
-        document.getElementById('tierDesc').textContent = 'Cliente VIP';
-      }
-    }
-    
-    // Referral
-    const refRes = await fetch('/api/cards/' + CARD_ID + '/referral');
-    if (refRes.ok) {
-      const ref = await refRes.json();
-      document.getElementById('referralSection').style.display = 'block';
-      document.getElementById('refCode').textContent = ref.referral_code;
-      if (ref.referrals_used > 0) {
-        document.getElementById('refStats').textContent = 
-          `✅ ${ref.referrals_used} amigo${ref.referrals_used > 1 ? 's' : ''} registrado${ref.referrals_used > 1 ? 's' : ''} · +${ref.bonus_stamps_earned} sellos ganados`;
-      }
-    }
-  } catch(e) { console.error(e); }
-}
-
-function copyRef() {
-  const code = document.getElementById('refCode').textContent;
-  const url = window.location.origin + '/register?ref=' + code;
-  navigator.clipboard.writeText(url).then(() => showToast('¡Enlace copiado! 🔗')).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = url; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('¡Enlace copiado! 🔗');
-  });
-}
-
-function shareCard() {
-  const code = document.getElementById('refCode')?.textContent || '';
-  const shareUrl = code ? window.location.origin + '/register?ref=' + code : window.location.href;
-  if (navigator.share) {
-    navigator.share({
-      title: '🍪 Mi Sukie Card',
-      text: '¡Únete con mi código y nos llevamos sellos gratis!',
-      url: shareUrl
-    });
-  } else {
-    navigator.clipboard.writeText(shareUrl).then(() => showToast('¡Enlace copiado!'));
-  }
-}
-
-// Push notifications
-async function subscribePush() {
-  const btn = document.getElementById('pushBtn');
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    showToast('Tu navegador no soporta notificaciones'); return;
-  }
-  try {
-    const reg = await navigator.serviceWorker.register('/sw.js');
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') { showToast('Permiso denegado'); return; }
-    
-    // Get VAPID key
-    const vapidRes = await fetch('/api/push/vapid-public');
-    const vapidKey = vapidRes.ok ? (await vapidRes.json()).key : null;
-    
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: vapidKey || undefined
-    });
-    
-    const subData = sub.toJSON();
-    await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        card_id: CARD_ID,
-        endpoint: subData.endpoint,
-        keys: subData.keys
-      })
-    });
-    
-    btn.textContent = '🔔 Notificaciones activadas ✓';
-    btn.style.background = '#2e7d32';
-    btn.disabled = true;
-    showToast('¡Notificaciones activadas! 🔔');
-  } catch(e) {
-    console.error(e);
-    showToast('Error al activar notificaciones');
-  }
-}
+const CARD_ID = '{{ card_id }}';
+const API_BASE = '{{ api_base }}';
+let clubData = null;
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  t.textContent = msg;
+  t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Add vapid endpoint
-renderStamps();
-loadCardData();
+function buildStamps(current, total) {
+  const grid = document.getElementById('stamps-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const s = document.createElement('div');
+    s.className = 'stamp' + (i < current ? ' filled' : '');
+    s.setAttribute('data-emoji', '🍪');
+    grid.appendChild(s);
+  }
+  document.getElementById('stamps-count').textContent = current + '/' + total;
+}
+
+async function loadData() {
+  try {
+    const [cardRes, clubRes] = await Promise.all([
+      fetch(API_BASE + '/api/cards/' + CARD_ID + '/info'),
+      fetch(API_BASE + '/api/cards/' + CARD_ID + '/club-info')
+    ]);
+    const card = await cardRes.json();
+    const club = await clubRes.json();
+    clubData = club;
+    renderCard(card, club);
+  } catch(e) {
+    console.error('Error loading card data', e);
+    // Fallback basic load
+    try {
+      const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/info');
+      const card = await res.json();
+      renderCardBasic(card);
+    } catch(e2) {}
+  }
+}
+
+function renderCard(card, club) {
+  const tier = club.current_tier || {};
+  const nextTier = club.next_tier;
+  const clubInfo = club.club || {};
+  
+  // Club header
+  document.getElementById('club-name').textContent = clubInfo.nombre || 'VIP Club';
+  document.getElementById('club-tagline').textContent = clubInfo.tagline || '';
+  
+  // Tier badge
+  const badge = document.getElementById('tier-badge');
+  badge.textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce').toUpperCase();
+  badge.style.background = tier.color || '#CD7F32';
+  badge.style.color = '#fff';
+  
+  // Member info
+  document.getElementById('member-number').textContent = 'Miembro #' + String(club.member_number || 1).padStart(3,'0');
+  document.getElementById('member-since').textContent = club.member_since ? 'Desde ' + club.member_since : '';
+  
+  // Card header background
+  document.getElementById('card-header').style.background = '#3A3426';
+  
+  // Stamps
+  const stampsPerReward = tier.sellos_por_premio || 10;
+  buildStamps(club.stamps_on_card || 0, stampsPerReward);
+  
+  // Reward box
+  const awardsBalance = club.award_balance || 0;
+  const toNextReward = club.stamps_to_next_reward || stampsPerReward;
+  document.getElementById('reward-emoji').textContent = tier.premio_emoji || '🍪';
+  document.getElementById('reward-name').textContent = tier.premio_nombre || 'Premio';
+  document.getElementById('reward-desc').textContent = tier.premio_descripcion || '';
+  const rewardBadge = document.getElementById('reward-badge');
+  if (awardsBalance > 0) {
+    rewardBadge.textContent = '🎉 ¡' + awardsBalance + ' disponible' + (awardsBalance > 1 ? 's' : '') + '!';
+    rewardBadge.classList.add('has-reward');
+  } else {
+    rewardBadge.textContent = toNextReward + ' más';
+  }
+  
+  // Stats
+  document.getElementById('total-stamps').textContent = club.total_stamps || 0;
+  document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
+  
+  // Tier progression
+  if (nextTier) {
+    const fromStamps = tier.min_sellos_totales || 0;
+    const toStamps = nextTier.min_sellos_totales || 999;
+    const progress = Math.min(100, Math.round(((club.total_stamps - fromStamps) / (toStamps - fromStamps)) * 100));
+    document.getElementById('tier-bar').style.width = progress + '%';
+    document.getElementById('tier-bar').style.background = tier.color || '#c8a84b';
+    document.getElementById('tier-from-label').textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce');
+    document.getElementById('tier-to-label').textContent = (nextTier.emoji || '🥈') + ' ' + (nextTier.nombre || 'Plata');
+    document.getElementById('tier-prog-info').textContent = 'Faltan ' + club.stamps_to_next_tier + ' sellos para nivel ' + nextTier.nombre;
+    
+    // Next tier card
+    document.getElementById('next-tier-emoji').textContent = nextTier.emoji || '🥈';
+    document.getElementById('next-tier-name').textContent = nextTier.nombre || 'Plata';
+    document.getElementById('next-tier-reward').textContent = (nextTier.premio_emoji || '') + ' ' + (nextTier.premio_nombre || '');
+    document.getElementById('next-tier-stamps').textContent = club.stamps_to_next_tier + ' sellos más';
+  } else {
+    document.getElementById('tier-progression-box').style.display = 'none';
+    document.getElementById('next-tier-box').style.display = 'none';
+  }
+  
+  // Benefits
+  const benefits = tier.beneficios || [];
+  document.getElementById('benefits-title').textContent = (tier.emoji || '🏆') + ' Tus beneficios ' + (tier.nombre || 'Bronce');
+  const bList = document.getElementById('benefits-list');
+  bList.innerHTML = benefits.map(b => `
+    <div class="benefit-item">
+      <div class="benefit-check">✓</div>
+      <span>${b}</span>
+    </div>
+  `).join('');
+  
+  // QR
+  new QRCode(document.getElementById('qrcode'), {
+    text: window.location.href,
+    width: 150, height: 150,
+    colorDark: '#3A3426', colorLight: '#FFFCE8'
+  });
+}
+
+function renderCardBasic(card) {
+  buildStamps(card.stamps || 0, 10);
+  document.getElementById('total-stamps').textContent = card.total_stamps || 0;
+  document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
+  new QRCode(document.getElementById('qrcode'), {
+    text: window.location.href,
+    width: 150, height: 150,
+    colorDark: '#3A3426', colorLight: '#FFFCE8'
+  });
+}
+
+async function loadReferral() {
+  try {
+    const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/referral');
+    const data = await res.json();
+    if (data.code) {
+      document.getElementById('referral-code').textContent = data.code;
+      document.getElementById('referral-section').style.display = 'block';
+    }
+  } catch(e) {}
+}
+
+function copyReferral() {
+  const code = document.getElementById('referral-code').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('✅ Código copiado'));
+}
+
+function shareCard() {
+  if (navigator.share) {
+    navigator.share({
+      title: '¡Únete al club!',
+      text: '¡Tienes que conocer esta tarjeta de fidelidad!',
+      url: window.location.href
+    });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    showToast('🔗 Enlace copiado');
+  }
+}
+
+function activateNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showToast('Tu navegador no soporta notificaciones push');
+    return;
+  }
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      showToast('🔔 ¡Notificaciones activadas!');
+      document.getElementById('notif-btn').textContent = '✅ Notificaciones activas';
+      document.getElementById('notif-btn').disabled = true;
+    }
+  });
+}
+
+loadData();
+loadReferral();
 </script>
 </body>
 </html>

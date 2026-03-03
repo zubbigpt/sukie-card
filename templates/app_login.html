@@ -228,6 +228,10 @@
         });
         const d = await r.json();
         if (r.ok) {
+          // Save PIN to sessionStorage before redirecting
+          if (d.slug) {
+            sessionStorage.setItem('zubcard_pin_' + d.slug, pin);
+          }
           window.location.href = d.dashboard_url;
         } else {
           err.textContent = d.detail || 'Error al iniciar sesión';

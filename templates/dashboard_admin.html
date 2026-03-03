@@ -627,6 +627,111 @@ tr:hover td{background:rgba(255,243,207,.4)}
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
               <input type="checkbox" id="cfg-anniversary_enabled"> Activar programa de aniversario
             </label>
+
+          <div style="margin-top:24px;">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#3A3426;">🏆 Sistema de Niveles VIP</h3>
+            <p style="font-size:12px;color:#888;margin-bottom:16px;">Define los premios y beneficios para cada nivel. Los clientes suben de nivel automáticamente.</p>
+            
+            <!-- Tier Bronze -->
+            <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;border:2px solid #CD7F32;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">🥉</span>
+                <span style="font-weight:700;color:#CD7F32;">NIVEL BRONCE</span>
+                <span style="font-size:11px;color:#888;margin-left:auto;">0 sellos totales para activar</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="field-label">Premio por completar tarjeta</label>
+                  <input class="field-input" id="tier0-premio" placeholder="Ej: Cookie gratis">
+                </div>
+                <div>
+                  <label class="field-label">Sellos necesarios</label>
+                  <input class="field-input" id="tier0-sellos" type="number" placeholder="10">
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Descripción del premio</label>
+                <input class="field-input" id="tier0-desc" placeholder="Ej: 1 cookie de tu elección">
+              </div>
+              <div style="margin-top:10px;">
+                <label class="field-label">Beneficios (uno por línea)</label>
+                <textarea class="field-input" id="tier0-beneficios" rows="3" placeholder="1 cookie gratis cada 10 sellos&#10;Sorpresa de cumpleaños"></textarea>
+              </div>
+            </div>
+            
+            <!-- Tier Silver -->
+            <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;border:2px solid #A8A8B3;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">🥈</span>
+                <span style="font-weight:700;color:#8888A0;">NIVEL PLATA</span>
+                <span style="font-size:11px;color:#888;margin-left:auto;">
+                  A partir de <input type="number" id="tier1-min" style="width:60px;padding:2px 6px;border:1px solid #ddd;border-radius:6px;" placeholder="50"> sellos totales
+                </span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="field-label">Premio por completar tarjeta</label>
+                  <input class="field-input" id="tier1-premio" placeholder="Ej: Box 6 cookies">
+                </div>
+                <div>
+                  <label class="field-label">Sellos necesarios</label>
+                  <input class="field-input" id="tier1-sellos" type="number" placeholder="8">
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Descripción del premio</label>
+                <input class="field-input" id="tier1-desc" placeholder="Ej: Elige 6 cookies de la vitrina">
+              </div>
+              <div style="margin-top:10px;">
+                <label class="field-label">Beneficios (uno por línea)</label>
+                <textarea class="field-input" id="tier1-beneficios" rows="3" placeholder="Box 6 cookies cada 8 sellos&#10;10% descuento en todas tus compras"></textarea>
+              </div>
+            </div>
+            
+            <!-- Tier Gold -->
+            <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;border:2px solid #c8a84b;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">👑</span>
+                <span style="font-weight:700;color:#c8a84b;">NIVEL ORO</span>
+                <span style="font-size:11px;color:#888;margin-left:auto;">
+                  A partir de <input type="number" id="tier2-min" style="width:60px;padding:2px 6px;border:1px solid #ddd;border-radius:6px;" placeholder="150"> sellos totales
+                </span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="field-label">Premio por completar tarjeta</label>
+                  <input class="field-input" id="tier2-premio" placeholder="Ej: Box premium + bebida">
+                </div>
+                <div>
+                  <label class="field-label">Sellos necesarios</label>
+                  <input class="field-input" id="tier2-sellos" type="number" placeholder="7">
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Descripción del premio</label>
+                <input class="field-input" id="tier2-desc" placeholder="Ej: Box 12 cookies + bebida gratis">
+              </div>
+              <div style="margin-top:10px;">
+                <label class="field-label">Beneficios (uno por línea)</label>
+                <textarea class="field-input" id="tier2-beneficios" rows="3" placeholder="Box premium + bebida cada 7 sellos&#10;20% descuento permanente&#10;Acceso VIP a eventos"></textarea>
+              </div>
+            </div>
+            
+            <!-- Club name -->
+            <div style="background:white;border-radius:14px;padding:16px;border:1px solid #f0e8d0;">
+              <div style="font-weight:700;margin-bottom:12px;color:#3A3426;">🏅 Nombre del Club</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label class="field-label">Nombre del club</label>
+                  <input class="field-input" id="club-nombre" placeholder="Ej: Cookie VIP Club">
+                </div>
+                <div>
+                  <label class="field-label">Tagline del club</label>
+                  <input class="field-input" id="club-tagline" placeholder="Ej: Sé parte de algo especial">
+                </div>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
 
@@ -1048,6 +1153,18 @@ async function doLogin(){
   }catch(e){document.getElementById('login-err').textContent='Error de conexión';}
 }
 document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// Auto-login from sessionStorage if PIN is saved
+window.addEventListener('DOMContentLoaded', function() {
+  const slug = '{{ biz_slug }}' || document.querySelector('[data-slug]')?.getAttribute('data-slug');
+  if (!slug) return;
+  const savedPin = sessionStorage.getItem('zubcard_pin_' + slug);
+  if (savedPin) {
+    sessionStorage.removeItem('zubcard_pin_' + slug);
+    document.getElementById('login-pin').value = savedPin;
+    setTimeout(() => doLogin(), 100);
+  }
+});
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
 const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente','config':'Configuración'};
@@ -1656,6 +1773,32 @@ async function loadConfig() {
     setCheck('cfg-birthday_email_enabled', c.birthday_email_enabled);
     setVal('cfg-birthday_email_subject', c.birthday_email_subject);
     setVal('cfg-birthday_email_body', c.birthday_email_body);
+    // Load tier config
+    const tiers = cfg.tiers || [];
+    if (tiers[0]) {
+      setVal('tier0-premio', tiers[0].premio_nombre || '');
+      setVal('tier0-sellos', tiers[0].sellos_por_premio || 10);
+      setVal('tier0-desc', tiers[0].premio_descripcion || '');
+      setVal('tier0-beneficios', (tiers[0].beneficios || []).join('\n'));
+    }
+    if (tiers[1]) {
+      setVal('tier1-min', tiers[1].min_sellos_totales || 50);
+      setVal('tier1-premio', tiers[1].premio_nombre || '');
+      setVal('tier1-sellos', tiers[1].sellos_por_premio || 8);
+      setVal('tier1-desc', tiers[1].premio_descripcion || '');
+      setVal('tier1-beneficios', (tiers[1].beneficios || []).join('\n'));
+    }
+    if (tiers[2]) {
+      setVal('tier2-min', tiers[2].min_sellos_totales || 150);
+      setVal('tier2-premio', tiers[2].premio_nombre || '');
+      setVal('tier2-sellos', tiers[2].sellos_por_premio || 7);
+      setVal('tier2-desc', tiers[2].premio_descripcion || '');
+      setVal('tier2-beneficios', (tiers[2].beneficios || []).join('\n'));
+    }
+    // Club
+    const club = cfg.club || {};
+    setVal('club-nombre', club.nombre || '');
+    setVal('club-tagline', club.tagline || '');
   } catch(e) { console.error('loadConfig error', e); }
 }
 
@@ -1777,6 +1920,42 @@ async function saveConfig() {
       birthday_email_subject: document.getElementById('cfg-birthday_email_subject')?.value || '',
       birthday_email_body: document.getElementById('cfg-birthday_email_body')?.value || '',
     }
+  };
+  
+  // Save tiers
+  payload.tiers = [
+    {
+      nombre: 'Bronce', emoji: '🥉', color: '#CD7F32', bg_color: '#FFF3E6',
+      min_sellos_totales: 0,
+      sellos_por_premio: parseInt(document.getElementById('tier0-sellos').value) || 10,
+      premio_nombre: document.getElementById('tier0-premio').value || 'Premio',
+      premio_descripcion: document.getElementById('tier0-desc').value || '',
+      premio_emoji: '🍪',
+      beneficios: (document.getElementById('tier0-beneficios').value || '').split('\n').filter(x=>x.trim())
+    },
+    {
+      nombre: 'Plata', emoji: '🥈', color: '#A8A8B3', bg_color: '#F5F5FF',
+      min_sellos_totales: parseInt(document.getElementById('tier1-min').value) || 50,
+      sellos_por_premio: parseInt(document.getElementById('tier1-sellos').value) || 8,
+      premio_nombre: document.getElementById('tier1-premio').value || 'Premio Plata',
+      premio_descripcion: document.getElementById('tier1-desc').value || '',
+      premio_emoji: '📦',
+      beneficios: (document.getElementById('tier1-beneficios').value || '').split('\n').filter(x=>x.trim())
+    },
+    {
+      nombre: 'Oro', emoji: '👑', color: '#c8a84b', bg_color: '#FFFBF0',
+      min_sellos_totales: parseInt(document.getElementById('tier2-min').value) || 150,
+      sellos_por_premio: parseInt(document.getElementById('tier2-sellos').value) || 7,
+      premio_nombre: document.getElementById('tier2-premio').value || 'Premio Oro',
+      premio_descripcion: document.getElementById('tier2-desc').value || '',
+      premio_emoji: '✨',
+      beneficios: (document.getElementById('tier2-beneficios').value || '').split('\n').filter(x=>x.trim())
+    }
+  ];
+  payload.club = {
+    nombre: document.getElementById('club-nombre').value || 'VIP Club',
+    tagline: document.getElementById('club-tagline').value || '',
+    activo: true
   };
 
   try {
