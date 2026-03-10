@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --cream:#f5f5f0;--cream-dark:#eaeae5;--cream-border:#d5d5cc;
@@ -300,6 +301,9 @@ tr:hover td{background:rgba(245,245,240,.4)}
       <a onclick="showSection('card-design')" id="nav-card-design">
         <span class="icon">🎨</span> Tarjeta de fidelización
       </a>
+      <a onclick="showSection('qrs')" id="nav-qrs">
+        <span class="icon">📲</span> QRs de Alta
+      </a>
       <a href="/biz/{{ biz_slug }}/register" target="_blank" id="nav-register">
         <span class="icon">🔗</span> Landing de alta
       </a>
@@ -307,13 +311,26 @@ tr:hover td{background:rgba(245,245,240,.4)}
       <a onclick="showSection('clients')" id="nav-clients">
         <span class="icon">👥</span> Clientes
       </a>
+      <a onclick="showSection('activity')" id="nav-activity">
+        <span class="icon">📋</span> Actividad
+      </a>
       <a onclick="showSection('new-client')" id="nav-new-client">
         <span class="icon">➕</span> Nuevo cliente
       </a>
       <a onclick="showSection('import')" id="nav-import">
         <span class="icon">📥</span> Importar CSV
       </a>
+      <div class="nav-section">Campañas</div>
+      <a onclick="showSection('campaigns')" id="nav-campaigns">
+        <span class="icon">📣</span> Campañas
+      </a>
+      <a onclick="showSection('passcodes')" id="nav-passcodes">
+        <span class="icon">🔑</span> PassCodes / Pin
+      </a>
       <div class="nav-section">Herramientas</div>
+      <a onclick="showSection('stores')" id="nav-stores">
+        <span class="icon">🏪</span> Tiendas / Locales
+      </a>
       <a onclick="exportCSV()" id="nav-export">
         <span class="icon">📤</span> Exportar CSV
       </a>
@@ -547,6 +564,275 @@ tr:hover td{background:rgba(245,245,240,.4)}
           </div>
         </div>
       </div>
+      <!-- ═══ QRs DE ALTA ═══ -->
+      <div class="section" id="section-qrs">
+        <div class="section-header">
+          <h1>📲 QRs de Alta</h1>
+          <button class="btn-sm btn-primary" onclick="addCustomQR()">+ Nuevo QR</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+          <!-- Main QR card -->
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#0a0a0a">🌐 Enlace de registro</h3>
+            <div id="main-qr-url" style="display:flex;align-items:center;gap:8px;background:var(--cream);border:1.5px solid var(--cream-border);padding:12px 14px;border-radius:4px;margin-bottom:16px;font-size:.82rem;word-break:break-all;font-family:monospace"></div>
+            <div style="display:flex;gap:8px;margin-bottom:20px">
+              <button class="btn-sm btn-primary" onclick="copyRegLink()" style="flex:1">📋 Copiar enlace</button>
+              <button class="btn-sm btn-ghost" onclick="downloadQR()" style="flex:1">⬇ Descargar QR</button>
+            </div>
+            <div id="main-qr-code" style="display:flex;justify-content:center;padding:12px;background:white;border:1.5px solid var(--cream-border);border-radius:4px"></div>
+            <p style="font-size:.72rem;color:var(--brown-light);text-align:center;margin-top:8px">Escanea para registrarse · Comparte en caja, web y redes</p>
+          </div>
+          <!-- Stats card -->
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#0a0a0a">📊 Estadísticas de alta</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div style="background:var(--cream);padding:16px;border-radius:4px;text-align:center">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#0a0a0a" id="qr-stat-total">–</div>
+                <div style="font-size:.7rem;color:var(--brown-light);text-transform:uppercase;letter-spacing:1px">Total clientes</div>
+              </div>
+              <div style="background:var(--cream);padding:16px;border-radius:4px;text-align:center">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--green)" id="qr-stat-30">–</div>
+                <div style="font-size:.7rem;color:var(--brown-light);text-transform:uppercase;letter-spacing:1px">Últimos 30 días</div>
+              </div>
+              <div style="background:var(--cream);padding:16px;border-radius:4px;text-align:center">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#0a0a0a" id="qr-stat-stamps">–</div>
+                <div style="font-size:.7rem;color:var(--brown-light);text-transform:uppercase;letter-spacing:1px">Sellos totales</div>
+              </div>
+              <div style="background:var(--cream);padding:16px;border-radius:4px;text-align:center">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold)" id="qr-stat-rewards">–</div>
+                <div style="font-size:.7rem;color:var(--brown-light);text-transform:uppercase;letter-spacing:1px">Premios canjeados</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Custom QRs table -->
+        <div class="card-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="color:#0a0a0a">🎯 QRs personalizados por canal</h3>
+            <button class="btn-sm btn-primary" onclick="addCustomQR()">+ Nuevo QR</button>
+          </div>
+          <p style="font-size:.8rem;color:var(--brown-light);margin-bottom:16px">Crea QRs específicos por local o canal para medir el origen de tus altas.</p>
+          <div style="overflow-x:auto">
+            <table id="custom-qrs-table" style="width:100%;border-collapse:collapse;font-size:.85rem">
+              <thead><tr style="background:var(--cream)">
+                <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Canal / Nombre</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Local</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Enlace</th>
+                <th style="padding:10px 12px;text-align:center;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">QR</th>
+                <th style="padding:10px 12px;text-align:center;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Acciones</th>
+              </tr></thead>
+              <tbody id="custom-qrs-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Sin QRs personalizados — crea uno con "+ Nuevo QR"</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- New QR modal form -->
+        <div id="new-qr-form" style="display:none;max-width:480px;margin-top:20px" class="card-box">
+          <h3 style="margin-bottom:16px;color:#0a0a0a">Nuevo QR personalizado</h3>
+          <div class="form-group" style="margin-bottom:12px"><label>Canal / Nombre *</label><input id="nqr-canal" placeholder="ej. Instagram, Mesa Terraza, Local Centro"></div>
+          <div class="form-group" style="margin-bottom:16px"><label>Local (opcional)</label><input id="nqr-local" placeholder="ej. Madrid, Valencia..."></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-primary" onclick="saveCustomQR()" style="flex:1">Crear QR</button>
+            <button class="btn-sm btn-ghost" onclick="document.getElementById('new-qr-form').style.display='none'" style="flex:1">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ACTIVIDAD ═══ -->
+      <div class="section" id="section-activity">
+        <div class="section-header">
+          <h1>📋 Actividad de Clientes</h1>
+          <button class="btn-sm btn-ghost" onclick="loadActivityLog()">↺ Actualizar</button>
+        </div>
+        <!-- KPI row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+          <div style="background:var(--brown);color:var(--cream);padding:20px;text-align:center;border-radius:4px">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem" id="act-total-clients">–</div>
+            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;opacity:.7">Clientes totales</div>
+          </div>
+          <div style="background:var(--cream);border:1.5px solid var(--cream-border);padding:20px;text-align:center;border-radius:4px">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#0a0a0a" id="act-total-stamps">–</div>
+            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light)">Sellos totales</div>
+          </div>
+          <div style="background:var(--cream);border:1.5px solid var(--cream-border);padding:20px;text-align:center;border-radius:4px">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--gold)" id="act-total-rewards">–</div>
+            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light)">Premios emitidos</div>
+          </div>
+          <div style="background:var(--cream);border:1.5px solid var(--cream-border);padding:20px;text-align:center;border-radius:4px">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--green)" id="act-total-redeemed">–</div>
+            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light)">Premios canjeados</div>
+          </div>
+        </div>
+        <!-- Activity log -->
+        <div class="card-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <h3 style="color:#0a0a0a">Registro de actividad reciente</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="act-filter" onchange="loadActivity()" style="padding:6px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.82rem;background:var(--cream)">
+                <option value="all">Toda la actividad</option>
+                <option value="stamp">Solo sellos</option>
+                <option value="redeem">Solo canjes</option>
+                <option value="register">Solo altas</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+              <thead><tr style="background:var(--cream)">
+                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Fecha</th>
+                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Cliente</th>
+                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Actividad</th>
+                <th style="padding:8px 12px;text-align:center;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Cantidad</th>
+                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Nota</th>
+              </tr></thead>
+              <tbody id="activity-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px;text-align:center">
+            <button class="btn-sm btn-ghost" onclick="loadMoreActivity()" id="act-load-more" style="display:none">Cargar más</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CAMPAÑAS ═══ -->
+      <div class="section" id="section-campaigns">
+        <div class="section-header">
+          <h1>📣 Campañas</h1>
+          <button class="btn-sm btn-primary" onclick="showNewCampaign()">+ Nueva campaña</button>
+        </div>
+        <!-- type pills -->
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+          <button onclick="filterCampaigns('all')" class="camp-type active" id="camptype-all" style="padding:6px 14px;border:1.5px solid #0a0a0a;background:#0a0a0a;color:white;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">Todas</button>
+          <button onclick="filterCampaigns('email')" class="camp-type" id="camptype-email" style="padding:6px 14px;border:1.5px solid var(--cream-border);background:white;color:#0a0a0a;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">📧 Email</button>
+          <button onclick="filterCampaigns('sms')" class="camp-type" id="camptype-sms" style="padding:6px 14px;border:1.5px solid var(--cream-border);background:white;color:#0a0a0a;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">💬 SMS</button>
+        </div>
+        <!-- tabs -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--cream-border)">
+          <button onclick="switchCampTab('active')" id="camptab-active" style="padding:8px 18px;border:none;background:none;font-size:.82rem;font-weight:700;color:#0a0a0a;border-bottom:2px solid #0a0a0a;margin-bottom:-2px;cursor:pointer">En curso</button>
+          <button onclick="switchCampTab('past')" id="camptab-past" style="padding:8px 18px;border:none;background:none;font-size:.82rem;font-weight:600;color:var(--brown-light);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">Anteriores</button>
+        </div>
+        <div class="card-box" style="padding:0;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+              <thead><tr style="background:var(--cream)">
+                <th style="padding:10px 14px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Campaña</th>
+                <th style="padding:10px 14px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Tipo</th>
+                <th style="padding:10px 14px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Estado</th>
+                <th style="padding:10px 14px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Creada</th>
+                <th style="padding:10px 14px;text-align:center;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Acciones</th>
+              </tr></thead>
+              <tbody id="campaigns-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Sin campañas — crea tu primera con "+ Nueva campaña"</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- new campaign form -->
+        <div id="new-campaign-form" style="display:none;max-width:560px;margin-top:20px" class="card-box">
+          <h3 style="margin-bottom:16px;color:#0a0a0a">Nueva campaña de email</h3>
+          <div class="form-group" style="margin-bottom:12px"><label>Nombre de la campaña *</label><input id="nc-name" placeholder="ej. Oferta especial mayo"></div>
+          <div class="form-group" style="margin-bottom:12px"><label>Asunto del email *</label><input id="nc-subject" placeholder="ej. ¡Tu regalo te espera, {nombre}!"></div>
+          <div class="form-group" style="margin-bottom:12px"><label>Mensaje <small style="color:var(--brown-light)">(usa {nombre} para personalizar)</small></label>
+            <textarea id="nc-body" rows="4" placeholder="Hola {nombre}, tenemos una oferta especial para ti..."></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:16px"><label>Destinatarios</label>
+            <select id="nc-segment" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.85rem;background:var(--cream)">
+              <option value="all">Todos los clientes</option>
+              <option value="active">Clientes con sellos</option>
+              <option value="inactive">Sin actividad 30+ días</option>
+              <option value="near_reward">A 1-2 sellos del premio</option>
+            </select>
+          </div>
+          <div id="nc-msg" style="font-size:.82rem;margin-bottom:10px;min-height:18px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-primary" onclick="saveCampaign('draft')" style="flex:1">Guardar borrador</button>
+            <button class="btn-sm" style="flex:1;background:var(--green);color:white;border:none;padding:10px;border-radius:3px;font-size:.8rem;font-weight:700;cursor:pointer" onclick="saveCampaign('send')">Enviar ahora</button>
+            <button class="btn-sm btn-ghost" onclick="document.getElementById('new-campaign-form').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PASSCODES ═══ -->
+      <div class="section" id="section-passcodes">
+        <div class="section-header">
+          <h1>🔑 PassCodes / PinCodes</h1>
+          <button class="btn-sm btn-primary" onclick="showGenCodes()">+ Generar códigos</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px">
+          <!-- Generator -->
+          <div id="gen-codes-panel" class="card-box">
+            <h3 style="margin-bottom:16px;color:#0a0a0a">Generar códigos de sello</h3>
+            <p style="font-size:.8rem;color:var(--brown-light);margin-bottom:16px;line-height:1.6">Genera códigos de un solo uso que tus clientes pueden usar para obtener sellos sin estar en el local.</p>
+            <div class="form-group" style="margin-bottom:12px"><label>Número de códigos a generar</label>
+              <input type="number" id="pc-count" value="10" min="1" max="500" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group" style="margin-bottom:12px"><label>Sellos por código</label>
+              <input type="number" id="pc-stamps" value="1" min="1" max="20" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group" style="margin-bottom:16px"><label>Válidos hasta (opcional)</label>
+              <input type="date" id="pc-expiry" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <button class="btn-sm btn-primary" onclick="generatePassCodes()" style="width:100%;padding:12px">🔑 Generar códigos</button>
+            <div id="pc-msg" style="margin-top:10px;font-size:.8rem;min-height:16px"></div>
+          </div>
+          <!-- Codes list -->
+          <div class="card-box" style="padding:0;overflow:hidden">
+            <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--cream-border)">
+              <h3 style="color:#0a0a0a">Códigos generados</h3>
+              <div style="display:flex;gap:8px">
+                <button class="btn-sm btn-ghost" onclick="printPassCodes()" style="font-size:.72rem">🖨 Imprimir</button>
+                <button class="btn-sm btn-ghost" onclick="loadPassCodes()" style="font-size:.72rem">↺</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;max-height:420px;overflow-y:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+                <thead style="position:sticky;top:0"><tr style="background:var(--cream)">
+                  <th style="padding:8px 14px;text-align:left;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.5px">Código</th>
+                  <th style="padding:8px 14px;text-align:center;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.5px">Sellos</th>
+                  <th style="padding:8px 14px;text-align:center;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.5px">Estado</th>
+                  <th style="padding:8px 14px;text-align:left;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.5px">Vence</th>
+                  <th style="padding:8px 14px;text-align:left;font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.5px">Usado por</th>
+                </tr></thead>
+                <tbody id="passcodes-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Sin códigos — genera usando el panel izquierdo</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TIENDAS / LOCALES ═══ -->
+      <div class="section" id="section-stores">
+        <div class="section-header">
+          <h1>🏪 Tiendas / Locales</h1>
+          <button class="btn-sm btn-primary" onclick="showAddStore()">+ Añadir local</button>
+        </div>
+        <p style="color:var(--brown-light);font-size:.85rem;margin-bottom:20px">Gestiona tus puntos de venta. Cada local tiene su propio usuario para poner sellos desde el panel.</p>
+        <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+              <thead><tr style="background:var(--cream)">
+                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Nombre del local</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Usuario / PIN</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Estado</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Notas</th>
+                <th style="padding:12px 16px;text-align:center;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Acciones</th>
+              </tr></thead>
+              <tbody id="stores-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Sin locales — añade tu primer local con el botón superior</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- add/edit store form -->
+        <div id="store-form" style="display:none;max-width:480px" class="card-box">
+          <h3 id="store-form-title" style="margin-bottom:16px;color:#0a0a0a">Añadir local</h3>
+          <input type="hidden" id="store-edit-id">
+          <div class="form-group" style="margin-bottom:12px"><label>Nombre del local *</label><input id="store-name" placeholder="ej. Cafetería Centro"></div>
+          <div class="form-group" style="margin-bottom:12px"><label>PIN de acceso (4-6 dígitos) *</label><input id="store-pin" type="number" placeholder="1234" maxlength="6"></div>
+          <div class="form-group" style="margin-bottom:16px"><label>Notas internas</label><input id="store-notes" placeholder="ej. Calle Mayor 1, Madrid"></div>
+          <div id="store-msg" style="font-size:.82rem;margin-bottom:10px;min-height:16px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-primary" onclick="saveStore()" style="flex:1">Guardar</button>
+            <button class="btn-sm btn-ghost" onclick="document.getElementById('store-form').style.display='none'" style="flex:1">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══════════════════════ CONFIGURACIÓN ═══════════════════════ -->
       <div id="section-config" class="section">
         <div class="section-header">
@@ -1432,7 +1718,14 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
-const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente','config':'Configuración','card-design':'🎨 Diseño de Tarjeta'};
+const sectionTitles = {
+  dashboard:'Dashboard', bi:'Business Intelligence', birthdays:'Cumpleaños',
+  clients:'Clientes', import:'Importar Clientes', 'new-client':'Nuevo Cliente',
+  config:'Configuración', 'card-design':'🎨 Diseño de Tarjeta',
+  qrs:'📲 QRs de Alta', activity:'📋 Actividad',
+  campaigns:'📣 Campañas', passcodes:'🔑 PassCodes / Pin',
+  stores:'🏪 Tiendas / Locales'
+};
 function showSection(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
@@ -1440,11 +1733,16 @@ function showSection(name){
   const nav = document.getElementById('nav-'+name);
   if(nav) nav.classList.add('active');
   document.getElementById('topbar-title').textContent = sectionTitles[name]||name;
-  if(name==='clients') loadClients(1);
-  if(name==='bi') loadBI();
-  if(name==='config') loadConfig();
+  if(name==='clients')   loadClients(1);
+  if(name==='bi')        loadBI();
+  if(name==='config')    loadConfig();
   if(name==='birthdays') loadBirthdays();
   if(name==='card-design') loadDesign();
+  if(name==='qrs')       initQRSection();
+  if(name==='activity')  loadActivityLog();
+  if(name==='campaigns') loadCampaigns();
+  if(name==='passcodes') loadPassCodes();
+  if(name==='stores')    loadStores();
 }
 
 // ── DASHBOARD INIT ─────────────────────────────────────────────────────────
@@ -2554,6 +2852,476 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.addEventListener('input', updatePreview);
   });
 });
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ── QRs DE ALTA ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+let _mainQRCode = null;
+function initQRSection(){
+  const regUrl = `${BASE}/biz/${BIZ_SLUG}/register`;
+  const urlEl = document.getElementById('main-qr-url');
+  if(urlEl) urlEl.textContent = regUrl;
+  const qrContainer = document.getElementById('main-qr-code');
+  if(qrContainer){
+    qrContainer.innerHTML = '';
+    try{
+      _mainQRCode = new QRCode(qrContainer,{text:regUrl,width:180,height:180,colorDark:'#0a0a0a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    }catch(e){ qrContainer.textContent = regUrl; }
+  }
+  fetch(`${BASE}/api/admin/stats?pin=${PIN}&slug=${BIZ_SLUG}`)
+    .then(r=>r.json()).then(d=>{
+      const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+      set('qr-stat-total', d.total_customers||d.total_clients||0);
+      set('qr-stat-30', d.new_clients_30d||0);
+      set('qr-stat-stamps', d.total_stamps||0);
+      set('qr-stat-rewards', d.total_redeemed||0);
+    }).catch(()=>{});
+  loadCustomQRs();
+}
+
+function copyRegLink(){
+  const regUrl = `${BASE}/biz/${BIZ_SLUG}/register`;
+  navigator.clipboard.writeText(regUrl)
+    .then(()=>showToast('Enlace copiado ✓','success'))
+    .catch(()=>{
+      const el=document.createElement('textarea');el.value=regUrl;
+      document.body.appendChild(el);el.select();document.execCommand('copy');
+      document.body.removeChild(el);showToast('Enlace copiado ✓','success');
+    });
+}
+
+function downloadQR(){
+  const qrContainer = document.getElementById('main-qr-code');
+  if(!qrContainer) return;
+  const canvas = qrContainer.querySelector('canvas');
+  const img = qrContainer.querySelector('img');
+  let src = '';
+  if(canvas) src = canvas.toDataURL('image/png');
+  else if(img) src = img.src;
+  if(!src){ showToast('Error al generar QR','error'); return; }
+  const a = document.createElement('a');
+  a.href=src; a.download=`qr-${BIZ_SLUG}-registro.png`; a.click();
+  showToast('QR descargado ✓','success');
+}
+
+function addCustomQR(){
+  const f = document.getElementById('new-qr-form');
+  if(f) f.style.display = f.style.display==='none'?'block':'none';
+}
+
+async function saveCustomQR(){
+  const canal = document.getElementById('nqr-canal')?.value.trim();
+  const local = document.getElementById('nqr-local')?.value.trim()||'';
+  if(!canal){ showToast('Introduce un nombre para el canal','error'); return; }
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/custom-qrs?pin=${PIN}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({canal,local_name:local})
+    });
+    if(!r.ok) throw new Error();
+    document.getElementById('nqr-canal').value='';
+    document.getElementById('nqr-local').value='';
+    document.getElementById('new-qr-form').style.display='none';
+    await loadCustomQRs();
+    showToast('QR creado ✓','success');
+  }catch(e){ showToast('Error al crear QR','error'); }
+}
+
+async function loadCustomQRs(){
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/custom-qrs?pin=${PIN}`);
+    const data = await r.json();
+    renderCustomQRs(data.qrs||[]);
+  }catch(e){ renderCustomQRs([]); }
+}
+
+function renderCustomQRs(qrs){
+  const tbody = document.getElementById('custom-qrs-tbody');
+  if(!tbody) return;
+  if(qrs.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Sin QRs personalizados — crea uno con "+ Nuevo QR"</td></tr>';
+    return;
+  }
+  tbody.innerHTML = qrs.map(q=>{
+    const url=`${BASE}/biz/${BIZ_SLUG}/register?ref=${encodeURIComponent(q.canal)}`;
+    return `<tr style="border-bottom:1.5px solid var(--cream-border)">
+      <td style="padding:10px 12px;font-weight:600">${q.canal}</td>
+      <td style="padding:10px 12px;color:var(--brown-light)">${q.local_name||'—'}</td>
+      <td style="padding:10px 12px;font-size:.75rem;font-family:monospace;color:var(--brown-light);word-break:break-all">${url}</td>
+      <td style="padding:10px 12px;text-align:center"><div id="mini-qr-${q.id}" style="display:inline-block"></div></td>
+      <td style="padding:10px 12px;text-align:center">
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick="copyQRLink('${url}')">📋</button>
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteCustomQR('${q.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+  qrs.forEach(q=>{
+    const url=`${BASE}/biz/${BIZ_SLUG}/register?ref=${encodeURIComponent(q.canal)}`;
+    const el=document.getElementById(`mini-qr-${q.id}`);
+    if(el&&typeof QRCode!=='undefined'){
+      try{ new QRCode(el,{text:url,width:64,height:64,colorDark:'#0a0a0a',colorLight:'#ffffff'}); }catch(e){}
+    }
+  });
+}
+
+function copyQRLink(url){
+  navigator.clipboard.writeText(url)
+    .then(()=>showToast('Enlace copiado ✓','success'))
+    .catch(()=>{const el=document.createElement('textarea');el.value=url;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);showToast('Enlace copiado ✓','success');});
+}
+
+async function deleteCustomQR(id){
+  if(!confirm('¿Eliminar este QR personalizado?')) return;
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/custom-qrs/${id}?pin=${PIN}`,{method:'DELETE'});
+    await loadCustomQRs();
+    showToast('QR eliminado','success');
+  }catch(e){ showToast('Error al eliminar','error'); }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ── ACTIVIDAD LOG (tabla de transacciones) ───────────────────────
+// ═══════════════════════════════════════════════════════════════════
+let _actOffset = 0;
+const _actLimit = 50;
+
+async function loadActivityLog(){
+  _actOffset = 0;
+  const filter = document.getElementById('act-filter')?.value||'all';
+  const tbody = document.getElementById('activity-tbody');
+  if(tbody) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Cargando...</td></tr>';
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/activity-log?pin=${PIN}&filter=${filter}&limit=${_actLimit}&offset=0`);
+    const data = await r.json();
+    if(data.stats){
+      const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+      set('act-total-clients', data.stats.total_clients||0);
+      set('act-total-stamps', data.stats.total_stamps||0);
+      set('act-total-rewards', data.stats.total_redeemed||0);
+      set('act-total-redeemed', data.stats.total_redeemed||0);
+    }
+    renderActivityRows(data.rows||[], false);
+    const btn=document.getElementById('act-load-more');
+    if(btn) btn.style.display=(data.rows||[]).length>=_actLimit?'inline-block':'none';
+    _actOffset=(data.rows||[]).length;
+  }catch(e){
+    const tbody=document.getElementById('activity-tbody');
+    if(tbody) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Error cargando actividad</td></tr>';
+  }
+}
+
+async function loadMoreActivity(){
+  const filter=document.getElementById('act-filter')?.value||'all';
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/activity-log?pin=${PIN}&filter=${filter}&limit=${_actLimit}&offset=${_actOffset}`);
+    const data=await r.json();
+    renderActivityRows(data.rows||[], true);
+    const btn=document.getElementById('act-load-more');
+    if(btn) btn.style.display=(data.rows||[]).length>=_actLimit?'inline-block':'none';
+    _actOffset+=( data.rows||[]).length;
+  }catch(e){ showToast('Error','error'); }
+}
+
+function renderActivityRows(rows, append){
+  const tbody=document.getElementById('activity-tbody');
+  if(!tbody) return;
+  const typeLabels={stamp:'🍪 Sello',redeem:'🎁 Canje',register:'✨ Alta',passcode:'🔑 Código',adjust:'✏ Ajuste'};
+  const typeBadges={stamp:'background:#e8f5e9;color:#2e7d32',redeem:'background:#fff3e0;color:#e65100',register:'background:#e3f2fd;color:#1565c0',passcode:'background:#f3e5f5;color:#6a1b9a',adjust:'background:#f5f5f0;color:#555'};
+  if(!append&&rows.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light)">Sin actividad registrada</td></tr>';
+    return;
+  }
+  const html=rows.map(r=>{
+    const dt=r.created_at?new Date(r.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const type=r.type||'stamp';
+    const badge=typeBadges[type]||'background:#f5f5f0;color:#555';
+    return `<tr style="border-bottom:1px solid var(--cream-border)">
+      <td style="padding:8px 12px;font-size:.78rem;color:var(--brown-light);white-space:nowrap">${dt}</td>
+      <td style="padding:8px 12px"><span style="font-weight:600;font-size:.85rem">${r.name||'—'}</span><br><span style="font-size:.72rem;color:var(--brown-light)">${r.email||''}</span></td>
+      <td style="padding:8px 12px"><span style="padding:2px 8px;border-radius:2px;font-size:.7rem;font-weight:700;${badge}">${typeLabels[type]||type}</span></td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700">${r.amount||0}</td>
+      <td style="padding:8px 12px;font-size:.78rem;color:var(--brown-light)">${r.note||''}</td>
+    </tr>`;
+  }).join('');
+  if(append) tbody.insertAdjacentHTML('beforeend',html);
+  else tbody.innerHTML=html||'<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light)">Sin actividad registrada</td></tr>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ── CAMPAÑAS ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+let _campaigns = [];
+let _campTypeFilter = 'all';
+let _campTab = 'active';
+
+async function loadCampaigns(){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns?pin=${PIN}`);
+    const data=await r.json();
+    _campaigns=data.campaigns||[];
+    renderCampaigns();
+  }catch(e){ _campaigns=[]; renderCampaigns(); }
+}
+
+function renderCampaigns(){
+  const tbody=document.getElementById('campaigns-tbody');
+  if(!tbody) return;
+  const filtered=_campaigns.filter(c=>{
+    if(_campTypeFilter!=='all'&&c.type!==_campTypeFilter) return false;
+    if(_campTab==='active') return c.status==='draft'||c.status==='sending'||c.status==='scheduled';
+    if(_campTab==='past') return c.status==='sent'||c.status==='cancelled';
+    return true;
+  });
+  if(filtered.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Sin campañas — crea tu primera con "+ Nueva campaña"</td></tr>';
+    return;
+  }
+  const sb={draft:'background:#f5f5f0;color:#555',sending:'background:#e8f5e9;color:#2e7d32',sent:'background:#e3f2fd;color:#1565c0',scheduled:'background:#fff3e0;color:#e65100',cancelled:'background:#fbe9e7;color:#c62828'};
+  const ti={email:'📧',sms:'💬'};
+  tbody.innerHTML=filtered.map(c=>{
+    const dt=c.created_at?new Date(c.created_at).toLocaleDateString('es-ES'):'—';
+    return `<tr style="border-bottom:1px solid var(--cream-border)">
+      <td style="padding:10px 14px;font-weight:600">${c.name}</td>
+      <td style="padding:10px 14px">${ti[c.type]||''} ${c.type||'email'}</td>
+      <td style="padding:10px 14px"><span style="padding:2px 8px;border-radius:2px;font-size:.72rem;font-weight:700;${sb[c.status]||''}">${c.status}</span></td>
+      <td style="padding:10px 14px;color:var(--brown-light);font-size:.8rem">${dt}</td>
+      <td style="padding:10px 14px;text-align:center">
+        ${c.status==='draft'?`<button class="btn-sm btn-primary" style="font-size:.72rem;margin-right:4px" onclick="sendCampaign('${c.id}')">Enviar</button>`:''}
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteCampaign('${c.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterCampaigns(type){
+  _campTypeFilter=type;
+  document.querySelectorAll('.camp-type').forEach(b=>{b.style.background='white';b.style.color='#0a0a0a';b.style.borderColor='var(--cream-border)';});
+  const ab=document.getElementById('camptype-'+type);
+  if(ab){ab.style.background='#0a0a0a';ab.style.color='white';ab.style.borderColor='#0a0a0a';}
+  renderCampaigns();
+}
+
+function switchCampTab(tab){
+  _campTab=tab;
+  ['active','past'].forEach(t=>{
+    const btn=document.getElementById('camptab-'+t);
+    if(btn){btn.style.color=t===tab?'#0a0a0a':'var(--brown-light)';btn.style.borderBottomColor=t===tab?'#0a0a0a':'transparent';btn.style.fontWeight=t===tab?'700':'600';}
+  });
+  renderCampaigns();
+}
+
+function showNewCampaign(){
+  const f=document.getElementById('new-campaign-form');
+  if(f) f.style.display=f.style.display==='none'?'block':'none';
+}
+
+async function saveCampaign(action){
+  const name=document.getElementById('nc-name')?.value.trim();
+  const subject=document.getElementById('nc-subject')?.value.trim()||'';
+  const body=document.getElementById('nc-body')?.value.trim()||'';
+  const segment=document.getElementById('nc-segment')?.value||'all';
+  const msgEl=document.getElementById('nc-msg');
+  if(!name){if(msgEl){msgEl.textContent='⚠ Introduce un nombre';msgEl.style.color='#c62828';}return;}
+  const status=action==='send'?'sending':'draft';
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns?pin=${PIN}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,subject,body,segment,type:'email',status})
+    });
+    const data=await r.json();
+    if(!r.ok){if(msgEl){msgEl.textContent='❌ Error';msgEl.style.color='#c62828';}return;}
+    if(msgEl){msgEl.textContent=action==='send'?'✅ Enviando...':'✅ Borrador guardado';msgEl.style.color='#2e7d32';}
+    if(action==='send'&&data.id) await sendCampaign(data.id);
+    await loadCampaigns();
+    setTimeout(()=>{document.getElementById('new-campaign-form').style.display='none';if(msgEl)msgEl.textContent='';},1500);
+    showToast(action==='send'?'Campaña enviada ✓':'Borrador guardado ✓','success');
+  }catch(e){if(msgEl){msgEl.textContent='❌ Error';msgEl.style.color='#c62828';}}
+}
+
+async function sendCampaign(id){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns/${id}/send?pin=${PIN}`,{method:'POST'});
+    const d=await r.json();
+    showToast(`📧 Enviado a ${d.sent||0} clientes ✓`,'success');
+    await loadCampaigns();
+  }catch(e){ showToast('Error al enviar','error'); }
+}
+
+async function deleteCampaign(id){
+  if(!confirm('¿Eliminar esta campaña?')) return;
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns/${id}?pin=${PIN}`,{method:'DELETE'});
+    await loadCampaigns();
+    showToast('Campaña eliminada','success');
+  }catch(e){ showToast('Error al eliminar','error'); }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ── PASSCODES ────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function showGenCodes(){
+  const p=document.getElementById('gen-codes-panel');
+  if(p) p.style.display=p.style.display==='none'?'block':'block';
+}
+
+async function generatePassCodes(){
+  const count=parseInt(document.getElementById('pc-count')?.value)||10;
+  const stamps=parseInt(document.getElementById('pc-stamps')?.value)||1;
+  const expiry=document.getElementById('pc-expiry')?.value||null;
+  const msgEl=document.getElementById('pc-msg');
+  if(count<1||count>500){if(msgEl){msgEl.textContent='⚠ Entre 1 y 500 códigos';msgEl.style.color='#c62828';}return;}
+  if(msgEl){msgEl.textContent='Generando...';msgEl.style.color='var(--brown-light)';}
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/passcodes/generate?pin=${PIN}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({count,stamps_per_code:stamps,expires_at:expiry||null})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.detail||'Error');
+    if(msgEl){msgEl.textContent=`✅ ${data.generated||count} códigos generados`;msgEl.style.color='#2e7d32';}
+    setTimeout(()=>{if(msgEl)msgEl.textContent='';},3000);
+    await loadPassCodes();
+    showToast(`${data.generated||count} códigos creados ✓`,'success');
+  }catch(e){if(msgEl){msgEl.textContent='❌ '+e.message;msgEl.style.color='#c62828';}}
+}
+
+async function loadPassCodes(){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/passcodes?pin=${PIN}`);
+    const data=await r.json();
+    renderPassCodes(data.codes||[]);
+  }catch(e){ renderPassCodes([]); }
+}
+
+function renderPassCodes(codes){
+  const tbody=document.getElementById('passcodes-tbody');
+  if(!tbody) return;
+  if(codes.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Sin códigos — genera usando el panel izquierdo</td></tr>';
+    return;
+  }
+  tbody.innerHTML=codes.map(c=>{
+    const used=c.used||c.used_by;
+    const exp=c.expires_at?new Date(c.expires_at).toLocaleDateString('es-ES'):'—';
+    return `<tr style="border-bottom:1px solid var(--cream-border);${used?'opacity:.55':''}">
+      <td style="padding:8px 14px;font-family:monospace;font-weight:700;letter-spacing:2px;font-size:.92rem">${c.code}</td>
+      <td style="padding:8px 14px;text-align:center;font-weight:600">${c.stamps||1} 🍪</td>
+      <td style="padding:8px 14px;text-align:center"><span style="padding:2px 8px;border-radius:2px;font-size:.7rem;font-weight:700;${used?'background:#fbe9e7;color:#c62828':'background:#e8f5e9;color:#2e7d32'}">${used?'Usado':'Disponible'}</span></td>
+      <td style="padding:8px 14px;font-size:.78rem;color:var(--brown-light)">${exp}</td>
+      <td style="padding:8px 14px;font-size:.78rem;color:var(--brown-light)">${c.used_by_name||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function printPassCodes(){
+  const rows=document.querySelectorAll('#passcodes-tbody tr');
+  const codes=[];
+  rows.forEach(tr=>{
+    const cells=tr.querySelectorAll('td');
+    if(cells.length>2&&cells[2].textContent.includes('Disponible')){
+      codes.push({code:cells[0].textContent.trim(),stamps:cells[1].textContent.trim()});
+    }
+  });
+  if(codes.length===0){showToast('No hay códigos disponibles para imprimir','error');return;}
+  const win=window.open('','_blank','width=820,height=600');
+  win.document.write(`<html><head><title>PassCodes</title>
+    <style>body{font-family:monospace;padding:24px}h2{font-family:sans-serif;margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .chip{border:2px dashed #333;padding:14px;text-align:center;border-radius:6px;page-break-inside:avoid}
+    .code{font-size:1.1rem;font-weight:bold;letter-spacing:2px}.stamps{font-size:.8rem;color:#666;margin-top:6px}
+    @media print{.grid{grid-template-columns:repeat(4,1fr)}}</style></head>
+    <body><h2>Códigos de Sello — ${BIZ_SLUG}</h2>
+    <div class="grid">${codes.map(c=>`<div class="chip"><div class="code">${c.code}</div><div class="stamps">${c.stamps}</div></div>`).join('')}</div>
+    </body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),600);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ── TIENDAS / LOCALES ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+async function loadStores(){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+    const data=await r.json();
+    renderStores(data.stores||[]);
+  }catch(e){ renderStores([]); }
+}
+
+function renderStores(stores){
+  const tbody=document.getElementById('stores-tbody');
+  if(!tbody) return;
+  if(stores.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Sin locales — añade tu primer local con el botón superior</td></tr>';
+    return;
+  }
+  tbody.innerHTML=stores.map(s=>`
+    <tr style="border-bottom:1px solid var(--cream-border)">
+      <td style="padding:12px 16px;font-weight:600">${s.name}</td>
+      <td style="padding:12px 16px;font-family:monospace;font-size:.85rem;letter-spacing:1px">${s.pin||'—'}</td>
+      <td style="padding:12px 16px"><span style="padding:2px 8px;border-radius:2px;font-size:.72rem;font-weight:700;background:${s.active!==false?'#e8f5e9':'#fbe9e7'};color:${s.active!==false?'#2e7d32':'#c62828'}">${s.active!==false?'Activo':'Inactivo'}</span></td>
+      <td style="padding:12px 16px;color:var(--brown-light);font-size:.82rem">${s.notes||'—'}</td>
+      <td style="padding:12px 16px;text-align:center">
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick='editStore(${JSON.stringify(s)})'>✏ Editar</button>
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteStore('${s.id}')">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+function showAddStore(){
+  document.getElementById('store-form-title').textContent='Añadir local';
+  document.getElementById('store-edit-id').value='';
+  document.getElementById('store-name').value='';
+  document.getElementById('store-pin').value='';
+  document.getElementById('store-notes').value='';
+  document.getElementById('store-msg').textContent='';
+  document.getElementById('store-form').style.display='block';
+}
+
+function editStore(s){
+  if(typeof s==='string'){try{s=JSON.parse(s);}catch(e){return;}}
+  document.getElementById('store-form-title').textContent='Editar local';
+  document.getElementById('store-edit-id').value=s.id||'';
+  document.getElementById('store-name').value=s.name||'';
+  document.getElementById('store-pin').value=s.pin||'';
+  document.getElementById('store-notes').value=s.notes||'';
+  document.getElementById('store-msg').textContent='';
+  document.getElementById('store-form').style.display='block';
+  document.getElementById('store-form').scrollIntoView({behavior:'smooth'});
+}
+
+async function saveStore(){
+  const id=document.getElementById('store-edit-id')?.value;
+  const name=document.getElementById('store-name')?.value.trim();
+  const pin=document.getElementById('store-pin')?.value.trim();
+  const notes=document.getElementById('store-notes')?.value.trim()||'';
+  const msgEl=document.getElementById('store-msg');
+  if(!name){if(msgEl){msgEl.textContent='⚠ Introduce el nombre del local';msgEl.style.color='#c62828';}return;}
+  if(!pin||pin.length<4){if(msgEl){msgEl.textContent='⚠ El PIN debe tener al menos 4 dígitos';msgEl.style.color='#c62828';}return;}
+  try{
+    const method=id?'PUT':'POST';
+    const url=id?`${BASE}/api/biz/${BIZ_SLUG}/stores/${id}?pin=${PIN}`:`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`;
+    const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin,notes,active:true})});
+    if(!r.ok){const d=await r.json();throw new Error(d.detail||'Error');}
+    document.getElementById('store-form').style.display='none';
+    await loadStores();
+    showToast(id?'Local actualizado ✓':'Local añadido ✓','success');
+  }catch(e){if(msgEl){msgEl.textContent='❌ '+e.message;msgEl.style.color='#c62828';}}
+}
+
+async function deleteStore(id){
+  if(!confirm('¿Eliminar este local?')) return;
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${id}?pin=${PIN}`,{method:'DELETE'});
+    await loadStores();
+    showToast('Local eliminado','success');
+  }catch(e){ showToast('Error al eliminar','error'); }
+}
 
 </script>
 </body>

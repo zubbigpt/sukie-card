@@ -107,6 +107,14 @@ def run_migrations():
         "DELETE FROM customers WHERE id NOT IN (SELECT DISTINCT customer_id FROM loyalty_cards WHERE customer_id IS NOT NULL)",
         # Upgrade Café Luna demo account to pro
         "UPDATE businesses SET plan='pro' WHERE slug='cafeluna'",
+        # ── Tiendas / Locales ──────────────────────────────────────────────────────
+        "CREATE TABLE IF NOT EXISTS stores (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, pin VARCHAR NOT NULL DEFAULT '', notes TEXT DEFAULT '', active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW())",
+        # ── PassCodes ─────────────────────────────────────────────────────────────
+        "CREATE TABLE IF NOT EXISTS passcodes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), code VARCHAR(16) UNIQUE NOT NULL, stamps INTEGER DEFAULT 1, used BOOLEAN DEFAULT FALSE, used_by UUID REFERENCES loyalty_cards(id), used_at TIMESTAMPTZ, expires_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW())",
+        # ── Campañas ──────────────────────────────────────────────────────────────
+        "CREATE TABLE IF NOT EXISTS campaigns (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, subject VARCHAR DEFAULT '', body TEXT DEFAULT '', type VARCHAR DEFAULT 'email', status VARCHAR DEFAULT 'draft', segment VARCHAR DEFAULT 'all', created_at TIMESTAMPTZ DEFAULT NOW(), sent_at TIMESTAMPTZ)",
+        # ── Custom QRs de Alta ────────────────────────────────────────────────────
+        "CREATE TABLE IF NOT EXISTS custom_qrs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), canal VARCHAR NOT NULL, local_name VARCHAR DEFAULT '', created_at TIMESTAMPTZ DEFAULT NOW())",
 
     ]
     from database import SessionLocal
@@ -1802,3 +1810,357 @@ async def scanner_page(request: Request, slug: str, db: Session = Depends(get_db
         "stamps_per_reward": biz.stamps_per_reward or STAMPS_PER_REWARD,
         "base_url":          BASE_URL,
     })
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# TIENDAS / LOCALES  — CRUD
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/stores")
+def list_stores(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    rows = db.execute(text(
+        "SELECT id, name, pin, notes, active, created_at FROM stores WHERE business_id=:bid ORDER BY created_at ASC"
+    ), {"bid": str(biz.id)}).fetchall()
+    return {"stores": [
+        {"id": str(r[0]), "name": r[1], "pin": r[2], "notes": r[3] or "", "active": bool(r[4]), "created_at": str(r[5])}
+        for r in rows
+    ]}
+
+
+@app.post("/api/biz/{slug}/stores")
+def create_store(slug: str, pin: str = "", payload: dict = Body(...), db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    store_id = str(uuid.uuid4())
+    db.execute(text(
+        "INSERT INTO stores (id, business_id, name, pin, notes, active) VALUES (:id, :bid, :name, :pin, :notes, :active)"
+    ), {"id": store_id, "bid": str(biz.id), "name": payload.get("name", ""),
+        "pin": str(payload.get("pin", "")), "notes": payload.get("notes", ""),
+        "active": payload.get("active", True)})
+    db.commit()
+    return {"id": store_id, "status": "created"}
+
+
+@app.put("/api/biz/{slug}/stores/{store_id}")
+def update_store(slug: str, store_id: str, pin: str = "", payload: dict = Body(...), db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text(
+        "UPDATE stores SET name=:name, pin=:pin, notes=:notes, active=:active WHERE id=:id AND business_id=:bid"
+    ), {"name": payload.get("name", ""), "pin": str(payload.get("pin", "")),
+        "notes": payload.get("notes", ""), "active": payload.get("active", True),
+        "id": store_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "updated"}
+
+
+@app.delete("/api/biz/{slug}/stores/{store_id}")
+def delete_store(slug: str, store_id: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text("DELETE FROM stores WHERE id=:id AND business_id=:bid"),
+               {"id": store_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "deleted"}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# PASSCODES
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/passcodes")
+def list_passcodes(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    rows = db.execute(text(
+        "SELECT p.id, p.code, p.stamps, p.used, p.expires_at, p.created_at, c.first_name, c.last_name "
+        "FROM passcodes p "
+        "LEFT JOIN loyalty_cards lc ON lc.id = p.used_by "
+        "LEFT JOIN customers c ON c.id = lc.customer_id "
+        "WHERE p.business_id=:bid ORDER BY p.created_at DESC LIMIT 500"
+    ), {"bid": str(biz.id)}).fetchall()
+    return {"codes": [
+        {"id": str(r[0]), "code": r[1], "stamps": r[2], "used": bool(r[3]),
+         "expires_at": str(r[4]) if r[4] else None, "created_at": str(r[5]),
+         "used_by_name": f"{r[6] or ''} {r[7] or ''}".strip() if r[3] else None}
+        for r in rows
+    ]}
+
+
+@app.post("/api/biz/{slug}/passcodes/generate")
+def generate_passcodes(slug: str, pin: str = "", payload: dict = Body(...), db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    count = min(int(payload.get("count", 10)), 500)
+    stamps = int(payload.get("stamps_per_code", 1))
+    expires_at = payload.get("expires_at") or None
+    generated = 0
+    for _ in range(count):
+        for _attempt in range(10):
+            code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+            existing = db.execute(text("SELECT 1 FROM passcodes WHERE code=:code"), {"code": code}).fetchone()
+            if not existing:
+                db.execute(text(
+                    "INSERT INTO passcodes (id, business_id, code, stamps, expires_at) "
+                    "VALUES (:id, :bid, :code, :stamps, :exp)"
+                ), {"id": str(uuid.uuid4()), "bid": str(biz.id), "code": code,
+                    "stamps": stamps, "exp": expires_at})
+                generated += 1
+                break
+    db.commit()
+    return {"generated": generated}
+
+
+@app.post("/api/biz/{slug}/passcodes/redeem")
+def redeem_passcode(slug: str, payload: dict = Body(...), db: Session = Depends(get_db)):
+    """Public endpoint: customer redeems a passcode to get stamps on their card."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    code = (payload.get("code") or "").strip().upper()
+    card_id = payload.get("card_id")
+    if not code or not card_id:
+        raise HTTPException(status_code=400, detail="Código y tarjeta requeridos")
+    row = db.execute(text(
+        "SELECT id, stamps, used, expires_at FROM passcodes WHERE code=:code AND business_id=:bid"
+    ), {"code": code, "bid": str(biz.id)}).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Código no encontrado")
+    if row[2]:
+        raise HTTPException(status_code=409, detail="Este código ya fue usado")
+    if row[3] and row[3] < datetime.now(timezone.utc):
+        raise HTTPException(status_code=410, detail="Código caducado")
+    stamps = row[1]
+    db.execute(text(
+        "UPDATE passcodes SET used=TRUE, used_by=:cid, used_at=NOW() WHERE id=:id"
+    ), {"cid": card_id, "id": str(row[0])})
+    db.execute(text(
+        "UPDATE loyalty_cards SET stamp_count = stamp_count + :s WHERE id=:cid"
+    ), {"s": stamps, "cid": card_id})
+    db.execute(text(
+        "INSERT INTO stamp_transactions (id, card_id, stamps_added, transaction_type, note, created_at) "
+        "VALUES (:id, :cid, :s, 'passcode', :note, NOW())"
+    ), {"id": str(uuid.uuid4()), "cid": card_id, "s": stamps, "note": f"PassCode: {code}"})
+    db.commit()
+    return {"status": "ok", "stamps_added": stamps}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# CAMPAÑAS
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/campaigns")
+def list_campaigns(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    rows = db.execute(text(
+        "SELECT id, name, subject, type, status, segment, created_at, sent_at "
+        "FROM campaigns WHERE business_id=:bid ORDER BY created_at DESC"
+    ), {"bid": str(biz.id)}).fetchall()
+    return {"campaigns": [
+        {"id": str(r[0]), "name": r[1], "subject": r[2] or "", "type": r[3] or "email",
+         "status": r[4] or "draft", "segment": r[5] or "all",
+         "created_at": str(r[6]), "sent_at": str(r[7]) if r[7] else None}
+        for r in rows
+    ]}
+
+
+@app.post("/api/biz/{slug}/campaigns")
+def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    camp_id = str(uuid.uuid4())
+    db.execute(text(
+        "INSERT INTO campaigns (id, business_id, name, subject, body, type, status, segment) "
+        "VALUES (:id, :bid, :name, :subject, :body, :type, :status, :segment)"
+    ), {"id": camp_id, "bid": str(biz.id), "name": payload.get("name", ""),
+        "subject": payload.get("subject", ""), "body": payload.get("body", ""),
+        "type": payload.get("type", "email"), "status": payload.get("status", "draft"),
+        "segment": payload.get("segment", "all")})
+    db.commit()
+    return {"id": camp_id, "status": "created"}
+
+
+@app.post("/api/biz/{slug}/campaigns/{campaign_id}/send")
+def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Send email campaign to segmented customers"""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    camp = db.execute(text(
+        "SELECT name, subject, body, segment FROM campaigns WHERE id=:id AND business_id=:bid"
+    ), {"id": campaign_id, "bid": str(biz.id)}).fetchone()
+    if not camp:
+        raise HTTPException(status_code=404, detail="Campaña no encontrada")
+    segment = camp[3] or "all"
+    q_base = (
+        "SELECT c.email, c.first_name FROM customers c "
+        "JOIN loyalty_cards lc ON lc.customer_id=c.id "
+        "WHERE c.business_id=:bid AND c.opt_in_email=TRUE AND c.email NOT LIKE '%placeholder%'"
+    )
+    if segment == "active":
+        q_base += " AND lc.stamp_count > 0"
+    customers = db.execute(text(q_base), {"bid": str(biz.id)}).fetchall()
+    sent = 0
+    for cust in customers:
+        try:
+            body_html = f"<p>{(camp[2] or '').replace('{nombre}', cust[1] or '')}</p>"
+            subject_text = (camp[1] or "").replace("{nombre}", cust[1] or "")
+            if send_email(cust[0], subject_text, body_html):
+                sent += 1
+        except Exception:
+            pass
+    db.execute(text(
+        "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
+    ), {"id": campaign_id})
+    db.commit()
+    return {"sent": sent, "status": "sent"}
+
+
+@app.delete("/api/biz/{slug}/campaigns/{campaign_id}")
+def delete_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text("DELETE FROM campaigns WHERE id=:id AND business_id=:bid"),
+               {"id": campaign_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "deleted"}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# CUSTOM QRs DE ALTA
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/custom-qrs")
+def list_custom_qrs(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    rows = db.execute(text(
+        "SELECT id, canal, local_name, created_at FROM custom_qrs WHERE business_id=:bid ORDER BY created_at ASC"
+    ), {"bid": str(biz.id)}).fetchall()
+    return {"qrs": [
+        {"id": str(r[0]), "canal": r[1], "local_name": r[2] or "", "created_at": str(r[3])}
+        for r in rows
+    ]}
+
+
+@app.post("/api/biz/{slug}/custom-qrs")
+def create_custom_qr(slug: str, pin: str = "", payload: dict = Body(...), db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    qr_id = str(uuid.uuid4())
+    db.execute(text(
+        "INSERT INTO custom_qrs (id, business_id, canal, local_name) VALUES (:id, :bid, :canal, :local)"
+    ), {"id": qr_id, "bid": str(biz.id), "canal": payload.get("canal", ""),
+        "local": payload.get("local_name", "")})
+    db.commit()
+    return {"id": qr_id, "status": "created"}
+
+
+@app.delete("/api/biz/{slug}/custom-qrs/{qr_id}")
+def delete_custom_qr(slug: str, qr_id: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text("DELETE FROM custom_qrs WHERE id=:id AND business_id=:bid"),
+               {"id": qr_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "deleted"}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# ACTIVITY LOG  — tabla de transacciones recientes (distinto al chart)
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/activity-log")
+def activity_log(
+    slug: str, pin: str = "", filter: str = "all",
+    limit: int = 50, offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    bid = str(biz.id)
+
+    # Summary stats for this business
+    stats_row = db.execute(text(
+        "SELECT COUNT(DISTINCT lc.id), "
+        "COALESCE(SUM(CASE WHEN st.stamps_added > 0 THEN st.stamps_added ELSE 0 END), 0), "
+        "COUNT(CASE WHEN st.transaction_type='redeem' THEN 1 END) "
+        "FROM loyalty_cards lc "
+        "JOIN customers c ON c.id = lc.customer_id "
+        "LEFT JOIN stamp_transactions st ON st.card_id = lc.id "
+        "WHERE c.business_id = :bid AND c.email NOT LIKE '%placeholder%'"
+    ), {"bid": bid}).fetchone()
+
+    stats = {
+        "total_clients": int(stats_row[0]) if stats_row else 0,
+        "total_stamps": int(stats_row[1]) if stats_row else 0,
+        "total_redeemed": int(stats_row[2]) if stats_row else 0,
+    }
+
+    # Build type filter
+    type_filter = ""
+    if filter == "stamp":
+        type_filter = " AND st.transaction_type IN ('stamp', 'passcode', 'adjust')"
+    elif filter == "redeem":
+        type_filter = " AND st.transaction_type = 'redeem'"
+    elif filter == "register":
+        type_filter = " AND st.transaction_type = 'register'"
+
+    rows = db.execute(text(f"""
+        SELECT st.created_at, c.first_name, c.last_name, c.email,
+               st.transaction_type, st.stamps_added, st.note, st.store
+        FROM stamp_transactions st
+        JOIN loyalty_cards lc ON lc.id = st.card_id
+        JOIN customers c ON c.id = lc.customer_id
+        WHERE c.business_id = :bid
+          AND c.email NOT LIKE '%placeholder%'
+          {type_filter}
+        ORDER BY st.created_at DESC
+        LIMIT :limit OFFSET :offset
+    """), {"bid": bid, "limit": limit, "offset": offset}).fetchall()
+
+    return {
+        "stats": stats,
+        "rows": [
+            {
+                "created_at": r[0].isoformat() if r[0] else None,
+                "name": f"{r[1] or ''} {r[2] or ''}".strip() or "—",
+                "email": r[3] or "",
+                "type": r[4] or "stamp",
+                "amount": int(r[5] or 0),
+                "note": r[6] or r[7] or "",
+            }
+            for r in rows
+        ],
+    }
