@@ -105,6 +105,8 @@ def run_migrations():
         "DELETE FROM stamp_transactions WHERE card_id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
         "DELETE FROM loyalty_cards WHERE id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
         "DELETE FROM customers WHERE id NOT IN (SELECT DISTINCT customer_id FROM loyalty_cards WHERE customer_id IS NOT NULL)",
+        # Upgrade Café Luna demo account to pro
+        "UPDATE businesses SET plan='pro' WHERE slug='cafeluna'",
 
     ]
     from database import SessionLocal
