@@ -99,7 +99,9 @@ def run_migrations():
         "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
         "UPDATE card_config SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
         "DELETE FROM customers WHERE email = 'placeholder_email' OR first_name = 'PLACEHOLDER_FNAME'",
-        # Clean test customers: delete by card ID
+        # Clean test customers: delete in FK order (push_subscriptions → referrals → stamp_transactions → loyalty_cards → customers)
+        "DELETE FROM push_subscriptions WHERE card_id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
+        "DELETE FROM referrals WHERE referrer_card IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid) OR referred_card IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
         "DELETE FROM stamp_transactions WHERE card_id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
         "DELETE FROM loyalty_cards WHERE id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
         "DELETE FROM customers WHERE id NOT IN (SELECT DISTINCT customer_id FROM loyalty_cards WHERE customer_id IS NOT NULL)",
