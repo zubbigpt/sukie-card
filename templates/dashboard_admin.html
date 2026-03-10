@@ -1016,13 +1016,28 @@ tr:hover td{background:rgba(255,243,207,.4)}
 
 
       <!-- ═══ DISEÑO DE TARJETA ═══ -->
+      <style>
+        .emoji-picker{position:absolute;top:calc(100% + 6px);left:0;background:white;border:2px solid var(--cream-border);border-radius:14px;padding:10px;box-shadow:0 8px 32px rgba(58,52,38,.15);z-index:300;width:260px;display:none;flex-wrap:wrap;gap:4px}
+        .emoji-picker.open{display:flex}
+        .emoji-opt{font-size:1.3rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:background .15s}
+        .emoji-opt:hover{background:var(--cream)}
+        .emoji-opt.selected{background:var(--gold-light);outline:2px solid var(--gold)}
+        .phone-frame{background:#1c1c1e;border-radius:44px;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}
+        .phone-screen{background:#000;border-radius:34px;overflow:hidden;position:relative}
+        .phone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:26px;background:#1c1c1e;border-radius:20px;z-index:20}
+        .wallet-card{border-radius:20px;overflow:hidden;margin:6px 8px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+        .android-frame{background:#2d2d2d;border-radius:40px;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.06)}
+        .android-screen{background:#111;border-radius:30px;overflow:hidden;position:relative}
+        .android-punch{position:absolute;top:10px;right:18px;width:14px;height:14px;background:#111;border-radius:50%;z-index:20}
+        .preview-label{text-align:center;font-size:.7rem;color:var(--brown-light);margin-top:10px;font-weight:500;letter-spacing:.3px}
+      </style>
       <div class="section" id="section-card-design">
         <div class="section-header" style="margin-bottom:20px">
           <h1 style="font-family:'Playfair Display',serif;font-size:1.5rem">🎨 Diseño de Tarjeta</h1>
           <button onclick="saveDesign()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:50px;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar diseño</button>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:28px;align-items:start">
           <!-- LEFT: controls -->
           <div style="display:flex;flex-direction:column;gap:16px">
 
@@ -1031,7 +1046,13 @@ tr:hover td{background:rgba(255,243,207,.4)}
               <div class="card-title" style="margin-bottom:14px">🏷️ Identidad de marca</div>
               <div class="form-row">
                 <div class="form-group"><label>Nombre tarjeta</label><input id="d-card_name" class="form-group input" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Sukie Card"></div>
-                <div class="form-group"><label>Icono / emoji sello</label><input id="d-stamp_icon" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:1.3rem;outline:none;text-align:center" placeholder="🍪" maxlength="4"></div>
+                <div class="form-group" style="position:relative">
+                  <label>Icono / emoji sello</label>
+                  <div style="position:relative">
+                    <input id="d-stamp_icon" readonly style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:1.4rem;outline:none;text-align:center;cursor:pointer" placeholder="🍪" maxlength="4" onclick="toggleEmojiPicker()" oninput="updatePreview()">
+                    <div id="emoji-picker" class="emoji-picker"></div>
+                  </div>
+                </div>
               </div>
               <div class="form-group"><label>Nombre comercial</label><input id="d-commercial_name" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Sukie Cookie"></div>
               <div class="form-row" style="margin-top:4px">
@@ -1111,117 +1132,137 @@ tr:hover td{background:rgba(255,243,207,.4)}
           </div>
 
           <!-- RIGHT: live wallet previews -->
-          <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:20px">
+          <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:24px">
 
-            <!-- iPhone Wallet Preview -->
+            <!-- ── iPhone Wallet ── -->
             <div>
-              <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span>📱</span> iPhone Wallet
+              <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--brown-light);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="font-size:.9rem">📱</span> IPHONE WALLET
               </div>
-              <!-- Phone frame -->
-              <div style="position:relative;width:220px;margin:0 auto">
-                <div style="background:#1a1a1a;border-radius:40px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
-                  <div style="background:#000;border-radius:32px;overflow:hidden;padding-top:28px;padding-bottom:16px;position:relative">
-                    <!-- notch -->
-                    <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:70px;height:12px;background:#1a1a1a;border-radius:10px;z-index:10"></div>
-                    <!-- wallet card -->
-                    <div id="iphone-card" style="margin:8px 10px;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5);transition:all .3s">
-                      <!-- card header strip -->
-                      <div id="iphone-header" style="padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between">
+              <div style="width:200px;margin:0 auto">
+                <div class="phone-frame">
+                  <div class="phone-screen" style="padding-top:40px;padding-bottom:20px">
+                    <div class="phone-notch"></div>
+                    <!-- Status bar -->
+                    <div style="display:flex;justify-content:space-between;padding:0 14px 6px;font-size:.45rem;color:#ccc;font-weight:600">
+                      <span>9:41</span><span>●●●● WiFi 🔋</span>
+                    </div>
+                    <!-- Wallet header -->
+                    <div style="padding:4px 12px 6px;display:flex;align-items:center;justify-content:space-between">
+                      <span style="color:#fff;font-size:.7rem;font-weight:700">Wallet</span>
+                      <span style="color:#0a84ff;font-size:.65rem">+ Añadir</span>
+                    </div>
+                    <!-- THE CARD -->
+                    <div class="wallet-card" id="iphone-card" style="transition:background .3s">
+                      <div id="iphone-header" style="padding:14px 14px 10px;display:flex;justify-content:space-between;align-items:flex-start">
                         <div>
-                          <div id="iphone-bizname" style="font-size:.65rem;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.5px">SUKIE COOKIE</div>
-                          <div id="iphone-cardname" style="font-size:.9rem;font-weight:800;margin-top:1px">Sukie Card</div>
+                          <div id="iphone-bizname" style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.75">SUKIE COOKIE</div>
+                          <div id="iphone-cardname" style="font-size:1rem;font-weight:800;margin-top:2px;line-height:1.1">Sukie Card</div>
                         </div>
-                        <div id="iphone-icon" style="font-size:1.6rem">🍪</div>
+                        <div id="iphone-icon" style="font-size:1.8rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))">🍪</div>
                       </div>
-                      <!-- stamps area -->
-                      <div id="iphone-stamps-area" style="padding:8px 14px">
-                        <div style="font-size:.55rem;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Sellos</div>
-                        <div id="iphone-stamps" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+                      <!-- stamps -->
+                      <div style="padding:2px 14px 10px">
+                        <div style="font-size:.48rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.6;margin-bottom:5px" id="iphone-stamps-lbl">SELLOS</div>
+                        <div id="iphone-stamps" style="display:flex;gap:3px;flex-wrap:wrap"></div>
                       </div>
-                      <!-- footer -->
-                      <div id="iphone-footer" style="padding:8px 14px 12px;display:flex;justify-content:space-between;align-items:center">
+                      <!-- fields row -->
+                      <div id="iphone-footer" style="padding:8px 14px 14px;display:flex;justify-content:space-between">
                         <div>
-                          <div style="font-size:.5rem;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px" id="iphone-field1-lbl">Titular</div>
-                          <div style="font-size:.7rem;font-weight:700;opacity:.9" id="iphone-field1-val">NOMBRE APELLIDOS</div>
+                          <div style="font-size:.46rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;opacity:.6" id="iphone-field1-lbl">NOMBRE</div>
+                          <div style="font-size:.68rem;font-weight:700;margin-top:2px;opacity:.95" id="iphone-field1-val">NOMBRE APELLIDOS</div>
                         </div>
                         <div style="text-align:right">
-                          <div style="font-size:.5rem;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px" id="iphone-field2-lbl">Premio</div>
-                          <div style="font-size:.7rem;font-weight:700;opacity:.9" id="iphone-field2-val">0 disponibles</div>
+                          <div style="font-size:.46rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;opacity:.6" id="iphone-field2-lbl">PREMIO</div>
+                          <div style="font-size:.68rem;font-weight:700;margin-top:2px;opacity:.95" id="iphone-field2-val">0 disponibles</div>
                         </div>
                       </div>
                     </div>
-                    <!-- QR strip below card -->
-                    <div style="margin:8px 10px 0;background:white;border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center">
-                      <div style="display:grid;grid-template-columns:repeat(5,8px);grid-template-rows:repeat(5,8px);gap:1px">
-                        <div style="background:#000;grid-column:1/3;grid-row:1/3;border-radius:2px"></div>
-                        <div style="background:#000;width:6px;height:6px;align-self:center;justify-self:center"></div>
-                        <div style="background:#000;grid-column:4/6;grid-row:1/3;border-radius:2px"></div>
-                        <div style="background:#000;width:4px;height:4px;align-self:center;justify-self:center;grid-column:2;grid-row:3"></div>
-                        <div style="background:#000;width:4px;height:4px;align-self:center;justify-self:center;grid-column:4;grid-row:3"></div>
-                        <div style="background:#000;grid-column:1/3;grid-row:4/6;border-radius:2px"></div>
-                        <div style="background:#000;width:4px;height:4px;align-self:end;justify-self:center;grid-column:4;grid-row:5"></div>
-                        <div style="background:#000;width:4px;height:4px;align-self:end;justify-self:end;grid-column:5;grid-row:4"></div>
+                    <!-- QR card below -->
+                    <div style="background:#1c1c1e;margin:0 8px;border-radius:16px;padding:10px;display:flex;align-items:center;gap:10px">
+                      <svg width="40" height="40" viewBox="0 0 40 40">
+                        <rect x="1" y="1" width="15" height="15" rx="2" fill="white"/><rect x="3" y="3" width="11" height="11" rx="1" fill="#1c1c1e"/><rect x="5" y="5" width="7" height="7" fill="white"/>
+                        <rect x="24" y="1" width="15" height="15" rx="2" fill="white"/><rect x="26" y="3" width="11" height="11" rx="1" fill="#1c1c1e"/><rect x="28" y="5" width="7" height="7" fill="white"/>
+                        <rect x="1" y="24" width="15" height="15" rx="2" fill="white"/><rect x="3" y="26" width="11" height="11" rx="1" fill="#1c1c1e"/><rect x="5" y="28" width="7" height="7" fill="white"/>
+                        <rect x="20" y="20" width="5" height="5" fill="white"/><rect x="28" y="20" width="5" height="5" fill="white"/><rect x="20" y="28" width="5" height="5" fill="white"/><rect x="35" y="28" width="5" height="5" fill="white"/><rect x="28" y="35" width="5" height="5" fill="white"/>
+                      </svg>
+                      <div>
+                        <div style="color:white;font-size:.58rem;font-weight:600">Tu código QR</div>
+                        <div style="color:#888;font-size:.5rem;margin-top:2px">Muéstralo en caja</div>
                       </div>
-                      <span style="font-size:.5rem;color:#333;margin-left:8px;line-height:1.3">Tu<br>QR</span>
                     </div>
+                    <!-- home indicator -->
+                    <div style="width:60px;height:4px;background:#555;border-radius:4px;margin:12px auto 0"></div>
                   </div>
                 </div>
-                <div style="text-align:center;font-size:.7rem;color:var(--brown-light);margin-top:8px">Vista Apple Wallet</div>
+                <div class="preview-label">Vista Apple Wallet</div>
               </div>
             </div>
 
-            <!-- Android / Google Wallet Preview -->
+            <!-- ── Google Wallet ── -->
             <div>
-              <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span>🤖</span> Google Wallet
+              <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--brown-light);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="font-size:.9rem">🤖</span> GOOGLE WALLET
               </div>
-              <div style="position:relative;width:220px;margin:0 auto">
-                <div style="background:#2a2a2a;border-radius:36px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
-                  <div style="background:#121212;border-radius:28px;overflow:hidden;padding:20px 0 14px">
-                    <!-- google wallet card -->
-                    <div id="android-card" style="margin:0 10px;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:all .3s">
-                      <!-- colored top strip -->
-                      <div id="android-strip" style="padding:14px 16px 12px;display:flex;align-items:center;gap:10px">
-                        <div id="android-logo" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍪</div>
-                        <div>
-                          <div id="android-bizname" style="font-size:.75rem;font-weight:700;letter-spacing:.3px">SUKIE COOKIE</div>
-                          <div id="android-cardname" style="font-size:.62rem;opacity:.7;margin-top:1px">Programa de sellos</div>
-                        </div>
-                        <div style="margin-left:auto;font-size:.6rem;background:rgba(255,255,255,.15);padding:3px 8px;border-radius:20px;font-weight:600" id="android-tier-badge">🥉 BRONCE</div>
+              <div style="width:200px;margin:0 auto">
+                <div class="android-frame">
+                  <div class="android-screen" style="padding-top:28px;padding-bottom:16px">
+                    <div class="android-punch"></div>
+                    <!-- Status bar -->
+                    <div style="display:flex;justify-content:space-between;padding:0 14px 8px;font-size:.45rem;color:#aaa;font-weight:600">
+                      <span>9:41</span><span>▲ WiFi 🔋</span>
+                    </div>
+                    <!-- App bar -->
+                    <div style="padding:2px 14px 10px;display:flex;align-items:center;gap:6px">
+                      <div style="display:flex;gap:2px">
+                        <div style="width:6px;height:6px;border-radius:50%;background:#4285F4"></div>
+                        <div style="width:6px;height:6px;border-radius:50%;background:#EA4335"></div>
+                        <div style="width:6px;height:6px;border-radius:50%;background:#FBBC05"></div>
+                        <div style="width:6px;height:6px;border-radius:50%;background:#34A853"></div>
                       </div>
-                      <!-- white content area -->
-                      <div id="android-content" style="background:white;padding:12px 14px">
-                        <div style="font-size:.6rem;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sellos acumulados</div>
-                        <div id="android-stamps" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px"></div>
-                        <div style="display:flex;justify-content:space-between;border-top:1px solid #f0f0f0;padding-top:8px;margin-top:4px">
+                      <span style="color:#fff;font-size:.62rem;font-weight:600">Wallet</span>
+                    </div>
+                    <!-- THE CARD -->
+                    <div class="wallet-card" id="android-card">
+                      <!-- colored header -->
+                      <div id="android-strip" style="padding:12px 14px;display:flex;align-items:center;gap:8px;transition:background .3s">
+                        <div id="android-logo" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.2)">🍪</div>
+                        <div style="flex:1;min-width:0">
+                          <div id="android-bizname" style="font-size:.68rem;font-weight:800;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">SUKIE COOKIE</div>
+                          <div id="android-cardname" style="font-size:.55rem;opacity:.75;margin-top:1px">Programa de fidelización</div>
+                        </div>
+                        <div id="android-tier-badge" style="font-size:.52rem;background:rgba(255,255,255,.2);padding:3px 7px;border-radius:20px;font-weight:700;white-space:nowrap">🥉 BRONCE</div>
+                      </div>
+                      <!-- white body -->
+                      <div style="background:white;padding:10px 14px">
+                        <div style="font-size:.52rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">Sellos acumulados</div>
+                        <div id="android-stamps" style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:9px"></div>
+                        <div style="border-top:1px solid #f0f0f0;padding-top:7px;display:flex;justify-content:space-between">
                           <div>
-                            <div style="font-size:.55rem;color:#aaa;text-transform:uppercase;letter-spacing:.5px" id="android-field1-lbl">Titular</div>
-                            <div style="font-size:.7rem;font-weight:700;color:#222" id="android-field1-val">NOMBRE APELLIDOS</div>
+                            <div style="font-size:.48rem;color:#bbb;text-transform:uppercase;letter-spacing:.5px" id="android-field1-lbl">TITULAR</div>
+                            <div style="font-size:.65rem;font-weight:700;color:#1a1a1a;margin-top:2px" id="android-field1-val">NOMBRE APELLIDOS</div>
                           </div>
                           <div style="text-align:right">
-                            <div style="font-size:.55rem;color:#aaa;text-transform:uppercase;letter-spacing:.5px" id="android-field2-lbl">Premios</div>
-                            <div style="font-size:.7rem;font-weight:700;color:#222" id="android-field2-val">0 disponibles</div>
+                            <div style="font-size:.48rem;color:#bbb;text-transform:uppercase;letter-spacing:.5px" id="android-field2-lbl">PREMIO</div>
+                            <div style="font-size:.65rem;font-weight:700;color:#1a1a1a;margin-top:2px" id="android-field2-val">0 disponibles</div>
                           </div>
                         </div>
                       </div>
-                      <!-- bottom with QR hint -->
-                      <div id="android-footer" style="padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
-                        <span style="font-size:.55rem;opacity:.7">Toca para ver QR</span>
-                        <span style="font-size:.75rem">▼</span>
+                      <!-- footer tap -->
+                      <div id="android-footer" style="padding:7px 14px;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .3s">
+                        <span style="font-size:.55rem;font-weight:600;opacity:.8">Ver código QR</span>
+                        <span style="font-size:.7rem;opacity:.7">↓</span>
                       </div>
                     </div>
-                    <!-- G Wallet branding -->
-                    <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;opacity:.4">
-                      <div style="width:8px;height:8px;border-radius:50%;background:#4285F4"></div>
-                      <div style="width:8px;height:8px;border-radius:50%;background:#EA4335"></div>
-                      <div style="width:8px;height:8px;border-radius:50%;background:#FBBC05"></div>
-                      <div style="width:8px;height:8px;border-radius:50%;background:#34A853"></div>
-                      <span style="font-size:.55rem;color:white;margin-left:3px">Google Wallet</span>
+                    <!-- nav bar -->
+                    <div style="display:flex;justify-content:center;gap:20px;margin-top:10px;padding:0 10px">
+                      <div style="width:18px;height:18px;border:2px solid #555;border-radius:4px"></div>
+                      <div style="width:18px;height:18px;border-radius:50%;border:2px solid #555"></div>
+                      <div style="width:18px;height:2px;background:#555;border-radius:2px;align-self:center"></div>
                     </div>
                   </div>
                 </div>
-                <div style="text-align:center;font-size:.7rem;color:var(--brown-light);margin-top:8px">Vista Google Wallet</div>
+                <div class="preview-label">Vista Google Wallet</div>
               </div>
             </div>
 
@@ -2230,12 +2271,57 @@ async function previewBirthdayEmail() {
 }
 
 // ── CARD DESIGN SECTION ────────────────────────────────────────────────────
+const STAMP_EMOJIS = [
+  '🍪','🍩','🍫','🧁','🎂','🍰','🧇','🥐','🍞','🥨',
+  '🍕','🍔','🌮','🌯','🥗','🍜','🍝','🍣','🍱','🥟',
+  '☕','🧋','🍵','🥤','🍺','🍷','🍸','🎁','⭐','🌟',
+  '💎','🏆','🎯','🎪','🌸','🌺','🌻','🦋','🔥','✨',
+  '❤️','🩷','💛','💚','💙','💜','🖤','🤍','🍓','🍑'
+];
+let emojiPickerBuilt = false;
+
+function buildEmojiPicker() {
+  if (emojiPickerBuilt) return;
+  const picker = document.getElementById('emoji-picker');
+  if (!picker) return;
+  STAMP_EMOJIS.forEach(em => {
+    const btn = document.createElement('div');
+    btn.className = 'emoji-opt';
+    btn.textContent = em;
+    btn.title = em;
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      document.getElementById('d-stamp_icon').value = em;
+      document.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      picker.classList.remove('open');
+      updatePreview();
+    };
+    picker.appendChild(btn);
+  });
+  emojiPickerBuilt = true;
+}
+
+function toggleEmojiPicker() {
+  buildEmojiPicker();
+  const picker = document.getElementById('emoji-picker');
+  if (picker) picker.classList.toggle('open');
+}
+
+// Close emoji picker when clicking outside
+document.addEventListener('click', (e) => {
+  const picker = document.getElementById('emoji-picker');
+  if (picker && !picker.contains(e.target) && e.target.id !== 'd-stamp_icon') {
+    picker.classList.remove('open');
+  }
+});
+
 let designLoaded = false;
 
 async function loadDesign() {
   if (designLoaded) { updatePreview(); return; }
   try {
-    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
+    const r = await fetch(`${BASE}/api/admin/config?pin=${PIN}`);
     if (!r.ok) return;
     const cfg = await r.json();
     const d = cfg.diseno || {};
@@ -2394,11 +2480,11 @@ function updatePreview() {
 }
 
 async function saveDesign() {
-  // Load current config first to merge
+  // Load current config first to merge, then save via PUT /api/admin/config
   try {
     let cfg = {};
     try {
-      const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
+      const r = await fetch(`${BASE}/api/admin/config?pin=${PIN}`);
       if (r.ok) cfg = await r.json();
     } catch(e) {}
 
@@ -2425,8 +2511,8 @@ async function saveDesign() {
 
     cfg.pin = PIN;
 
-    const saveR = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config`, {
-      method: 'POST',
+    const saveR = await fetch(`${BASE}/api/admin/config`, {
+      method: 'PUT',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(cfg)
     });
