@@ -216,6 +216,20 @@ async def admin_dashboard(request: Request, pin: str = "", db: Session = Depends
     })
 
 
+# ════════════════════════════════════════════════════════════════════════════════
+# SCANNER — Página de caja para escanear QR y añadir sellos
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/scanner", response_class=HTMLResponse)
+async def scanner_page(request: Request):
+    """Página de caja: escanea QR del cliente y añade sellos por producto."""
+    return templates.TemplateResponse("scanner.html", {
+        "request": request,
+        "stamps_per_reward": STAMPS_PER_REWARD,
+        "base_url": BASE_URL,
+    })
+
+
 # ── Health check (Railway lo usa) ─────────────────────────────────────────────
 @app.get("/health")
 def health():
