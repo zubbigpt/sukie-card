@@ -1,78 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin – Sukie Card</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #FFF3CF;
-      font-family: 'Nunito', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 8px 32px rgba(58,52,38,0.13);
-      padding: 40px 32px;
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-    }
-    .logo { height: 60px; margin-bottom: 20px; }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      color: #3A3426;
-      margin-bottom: 6px;
-    }
-    p { color: #9a8f7e; font-size: 14px; margin-bottom: 24px; }
-    input {
-      width: 100%;
-      padding: 14px;
-      border: 2px solid #e8d9a0;
-      border-radius: 12px;
-      font-size: 22px;
-      text-align: center;
-      letter-spacing: 6px;
-      font-family: 'Nunito', sans-serif;
-      color: #3A3426;
-      background: #FFF3CF;
-      margin-bottom: 16px;
-      outline: none;
-    }
-    input:focus { border-color: #3A3426; }
-    button {
-      width: 100%;
-      padding: 16px;
-      background: #3A3426;
-      color: #FFF3CF;
-      border: none;
-      border-radius: 50px;
-      font-size: 17px;
-      font-weight: 800;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceder — ZubCard Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f5f5f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.corner{position:fixed;width:20px;height:20px;border-color:#0a0a0a;border-style:solid}
+.tl{top:20px;left:20px;border-width:2px 0 0 2px}
+.tr{top:20px;right:20px;border-width:2px 2px 0 0}
+.bl{bottom:20px;left:20px;border-width:0 0 2px 2px}
+.br{bottom:20px;right:20px;border-width:0 2px 2px 0}
+.wrap{width:100%;max-width:380px}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;color:#0a0a0a;margin-bottom:3rem;display:flex;align-items:center;gap:.6rem}
+.brand-dot{width:8px;height:8px;background:#00e676;border-radius:50%;display:inline-block}
+.card{background:#fff;border:1.5px solid #0a0a0a;padding:2.5rem 2rem;box-shadow:5px 5px 0 #0a0a0a}
+.eyebrow{font-size:.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#888;margin-bottom:.75rem}
+h1{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:.9;letter-spacing:-1px;color:#0a0a0a;margin-bottom:.5rem}
+.sub{font-size:.85rem;color:#888;margin-bottom:2rem;line-height:1.6}
+label{display:block;font-size:.62rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:.5rem}
+input[type=password]{
+  width:100%;padding:1rem;
+  border:1.5px solid #d5d5cc;border-radius:1px;
+  font-size:1.8rem;text-align:center;letter-spacing:8px;
+  font-family:'Bebas Neue',sans-serif;color:#0a0a0a;
+  background:#f5f5f0;outline:none;transition:border .15s;
+  margin-bottom:1rem;
+}
+input[type=password]:focus{border-color:#0a0a0a}
+input[type=password]::placeholder{letter-spacing:4px;font-size:1.2rem;color:#ccc}
+button{
+  width:100%;padding:.85rem;
+  background:#0a0a0a;color:#fff;
+  border:1.5px solid #0a0a0a;border-radius:1px;
+  font-size:.78rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:background .15s;
+}
+button:hover{background:#333}
+.footer-note{margin-top:1.5rem;font-size:.72rem;color:#ccc;text-align:center;letter-spacing:.5px}
+</style>
 </head>
 <body>
-<div class="card">
-  <img class="logo"
-       src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314"
-       alt="Sukie Cookie">
-  <h1>Panel Admin</h1>
-  <p>Introduce el PIN para ver todos los clientes</p>
-  <form action="/admin" method="get">
-    <input type="password" name="pin" placeholder="••••" maxlength="8" autofocus>
-    <button type="submit">Entrar 🍪</button>
-  </form>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+<div class="wrap">
+  <div class="brand"><span class="brand-dot"></span> ZUBCARD</div>
+  <div class="card">
+    <div class="eyebrow">Acceso admin</div>
+    <h1>PANEL<br>ADMIN.</h1>
+    <p class="sub">Introduce tu PIN para acceder a tu panel de fidelización.</p>
+    <form action="/admin" method="get">
+      <label>PIN de acceso</label>
+      <input type="password" name="pin" placeholder="····" maxlength="8" autofocus>
+      <button type="submit">Entrar →</button>
+    </form>
+  </div>
+  <p class="footer-note">ZubCard · Fidelización digital para hostelería</p>
 </div>
 </body>
 </html>

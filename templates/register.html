@@ -5,355 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>{{ card_title or 'Únete · Tarjeta de Fidelidad' }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --espresso: #0d0b08;
-  --dark-warm: #1a1209;
-  --brown-mid: #3a2a14;
-  --gold: {{ primary_color or '#d4a017' }};
-  --gold-light: {{ accent_color or '#f5cb53' }};
-  --gold-pale: #fff0c0;
-  --cream: #FFF3CF;
-  --cream-dim: rgba(255,243,207,0.65);
-  --glass-bg: rgba(255,243,207,0.045);
-  --glass-border: rgba(255,243,207,0.10);
-  --r: 20px;
+:root{
+  --bg:     #f5f5f0;
+  --black:  #0a0a0a;
+  --white:  #ffffff;
+  --gray:   #888;
+  --border: #d5d5cc;
+  --accent: {{ primary_color or '#00e676' }};
+  --accent2:{{ accent_color or '#a8f0d0' }};
 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--black);min-height:100vh;overflow-x:hidden}
+.page{max-width:460px;margin:0 auto;padding:2rem 1.5rem 4rem}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--espresso);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-  color: var(--cream);
-}
-
-/* ── BACKGROUND ── */
-.bg-layer {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212,160,23,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 100%, rgba(58,42,20,0.6) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 10% 60%, rgba(212,160,23,0.06) 0%, transparent 50%),
-    var(--espresso);
-}
-.bg-noise {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-}
-.bg-orb-1 {
-  position: fixed; width: 500px; height: 500px; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(212,160,23,0.12), transparent 70%);
-  top: -200px; left: 50%; transform: translateX(-50%); z-index: 0;
-  animation: orb-float 8s ease-in-out infinite;
-}
-@keyframes orb-float {
-  0%,100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(30px); }
-}
-
-/* ── LAYOUT ── */
-.page {
-  position: relative; z-index: 1;
-  max-width: 420px; margin: 0 auto;
-  padding: 48px 20px 80px;
-  display: flex; flex-direction: column; align-items: center; gap: 0;
-}
+/* ── HEADER ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.5rem;padding-bottom:1.25rem;border-bottom:1.5px solid var(--black)}
+.biz-logo{display:flex;align-items:center;gap:.75rem}
+.biz-logo img{width:42px;height:42px;border-radius:3px;object-fit:cover;border:1.5px solid var(--black)}
+.biz-initial{width:42px;height:42px;border-radius:3px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--black);border:1.5px solid var(--black)}
+.biz-name{font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black)}
+.biz-tag{font-size:.6rem;color:var(--gray);letter-spacing:.5px;margin-top:1px}
+.header-badge{background:var(--accent);color:var(--black);font-size:.58rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:.25rem .65rem;border-radius:1px}
 
 /* ── HERO ── */
-.hero { text-align: center; margin-bottom: 36px; animation: fade-up .8s ease both; }
-.logo-wrap {
-  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 20px;
-  background: rgba(212,160,23,0.12);
-  border: 1.5px solid rgba(212,160,23,0.3);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 40px rgba(212,160,23,0.2), 0 0 80px rgba(212,160,23,0.08);
-}
-.logo-wrap img { width: 50px; height: 50px; object-fit: contain; border-radius: 50%; }
-.hero-eyebrow {
-  font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
-  color: var(--gold); margin-bottom: 12px; opacity: .85;
-}
-.hero h1 {
-  font-family: 'Cormorant Garamond', serif; font-size: 44px; line-height: 1.05;
-  font-weight: 700; letter-spacing: -1px;
-  background: linear-gradient(135deg, #fff8e7 0%, var(--gold-light) 45%, var(--gold) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  margin-bottom: 14px;
-}
-.hero p {
-  font-size: 14px; color: var(--cream-dim); line-height: 1.7; max-width: 320px; margin: 0 auto;
-}
+.hero{margin-bottom:2rem}
+.hero-eyebrow{font-size:.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.hero-eyebrow::before{content:'';width:20px;height:1.5px;background:var(--accent);flex-shrink:0}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,14vw,5.5rem);line-height:.88;letter-spacing:-1px;color:var(--black);margin-bottom:1rem}
+.hero h1 .accent{color:var(--accent)}
+.hero-sub{font-size:.9rem;color:var(--gray);line-height:1.75;max-width:380px}
+
+/* ── CARD MOCK ── */
+.card-mock-wrap{margin:2rem 0}
+.card-mock{background:var(--white);border:1.5px solid var(--black);border-radius:4px;padding:22px 18px;box-shadow:5px 5px 0 var(--black)}
+.card-mock-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.card-brand{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:3px}
+.card-name{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.5px;color:var(--black)}
+.card-mock-chip{width:32px;height:22px;border-radius:3px;background:var(--accent);border:1.5px solid var(--black)}
+.card-mock-stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.stamp{aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:1rem;border:1.5px solid var(--border);background:var(--bg)}
+.stamp.filled{background:var(--accent);border-color:var(--accent)}
+.card-mock-footer{display:flex;justify-content:space-between;font-size:.72rem}
+.card-mock-footer .label{color:var(--gray);font-size:.58rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.card-mock-footer .value{font-weight:700;color:var(--black)}
 
 /* ── BENEFITS ── */
-.benefits {
-  display: flex; gap: 10px; width: 100%; margin-bottom: 36px;
-  animation: fade-up .8s .15s ease both;
-}
-.benefit {
-  flex: 1; background: var(--glass-bg); border: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px); border-radius: 16px; padding: 16px 10px;
-  text-align: center; transition: all .3s; cursor: default;
-}
-.benefit:hover {
-  background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.25);
-  transform: translateY(-3px); box-shadow: 0 8px 30px rgba(212,160,23,0.1);
-}
-.benefit .icon { font-size: 22px; margin-bottom: 7px; }
-.benefit .txt { font-size: 11px; color: var(--cream-dim); font-weight: 600; line-height: 1.3; }
-
-/* ── LOYALTY CARD MOCK ── */
-.card-mock-wrap {
-  width: 100%; margin-bottom: 36px; perspective: 1200px;
-  animation: fade-up .8s .25s ease both;
-}
-.card-mock {
-  width: 100%; border-radius: 24px; overflow: hidden;
-  background: linear-gradient(135deg, #2a1e0a 0%, #1a1209 40%, #2d1f0b 100%);
-  border: 1px solid rgba(212,160,23,0.2);
-  box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,243,207,0.06) inset;
-  transition: transform .4s ease, box-shadow .4s ease;
-  transform-style: preserve-3d;
-}
-.card-mock:hover {
-  transform: rotateY(-4deg) rotateX(2deg) translateY(-4px);
-  box-shadow: 0 30px 80px rgba(0,0,0,.7), 0 1px 0 rgba(255,243,207,0.08) inset;
-}
-.card-mock-header {
-  padding: 20px 20px 14px;
-  display: flex; align-items: center; justify-content: space-between;
-  border-bottom: 1px solid rgba(212,160,23,0.1);
-}
-.card-mock-header .card-brand {
-  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-  color: rgba(255,243,207,0.5); margin-bottom: 3px;
-}
-.card-mock-header .card-name {
-  font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700;
-  color: var(--gold-light); letter-spacing: -.3px;
-}
-.card-mock-chip {
-  width: 32px; height: 24px; border-radius: 6px;
-  background: linear-gradient(135deg, var(--gold) 0%, #a07010 100%);
-  opacity: .8;
-  box-shadow: 0 2px 8px rgba(212,160,23,0.4);
-}
-.card-mock-stamps {
-  padding: 16px 20px 12px;
-  display: flex; gap: 6px; flex-wrap: wrap;
-}
-.stamp {
-  width: 36px; height: 36px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; transition: transform .2s;
-}
-.stamp.empty {
-  background: rgba(255,243,207,0.04);
-  border: 1.5px solid rgba(255,243,207,0.1);
-}
-.stamp.filled {
-  background: linear-gradient(135deg, var(--gold) 0%, #a07010 100%);
-  border: 1.5px solid rgba(245,203,83,0.4);
-  box-shadow: 0 4px 12px rgba(212,160,23,0.35);
-}
-.card-mock-footer {
-  padding: 10px 20px 18px;
-  display: flex; justify-content: space-between; align-items: flex-end;
-}
-.card-mock-footer .label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,243,207,0.35); margin-bottom: 3px; }
-.card-mock-footer .value { font-size: 13px; font-weight: 700; color: rgba(255,243,207,0.8); }
-.card-mock-footer .prize { text-align: right; }
-.card-mock-footer .prize .value { color: var(--gold-light); }
+.benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:2rem}
+.benefit{background:var(--white);border:1.5px solid var(--border);border-radius:3px;padding:1rem .75rem;text-align:center;transition:border-color .15s}
+.benefit:hover{border-color:var(--black)}
+.benefit .icon{font-size:1.4rem;margin-bottom:.4rem}
+.benefit .txt{font-size:.72rem;color:var(--gray);line-height:1.5;font-weight:600}
 
 /* ── FORM ── */
-.form-glass {
-  width: 100%; border-radius: 28px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-  padding: 32px 24px 28px;
-  animation: fade-up .8s .35s ease both;
-  box-shadow: 0 20px 60px rgba(0,0,0,.3);
-}
-.form-glass h2 {
-  font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700;
-  color: var(--cream); text-align: center; margin-bottom: 4px; letter-spacing: -.3px;
-}
-.form-glass .subtitle {
-  font-size: 13px; color: rgba(255,243,207,0.45); text-align: center; margin-bottom: 28px;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.form-glass .subtitle::before, .form-glass .subtitle::after {
-  content: ''; flex: 1; height: 1px; background: var(--glass-border);
-}
+.form-wrap{background:var(--white);border:1.5px solid var(--black);padding:2rem 1.5rem;box-shadow:5px 5px 0 var(--black)}
+.form-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:-.5px;color:var(--black);margin-bottom:.25rem}
+.form-sub{font-size:.78rem;color:var(--gray);margin-bottom:1.5rem}
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:.4rem}
+.req{color:var(--accent);font-weight:900}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.field input{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:1px;font-size:.92rem;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--black);outline:none;transition:border .15s}
+.field input:focus{border-color:var(--black)}
+.field input::placeholder{color:#bbb}
+.field input[type=date]{color-scheme:light}
+.error-msg{background:#fff0f0;border:1.5px solid #ff2b6b;color:#cc0044;font-size:.82rem;padding:.75rem 1rem;border-radius:1px;margin-bottom:1rem;display:none}
 
-.field { margin-bottom: 16px; }
-.field label {
-  display: block; font-size: 11px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: rgba(255,243,207,0.45); margin-bottom: 7px;
-}
-.field label .req { color: var(--gold); }
-.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.field input, .field select {
-  width: 100%; padding: 13px 15px;
-  background: rgba(255,243,207,0.055);
-  border: 1px solid rgba(255,243,207,0.1);
-  border-radius: 12px; font-size: 14px; font-weight: 500;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  color: var(--cream); outline: none; transition: all .25s;
-}
-.field input::placeholder { color: rgba(255,243,207,0.2); }
-.field input:focus, .field select:focus {
-  border-color: rgba(212,160,23,0.5);
-  background: rgba(212,160,23,0.06);
-  box-shadow: 0 0 0 3px rgba(212,160,23,0.08);
-}
-.field select option { background: #1a1209; color: var(--cream); }
-.field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.3); cursor: pointer; }
+/* ── OPTIN ── */
+.optin-block{background:var(--bg);border:1px solid var(--border);padding:1rem;margin-bottom:1.25rem}
+.optin-title{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:.75rem}
+.optin-row{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.6rem}
+.optin-row:last-child{margin-bottom:0}
+.toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;margin-top:2px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--border);border-radius:20px;cursor:pointer;transition:background .2s}
+.slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:var(--white);border-radius:50%;transition:transform .2s}
+.toggle input:checked+.slider{background:var(--accent)}
+.toggle input:checked+.slider::before{transform:translateX(16px)}
+.optin-label{font-size:.8rem;font-weight:600;color:var(--black)}
+.optin-desc{font-size:.72rem;color:var(--gray);margin-top:1px}
 
-/* ── OPT-INS ── */
-.optin-block {
-  background: rgba(255,243,207,0.03);
-  border: 1px solid rgba(255,243,207,0.07);
-  border-radius: 16px; padding: 16px; margin-bottom: 20px;
-}
-.optin-block .optin-title {
-  font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
-  color: rgba(255,243,207,0.3); margin-bottom: 14px;
-}
-.optin-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-.optin-row:last-child { margin-bottom: 0; }
-.toggle { position: relative; width: 42px; height: 22px; flex-shrink: 0; margin-top: 2px; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.slider {
-  position: absolute; cursor: pointer; inset: 0;
-  background: rgba(255,243,207,0.1); border-radius: 22px; transition: .3s;
-  border: 1px solid rgba(255,243,207,0.15);
-}
-.slider:before {
-  position: absolute; content: ""; height: 16px; width: 16px;
-  left: 2px; bottom: 2px; background: rgba(255,243,207,0.5);
-  border-radius: 50%; transition: .3s;
-}
-.toggle input:checked + .slider { background: var(--gold); border-color: var(--gold); }
-.toggle input:checked + .slider:before { transform: translateX(20px); background: #fff; }
-.optin-text .optin-label { font-size: 13px; font-weight: 600; color: var(--cream-dim); margin-bottom: 2px; }
-.optin-text .optin-desc { font-size: 11px; color: rgba(255,243,207,0.3); line-height: 1.4; }
-
-/* ── BUTTON ── */
-.btn-cta {
-  width: 100%; padding: 17px;
-  background: linear-gradient(135deg, var(--gold) 0%, #a07010 100%);
-  border: none; border-radius: 50px;
-  font-size: 15px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;
-  color: #1a1209; cursor: pointer; position: relative; overflow: hidden;
-  box-shadow: 0 6px 30px rgba(212,160,23,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
-  transition: all .25s; margin-bottom: 14px; letter-spacing: .3px;
-}
-.btn-cta::after {
-  content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-  transition: left .5s ease; pointer-events: none;
-}
-.btn-cta:hover::after { left: 150%; }
-.btn-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(212,160,23,0.45); }
-.btn-cta:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.btn-cta:active { transform: scale(.98); }
-
-.legal {
-  font-size: 11px; color: rgba(255,243,207,0.25); text-align: center; line-height: 1.6;
-}
-.legal a { color: rgba(255,243,207,0.5); text-decoration: underline; text-underline-offset: 2px; }
-
-/* ── ERROR ── */
-.error-msg {
-  background: rgba(220,53,69,0.15); border: 1px solid rgba(220,53,69,0.3);
-  border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #ff8a8a;
-  margin-bottom: 16px; display: none;
-}
+/* ── CTA BUTTON ── */
+.btn-cta{width:100%;padding:.9rem;background:var(--black);color:var(--white);border:1.5px solid var(--black);border-radius:1px;font-size:.82rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:background .15s;margin-bottom:1rem}
+.btn-cta:hover{background:#222}
+.btn-cta:disabled{background:#888;border-color:#888;cursor:not-allowed}
+.legal{font-size:.72rem;color:var(--gray);line-height:1.6;text-align:center}
+.legal a{color:var(--black);font-weight:600}
 
 /* ── SUCCESS ── */
-.success-screen {
-  display: none; text-align: center; padding: 20px 0;
-  animation: fade-up .6s ease both;
-}
-.success-icon {
-  width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px;
-  background: rgba(212,160,23,0.15); border: 2px solid rgba(212,160,23,0.4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px;
-  box-shadow: 0 0 40px rgba(212,160,23,0.2);
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-@keyframes pulse-glow {
-  0%,100% { box-shadow: 0 0 20px rgba(212,160,23,0.2); }
-  50% { box-shadow: 0 0 50px rgba(212,160,23,0.4); }
-}
-.success-screen h2 {
-  font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700;
-  color: var(--gold-light); margin-bottom: 10px;
-}
-.success-screen p { font-size: 14px; color: var(--cream-dim); line-height: 1.7; margin-bottom: 24px; }
-.btn-view-card {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 15px 32px; background: linear-gradient(135deg, var(--gold) 0%, #a07010 100%);
-  color: #1a1209; border-radius: 50px; font-size: 15px; font-weight: 800;
-  font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: none;
-  box-shadow: 0 6px 24px rgba(212,160,23,0.3); transition: all .25s;
-}
-.btn-view-card:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(212,160,23,0.45); }
+.success-screen{display:none;text-align:center;padding:1.5rem 0;animation:fade-up .5s ease both}
+.success-icon{width:72px;height:72px;border-radius:50%;background:var(--accent);border:1.5px solid var(--black);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.25rem;box-shadow:4px 4px 0 var(--black)}
+.success-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:-.5px;color:var(--black);margin-bottom:.5rem}
+.success-screen p{font-size:.88rem;color:var(--gray);line-height:1.75;margin-bottom:1.5rem}
+.btn-view-card{display:inline-flex;align-items:center;gap:.5rem;padding:.8rem 1.8rem;background:var(--black);color:var(--white);font-size:.78rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border:1.5px solid var(--black);border-radius:1px;transition:background .15s}
+.btn-view-card:hover{background:#222}
 
-/* ── ANIMATIONS ── */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+@keyframes fade-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-
-<div class="bg-layer"></div>
-<div class="bg-noise"></div>
-<div class="bg-orb-1"></div>
-
 <div class="page">
 
-  <!-- HERO -->
-  <div class="hero">
-    <div class="logo-wrap">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="biz-logo">
       {% if logo_url %}
         <img src="{{ logo_url }}" alt="{{ biz_name or card_title }}">
       {% else %}
-        <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#a07010);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:#1a1209">
-          {{ (biz_name or card_title or 'L')[0].upper() }}
-        </div>
+        <div class="biz-initial">{{ (biz_name or card_title or 'L')[0].upper() }}</div>
       {% endif %}
+      <div>
+        <div class="biz-name">{{ biz_name or card_title or 'Tu Negocio' }}</div>
+        <div class="biz-tag">Programa de fidelización</div>
+      </div>
     </div>
-    <div class="hero-eyebrow">{{ biz_name or card_title or 'Programa de fidelización' }}</div>
-    <h1>Únete a la<br>familia</h1>
-    <p>Por cada {{ stamps_per_reward }} compras acumulas sellos y consigues tu premio. Para siempre.</p>
+    <div class="header-badge">ACTIVO</div>
   </div>
 
-  <!-- BENEFITS -->
-  <div class="benefits">
-    <div class="benefit">
-      <div class="icon">🍪</div>
-      <div class="txt">1 sello<br>por cookie</div>
-    </div>
-    <div class="benefit">
-      <div class="icon">🎁</div>
-      <div class="txt">Premio cada<br>{{ stamps_per_reward }} sellos</div>
-    </div>
-    <div class="benefit">
-      <div class="icon">🎂</div>
-      <div class="txt">Sorpresa en<br>tu cumpleaños</div>
-    </div>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Tarjeta de sellos</div>
+    <h1>ÚNETE.<br>SELLA.<br><span class="accent">GANA.</span></h1>
+    <p class="hero-sub">Acumula sellos con cada compra y consigue tu premio. Gratis, sin app, en 30 segundos.</p>
   </div>
 
-  <!-- LOYALTY CARD MOCK -->
+  <!-- CARD MOCK -->
   <div class="card-mock-wrap">
     <div class="card-mock">
       <div class="card-mock-header">
@@ -366,7 +143,7 @@ body {
       <div class="card-mock-stamps">
         {% for i in range(stamps_per_reward) %}
           <div class="stamp {% if i < 3 %}filled{% else %}empty{% endif %}">
-            {% if i < 3 %}🍪{% endif %}
+            {% if i < 3 %}☕{% endif %}
           </div>
         {% endfor %}
       </div>
@@ -375,7 +152,7 @@ body {
           <div class="label">Titular</div>
           <div class="value">TU NOMBRE</div>
         </div>
-        <div class="prize">
+        <div>
           <div class="label">Premios</div>
           <div class="value">0 disponibles</div>
         </div>
@@ -383,11 +160,27 @@ body {
     </div>
   </div>
 
+  <!-- BENEFITS -->
+  <div class="benefits">
+    <div class="benefit">
+      <div class="icon">⚡</div>
+      <div class="txt">1 sello<br>por compra</div>
+    </div>
+    <div class="benefit">
+      <div class="icon">🎁</div>
+      <div class="txt">Premio cada<br>{{ stamps_per_reward }} sellos</div>
+    </div>
+    <div class="benefit">
+      <div class="icon">🎂</div>
+      <div class="txt">Sorpresa en<br>tu cumple</div>
+    </div>
+  </div>
+
   <!-- FORM -->
-  <div class="form-glass" id="form-wrap">
-    <div class="form-content" id="form-content">
-      <h2>Crea tu tarjeta</h2>
-      <p class="subtitle">30 segundos · gratis</p>
+  <div class="form-wrap" id="form-wrap">
+    <div id="form-content">
+      <div class="form-title">CREA TU<br>TARJETA.</div>
+      <div class="form-sub">30 segundos · completamente gratis</div>
 
       <div class="error-msg" id="error-msg"></div>
 
@@ -410,7 +203,7 @@ body {
       </div>
 
       <div class="field">
-        <label>Fecha de nacimiento <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,243,207,0.25)">— para tu sorpresa 🎂</span></label>
+        <label>Fecha de nacimiento <span style="font-size:.65rem;font-weight:400;letter-spacing:0;text-transform:none;color:var(--gray)">— para tu sorpresa 🎂</span></label>
         <input type="date" id="birth_date">
       </div>
 
@@ -420,7 +213,7 @@ body {
           <label class="toggle"><input type="checkbox" id="opt_in_email" checked><span class="slider"></span></label>
           <div class="optin-text">
             <div class="optin-label">Emails exclusivos</div>
-            <div class="optin-desc">Ofertas, novedades y tu cookie de cumpleaños</div>
+            <div class="optin-desc">Ofertas, novedades y tu regalo de cumpleaños</div>
           </div>
         </div>
         <div class="optin-row">
@@ -445,7 +238,7 @@ body {
     <!-- SUCCESS -->
     <div class="success-screen" id="success-screen">
       <div class="success-icon">🎉</div>
-      <h2>¡Bienvenida!</h2>
+      <h2>¡BIENVENIDO!</h2>
       <p id="success-text">Tu tarjeta está lista. Muéstrala en caja en tu próxima visita para empezar a acumular sellos.</p>
       <a href="#" id="view-card-btn" class="btn-view-card">Ver mi tarjeta →</a>
     </div>
@@ -502,7 +295,7 @@ async function doRegister() {
     const ss = document.getElementById('success-screen');
     ss.style.display = 'block';
     document.getElementById('success-text').textContent =
-      `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Por cada ${STAMPS_REWARD} cookies, ¡una de regalo!`;
+      `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Por cada ${STAMPS_REWARD} compras, ¡premio!`;
     document.getElementById('view-card-btn').href = d.card_url || (API_BASE + '/card/' + d.card_id);
 
   } catch(e) {

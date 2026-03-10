@@ -5,29 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ biz_name }} Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --cream:#FFF3CF;--cream-dark:#f5e8b8;--cream-border:#e8d9a0;
-  --brown:#3A3426;--brown-mid:#6b5e47;--brown-light:#9a8f7e;
-  --gold:#d4a017;--gold-light:#f5cb53;--white:#FDFBF7;
-  --green:#2e7d32;--red:#c62828;--sidebar-w:240px;
-  --radius:16px;--radius-sm:10px;--shadow:0 2px 12px rgba(58,52,38,.10);
+  --cream:#f5f5f0;--cream-dark:#eaeae5;--cream-border:#d5d5cc;
+  --brown:#0a0a0a;--brown-mid:#333;--brown-light:#888;
+  --gold:#00e676;--gold-light:#a8f0d0;--white:#ffffff;
+  --green:#00916a;--red:#cc2222;--sidebar-w:240px;
+  --radius:4px;--radius-sm:3px;--shadow:0 2px 8px rgba(0,0,0,.08);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Poppins',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh}
 button,input,select,textarea{font-family:inherit}
 
 /* LOGIN */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
-.login-box{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:48px 40px;text-align:center;max-width:380px;width:90%;box-shadow:var(--shadow)}
+.login-box{background:var(--white);border:1.5px solid var(--brown);padding:2.5rem 2rem;text-align:center;max-width:380px;width:90%;box-shadow:5px 5px 0 var(--brown)}
 .login-box img{width:90px;margin-bottom:16px}
-.login-box h1{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:6px}
+.login-box h1{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;margin-bottom:6px}
 .login-box p{color:var(--brown-light);font-size:.9rem;margin-bottom:28px}
-.login-box input{width:100%;padding:12px 16px;border:2px solid var(--cream-border);border-radius:50px;font-size:1.1rem;text-align:center;letter-spacing:6px;background:var(--cream);outline:none;transition:border .2s}
+.login-box input{width:100%;padding:12px 16px;border:2px solid var(--cream-border);border-radius:2px;font-size:1.1rem;text-align:center;letter-spacing:6px;background:var(--cream);outline:none;transition:border .2s}
 .login-box input:focus{border-color:var(--gold)}
-.login-box button{width:100%;margin-top:16px;padding:13px;background:var(--brown);color:var(--cream);border:none;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+.login-box button{width:100%;margin-top:16px;padding:13px;background:var(--brown);color:var(--cream);border:none;border-radius:2px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
 .login-box button:hover{background:var(--brown-mid)}
 .login-error{color:var(--red);font-size:.85rem;margin-top:10px;min-height:20px}
 
@@ -36,17 +36,17 @@ button,input,select,textarea{font-family:inherit}
 .sidebar{width:var(--sidebar-w);background:var(--brown);color:var(--cream);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
 .sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center}
 .sidebar-logo img{width:50px;border-radius:50%;margin-bottom:8px}
-.sidebar-logo span{display:block;font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold-light);font-weight:700}
-.sidebar-logo small{display:block;font-size:.72rem;color:rgba(255,243,207,.5);margin-top:2px}
+.sidebar-logo span{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold-light);font-weight:700}
+.sidebar-logo small{display:block;font-size:.72rem;color:rgba(245,245,240,.5);margin-top:2px}
 nav{padding:16px 0;flex:1}
-nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,243,207,.75);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(245,245,240,.75);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
 nav a:hover{color:var(--cream);background:rgba(255,255,255,.07)}
-nav a.active{color:var(--brown);background:var(--cream);border-left-color:var(--gold);font-weight:600}
+nav a.active{color:var(--brown);background:var(--cream);border-left-color:var(--gold);font-weight:700}
 nav a .icon{font-size:1.1rem;width:22px;text-align:center}
-.nav-section{padding:10px 20px 4px;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,243,207,.3);font-weight:600}
-.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(255,243,207,.4)}
+.nav-section{padding:10px 20px 4px;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:rgba(245,245,240,.3);font-weight:600}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(245,245,240,.4)}
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:var(--white);border-bottom:2px solid var(--cream-border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar{background:var(--white);border-bottom:1.5px solid var(--cream-border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .topbar h2{font-size:1.05rem;font-weight:600}
 .topbar-right{display:flex;align-items:center;gap:12px}
 .content{padding:24px 28px;flex:1}
@@ -55,7 +55,7 @@ nav a .icon{font-size:1.1rem;width:22px;text-align:center}
 
 /* CARDS */
 .card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.card-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;margin-bottom:4px}
 .card-sub{font-size:.8rem;color:var(--brown-light)}
 
 /* STATS GRID */
@@ -64,7 +64,7 @@ nav a .icon{font-size:1.1rem;width:22px;text-align:center}
 .stat-card .stat-icon{font-size:2rem;margin-bottom:8px}
 .stat-card .stat-num{font-size:2rem;font-weight:800;line-height:1}
 .stat-card .stat-label{font-size:.78rem;color:var(--brown-light);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
-.stat-card .stat-delta{font-size:.75rem;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block}
+.stat-card .stat-delta{font-size:.75rem;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:2px;display:inline-block}
 .delta-up{background:#e8f5e9;color:var(--green)}
 .delta-down{background:#fbe9e7;color:var(--red)}
 .delta-neu{background:#f5f5f5;color:var(--brown-light)}
@@ -75,23 +75,23 @@ nav a .icon{font-size:1.1rem;width:22px;text-align:center}
 .period-card .period-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:6px}
 .period-card .period-num{font-size:2.2rem;font-weight:800}
 .period-card .period-sub{font-size:.8rem;color:var(--brown-light);margin-top:4px}
-.period-card.current{border-color:var(--gold);background:linear-gradient(135deg,#fff9e6,#fff)}
+.period-card.current{border-color:var(--gold);background:linear-gradient(135deg,#f5fff8,#fff)}
 
 /* CHARTS */
 .charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
 .chart-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.chart-card h3{font-size:.95rem;font-weight:600;margin-bottom:16px;color:var(--brown)}
+.chart-card h3{font-size:.95rem;font-weight:600;margin-bottom:16px;color:var(--brown);}
 .chart-wrap{position:relative;height:220px}
 
 /* BIRTHDAYS */
 .birthday-section{margin-bottom:24px}
 .birthday-section h3{font-size:1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .birthday-list{display:flex;flex-direction:column;gap:8px}
-.birthday-item{background:var(--white);border:2px solid #fce4ec;border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
-.birthday-item.today{border-color:var(--gold);background:linear-gradient(135deg,#fff9e6,#fff)}
+.birthday-item{background:var(--white);border:2px solid #fff0f5;border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.birthday-item.today{border-color:var(--gold);background:linear-gradient(135deg,#f5fff8,#fff)}
 .birthday-info .name{font-weight:600;font-size:.9rem}
 .birthday-info .date{font-size:.78rem;color:var(--brown-light);margin-top:2px}
-.birthday-badge{background:var(--gold);color:var(--brown);border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:700}
+.birthday-badge{background:var(--gold);color:var(--brown);border-radius:2px;padding:2px 10px;font-size:.72rem;font-weight:700}
 .birthday-badge.month{background:var(--cream-dark);color:var(--brown-mid)}
 .empty-state{text-align:center;padding:24px;color:var(--brown-light);font-size:.9rem}
 
@@ -107,47 +107,47 @@ nav a .icon{font-size:1.1rem;width:22px;text-align:center}
 
 /* CLIENTS TABLE */
 .search-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.search-bar input{flex:1;min-width:200px;padding:10px 16px;border:2px solid var(--cream-border);border-radius:50px;background:var(--cream);outline:none;font-size:.9rem;transition:border .2s}
-.search-bar input:focus{border-color:var(--brown)}
-.search-bar button{padding:10px 20px;border:none;border-radius:50px;background:var(--brown);color:var(--cream);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+.search-bar input{flex:1;min-width:200px;padding:10px 16px;border:2px solid var(--cream-border);border-radius:2px;background:var(--cream);outline:none;font-size:.9rem;transition:border .2s}
+.search-bar input:focus{border-color:var(--brown);}
+.search-bar button{padding:10px 20px;border:none;border-radius:2px;background:var(--brown);color:var(--cream);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
 .search-bar button:hover{background:var(--brown-mid)}
-.btn-sm{padding:6px 14px;border:none;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-sm{padding:6px 14px;border:none;border-radius:2px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
 .btn-primary{background:var(--brown);color:var(--cream)}
 .btn-primary:hover{background:var(--brown-mid)}
-.btn-gold{background:var(--gold);color:var(--brown)}
+.btn-gold{background:var(--gold);color:var(--brown);}
 .btn-gold:hover{background:var(--gold-light)}
 .btn-danger{background:#fbe9e7;color:var(--red);border:1px solid #ffccbc}
 .btn-danger:hover{background:#ffccbc}
 .btn-ghost{background:transparent;color:var(--brown-light);border:1.5px solid var(--cream-border)}
-.btn-ghost:hover{border-color:var(--brown);color:var(--brown)}
+.btn-ghost:hover{border-color:var(--brown);color:var(--brown);}
 
 table{width:100%;border-collapse:collapse;font-size:.85rem}
-th{padding:10px 12px;text-align:left;font-weight:600;color:var(--brown-light);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--cream-border);white-space:nowrap}
+th{padding:10px 12px;text-align:left;font-weight:600;color:var(--brown-light);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--cream-border);white-space:nowrap}
 td{padding:11px 12px;border-bottom:1px solid var(--cream-border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,243,207,.4)}
-.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+tr:hover td{background:rgba(245,245,240,.4)}
+.badge{display:inline-block;padding:2px 10px;border-radius:2px;font-size:.72rem;font-weight:600}
 .badge-green{background:#e8f5e9;color:var(--green)}
 .badge-red{background:#fbe9e7;color:var(--red)}
-.badge-gold{background:#fff9e6;color:var(--gold)}
+.badge-gold{background:#f5fff8;color:var(--gold)}
 .pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap}
 .page-btn{padding:6px 12px;border:2px solid var(--cream-border);border-radius:8px;background:var(--white);cursor:pointer;font-size:.82rem;transition:all .2s}
-.page-btn:hover,.page-btn.active{background:var(--brown);color:var(--cream);border-color:var(--brown)}
+.page-btn:hover,.page-btn.active{background:var(--brown);color:var(--cream);border-color:var(--brown);}
 .page-info{font-size:.82rem;color:var(--brown-light)}
 
 /* DRAWER */
-.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(58,52,38,.4);z-index:200;backdrop-filter:blur(3px)}
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;backdrop-filter:blur(3px)}
 .drawer-overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
-.drawer{background:var(--white);width:480px;max-width:96vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-8px 0 32px rgba(58,52,38,.15);display:flex;flex-direction:column;gap:0}
-.drawer h2{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:4px}
+.drawer{background:var(--white);width:480px;max-width:96vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-8px 0 32px rgba(0,0,0,.12);display:flex;flex-direction:column;gap:0}
+.drawer h2{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;margin-bottom:4px}
 .drawer .d-email{font-size:.85rem;color:var(--brown-light);margin-bottom:20px}
 .drawer-close{position:absolute;top:20px;right:20px;background:var(--cream);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
 .drawer-close:hover{background:var(--cream-dark)}
 
 /* TABS */
-.tabs{display:flex;gap:4px;border-bottom:2px solid var(--cream-border);margin-bottom:20px;overflow-x:auto}
+.tabs{display:flex;gap:4px;border-bottom:1.5px solid var(--cream-border);margin-bottom:20px;overflow-x:auto}
 .tab{padding:9px 16px;border:none;background:transparent;font-size:.83rem;font-weight:500;color:var(--brown-light);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
-.tab:hover{color:var(--brown)}
+.tab:hover{color:var(--brown);}
 .tab.active{color:var(--brown);border-bottom-color:var(--gold);font-weight:600}
 .tab-content{display:none}
 .tab-content.active{display:block}
@@ -156,12 +156,12 @@ tr:hover td{background:rgba(255,243,207,.4)}
 .form-group{margin-bottom:14px}
 .form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--brown);margin-bottom:5px}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none;transition:border .2s}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--brown)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--brown);}
 .form-group textarea{resize:vertical;min-height:80px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--cream-border)}
 .toggle-row:last-child{border-bottom:none}
-.toggle-row label{font-size:.85rem;color:var(--brown)}
+.toggle-row label{font-size:.85rem;color:var(--brown);}
 .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .slider{position:absolute;cursor:pointer;inset:0;background:var(--cream-border);border-radius:24px;transition:.3s}
@@ -172,28 +172,28 @@ tr:hover td{background:rgba(255,243,207,.4)}
 /* STAMPS GRID IN DRAWER */
 .stamps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
 .stamp-dot{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--cream-border);background:var(--cream)}
-.stamp-dot.filled{background:var(--brown);border-color:var(--brown)}
+.stamp-dot.filled{background:var(--brown);border-color:var(--brown);}
 
 /* ACTIVITY LOG */
 .activity-log{display:flex;flex-direction:column;gap:8px}
 .activity-item{display:flex;gap:12px;align-items:flex-start}
 .activity-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
 .activity-dot.stamp{background:#e8f5e9}
-.activity-dot.redeem{background:#fff9e6}
+.activity-dot.redeem{background:#f5fff8}
 .activity-dot.register{background:#e3f2fd}
-.activity-dot.adjust{background:#fce4ec}
+.activity-dot.adjust{background:#fff0f5}
 .activity-content .a-title{font-size:.85rem;font-weight:600}
 .activity-content .a-date{font-size:.75rem;color:var(--brown-light);margin-top:2px}
 
 /* STAMPS ACTIONS */
 .stamp-actions{display:flex;gap:10px;margin-bottom:16px}
 .stamp-actions input{flex:1;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:1.1rem;font-weight:700;text-align:center;outline:none;transition:border .2s}
-.stamp-actions input:focus{border-color:var(--brown)}
+.stamp-actions input:focus{border-color:var(--brown);}
 .stamp-actions button{padding:10px 18px;border:none;border-radius:var(--radius-sm);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s}
 
 /* IMPORT */
 .import-drop{border:3px dashed var(--cream-border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream)}
-.import-drop:hover,.import-drop.over{border-color:var(--gold);background:#fff9e6}
+.import-drop:hover,.import-drop.over{border-color:var(--gold);background:#f5fff8}
 .import-drop .drop-icon{font-size:2.5rem;margin-bottom:8px}
 .import-drop p{color:var(--brown-light);font-size:.88rem}
 .import-drop strong{color:var(--brown);display:block;margin-bottom:4px;font-size:1rem}
@@ -205,14 +205,14 @@ tr:hover td{background:rgba(255,243,207,.4)}
 .import-stat .is-lbl{font-size:.72rem;color:var(--brown-light);text-transform:uppercase}
 
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--brown);color:var(--cream);padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--brown);color:var(--cream);padding:14px 20px;border-radius:2px;font-size:.88rem;font-weight:600;border:1.5px solid rgba(255,255,255,.15);box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:#2e7d32}
 .toast.error{background:var(--red)}
 
 /* NEW CLIENT FORM */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
-.section-header h1{font-family:'Playfair Display',serif;font-size:1.5rem}
+.section-header h1{font-family:'Bebas Neue',sans-serif;font-size:1.5rem}
 
 /* CHART LEGEND CUSTOM */
 .legend-row{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
@@ -220,9 +220,9 @@ tr:hover td{background:rgba(255,243,207,.4)}
 .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 .cfg-tab-btn {
   padding: 8px 18px;
-  border: 2px solid #3A3426;
+  border: 1.5px solid #0a0a0a;
   background: white;
-  color: #3A3426;
+  color: #0a0a0a;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9em;
@@ -230,7 +230,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
   transition: all 0.2s;
 }
 .cfg-tab-btn.active {
-  background: #3A3426;
+  background: #0a0a0a;
   color: white;
 }
 .card-box {
@@ -257,7 +257,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
   transition: border-color 0.2s;
 }
 .field-input:focus {
-  border-color: #3A3426;
+  border-color: #0a0a0a;
 }
 </style>
 </head>
@@ -294,7 +294,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
       </a>
       <a onclick="showSection('birthdays')" id="nav-birthdays">
         <span class="icon">🎂</span> Cumpleaños
-        <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:20px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
+        <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:2px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
       </a>
       <div class="nav-section">Clientes</div>
       <a onclick="showSection('clients')" id="nav-clients">
@@ -375,7 +375,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
           <div class="chart-card">
             <h3>Actividad diaria – últimos 30 días</h3>
             <div class="legend-row">
-              <div class="legend-item"><div class="legend-dot" style="background:#3A3426"></div>Sellos añadidos</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#0a0a0a"></div>Sellos añadidos</div>
               <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div>Premios canjeados</div>
               <div class="legend-item"><div class="legend-dot" style="background:#4caf50"></div>Nuevos clientes</div>
             </div>
@@ -565,7 +565,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
         <!-- ── TAB: GENERAL ── -->
         <div id="cfgpanel-general" class="cfg-panel">
           <div class="card-box">
-            <h3 style="margin-bottom:16px;color:#3A3426">📋 General</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">📋 General</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
               <label class="field-label">Nombre de tarjeta<input type="text" id="cfg-card_name" class="field-input" placeholder="Sellos"></label>
               <label class="field-label">Título tarjeta<input type="text" id="cfg-card_title" class="field-input" placeholder="Sukie Card"></label>
@@ -575,7 +575,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
             <label class="field-label" style="margin-top:12px">Descripción
               <textarea id="cfg-description" class="field-input" rows="3" placeholder="Tarjeta de sellos Sukie Cookie" style="resize:vertical"></textarea>
             </label>
-            <h4 style="margin:20px 0 12px;color:#3A3426">Vencimiento</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Vencimiento</h4>
             <div style="display:flex;flex-direction:column;gap:10px">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                 <input type="radio" name="cfg-expiry" value="never" id="cfg-expiry-never"> Sin fecha de vencimiento
@@ -595,7 +595,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
         <!-- ── TAB: PROGRAMA ── -->
         <div id="cfgpanel-programa" class="cfg-panel" style="display:none">
           <div class="card-box">
-            <h3 style="margin-bottom:16px;color:#3A3426">🎯 Programa de Sellos</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">🎯 Programa de Sellos</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
               <label class="field-label">Sellos por premio
                 <input type="number" id="cfg-stamps_per_reward" class="field-input" min="1" max="100" placeholder="10">
@@ -613,7 +613,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               <small style="color:#999">Variables: {nombre}, {#}</small>
             </label>
 
-            <h4 style="margin:24px 0 12px;color:#3A3426">🎂 Programa de Cumpleaños</h4>
+            <h4 style="margin:24px 0 12px;color:#0a0a0a">🎂 Programa de Cumpleaños</h4>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
               <input type="checkbox" id="cfg-birthday_enabled"> Activar programa de cumpleaños
             </label>
@@ -626,13 +626,13 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </label>
             </div>
 
-            <h4 style="margin:24px 0 12px;color:#3A3426">🎉 Aniversario de Afiliación</h4>
+            <h4 style="margin:24px 0 12px;color:#0a0a0a">🎉 Aniversario de Afiliación</h4>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
               <input type="checkbox" id="cfg-anniversary_enabled"> Activar programa de aniversario
             </label>
 
           <div style="margin-top:24px;">
-            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#3A3426;">🏆 Sistema de Niveles VIP</h3>
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#0a0a0a;">🏆 Sistema de Niveles VIP</h3>
             <p style="font-size:12px;color:#888;margin-bottom:16px;">Define los premios y beneficios para cada nivel. Los clientes suben de nivel automáticamente.</p>
             
             <!-- Tier Bronze -->
@@ -722,7 +722,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
             
             <!-- Club name -->
             <div style="background:white;border-radius:14px;padding:16px;border:1px solid #f0e8d0;">
-              <div style="font-weight:700;margin-bottom:12px;color:#3A3426;">🏅 Nombre del Club</div>
+              <div style="font-weight:700;margin-bottom:12px;color:#0a0a0a;">🏅 Nombre del Club</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div>
                   <label class="field-label">Nombre del club</label>
@@ -741,7 +741,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
         <!-- ── TAB: LANDING ── -->
         <div id="cfgpanel-landing" class="cfg-panel" style="display:none">
           <div class="card-box">
-            <h3 style="margin-bottom:16px;color:#3A3426">🌐 Landing de Alta</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">🌐 Landing de Alta</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
               <label class="field-label">Título del formulario
                 <input type="text" id="cfg-form_title" class="field-input" placeholder="Únete a la Sukie Card">
@@ -754,7 +754,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               <input type="text" id="cfg-header_text" class="field-input" placeholder="Regístrate y acumula cookies gratis">
             </label>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Colores</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Colores</h4>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
               <label class="field-label">Fondo
                 <div style="display:flex;align-items:center;gap:6px">
@@ -782,7 +782,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </label>
             </div>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Campos del formulario</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Campos del formulario</h4>
             <table style="width:100%;border-collapse:collapse;font-size:0.9em">
               <thead>
                 <tr style="background:#f5f5f5">
@@ -820,7 +820,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </tbody>
             </table>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Datos legales de empresa</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Datos legales de empresa</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
               <label class="field-label">Empresa<input type="text" id="cfg-company_name" class="field-input" placeholder="Nombre empresa"></label>
               <label class="field-label">Email<input type="email" id="cfg-company_email" class="field-input" placeholder="email@empresa.com"></label>
@@ -830,7 +830,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               <input type="url" id="cfg-terms_url" class="field-input" placeholder="https://...">
             </label>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Restricciones</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Restricciones</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
               <label class="field-label">Fecha límite de registro
                 <input type="date" id="cfg-register_limit_date" class="field-input">
@@ -848,12 +848,12 @@ tr:hover td{background:rgba(255,243,207,.4)}
         <!-- ── TAB: DISEÑO ── -->
         <div id="cfgpanel-diseno" class="cfg-panel" style="display:none">
           <div class="card-box">
-            <h3 style="margin-bottom:16px;color:#3A3426">🎨 Diseño de Tarjeta</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">🎨 Diseño de Tarjeta</h3>
             <label class="field-label">Nombre comercial
               <input type="text" id="cfg-commercial_name" class="field-input" placeholder="Sukie Cookie">
             </label>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Colores de tarjeta</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Colores de tarjeta</h4>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
               <label class="field-label">Fondo tarjeta
                 <div style="display:flex;gap:6px;align-items:center">
@@ -875,7 +875,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </label>
             </div>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Colores de sellos</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Colores de sellos</h4>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
               <label class="field-label">Fondo sello
                 <div style="display:flex;gap:6px;align-items:center">
@@ -903,7 +903,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </label>
             </div>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Campos frontales de tarjeta</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Campos frontales de tarjeta</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <label class="field-label">Etiqueta campo 1<input type="text" id="cfg-front_field1_label" class="field-input" placeholder="Titular"></label>
               <label class="field-label">Valor campo 1<input type="text" id="cfg-front_field1_value" class="field-input" placeholder="NOMBRE Y APELLIDOS"></label>
@@ -911,13 +911,13 @@ tr:hover td{background:rgba(255,243,207,.4)}
               <label class="field-label">Valor campo 2<input type="text" id="cfg-front_field2_value" class="field-input" placeholder="Premios/Vales Disponibles"></label>
             </div>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Enlaces</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Enlaces</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <label class="field-label">Instagram<input type="url" id="cfg-link_instagram" class="field-input" placeholder="https://instagram.com/..."></label>
               <label class="field-label">Web<input type="url" id="cfg-link_web" class="field-input" placeholder="https://..."></label>
             </div>
 
-            <h4 style="margin:20px 0 12px;color:#3A3426">Textos parte trasera</h4>
+            <h4 style="margin:20px 0 12px;color:#0a0a0a">Textos parte trasera</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <label class="field-label">Título actualizaciones<input type="text" id="cfg-back_title_updates" class="field-input"></label>
               <label class="field-label">Título titular<input type="text" id="cfg-back_title_holder" class="field-input"></label>
@@ -934,7 +934,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
         <!-- ── TAB: COMUNICACIONES ── -->
         <div id="cfgpanel-comunicaciones" class="cfg-panel" style="display:none">
           <div class="card-box" style="margin-bottom:16px">
-            <h3 style="margin-bottom:16px;color:#3A3426">⚙️ Configuración SMTP (para enviar emails)</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">⚙️ Configuración SMTP (para enviar emails)</h3>
             <p style="color:#666;font-size:0.82em;margin-bottom:14px">Configura estas variables en Railway → Variables de entorno:</p>
             <div style="background:#f5f5f5;border-radius:8px;padding:12px;font-family:monospace;font-size:0.8em;color:#333">
               SMTP_HOST=smtp.gmail.com<br>
@@ -946,7 +946,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
             <p style="color:#888;font-size:0.75em;margin-top:10px">💡 Para Gmail: Activa la verificación en 2 pasos → Contraseñas de aplicación → Genera una contraseña</p>
           </div>
           <div class="card-box">
-            <h3 style="margin-bottom:16px;color:#3A3426">✉️ Email de Bienvenida</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">✉️ Email de Bienvenida</h3>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
               <input type="checkbox" id="cfg-welcome_email_enabled"> Activar email de bienvenida al registrarse
             </label>
@@ -959,7 +959,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
             </label>
           </div>
           <div class="card-box" style="margin-top:16px">
-            <h3 style="margin-bottom:16px;color:#3A3426">🎂 Email de Cumpleaños</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">🎂 Email de Cumpleaños</h3>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
               <input type="checkbox" id="cfg-birthday_email_enabled"> Activar email de cumpleaños
             </label>
@@ -974,7 +974,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
 
           <!-- Distribución masiva -->
           <div class="card-box" style="margin-top:16px">
-            <h3 style="margin-bottom:16px;color:#3A3426">📤 Distribución</h3>
+            <h3 style="margin-bottom:16px;color:#0a0a0a">📤 Distribución</h3>
             <p style="color:#666;margin-bottom:16px">Envía la tarjeta por email a tus clientes. Se usa la plantilla de bienvenida.</p>
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -985,14 +985,14 @@ tr:hover td{background:rgba(255,243,207,.4)}
               </label>
             </div>
             <div style="margin-top:16px">
-              <button onclick="sendDistribution()" style="background:#3A3426;color:white;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.95em">
+              <button onclick="sendDistribution()" style="background:#0a0a0a;color:white;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.95em">
                 📨 Enviar distribución
               </button>
             </div>
             <div id="dist-result" style="margin-top:12px;display:none"></div>
             
             <div style="margin-top:20px;border-top:1px solid #eee;padding-top:16px">
-              <h4 style="margin-bottom:10px;color:#3A3426">📧 Vista previa del email</h4>
+              <h4 style="margin-bottom:10px;color:#0a0a0a">📧 Vista previa del email</h4>
               <p style="color:#666;font-size:0.85em;margin-bottom:12px">Abre en el navegador cómo verá el email tu cliente:</p>
               <button onclick="previewEmail()" style="background:#5C4A32;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-right:8px">
                 👁️ Ver preview email bienvenida
@@ -1006,7 +1006,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
 
         <!-- Save button -->
         <div style="margin-top:24px;display:flex;gap:12px;align-items:center">
-          <button onclick="saveConfig()" style="background:#3A3426;color:white;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:1em;font-weight:600">
+          <button onclick="saveConfig()" style="background:#0a0a0a;color:white;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:1em;font-weight:600">
             💾 Guardar configuración
           </button>
           <span id="cfg-save-msg" style="display:none;color:#2e7d32;font-weight:600">✅ Guardado correctamente</span>
@@ -1017,15 +1017,15 @@ tr:hover td{background:rgba(255,243,207,.4)}
 
       <!-- ═══ DISEÑO DE TARJETA ═══ -->
       <style>
-        .emoji-picker{position:absolute;top:calc(100% + 6px);left:0;background:white;border:2px solid var(--cream-border);border-radius:14px;padding:10px;box-shadow:0 8px 32px rgba(58,52,38,.15);z-index:300;width:260px;display:none;flex-wrap:wrap;gap:4px}
+        .emoji-picker{position:absolute;top:calc(100% + 6px);left:0;background:white;border:2px solid var(--cream-border);border-radius:14px;padding:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:300;width:260px;display:none;flex-wrap:wrap;gap:4px}
         .emoji-picker.open{display:flex}
         .emoji-opt{font-size:1.3rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:background .15s}
         .emoji-opt:hover{background:var(--cream)}
         .emoji-opt.selected{background:var(--gold-light);outline:2px solid var(--gold)}
         .phone-frame{background:#1c1c1e;border-radius:44px;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}
         .phone-screen{background:#000;border-radius:34px;overflow:hidden;position:relative}
-        .phone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:26px;background:#1c1c1e;border-radius:20px;z-index:20}
-        .wallet-card{border-radius:20px;overflow:hidden;margin:6px 8px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+        .phone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:26px;background:#1c1c1e;border-radius:2px;z-index:20}
+        .wallet-card{border-radius:2px;overflow:hidden;margin:6px 8px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
         .android-frame{background:#2d2d2d;border-radius:40px;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.06)}
         .android-screen{background:#111;border-radius:30px;overflow:hidden;position:relative}
         .android-punch{position:absolute;top:10px;right:18px;width:14px;height:14px;background:#111;border-radius:50%;z-index:20}
@@ -1033,8 +1033,8 @@ tr:hover td{background:rgba(255,243,207,.4)}
       </style>
       <div class="section" id="section-card-design">
         <div class="section-header" style="margin-bottom:20px">
-          <h1 style="font-family:'Playfair Display',serif;font-size:1.5rem">🎨 Diseño de Tarjeta</h1>
-          <button onclick="saveDesign()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:50px;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar diseño</button>
+          <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem">🎨 Diseño de Tarjeta</h1>
+          <button onclick="saveDesign()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:2px;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar diseño</button>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 260px;gap:28px;align-items:start">
@@ -1069,21 +1069,21 @@ tr:hover td{background:rgba(255,243,207,.4)}
                   <label>Fondo principal</label>
                   <div style="display:flex;gap:6px;align-items:center">
                     <input type="color" id="d-primary_color" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-primary_color');updatePreview()">
-                    <input type="text" id="d-primary_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#3A3426" oninput="syncColorPicker('d-primary_color');updatePreview()">
+                    <input type="text" id="d-primary_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#0a0a0a" oninput="syncColorPicker('d-primary_color');updatePreview()">
                   </div>
                 </div>
                 <div class="form-group">
                   <label>Color acento</label>
                   <div style="display:flex;gap:6px;align-items:center">
                     <input type="color" id="d-accent_color" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-accent_color');updatePreview()">
-                    <input type="text" id="d-accent_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#FFF3CF" oninput="syncColorPicker('d-accent_color');updatePreview()">
+                    <input type="text" id="d-accent_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#f5f5f0" oninput="syncColorPicker('d-accent_color');updatePreview()">
                   </div>
                 </div>
                 <div class="form-group">
                   <label>Color texto</label>
                   <div style="display:flex;gap:6px;align-items:center">
                     <input type="color" id="d-text_color" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-text_color');updatePreview()">
-                    <input type="text" id="d-text_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#FDFBF7" oninput="syncColorPicker('d-text_color');updatePreview()">
+                    <input type="text" id="d-text_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#ffffff" oninput="syncColorPicker('d-text_color');updatePreview()">
                   </div>
                 </div>
               </div>
@@ -1231,7 +1231,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
                           <div id="android-bizname" style="font-size:.68rem;font-weight:800;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">SUKIE COOKIE</div>
                           <div id="android-cardname" style="font-size:.55rem;opacity:.75;margin-top:1px">Programa de fidelización</div>
                         </div>
-                        <div id="android-tier-badge" style="font-size:.52rem;background:rgba(255,255,255,.2);padding:3px 7px;border-radius:20px;font-weight:700;white-space:nowrap">🥉 BRONCE</div>
+                        <div id="android-tier-badge" style="font-size:.52rem;background:rgba(255,255,255,.2);padding:3px 7px;border-radius:2px;font-weight:700;white-space:nowrap">🥉 BRONCE</div>
                       </div>
                       <!-- white body -->
                       <div style="background:white;padding:10px 14px">
@@ -1301,7 +1301,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
           <div style="font-size:1.6rem;font-weight:800" id="d-total-stamps">0</div>
           <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Total</div>
         </div>
-        <div style="text-align:center;background:#fff9e6;border-radius:12px;padding:12px">
+        <div style="text-align:center;background:#f5fff8;border-radius:12px;padding:12px">
           <div style="font-size:1.6rem;font-weight:800" id="d-awards">0</div>
           <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Premios</div>
         </div>
@@ -1318,7 +1318,7 @@ tr:hover td{background:rgba(255,243,207,.4)}
         <div id="d-notes" style="background:var(--cream);padding:10px 12px;border-radius:8px;font-size:.83rem;line-height:1.5"></div>
       </div>
       <div id="d-award-banner" style="display:none;margin-top:16px;background:linear-gradient(135deg,#d4a017,#f5cb53);border-radius:12px;padding:14px;text-align:center">
-        <div style="font-size:.95rem;font-weight:700;color:#3A3426">🎉 <span id="d-award-count"></span> premio(s) disponible(s)</div>
+        <div style="font-size:.95rem;font-weight:700;color:#0a0a0a">🎉 <span id="d-award-count"></span> premio(s) disponible(s)</div>
         <button class="btn-sm btn-primary" style="margin-top:8px" onclick="redeemFromDrawer()">Canjear premio</button>
       </div>
     </div>
@@ -1519,7 +1519,7 @@ async function loadActivity(){
   activityChart = new Chart(ctx,{
     type:'bar',
     data:{labels,datasets:[
-      {label:'Sellos',data:stamps,backgroundColor:'rgba(58,52,38,.75)',borderRadius:4,order:2},
+      {label:'Sellos',data:stamps,backgroundColor:'rgba(0,0,0,.75)',borderRadius:4,order:2},
       {label:'Canjes',data:redeems,backgroundColor:'rgba(212,160,23,.8)',borderRadius:4,order:2},
       {label:'Nuevos',data:newC,type:'line',borderColor:'#4caf50',backgroundColor:'rgba(76,175,80,.1)',tension:.4,fill:true,pointRadius:3,order:1}
     ]},
@@ -1610,12 +1610,12 @@ async function loadBI(){
 
   const ctx2=document.getElementById('monthly-chart').getContext('2d');
   if(monthlyChart) monthlyChart.destroy();
-  monthlyChart=new Chart(ctx2,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Sellos',data:months.map(m=>monthlyMap[m]||0),backgroundColor:'rgba(58,52,38,.75)',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'}}}}});
+  monthlyChart=new Chart(ctx2,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Sellos',data:months.map(m=>monthlyMap[m]||0),backgroundColor:'rgba(0,0,0,.75)',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'}}}}});
 
   // New clients chart
   const ctx4=document.getElementById('new-clients-chart').getContext('2d');
   if(newClientsChart) newClientsChart.destroy();
-  newClientsChart=new Chart(ctx4,{type:'line',data:{labels:monthLabels,datasets:[{label:'Nuevos clientes',data:months.map(m=>newMap[m]||0),borderColor:'#3A3426',backgroundColor:'rgba(58,52,38,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#3A3426'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1}}}}});
+  newClientsChart=new Chart(ctx4,{type:'line',data:{labels:monthLabels,datasets:[{label:'Nuevos clientes',data:months.map(m=>newMap[m]||0),borderColor:'#0a0a0a',backgroundColor:'rgba(0,0,0,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#0a0a0a'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1}}}}});
 
   // Distribution chart (placeholder – stamps distribution 0-2, 3-5, 6-8, 9-10)
   // We'll use top list data as proxy
@@ -1623,7 +1623,7 @@ async function loadBI(){
   if(distChart) distChart.destroy();
   const bins=[0,0,0,0]; // 0-2, 3-5, 6-8, 9-10
   // We use top customers as sample (in real scenario would need full dataset)
-  distChart=new Chart(ctx3,{type:'doughnut',data:{labels:['0-2 sellos','3-5 sellos','6-8 sellos','9-10 sellos'],datasets:[{data:[30,35,25,10],backgroundColor:['#e8d9a0','#d4a017','#6b5e47','#3A3426'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}}}});
+  distChart=new Chart(ctx3,{type:'doughnut',data:{labels:['0-2 sellos','3-5 sellos','6-8 sellos','9-10 sellos'],datasets:[{data:[30,35,25,10],backgroundColor:['#d5d5cc','#d4a017','#6b5e47','#0a0a0a'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}}}});
 
   // Top list
   loadTopCustomers(10,'bi');
@@ -2340,9 +2340,9 @@ async function loadDesign() {
     setDesignVal('d-link_web', d.link_web || '');
 
     // Colors – use primary_color and accent_color from biz if diseno doesn't have them
-    const primaryCol = d.card_bg_color || '{{ primary_color }}' || '#3A3426';
-    const accentCol  = d.stamp_bg_color || '{{ accent_color }}' || '#FFF3CF';
-    const textCol    = d.text_color || '#FDFBF7';
+    const primaryCol = d.card_bg_color || '{{ primary_color }}' || '#0a0a0a';
+    const accentCol  = d.stamp_bg_color || '{{ accent_color }}' || '#f5f5f0';
+    const textCol    = d.text_color || '#ffffff';
     const stampEmptyBg  = d.stamp_border_color || 'rgba(255,255,255,0.25)';
     const stampFilledBg = d.stamp_filled_color || '#d4a017';
 
@@ -2390,9 +2390,9 @@ function getDesignColor(id) {
 }
 
 function updatePreview() {
-  const primary  = getDesignColor('d-primary_color') || '#3A3426';
-  const accent   = getDesignColor('d-accent_color')  || '#FFF3CF';
-  const textCol  = getDesignColor('d-text_color')    || '#FDFBF7';
+  const primary  = getDesignColor('d-primary_color') || '#0a0a0a';
+  const accent   = getDesignColor('d-accent_color')  || '#f5f5f0';
+  const textCol  = getDesignColor('d-text_color')    || '#ffffff';
   const stampEmpty  = getDesignColor('d-stamp_empty_bg')  || 'rgba(255,255,255,0.25)';
   const stampFilled = getDesignColor('d-stamp_filled_bg') || '#d4a017';
 
