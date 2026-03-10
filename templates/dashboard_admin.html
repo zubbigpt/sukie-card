@@ -313,6 +313,9 @@ tr:hover td{background:rgba(255,243,207,.4)}
       <a href="/register" target="_blank" id="nav-register">
         <span class="icon">🔗</span> Landing de alta
       </a>
+      <a onclick="showSection('card-design')" id="nav-card-design">
+        <span class="icon">🎨</span> Diseño Tarjeta
+      </a>
       <a onclick="showSection('config')" id="nav-config">
         <span class="icon">⚙️</span> Configuración
       </a>
@@ -1012,6 +1015,220 @@ tr:hover td{background:rgba(255,243,207,.4)}
       </div>
 
 
+      <!-- ═══ DISEÑO DE TARJETA ═══ -->
+      <div class="section" id="section-card-design">
+        <div class="section-header" style="margin-bottom:20px">
+          <h1 style="font-family:'Playfair Display',serif;font-size:1.5rem">🎨 Diseño de Tarjeta</h1>
+          <button onclick="saveDesign()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:50px;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar diseño</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start">
+          <!-- LEFT: controls -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+
+            <!-- Identidad -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">🏷️ Identidad de marca</div>
+              <div class="form-row">
+                <div class="form-group"><label>Nombre tarjeta</label><input id="d-card_name" class="form-group input" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Sukie Card"></div>
+                <div class="form-group"><label>Icono / emoji sello</label><input id="d-stamp_icon" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:1.3rem;outline:none;text-align:center" placeholder="🍪" maxlength="4"></div>
+              </div>
+              <div class="form-group"><label>Nombre comercial</label><input id="d-commercial_name" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Sukie Cookie"></div>
+              <div class="form-row" style="margin-top:4px">
+                <div class="form-group"><label>Sellos para premio</label><input id="d-stamps_per_reward" type="number" min="1" max="99" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="10"></div>
+                <div class="form-group"><label>Nombre del premio</label><input id="d-reward_name" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Cookie Gratis"></div>
+              </div>
+            </div>
+
+            <!-- Colores tarjeta -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">🎨 Colores de tarjeta</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+                <div class="form-group">
+                  <label>Fondo principal</label>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <input type="color" id="d-primary_color" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-primary_color');updatePreview()">
+                    <input type="text" id="d-primary_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#3A3426" oninput="syncColorPicker('d-primary_color');updatePreview()">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Color acento</label>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <input type="color" id="d-accent_color" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-accent_color');updatePreview()">
+                    <input type="text" id="d-accent_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#FFF3CF" oninput="syncColorPicker('d-accent_color');updatePreview()">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Color texto</label>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <input type="color" id="d-text_color" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-text_color');updatePreview()">
+                    <input type="text" id="d-text_color_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#FDFBF7" oninput="syncColorPicker('d-text_color');updatePreview()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Colores sellos -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">🔵 Colores de sellos</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-group">
+                  <label>Sello vacío – fondo</label>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <input type="color" id="d-stamp_empty_bg" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-stamp_empty_bg');updatePreview()">
+                    <input type="text" id="d-stamp_empty_bg_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#ffffff30" oninput="syncColorPicker('d-stamp_empty_bg');updatePreview()">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Sello lleno – fondo</label>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <input type="color" id="d-stamp_filled_bg" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px" oninput="syncColorText('d-stamp_filled_bg');updatePreview()">
+                    <input type="text" id="d-stamp_filled_bg_text" style="flex:1;padding:8px 10px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.82rem;outline:none" placeholder="#d4a017" oninput="syncColorPicker('d-stamp_filled_bg');updatePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <label style="font-size:.8rem;font-weight:600;display:block;margin-bottom:6px">Vista previa de sellos</label>
+                <div id="d-stamp-preview-row" style="display:flex;gap:6px;flex-wrap:wrap;padding:12px;background:var(--cream);border-radius:10px;border:2px solid var(--cream-border)"></div>
+              </div>
+            </div>
+
+            <!-- Campos tarjeta -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom:14px">📋 Campos de la tarjeta</div>
+              <div class="form-row">
+                <div class="form-group"><label>Etiqueta campo 1</label><input id="d-field1_label" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Titular"></div>
+                <div class="form-group"><label>Etiqueta campo 2</label><input id="d-field2_label" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="Premios"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Instagram</label><input id="d-link_instagram" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="https://instagram.com/..."></div>
+                <div class="form-group"><label>Web</label><input id="d-link_web" style="width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none" placeholder="https://..."></div>
+              </div>
+            </div>
+
+            <div id="d-save-msg" style="display:none;font-size:.9rem;font-weight:600;padding:12px 16px;border-radius:10px"></div>
+          </div>
+
+          <!-- RIGHT: live wallet previews -->
+          <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:20px">
+
+            <!-- iPhone Wallet Preview -->
+            <div>
+              <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span>📱</span> iPhone Wallet
+              </div>
+              <!-- Phone frame -->
+              <div style="position:relative;width:220px;margin:0 auto">
+                <div style="background:#1a1a1a;border-radius:40px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+                  <div style="background:#000;border-radius:32px;overflow:hidden;padding-top:28px;padding-bottom:16px;position:relative">
+                    <!-- notch -->
+                    <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:70px;height:12px;background:#1a1a1a;border-radius:10px;z-index:10"></div>
+                    <!-- wallet card -->
+                    <div id="iphone-card" style="margin:8px 10px;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5);transition:all .3s">
+                      <!-- card header strip -->
+                      <div id="iphone-header" style="padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between">
+                        <div>
+                          <div id="iphone-bizname" style="font-size:.65rem;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.5px">SUKIE COOKIE</div>
+                          <div id="iphone-cardname" style="font-size:.9rem;font-weight:800;margin-top:1px">Sukie Card</div>
+                        </div>
+                        <div id="iphone-icon" style="font-size:1.6rem">🍪</div>
+                      </div>
+                      <!-- stamps area -->
+                      <div id="iphone-stamps-area" style="padding:8px 14px">
+                        <div style="font-size:.55rem;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Sellos</div>
+                        <div id="iphone-stamps" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+                      </div>
+                      <!-- footer -->
+                      <div id="iphone-footer" style="padding:8px 14px 12px;display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                          <div style="font-size:.5rem;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px" id="iphone-field1-lbl">Titular</div>
+                          <div style="font-size:.7rem;font-weight:700;opacity:.9" id="iphone-field1-val">NOMBRE APELLIDOS</div>
+                        </div>
+                        <div style="text-align:right">
+                          <div style="font-size:.5rem;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.5px" id="iphone-field2-lbl">Premio</div>
+                          <div style="font-size:.7rem;font-weight:700;opacity:.9" id="iphone-field2-val">0 disponibles</div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- QR strip below card -->
+                    <div style="margin:8px 10px 0;background:white;border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center">
+                      <div style="display:grid;grid-template-columns:repeat(5,8px);grid-template-rows:repeat(5,8px);gap:1px">
+                        <div style="background:#000;grid-column:1/3;grid-row:1/3;border-radius:2px"></div>
+                        <div style="background:#000;width:6px;height:6px;align-self:center;justify-self:center"></div>
+                        <div style="background:#000;grid-column:4/6;grid-row:1/3;border-radius:2px"></div>
+                        <div style="background:#000;width:4px;height:4px;align-self:center;justify-self:center;grid-column:2;grid-row:3"></div>
+                        <div style="background:#000;width:4px;height:4px;align-self:center;justify-self:center;grid-column:4;grid-row:3"></div>
+                        <div style="background:#000;grid-column:1/3;grid-row:4/6;border-radius:2px"></div>
+                        <div style="background:#000;width:4px;height:4px;align-self:end;justify-self:center;grid-column:4;grid-row:5"></div>
+                        <div style="background:#000;width:4px;height:4px;align-self:end;justify-self:end;grid-column:5;grid-row:4"></div>
+                      </div>
+                      <span style="font-size:.5rem;color:#333;margin-left:8px;line-height:1.3">Tu<br>QR</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="text-align:center;font-size:.7rem;color:var(--brown-light);margin-top:8px">Vista Apple Wallet</div>
+              </div>
+            </div>
+
+            <!-- Android / Google Wallet Preview -->
+            <div>
+              <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span>🤖</span> Google Wallet
+              </div>
+              <div style="position:relative;width:220px;margin:0 auto">
+                <div style="background:#2a2a2a;border-radius:36px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+                  <div style="background:#121212;border-radius:28px;overflow:hidden;padding:20px 0 14px">
+                    <!-- google wallet card -->
+                    <div id="android-card" style="margin:0 10px;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:all .3s">
+                      <!-- colored top strip -->
+                      <div id="android-strip" style="padding:14px 16px 12px;display:flex;align-items:center;gap:10px">
+                        <div id="android-logo" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🍪</div>
+                        <div>
+                          <div id="android-bizname" style="font-size:.75rem;font-weight:700;letter-spacing:.3px">SUKIE COOKIE</div>
+                          <div id="android-cardname" style="font-size:.62rem;opacity:.7;margin-top:1px">Programa de sellos</div>
+                        </div>
+                        <div style="margin-left:auto;font-size:.6rem;background:rgba(255,255,255,.15);padding:3px 8px;border-radius:20px;font-weight:600" id="android-tier-badge">🥉 BRONCE</div>
+                      </div>
+                      <!-- white content area -->
+                      <div id="android-content" style="background:white;padding:12px 14px">
+                        <div style="font-size:.6rem;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sellos acumulados</div>
+                        <div id="android-stamps" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px"></div>
+                        <div style="display:flex;justify-content:space-between;border-top:1px solid #f0f0f0;padding-top:8px;margin-top:4px">
+                          <div>
+                            <div style="font-size:.55rem;color:#aaa;text-transform:uppercase;letter-spacing:.5px" id="android-field1-lbl">Titular</div>
+                            <div style="font-size:.7rem;font-weight:700;color:#222" id="android-field1-val">NOMBRE APELLIDOS</div>
+                          </div>
+                          <div style="text-align:right">
+                            <div style="font-size:.55rem;color:#aaa;text-transform:uppercase;letter-spacing:.5px" id="android-field2-lbl">Premios</div>
+                            <div style="font-size:.7rem;font-weight:700;color:#222" id="android-field2-val">0 disponibles</div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- bottom with QR hint -->
+                      <div id="android-footer" style="padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
+                        <span style="font-size:.55rem;opacity:.7">Toca para ver QR</span>
+                        <span style="font-size:.75rem">▼</span>
+                      </div>
+                    </div>
+                    <!-- G Wallet branding -->
+                    <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;opacity:.4">
+                      <div style="width:8px;height:8px;border-radius:50%;background:#4285F4"></div>
+                      <div style="width:8px;height:8px;border-radius:50%;background:#EA4335"></div>
+                      <div style="width:8px;height:8px;border-radius:50%;background:#FBBC05"></div>
+                      <div style="width:8px;height:8px;border-radius:50%;background:#34A853"></div>
+                      <span style="font-size:.55rem;color:white;margin-left:3px">Google Wallet</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="text-align:center;font-size:.7rem;color:var(--brown-light);margin-top:8px">Vista Google Wallet</div>
+              </div>
+            </div>
+
+          </div><!-- /right previews -->
+        </div><!-- /grid -->
+      </div><!-- /section-card-design -->
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -1167,7 +1384,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
-const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente','config':'Configuración'};
+const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente','config':'Configuración','card-design':'🎨 Diseño de Tarjeta'};
 function showSection(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
@@ -1179,6 +1396,7 @@ function showSection(name){
   if(name==='bi') loadBI();
   if(name==='config') loadConfig();
   if(name==='birthdays') loadBirthdays();
+  if(name==='card-design') loadDesign();
 }
 
 // ── DASHBOARD INIT ─────────────────────────────────────────────────────────
@@ -2010,6 +2228,237 @@ async function previewBirthdayEmail() {
     }
   } catch(e) { showToast('Error'); }
 }
+
+// ── CARD DESIGN SECTION ────────────────────────────────────────────────────
+let designLoaded = false;
+
+async function loadDesign() {
+  if (designLoaded) { updatePreview(); return; }
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
+    if (!r.ok) return;
+    const cfg = await r.json();
+    const d = cfg.diseno || {};
+    const p = cfg.programa || {};
+    const g = cfg.general || {};
+
+    // Identity fields
+    setDesignVal('d-card_name', g.card_name || '');
+    setDesignVal('d-commercial_name', d.commercial_name || '');
+    setDesignVal('d-stamp_icon', d.stamp_icon || '🍪');
+    setDesignVal('d-stamps_per_reward', p.stamps_per_reward || 10);
+    setDesignVal('d-reward_name', p.reward_name || '');
+    setDesignVal('d-field1_label', d.front_field1_label || 'Titular');
+    setDesignVal('d-field2_label', d.front_field2_label || 'Premio');
+    setDesignVal('d-link_instagram', d.link_instagram || '');
+    setDesignVal('d-link_web', d.link_web || '');
+
+    // Colors – use primary_color and accent_color from biz if diseno doesn't have them
+    const primaryCol = d.card_bg_color || '{{ primary_color }}' || '#3A3426';
+    const accentCol  = d.stamp_bg_color || '{{ accent_color }}' || '#FFF3CF';
+    const textCol    = d.text_color || '#FDFBF7';
+    const stampEmptyBg  = d.stamp_border_color || 'rgba(255,255,255,0.25)';
+    const stampFilledBg = d.stamp_filled_color || '#d4a017';
+
+    setDesignColor('d-primary_color', primaryCol);
+    setDesignColor('d-accent_color', accentCol);
+    setDesignColor('d-text_color', textCol);
+    setDesignColor('d-stamp_empty_bg', stampEmptyBg);
+    setDesignColor('d-stamp_filled_bg', stampFilledBg);
+
+    designLoaded = true;
+    updatePreview();
+  } catch(e) { console.error('loadDesign error', e); }
+}
+
+function setDesignVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+
+function setDesignColor(id, val) {
+  if (!val) return;
+  const picker = document.getElementById(id);
+  const text   = document.getElementById(id + '_text');
+  // Only set if valid hex for picker
+  if (picker && /^#[0-9a-fA-F]{6}$/.test(val)) picker.value = val;
+  if (text) text.value = val;
+}
+
+function syncColorText(id) {
+  const picker = document.getElementById(id);
+  const text   = document.getElementById(id + '_text');
+  if (picker && text) text.value = picker.value;
+}
+
+function syncColorPicker(id) {
+  const picker = document.getElementById(id);
+  const text   = document.getElementById(id + '_text');
+  if (picker && text && /^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+}
+
+function getDesignColor(id) {
+  const text = document.getElementById(id + '_text');
+  const picker = document.getElementById(id);
+  return (text && text.value) || (picker && picker.value) || '';
+}
+
+function updatePreview() {
+  const primary  = getDesignColor('d-primary_color') || '#3A3426';
+  const accent   = getDesignColor('d-accent_color')  || '#FFF3CF';
+  const textCol  = getDesignColor('d-text_color')    || '#FDFBF7';
+  const stampEmpty  = getDesignColor('d-stamp_empty_bg')  || 'rgba(255,255,255,0.25)';
+  const stampFilled = getDesignColor('d-stamp_filled_bg') || '#d4a017';
+
+  const bizName   = (document.getElementById('d-commercial_name')?.value || '{{ biz_name }}').toUpperCase();
+  const cardName  = document.getElementById('d-card_name')?.value || 'Loyalty Card';
+  const icon      = document.getElementById('d-stamp_icon')?.value  || '🍪';
+  const n         = parseInt(document.getElementById('d-stamps_per_reward')?.value) || 10;
+  const field1lbl = document.getElementById('d-field1_label')?.value || 'Titular';
+  const field2lbl = document.getElementById('d-field2_label')?.value || 'Premio';
+
+  // ── iPhone card ──
+  const iphCard = document.getElementById('iphone-card');
+  if (iphCard) {
+    iphCard.style.background = primary;
+    iphCard.style.color = textCol;
+  }
+  const iphHeader = document.getElementById('iphone-header');
+  if (iphHeader) iphHeader.style.color = textCol;
+  ['iphone-bizname','iphone-cardname'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.style.color = textCol;
+  });
+  const iphIcon = document.getElementById('iphone-icon');
+  if (iphIcon) iphIcon.textContent = icon;
+  const iphBiz = document.getElementById('iphone-bizname');
+  if (iphBiz) iphBiz.textContent = bizName;
+  const iphCard2 = document.getElementById('iphone-cardname');
+  if (iphCard2) iphCard2.textContent = cardName;
+  document.getElementById('iphone-field1-lbl').textContent = field1lbl;
+  document.getElementById('iphone-field2-lbl').textContent = field2lbl;
+
+  // iPhone stamps
+  const iphStamps = document.getElementById('iphone-stamps');
+  if (iphStamps) {
+    iphStamps.innerHTML = '';
+    const demoFilled = Math.ceil(n * 0.6);
+    for (let i = 0; i < n; i++) {
+      const dot = document.createElement('div');
+      const filled = i < demoFilled;
+      dot.style.cssText = `width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;background:${filled ? stampFilled : stampEmpty};border:1.5px solid ${filled ? stampFilled : 'rgba(255,255,255,0.4)'}`;
+      dot.textContent = filled ? icon : '';
+      iphStamps.appendChild(dot);
+    }
+  }
+
+  // ── Android card ──
+  const andStrip = document.getElementById('android-strip');
+  if (andStrip) { andStrip.style.background = primary; andStrip.style.color = textCol; }
+  const andFooter = document.getElementById('android-footer');
+  if (andFooter) { andFooter.style.background = primary; andFooter.style.color = textCol; }
+  const andLogo = document.getElementById('android-logo');
+  if (andLogo) andLogo.textContent = icon;
+  const andBiz = document.getElementById('android-bizname');
+  if (andBiz) { andBiz.textContent = bizName; andBiz.style.color = textCol; }
+  const andCard2 = document.getElementById('android-cardname');
+  if (andCard2) { andCard2.style.color = textCol; }
+  document.getElementById('android-field1-lbl').textContent = field1lbl;
+  document.getElementById('android-field2-lbl').textContent = field2lbl;
+
+  // Android stamps
+  const andStamps = document.getElementById('android-stamps');
+  if (andStamps) {
+    andStamps.innerHTML = '';
+    const demoFilled = Math.ceil(n * 0.6);
+    for (let i = 0; i < n; i++) {
+      const dot = document.createElement('div');
+      const filled = i < demoFilled;
+      dot.style.cssText = `width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;background:${filled ? stampFilled : '#f0f0f0'};border:1.5px solid ${filled ? stampFilled : '#ddd'}`;
+      dot.textContent = filled ? icon : '';
+      andStamps.appendChild(dot);
+    }
+  }
+
+  // Stamp preview row in form
+  const previewRow = document.getElementById('d-stamp-preview-row');
+  if (previewRow) {
+    previewRow.innerHTML = '';
+    for (let i = 0; i < Math.min(n, 10); i++) {
+      const filled = i < Math.ceil(n * 0.6);
+      const dot = document.createElement('div');
+      dot.style.cssText = `width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:${filled ? stampFilled : stampEmpty};border:2px solid ${filled ? stampFilled : 'var(--cream-border)'}`;
+      dot.textContent = filled ? icon : '';
+      previewRow.appendChild(dot);
+    }
+  }
+}
+
+async function saveDesign() {
+  // Load current config first to merge
+  try {
+    let cfg = {};
+    try {
+      const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
+      if (r.ok) cfg = await r.json();
+    } catch(e) {}
+
+    // Merge design fields
+    cfg.diseno = cfg.diseno || {};
+    cfg.diseno.commercial_name    = document.getElementById('d-commercial_name')?.value || '';
+    cfg.diseno.stamp_icon         = document.getElementById('d-stamp_icon')?.value || '🍪';
+    cfg.diseno.card_bg_color      = getDesignColor('d-primary_color');
+    cfg.diseno.stamp_bg_color     = getDesignColor('d-accent_color');
+    cfg.diseno.text_color         = getDesignColor('d-text_color');
+    cfg.diseno.stamp_border_color = getDesignColor('d-stamp_empty_bg');
+    cfg.diseno.stamp_filled_color = getDesignColor('d-stamp_filled_bg');
+    cfg.diseno.front_field1_label = document.getElementById('d-field1_label')?.value || '';
+    cfg.diseno.front_field2_label = document.getElementById('d-field2_label')?.value || '';
+    cfg.diseno.link_instagram     = document.getElementById('d-link_instagram')?.value || '';
+    cfg.diseno.link_web           = document.getElementById('d-link_web')?.value || '';
+
+    cfg.general = cfg.general || {};
+    cfg.general.card_name = document.getElementById('d-card_name')?.value || '';
+
+    cfg.programa = cfg.programa || {};
+    cfg.programa.stamps_per_reward = parseInt(document.getElementById('d-stamps_per_reward')?.value) || 10;
+    cfg.programa.reward_name       = document.getElementById('d-reward_name')?.value || '';
+
+    cfg.pin = PIN;
+
+    const saveR = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(cfg)
+    });
+
+    const msgEl = document.getElementById('d-save-msg');
+    if (saveR.ok) {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#e8f5e9';
+      msgEl.style.color = '#2e7d32';
+      msgEl.textContent = '✅ Diseño guardado correctamente';
+      setTimeout(() => msgEl.style.display = 'none', 3000);
+      showToast('Diseño guardado ✓', 'success');
+    } else {
+      msgEl.style.display = 'block';
+      msgEl.style.background = '#fbe9e7';
+      msgEl.style.color = '#c62828';
+      msgEl.textContent = '❌ Error al guardar el diseño';
+    }
+  } catch(e) {
+    showToast('Error al guardar', 'error');
+    console.error(e);
+  }
+}
+
+// Trigger preview update when any design field changes
+document.addEventListener('DOMContentLoaded', () => {
+  ['d-card_name','d-commercial_name','d-stamp_icon','d-stamps_per_reward',
+   'd-reward_name','d-field1_label','d-field2_label'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updatePreview);
+  });
+});
 
 </script>
 </body>
