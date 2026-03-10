@@ -1,520 +1,785 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Mi Sukie Card – {{ customer.first_name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #FFF3CF;
-      font-family: 'Nunito', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 60px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mi {{ card_title }} – {{ first_name }}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #f5f0e8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 16px 40px;
+}
 
-    /* ── CARD ── */
-    .card {
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 8px 32px rgba(58,52,38,0.13);
-      width: 100%;
-      max-width: 400px;
-      overflow: hidden;
-    }
-    .card-header {
-      background: #FFF3CF;
-      padding: 28px 24px 16px;
-      text-align: center;
-      border-bottom: 3px dashed #e8d9a0;
-    }
-    .logo { height: 56px; object-fit: contain; }
-    .card-body { padding: 24px; }
+/* === CLUB HEADER === */
+.club-header {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 20px 16px 12px;
+}
+.club-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 4px;
+}
+.club-tagline {
+  font-size: 12px;
+  color: #b09070;
+}
 
-    .greeting {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      color: #3A3426;
-      text-align: center;
-      margin-bottom: 4px;
-    }
-    .subtitle {
-      font-size: 13px;
-      color: #9a8f7e;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+/* === MAIN CARD === */
+.card {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  margin-bottom: 16px;
+}
+.card-header {
+  background: #3A3426;
+  padding: 20px 20px 16px;
+  position: relative;
+}
+.card-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.card-brand {
+  display: flex;
+  flex-direction: column;
+}
+.card-title-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFF5B6;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.card-subtitle {
+  font-size: 10px;
+  color: rgba(255,245,182,0.6);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.tier-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.card-member-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.member-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.member-meta {
+  text-align: right;
+}
+.member-number {
+  font-size: 11px;
+  color: rgba(255,245,182,0.7);
+  font-family: monospace;
+}
+.member-since {
+  font-size: 10px;
+  color: rgba(255,245,182,0.5);
+}
 
-    /* ── REWARD BANNER ── */
-    .reward-banner {
-      background: linear-gradient(135deg, #3A3426, #6b5e47);
-      color: #FFF3CF;
-      border-radius: 14px;
-      padding: 16px 20px;
-      text-align: center;
-      margin-bottom: 20px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-    }
-    .reward-banner .emoji { font-size: 32px; }
-    .reward-banner h2 { font-size: 18px; font-weight: 800; margin: 4px 0 2px; }
-    .reward-banner p { font-size: 13px; opacity: 0.85; }
+/* === CARD BODY === */
+.card-body {
+  background: #FFFCE8;
+  padding: 20px;
+}
 
-    /* ── SELLOS GRID ── */
-    .stamps-section { margin-bottom: 20px; }
-    .stamps-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #9a8f7e;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      text-align: center;
-    }
-    .stamps-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-    }
-    .stamp {
-      aspect-ratio: 1;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      border: 2.5px solid #e8d9a0;
-      background: #FFF3CF;
-      transition: all 0.3s ease;
-    }
-    .stamp.filled {
-      background: #3A3426;
-      border-color: #3A3426;
-      box-shadow: 0 2px 8px rgba(58,52,38,0.25);
-    }
-    .stamp.empty { color: #d4c9a8; font-size: 22px; }
+/* Stamps */
+.stamps-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.stamps-label span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+}
+.stamps-count {
+  font-size: 11px;
+  font-weight: 800;
+  color: #3A3426;
+  background: rgba(58,52,38,0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.stamps-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.stamp {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 2px solid #e8d9b8;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+.stamp.filled {
+  background: #3A3426;
+  border-color: #3A3426;
+  transform: scale(1.03);
+}
+.stamp.filled::after {
+  content: attr(data-emoji);
+  font-size: 22px;
+}
+.stamp:not(.filled)::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e8d9b8;
+}
 
-    /* ── PROGRESS ── */
-    .progress-section { margin-bottom: 20px; }
-    .progress-text {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      color: #9a8f7e;
-      margin-bottom: 8px;
-    }
-    .progress-text strong { color: #3A3426; }
-    .progress-bar {
-      height: 10px;
-      background: #FFF3CF;
-      border-radius: 99px;
-      overflow: hidden;
-      border: 1.5px solid #e8d9a0;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #3A3426, #6b5e47);
-      border-radius: 99px;
-      transition: width 1s ease;
-    }
+/* Progress to reward */
+.reward-progress {
+  background: rgba(200,168,75,0.12);
+  border: 1.5px solid rgba(200,168,75,0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reward-emoji-big { font-size: 28px; }
+.reward-info { flex: 1; }
+.reward-info-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3A3426;
+  margin-bottom: 2px;
+}
+.reward-info-sub {
+  font-size: 11px;
+  color: #8b7355;
+}
+.reward-badge {
+  background: #c8a84b;
+  color: white;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.reward-badge.has-reward {
+  background: #2d7a2d;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
 
-    /* ── QR ── */
-    .qr-section {
-      text-align: center;
-      padding: 16px 0 8px;
-      border-top: 2px dashed #e8d9a0;
-    }
-    .qr-label {
-      font-size: 11px;
-      color: #9a8f7e;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
-    #qrcode {
-      display: inline-block;
-      padding: 8px;
-      background: #fff;
-      border-radius: 12px;
-      border: 2px solid #FFF3CF;
-    }
-    #qrcode canvas, #qrcode img { display: block; }
+/* Stats */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.stat-box {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #f0e8d0;
+}
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #3A3426;
+}
+.stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #8b7355;
+  margin-top: 2px;
+}
 
-    /* ── ADMIN BUTTON ── */
-    .admin-trigger {
-      display: block;
-      text-align: center;
-      margin-top: 28px;
-      font-size: 12px;
-      color: #c5b99a;
-      cursor: pointer;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .admin-trigger:hover { color: #3A3426; }
+/* Tier progression */
+.tier-progression {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #f0e8d0;
+}
+.tier-prog-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 12px;
+}
+.tier-prog-bar-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+.tier-prog-bar-bg {
+  height: 8px;
+  background: #f0e8d0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.tier-prog-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+.tier-prog-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.tier-prog-label {
+  font-size: 10px;
+  color: #8b7355;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.tier-prog-info {
+  font-size: 11px;
+  color: #5a4830;
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+}
 
-    /* ── MODAL ── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(58,52,38,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 100;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: #fff;
-      border-radius: 24px 24px 0 0;
-      width: 100%;
-      max-width: 420px;
-      padding: 28px 24px 40px;
-      animation: slideUp 0.3s ease;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    .modal h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      color: #3A3426;
-      margin-bottom: 6px;
-    }
-    .modal .customer-info {
-      font-size: 14px;
-      color: #9a8f7e;
-      margin-bottom: 20px;
-    }
-    .modal label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: #3A3426;
-      margin-bottom: 6px;
-    }
-    .modal input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #e8d9a0;
-      border-radius: 12px;
-      font-size: 20px;
-      font-family: 'Nunito', sans-serif;
-      color: #3A3426;
-      background: #FFF3CF;
-      margin-bottom: 14px;
-      text-align: center;
-      letter-spacing: 4px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .modal input:focus { border-color: #3A3426; }
-    .modal input.stamps-input { font-size: 36px; letter-spacing: 0; }
+/* Benefits */
+.benefits-section {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #f0e8d0;
+}
+.benefits-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
+  color: #3A3426;
+  border-bottom: 1px solid #f5f0e8;
+}
+.benefit-item:last-child { border-bottom: none; }
+.benefit-check {
+  width: 18px;
+  height: 18px;
+  background: #3A3426;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+  font-size: 10px;
+}
 
-    .btn {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 50px;
-      font-size: 17px;
-      font-weight: 800;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 10px;
-    }
-    .btn-primary {
-      background: #3A3426;
-      color: #FFF3CF;
-    }
-    .btn-primary:hover { background: #5a4e38; transform: translateY(-1px); }
-    .btn-reward {
-      background: linear-gradient(135deg, #d4a017, #e8c840);
-      color: #3A3426;
-    }
-    .btn-cancel {
-      background: transparent;
-      color: #9a8f7e;
-      font-size: 15px;
-    }
+/* Next tier preview */
+.next-tier-card {
+  background: linear-gradient(135deg, #f8f4ec, #fff9f0);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1.5px dashed #e8d9b8;
+}
+.next-tier-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 10px;
+}
+.next-tier-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.next-tier-emoji { font-size: 32px; }
+.next-tier-details { flex: 1; }
+.next-tier-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #3A3426;
+}
+.next-tier-reward {
+  font-size: 12px;
+  color: #8b7355;
+  margin-top: 2px;
+}
+.next-tier-stamps {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c8a84b;
+  background: rgba(200,168,75,0.15);
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
 
-    .error-msg {
-      color: #c0392b;
-      font-size: 13px;
-      text-align: center;
-      margin-bottom: 10px;
-      display: none;
-    }
-    .success-msg {
-      color: #27ae60;
-      font-size: 15px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 10px;
-      display: none;
-    }
+/* QR */
+.qr-section {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 14px;
+  border: 1px solid #f0e8d0;
+}
+.qr-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 10px;
+}
+#qrcode { display: flex; justify-content: center; }
 
-    /* ── Pin phase / stamp phase ── */
-    #phase-pin, #phase-stamps, #phase-success { display: block; }
-    #phase-stamps, #phase-success { display: none; }
-  </style>
+/* Referral */
+.referral-section {
+  background: #3A3426;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  text-align: center;
+  color: #FFF5B6;
+}
+.referral-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+.referral-code {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  font-family: monospace;
+  margin-bottom: 6px;
+}
+.referral-sub {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+.referral-copy-btn {
+  background: #FFF5B6;
+  color: #3A3426;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Action buttons */
+.action-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: #3A3426;
+  color: #FFF5B6;
+}
+.btn-secondary {
+  background: rgba(58,52,38,0.08);
+  color: #3A3426;
+  border: 1.5px solid rgba(58,52,38,0.2);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #3A3426;
+  color: #FFF5B6;
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999;
+  transition: transform 0.3s ease;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
 
+<div class="club-header" id="club-header">
+  <div class="club-name" id="club-name">Cookie VIP Club</div>
+  <div class="club-tagline" id="club-tagline">Sé parte de algo especial</div>
+</div>
+
 <div class="card">
-  <div class="card-header">
-    <img class="logo"
-         src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314"
-         alt="Sukie Cookie">
+  <div class="card-header" id="card-header">
+    <div class="card-header-top">
+      <div class="card-brand">
+        <div class="card-title-text">{{ card_title }}</div>
+        <div class="card-subtitle">Tarjeta de Fidelidad</div>
+      </div>
+      <div class="tier-badge" id="tier-badge">🥉 BRONCE</div>
+    </div>
+    <div class="card-member-info">
+      <div class="member-name">{{ first_name }}</div>
+      <div class="member-meta">
+        <div class="member-number" id="member-number">Miembro #001</div>
+        <div class="member-since" id="member-since"></div>
+      </div>
+    </div>
   </div>
 
   <div class="card-body">
-    <h1 class="greeting">¡Hola, {{ customer.first_name }}! 🍪</h1>
-    <p class="subtitle">Tu tarjeta de fidelidad Sukie Cookie</p>
-
-    {% if reward_available %}
-    <div class="reward-banner">
-      <div class="emoji">🎉</div>
-      <h2>¡Premio desbloqueado!</h2>
-      <p>Tienes una galleta gratis esperándote 🍪</p>
+    <!-- Stamps -->
+    <div class="stamps-label">
+      <span>Tus Sellos</span>
+      <span class="stamps-count" id="stamps-count">0/10</span>
     </div>
-    {% endif %}
+    <div class="stamps-grid" id="stamps-grid"></div>
 
-    <!-- SELLOS -->
-    <div class="stamps-section">
-      <div class="stamps-label">Tus sellos</div>
-      <div class="stamps-grid" id="stamps-grid">
-        {% for i in range(stamps_per_reward) %}
-          <div class="stamp {% if i < card.stamps %}filled{% else %}empty{% endif %}">
-            {% if i < card.stamps %}🍪{% else %}○{% endif %}
-          </div>
-        {% endfor %}
+    <!-- Reward box -->
+    <div class="reward-progress" id="reward-box">
+      <div class="reward-emoji-big" id="reward-emoji">🍪</div>
+      <div class="reward-info">
+        <div class="reward-info-title" id="reward-name">Cookie gratis</div>
+        <div class="reward-info-sub" id="reward-desc">1 cookie de tu elección</div>
+      </div>
+      <div class="reward-badge" id="reward-badge">10 más</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-value" id="total-stamps">0</div>
+        <div class="stat-label">Sellos totales</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="total-rewards">0</div>
+        <div class="stat-label">Premios canjeados</div>
       </div>
     </div>
 
-    <!-- PROGRESS -->
-    <div class="progress-section">
-      <div class="progress-text">
-        <span>Progreso al premio</span>
-        <strong>{{ card.stamps }} / {{ stamps_per_reward }}</strong>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill"
-             style="width: {{ [100, (card.stamps / stamps_per_reward * 100)|int]|min }}%">
+    <!-- Tier progression -->
+    <div class="tier-progression" id="tier-progression-box">
+      <div class="tier-prog-title">Progreso al siguiente nivel</div>
+      <div class="tier-prog-bar-wrap">
+        <div class="tier-prog-bar-bg">
+          <div class="tier-prog-bar-fill" id="tier-bar" style="width:0%;background:#c8a84b;"></div>
         </div>
+      </div>
+      <div class="tier-prog-labels">
+        <div class="tier-prog-label" id="tier-from-label">🥉 Bronce</div>
+        <div class="tier-prog-label" id="tier-to-label">🥈 Plata</div>
+      </div>
+      <div class="tier-prog-info" id="tier-prog-info">Faltan 50 sellos para nivel Plata</div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="benefits-section" id="benefits-box">
+      <div class="benefits-title" id="benefits-title">🏆 Tus beneficios Bronce</div>
+      <div id="benefits-list"></div>
+    </div>
+
+    <!-- Next tier -->
+    <div class="next-tier-card" id="next-tier-box">
+      <div class="next-tier-title">✨ Siguiente nivel</div>
+      <div class="next-tier-info">
+        <div class="next-tier-emoji" id="next-tier-emoji">🥈</div>
+        <div class="next-tier-details">
+          <div class="next-tier-name" id="next-tier-name">Plata</div>
+          <div class="next-tier-reward" id="next-tier-reward">Box de 6 cookies</div>
+        </div>
+        <div class="next-tier-stamps" id="next-tier-stamps">50 sellos</div>
       </div>
     </div>
 
     <!-- QR -->
     <div class="qr-section">
-      <div class="qr-label">📱 Muestra este QR en caja</div>
+      <div class="qr-label">Muestra este QR en caja</div>
       <div id="qrcode"></div>
     </div>
+
+    <!-- Referral -->
+    <div class="referral-section" id="referral-section" style="display:none">
+      <div class="referral-title">🔗 Invita a tus amigos</div>
+      <div class="referral-code" id="referral-code">XXXX</div>
+      <div class="referral-sub">Comparte tu código y gana 2 sellos extra</div>
+      <button class="referral-copy-btn" onclick="copyReferral()">Copiar código</button>
+    </div>
   </div>
 </div>
 
-<!-- Admin trigger (discreto, al fondo) -->
-<a class="admin-trigger" id="admin-btn" onclick="openAdmin()">⚙ Admin</a>
+<button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()">
+  🔔 Activar notificaciones
+</button>
+<button class="action-btn btn-secondary" onclick="shareCard()">
+  🔗 Compartir mi tarjeta
+</button>
 
+<div class="toast" id="toast"></div>
 
-<!-- ── MODAL ADMIN ── -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-
-    <!-- Fase 1: PIN -->
-    <div id="phase-pin">
-      <h3>Acceso Admin</h3>
-      <p class="customer-info">{{ customer.first_name }} {{ customer.last_name or '' }} · {{ card.stamps }} sellos</p>
-      <div class="error-msg" id="pin-error">PIN incorrecto</div>
-      <label>PIN de admin</label>
-      <input type="password" id="pin-input" placeholder="••••" maxlength="8"
-             onkeydown="if(event.key==='Enter') verifyPin()">
-      <button class="btn btn-primary" onclick="verifyPin()">Entrar</button>
-      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
-    </div>
-
-    <!-- Fase 2: Añadir sellos -->
-    <div id="phase-stamps">
-      <h3>Añadir sellos 🍪</h3>
-      <p class="customer-info" id="stamps-customer-info"></p>
-      <div class="error-msg" id="stamp-error"></div>
-      <div class="success-msg" id="stamp-success"></div>
-      <label>¿Cuántas cookies compró?</label>
-      <input type="number" class="stamps-input" id="stamps-input"
-             placeholder="0" min="1" max="50"
-             onkeydown="if(event.key==='Enter') addStamps()">
-      <button class="btn btn-primary" onclick="addStamps()" id="add-btn">
-        ✅ Añadir sellos
-      </button>
-      {% if reward_available %}
-      <button class="btn btn-reward" onclick="redeemReward()">
-        🎁 Canjear galleta gratis
-      </button>
-      {% endif %}
-      <button class="btn btn-cancel" onclick="closeModal()">Cerrar</button>
-    </div>
-
-    <!-- Fase 3: Éxito -->
-    <div id="phase-success">
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:64px;margin-bottom:12px">🍪</div>
-        <h3 style="margin-bottom:8px">¡Sellos añadidos!</h3>
-        <p class="customer-info" id="success-msg"></p>
-        <button class="btn btn-primary" style="margin-top:20px" onclick="closeModal()">Listo</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-  // ── QR Code ────────────────────────────────────────────────────────────────
-  new QRCode(document.getElementById("qrcode"), {
-    text: "{{ card_url }}",
-    width: 180,
-    height: 180,
-    colorDark: "#3A3426",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.M
+const CARD_ID = '{{ card_id }}';
+const API_BASE = '{{ api_base }}';
+let clubData = null;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function buildStamps(current, total) {
+  const grid = document.getElementById('stamps-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const s = document.createElement('div');
+    s.className = 'stamp' + (i < current ? ' filled' : '');
+    s.setAttribute('data-emoji', '🍪');
+    grid.appendChild(s);
+  }
+  document.getElementById('stamps-count').textContent = current + '/' + total;
+}
+
+async function loadData() {
+  try {
+    const [cardRes, clubRes] = await Promise.all([
+      fetch(API_BASE + '/api/cards/' + CARD_ID + '/info'),
+      fetch(API_BASE + '/api/cards/' + CARD_ID + '/club-info')
+    ]);
+    const card = await cardRes.json();
+    const club = await clubRes.json();
+    clubData = club;
+    renderCard(card, club);
+  } catch(e) {
+    console.error('Error loading card data', e);
+    // Fallback basic load
+    try {
+      const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/info');
+      const card = await res.json();
+      renderCardBasic(card);
+    } catch(e2) {}
+  }
+}
+
+function renderCard(card, club) {
+  const tier = club.current_tier || {};
+  const nextTier = club.next_tier;
+  const clubInfo = club.club || {};
+  
+  // Club header
+  document.getElementById('club-name').textContent = clubInfo.nombre || 'VIP Club';
+  document.getElementById('club-tagline').textContent = clubInfo.tagline || '';
+  
+  // Tier badge
+  const badge = document.getElementById('tier-badge');
+  badge.textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce').toUpperCase();
+  badge.style.background = tier.color || '#CD7F32';
+  badge.style.color = '#fff';
+  
+  // Member info
+  document.getElementById('member-number').textContent = 'Miembro #' + String(club.member_number || 1).padStart(3,'0');
+  document.getElementById('member-since').textContent = club.member_since ? 'Desde ' + club.member_since : '';
+  
+  // Card header background
+  document.getElementById('card-header').style.background = '#3A3426';
+  
+  // Stamps
+  const stampsPerReward = tier.sellos_por_premio || 10;
+  buildStamps(club.stamps_on_card || 0, stampsPerReward);
+  
+  // Reward box
+  const awardsBalance = club.award_balance || 0;
+  const toNextReward = club.stamps_to_next_reward || stampsPerReward;
+  document.getElementById('reward-emoji').textContent = tier.premio_emoji || '🍪';
+  document.getElementById('reward-name').textContent = tier.premio_nombre || 'Premio';
+  document.getElementById('reward-desc').textContent = tier.premio_descripcion || '';
+  const rewardBadge = document.getElementById('reward-badge');
+  if (awardsBalance > 0) {
+    rewardBadge.textContent = '🎉 ¡' + awardsBalance + ' disponible' + (awardsBalance > 1 ? 's' : '') + '!';
+    rewardBadge.classList.add('has-reward');
+  } else {
+    rewardBadge.textContent = toNextReward + ' más';
+  }
+  
+  // Stats
+  document.getElementById('total-stamps').textContent = club.total_stamps || 0;
+  document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
+  
+  // Tier progression
+  if (nextTier) {
+    const fromStamps = tier.min_sellos_totales || 0;
+    const toStamps = nextTier.min_sellos_totales || 999;
+    const progress = Math.min(100, Math.round(((club.total_stamps - fromStamps) / (toStamps - fromStamps)) * 100));
+    document.getElementById('tier-bar').style.width = progress + '%';
+    document.getElementById('tier-bar').style.background = tier.color || '#c8a84b';
+    document.getElementById('tier-from-label').textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce');
+    document.getElementById('tier-to-label').textContent = (nextTier.emoji || '🥈') + ' ' + (nextTier.nombre || 'Plata');
+    document.getElementById('tier-prog-info').textContent = 'Faltan ' + club.stamps_to_next_tier + ' sellos para nivel ' + nextTier.nombre;
+    
+    // Next tier card
+    document.getElementById('next-tier-emoji').textContent = nextTier.emoji || '🥈';
+    document.getElementById('next-tier-name').textContent = nextTier.nombre || 'Plata';
+    document.getElementById('next-tier-reward').textContent = (nextTier.premio_emoji || '') + ' ' + (nextTier.premio_nombre || '');
+    document.getElementById('next-tier-stamps').textContent = club.stamps_to_next_tier + ' sellos más';
+  } else {
+    document.getElementById('tier-progression-box').style.display = 'none';
+    document.getElementById('next-tier-box').style.display = 'none';
+  }
+  
+  // Benefits
+  const benefits = tier.beneficios || [];
+  document.getElementById('benefits-title').textContent = (tier.emoji || '🏆') + ' Tus beneficios ' + (tier.nombre || 'Bronce');
+  const bList = document.getElementById('benefits-list');
+  bList.innerHTML = benefits.map(b => `
+    <div class="benefit-item">
+      <div class="benefit-check">✓</div>
+      <span>${b}</span>
+    </div>
+  `).join('');
+  
+  // QR
+  new QRCode(document.getElementById('qrcode'), {
+    text: window.location.href,
+    width: 150, height: 150,
+    colorDark: '#3A3426', colorLight: '#FFFCE8'
   });
+}
 
-  // ── Modal ──────────────────────────────────────────────────────────────────
-  const CARD_ID = "{{ card_id }}";
-  let adminPin = "";
-
-  function openAdmin() {
-    document.getElementById("modal-overlay").classList.add("open");
-    document.getElementById("pin-input").focus();
-  }
-  function closeModal() {
-    document.getElementById("modal-overlay").classList.remove("open");
-    document.getElementById("phase-pin").style.display = "block";
-    document.getElementById("phase-stamps").style.display = "none";
-    document.getElementById("phase-success").style.display = "none";
-    document.getElementById("pin-error").style.display = "none";
-    document.getElementById("pin-input").value = "";
-    document.getElementById("stamps-input").value = "";
-    adminPin = "";
-  }
-
-  // Click outside to close
-  document.getElementById("modal-overlay").addEventListener("click", function(e) {
-    if (e.target === this) closeModal();
+function renderCardBasic(card) {
+  buildStamps(card.stamps || 0, 10);
+  document.getElementById('total-stamps').textContent = card.total_stamps || 0;
+  document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
+  new QRCode(document.getElementById('qrcode'), {
+    text: window.location.href,
+    width: 150, height: 150,
+    colorDark: '#3A3426', colorLight: '#FFFCE8'
   });
+}
 
-  function verifyPin() {
-    const pin = document.getElementById("pin-input").value;
-    fetch(`/api/cards/${CARD_ID}`, {
-      headers: { "Authorization": "Bearer dummy" }  // public endpoint
-    })
-    .then(r => r.json())
-    .then(data => {
-      // Try adding 0 stamps to verify PIN
-      return fetch(`/api/cards/${CARD_ID}/stamps`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: pin, stamps: 0 })
-      });
-    })
-    .then(r => {
-      if (r.status === 403) {
-        document.getElementById("pin-error").style.display = "block";
-        document.getElementById("pin-input").value = "";
-        document.getElementById("pin-input").focus();
-        return null;
-      }
-      return r.json();
-    })
-    .then(data => {
-      if (!data) return;
-      adminPin = pin;
-      document.getElementById("pin-error").style.display = "none";
-      document.getElementById("phase-pin").style.display = "none";
-      document.getElementById("phase-stamps").style.display = "block";
-      document.getElementById("stamps-customer-info").textContent =
-        `{{ customer.first_name }} {{ customer.last_name or '' }} · ${data.stamps} sellos actuales`;
-      document.getElementById("stamps-input").focus();
-    })
-    .catch(() => {
-      // If the 0-stamps request errors for other reason, still check PIN manually
-      adminPin = pin;
-      document.getElementById("phase-pin").style.display = "none";
-      document.getElementById("phase-stamps").style.display = "block";
-    });
-  }
-
-  function addStamps() {
-    const stampsVal = parseInt(document.getElementById("stamps-input").value);
-    if (!stampsVal || stampsVal < 1) {
-      const el = document.getElementById("stamp-error");
-      el.textContent = "Introduce al menos 1 sello";
-      el.style.display = "block";
-      return;
+async function loadReferral() {
+  try {
+    const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/referral');
+    const data = await res.json();
+    if (data.code) {
+      document.getElementById('referral-code').textContent = data.code;
+      document.getElementById('referral-section').style.display = 'block';
     }
+  } catch(e) {}
+}
 
-    const btn = document.getElementById("add-btn");
-    btn.disabled = true;
-    btn.textContent = "Añadiendo...";
+function copyReferral() {
+  const code = document.getElementById('referral-code').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('✅ Código copiado'));
+}
 
-    fetch(`/api/cards/${CARD_ID}/stamps`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pin: adminPin, stamps: stampsVal })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.detail) {
-        const el = document.getElementById("stamp-error");
-        el.textContent = data.detail;
-        el.style.display = "block";
-        btn.disabled = false;
-        btn.textContent = "✅ Añadir sellos";
-        return;
-      }
-      // Éxito
-      document.getElementById("phase-stamps").style.display = "none";
-      document.getElementById("phase-success").style.display = "block";
-
-      let msg = `+${stampsVal} sello${stampsVal > 1 ? 's' : ''} añadido${stampsVal > 1 ? 's' : ''}. Total: ${data.stamps} / {{ stamps_per_reward }}`;
-      if (data.reward_available) msg += " 🎉 ¡PREMIO DISPONIBLE!";
-      document.getElementById("success-msg").textContent = msg;
-
-      // Reload page after 3s to show updated stamps
-      setTimeout(() => location.reload(), 3000);
-    })
-    .catch(() => {
-      btn.disabled = false;
-      btn.textContent = "✅ Añadir sellos";
+function shareCard() {
+  if (navigator.share) {
+    navigator.share({
+      title: '¡Únete al club!',
+      text: '¡Tienes que conocer esta tarjeta de fidelidad!',
+      url: window.location.href
     });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    showToast('🔗 Enlace copiado');
   }
+}
 
-  function redeemReward() {
-    if (!confirm("¿Canjear la galleta gratis? Se descontarán 10 sellos.")) return;
-    fetch(`/api/cards/${CARD_ID}/redeem`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pin: adminPin })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        alert(`✅ Premio canjeado. Sellos restantes: ${data.stamps_remaining}`);
-        location.reload();
-      }
-    });
+function activateNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showToast('Tu navegador no soporta notificaciones push');
+    return;
   }
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      showToast('🔔 ¡Notificaciones activadas!');
+      document.getElementById('notif-btn').textContent = '✅ Notificaciones activas';
+      document.getElementById('notif-btn').disabled = true;
+    }
+  });
+}
+
+loadData();
+loadReferral();
 </script>
 </body>
 </html>

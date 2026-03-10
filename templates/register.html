@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Únete a SukieCookie – Tu Tarjeta de Fidelidad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#FFF3CF;font-family:'Poppins',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px}
+
+    .hero{text-align:center;margin-bottom:28px;max-width:400px}
+    .hero img{height:64px;object-fit:contain;margin-bottom:16px}
+    .hero h1{font-family:'Playfair Display',serif;font-size:26px;color:#3A3426;margin-bottom:8px}
+    .hero p{font-size:14px;color:#6b5e47;line-height:1.6}
+
+    /* BENEFITS */
+    .benefits{display:flex;gap:10px;margin-bottom:28px;max-width:400px;width:100%}
+    .benefit{flex:1;background:#fff;border-radius:16px;padding:14px 10px;text-align:center;border:2px solid #e8d9a0}
+    .benefit .icon{font-size:26px;margin-bottom:6px}
+    .benefit .txt{font-size:11px;color:#6b5e47;font-weight:600;line-height:1.3}
+
+    /* CARD PREVIEW */
+    .card-preview{background:#fff;border-radius:24px;box-shadow:0 8px 32px rgba(58,52,38,.13);width:100%;max-width:400px;overflow:hidden;margin-bottom:28px}
+    .card-preview-header{background:#FFF3CF;padding:20px;text-align:center;border-bottom:3px dashed #e8d9a0}
+    .preview-stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:16px 20px}
+    .preview-stamp{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid #e8d9a0;background:#FFF3CF}
+    .preview-stamp.filled{background:#3A3426;border-color:#3A3426}
+    .preview-label{text-align:center;font-size:12px;color:#9a8f7e;padding-bottom:16px;font-weight:600}
+
+    /* FORM */
+    .form-card{background:#fff;border-radius:24px;box-shadow:0 8px 32px rgba(58,52,38,.13);width:100%;max-width:400px;padding:28px 24px}
+    .form-card h2{font-family:'Playfair Display',serif;font-size:20px;color:#3A3426;margin-bottom:6px;text-align:center}
+    .form-card .subtitle{font-size:13px;color:#9a8f7e;text-align:center;margin-bottom:24px}
+
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:13px;font-weight:700;color:#3A3426;margin-bottom:6px}
+    .field .required{color:#d4a017}
+    .field input, .field select{width:100%;padding:14px 16px;border:2px solid #e8d9a0;border-radius:12px;font-size:15px;font-family:'Poppins',sans-serif;color:#3A3426;background:#FFF3CF;outline:none;transition:border-color .2s}
+    .field input:focus, .field select:focus{border-color:#3A3426}
+    .field input::placeholder{color:#b5a990}
+    .field .hint{font-size:11px;color:#9a8f7e;margin-top:4px}
+
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+    /* OPT-INS */
+    .optin-section{background:#FFF3CF;border-radius:16px;padding:16px;margin-bottom:20px}
+    .optin-section .optin-title{font-size:13px;font-weight:700;color:#3A3426;margin-bottom:12px}
+    .optin-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+    .optin-row:last-child{margin-bottom:0}
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0;margin-top:1px}
+    .toggle input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;inset:0;background:#d4c9a8;border-radius:24px;transition:.3s}
+    .slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+    .toggle input:checked+.slider{background:#3A3426}
+    .toggle input:checked+.slider:before{transform:translateX(20px)}
+    .optin-text{font-size:12px;color:#6b5e47;line-height:1.4}
+    .optin-text strong{display:block;color:#3A3426;font-size:13px;margin-bottom:2px}
+
+    .btn-register{width:100%;padding:18px;border:none;border-radius:50px;font-size:17px;font-weight:800;font-family:'Poppins',sans-serif;cursor:pointer;background:#3A3426;color:#FFF3CF;transition:all .2s;margin-bottom:12px}
+    .btn-register:hover{background:#5a4e38;transform:translateY(-2px);box-shadow:0 6px 20px rgba(58,52,38,.3)}
+    .btn-register:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+    .legal{font-size:11px;color:#9a8f7e;text-align:center;line-height:1.5}
+    .legal a{color:#3A3426;text-decoration:underline}
+
+    .error-msg{background:#ffeaea;border:1.5px solid #f5c6c6;border-radius:12px;padding:12px 16px;font-size:13px;color:#c0392b;margin-bottom:14px;display:none}
+    .success-screen{display:none;text-align:center;padding:20px 0}
+    .success-screen .big-icon{font-size:72px;margin-bottom:16px}
+    .success-screen h2{font-family:'Playfair Display',serif;font-size:24px;color:#3A3426;margin-bottom:8px}
+    .success-screen p{font-size:14px;color:#6b5e47;margin-bottom:20px;line-height:1.6}
+    .btn-view-card{display:inline-block;padding:16px 32px;background:#3A3426;color:#FFF3CF;border-radius:50px;font-size:16px;font-weight:800;font-family:'Poppins',sans-serif;text-decoration:none;transition:all .2s}
+    .btn-view-card:hover{background:#5a4e38;transform:translateY(-2px)}
+
+    .form-content{}
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <img src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314" alt="Sukie Cookie">
+  <h1>¡Únete a la familia Sukie! 🍪</h1>
+  <p>Acumula sellos con cada visita y consigue cookies gratis. Por cada {{ stamps_per_reward }} cookies, ¡una de regalo!</p>
+</div>
+
+<!-- BENEFITS -->
+<div class="benefits">
+  <div class="benefit">
+    <div class="icon">🍪</div>
+    <div class="txt">1 sello por cookie</div>
+  </div>
+  <div class="benefit">
+    <div class="icon">🎁</div>
+    <div class="txt">Premio cada {{ stamps_per_reward }} sellos</div>
+  </div>
+  <div class="benefit">
+    <div class="icon">🎂</div>
+    <div class="txt">Sorpresa en tu cumpleaños</div>
+  </div>
+</div>
+
+<!-- CARD PREVIEW -->
+<div class="card-preview">
+  <div class="card-preview-header">
+    <img src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314" alt="Sukie Cookie" style="height:44px;object-fit:contain">
+  </div>
+  <div class="preview-stamps">
+    {% for i in range(stamps_per_reward) %}
+      <div class="preview-stamp {% if i < 3 %}filled{% endif %}">
+        {% if i < 3 %}🍪{% else %}○{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="preview-label">Así se verá tu tarjeta 🍪</div>
+</div>
+
+<!-- FORM -->
+<div class="form-card">
+  <div class="form-content">
+    <h2>Crea tu tarjeta gratis</h2>
+    <p class="subtitle">Solo tardas 30 segundos</p>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="field">
+      <label>Nombre <span class="required">*</span></label>
+      <div class="row-2">
+        <input type="text" id="first_name" placeholder="María" autocomplete="given-name">
+        <input type="text" id="last_name" placeholder="García" autocomplete="family-name">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Email <span class="required">*</span></label>
+      <input type="email" id="email" placeholder="maria@ejemplo.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <label>Teléfono</label>
+      <input type="tel" id="phone" placeholder="+34 612 345 678" autocomplete="tel">
+    </div>
+
+    <div class="field">
+      <label>Fecha de nacimiento <span style="font-size:11px;color:#9a8f7e;font-weight:400">(para sorpresa de cumpleaños 🎂)</span></label>
+      <input type="date" id="birth_date">
+    </div>
+
+    <div class="optin-section">
+      <div class="optin-title">Preferencias de comunicación</div>
+      <div class="optin-row">
+        <label class="toggle">
+          <input type="checkbox" id="opt_in_email" checked>
+          <span class="slider"></span>
+        </label>
+        <div class="optin-text">
+          <strong>Emails promocionales</strong>
+          Ofertas exclusivas, novedades y tu cookie de cumpleaños
+        </div>
+      </div>
+      <div class="optin-row">
+        <label class="toggle">
+          <input type="checkbox" id="opt_in_sms">
+          <span class="slider"></span>
+        </label>
+        <div class="optin-text">
+          <strong>SMS</strong>
+          Recordatorios y promociones por WhatsApp/SMS
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-register" id="reg-btn" onclick="doRegister()">
+      Crear mi tarjeta gratis 🍪
+    </button>
+
+    <p class="legal">
+      Al registrarte aceptas nuestra <a href="#">política de privacidad</a>. Puedes darte de baja en cualquier momento.
+    </p>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="success-screen">
+    <div class="big-icon">🎉</div>
+    <h2>¡Bienvenida a Sukie!</h2>
+    <p id="success-text">Tu tarjeta está lista. Muéstrala en caja en tu próxima visita para empezar a acumular sellos.</p>
+    <a href="#" id="view-card-btn" class="btn-view-card">Ver mi tarjeta →</a>
+  </div>
+</div>
+
+<script>
+async function doRegister(){
+  const btn = document.getElementById('reg-btn');
+  const errEl = document.getElementById('error-msg');
+  errEl.style.display = 'none';
+
+  const first_name = document.getElementById('first_name').value.trim();
+  const last_name  = document.getElementById('last_name').value.trim();
+  const email      = document.getElementById('email').value.trim();
+  const phone      = document.getElementById('phone').value.trim();
+  const birth_date = document.getElementById('birth_date').value;
+  const opt_in_email = document.getElementById('opt_in_email').checked;
+  const opt_in_sms   = document.getElementById('opt_in_sms').checked;
+
+  if(!first_name){ showErr('Por favor introduce tu nombre'); return; }
+  if(!email || !email.includes('@')){ showErr('Por favor introduce un email válido'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Creando tu tarjeta...';
+
+  try{
+    const r = await fetch('/api/register',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ first_name, last_name, email, phone, birth_date, opt_in_email, opt_in_sms, origin:'Landing' })
+    });
+    const d = await r.json();
+
+    if(!r.ok){
+      showErr(d.detail || 'Error al registrar. Inténtalo de nuevo.');
+      btn.disabled = false;
+      btn.textContent = 'Crear mi tarjeta gratis 🍪';
+      return;
+    }
+
+    // Success
+    document.querySelector('.form-content').style.display = 'none';
+    const ss = document.getElementById('success-screen');
+    ss.style.display = 'block';
+    document.getElementById('success-text').textContent =
+      `¡Hola ${first_name}! Tu tarjeta SukieCookie está lista. Muéstrala en caja para empezar a acumular sellos. ¡Por cada {{ stamps_per_reward }} cookies, una de regalo!`;
+    document.getElementById('view-card-btn').href = d.card_url || '/card/'+d.card_id;
+
+  } catch(e){
+    showErr('Error de conexión. Inténtalo de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'Crear mi tarjeta gratis 🍪';
+  }
+}
+
+function showErr(msg){
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+</script>
+</body>
+</html>

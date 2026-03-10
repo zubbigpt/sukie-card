@@ -3,445 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Sukie Scanner — Caja</title>
+  <title>{{ business_name }} — Caja</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --brown: #3A3426;
-      --cream: #FFF3CF;
+      --brown: {{ primary_color }};
+      --cream: {{ accent_color }};
       --gold:  #e8d9a0;
       --light: #9a8f7e;
     }
-    body {
-      background: var(--cream);
-      font-family: 'Nunito', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* ── HEADER ─────────────────────────────────────────────────────────────── */
-    .top-bar {
-      width: 100%;
-      background: var(--brown);
-      color: var(--cream);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .top-bar .logo-txt {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-    }
-    .top-bar .badge {
-      font-size: 11px;
-      background: rgba(255,243,207,0.2);
-      border: 1px solid rgba(255,243,207,0.4);
-      border-radius: 50px;
-      padding: 4px 10px;
-    }
-
-    /* ── WRAPPER ─────────────────────────────────────────────────────────────── */
-    .wrapper {
-      width: 100%;
-      max-width: 440px;
-      padding: 20px 16px 60px;
-      flex: 1;
-    }
-
-    /* ── SCREENS ──────────────────────────────────────────────────────────────  */
+    body { background: var(--cream); font-family: 'Nunito', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    .top-bar { width: 100%; background: var(--brown); color: var(--cream); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .top-bar .logo-txt { font-family: 'Playfair Display', serif; font-size: 18px; }
+    .top-bar .badge { font-size: 11px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 50px; padding: 4px 10px; }
+    .wrapper { width: 100%; max-width: 440px; padding: 20px 16px 60px; flex: 1; }
     .screen { display: none; }
     .screen.active { display: block; }
-
-    /* ── CARD ─────────────────────────────────────────────────────────────────  */
-    .card {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 6px 24px rgba(58,52,38,0.12);
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .card-head {
-      background: var(--cream);
-      padding: 20px 24px 14px;
-      text-align: center;
-      border-bottom: 2px dashed var(--gold);
-    }
-    .card-head h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      color: var(--brown);
-    }
-    .card-head p {
-      font-size: 13px;
-      color: var(--light);
-      margin-top: 2px;
-    }
+    .card { background: #fff; border-radius: 20px; box-shadow: 0 6px 24px rgba(0,0,0,0.10); overflow: hidden; margin-bottom: 16px; }
+    .card-head { background: var(--cream); padding: 20px 24px 14px; text-align: center; border-bottom: 2px dashed var(--gold); }
+    .card-head h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--brown); }
+    .card-head p { font-size: 13px; color: var(--light); margin-top: 2px; }
     .card-body { padding: 20px 24px; }
-
-    /* ── PIN SCREEN ───────────────────────────────────────────────────────────  */
     .pin-wrap { text-align: center; padding-top: 30px; }
     .pin-wrap .icon { font-size: 52px; margin-bottom: 12px; }
-    .pin-wrap h2 {
-      font-family: 'Playfair Display', serif;
-      color: var(--brown);
-      font-size: 24px;
-      margin-bottom: 4px;
-    }
+    .pin-wrap h2 { font-family: 'Playfair Display', serif; color: var(--brown); font-size: 24px; margin-bottom: 4px; }
     .pin-wrap p { color: var(--light); font-size: 14px; margin-bottom: 28px; }
-
-    input[type=password], input[type=number], input[type=text] {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid var(--gold);
-      border-radius: 12px;
-      font-size: 22px;
-      font-family: 'Nunito', sans-serif;
-      color: var(--brown);
-      background: var(--cream);
-      text-align: center;
-      letter-spacing: 4px;
-      outline: none;
-      transition: border-color 0.2s;
-      margin-bottom: 14px;
-    }
-    input:focus { border-color: var(--brown); }
-    input[type=number] { letter-spacing: 0; font-size: 36px; }
-
-    /* ── BUTTONS ──────────────────────────────────────────────────────────────  */
-    .btn {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 50px;
-      font-size: 17px;
-      font-weight: 800;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-      transition: all 0.18s;
-      margin-bottom: 10px;
-    }
-    .btn-primary   { background: var(--brown); color: var(--cream); }
-    .btn-primary:hover { background: #5a4e38; transform: translateY(-1px); }
+    input[type=password] { width: 100%; padding: 14px 16px; border: 2px solid var(--gold); border-radius: 12px; font-size: 22px; font-family: 'Nunito', sans-serif; color: var(--brown); background: var(--cream); text-align: center; letter-spacing: 6px; outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
+    input[type=password]:focus { border-color: var(--brown); }
+    .btn { width: 100%; padding: 16px; border: none; border-radius: 50px; font-size: 17px; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; transition: all 0.18s; margin-bottom: 10px; }
+    .btn-primary { background: var(--brown); color: var(--cream); }
+    .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
     .btn-primary:active { transform: translateY(0); }
-    .btn-outline   { background: transparent; border: 2px solid var(--brown); color: var(--brown); }
-    .btn-success   { background: #27ae60; color: #fff; }
-    .btn-reward    { background: linear-gradient(135deg, #d4a017, #e8c840); color: var(--brown); }
-    .btn-ghost     { background: transparent; color: var(--light); font-size: 15px; }
-    .btn:disabled  { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-
-    .btn-sm {
-      padding: 10px 18px;
-      border: none;
-      border-radius: 50px;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: 'Nunito', sans-serif;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-
-    /* ── CAMERA SCREEN ────────────────────────────────────────────────────────  */
-    .cam-wrap {
-      position: relative;
-      width: 100%;
-      border-radius: 20px;
-      overflow: hidden;
-      background: #000;
-      aspect-ratio: 1;
-      margin-bottom: 16px;
-    }
-    #cam-video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .cam-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    .cam-frame {
-      width: 60%;
-      aspect-ratio: 1;
-      border: 3px solid rgba(255,243,207,0.9);
-      border-radius: 16px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
-    }
-    .cam-pulse {
-      position: absolute;
-      width: 60%;
-      aspect-ratio: 1;
-      border-radius: 16px;
-      border: 2px solid var(--cream);
-      animation: camPulse 1.6s ease-in-out infinite;
-    }
-    @keyframes camPulse {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50%       { opacity: 0.9; transform: scale(1.04); }
-    }
-    .cam-hint {
-      text-align: center;
-      font-size: 14px;
-      color: var(--light);
-      margin-bottom: 16px;
-    }
-    #scan-status {
-      text-align: center;
-      font-size: 13px;
-      color: var(--light);
-      min-height: 20px;
-      margin-bottom: 8px;
-    }
+    .btn-reward { background: linear-gradient(135deg, #d4a017, #e8c840); color: var(--brown); }
+    .btn-ghost { background: transparent; color: var(--light); font-size: 15px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    .cam-wrap { position: relative; width: 100%; border-radius: 20px; overflow: hidden; background: #111; aspect-ratio: 1; margin-bottom: 16px; }
+    #cam-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cam-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .cam-frame { width: 62%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,0.9); border-radius: 16px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.42); }
+    .cam-pulse { position: absolute; width: 62%; aspect-ratio: 1; border-radius: 16px; border: 2px solid #fff; animation: camPulse 1.6s ease-in-out infinite; }
+    @keyframes camPulse { 0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.8;transform:scale(1.05)} }
+    #scan-status { text-align: center; font-size: 14px; color: var(--light); min-height: 22px; margin-bottom: 8px; }
     #scan-status.ok  { color: #27ae60; font-weight: 700; }
     #scan-status.err { color: #c0392b; font-weight: 700; }
-
-    /* ── CUSTOMER CARD ────────────────────────────────────────────────────────  */
-    .customer-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .customer-avatar {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: var(--brown);
-      color: var(--cream);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-    .customer-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      color: var(--brown);
-    }
+    .customer-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .customer-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--brown); color: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .customer-name { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--brown); }
     .customer-sub { font-size: 13px; color: var(--light); }
-
-    .stamps-mini {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 12px;
-    }
-    .sm-dot {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      border: 2px solid var(--gold);
-      background: var(--cream);
-    }
-    .sm-dot.filled {
-      background: var(--brown);
-      border-color: var(--brown);
-      color: var(--cream);
-    }
+    .stamps-mini { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .sm-dot { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid var(--gold); background: var(--cream); }
+    .sm-dot.filled { background: var(--brown); border-color: var(--brown); color: var(--cream); }
     .sm-dot.empty { color: var(--gold); }
-
-    .reward-pill {
-      display: inline-block;
-      background: linear-gradient(135deg, #d4a017, #e8c840);
-      color: var(--brown);
-      font-size: 12px;
-      font-weight: 800;
-      border-radius: 50px;
-      padding: 4px 12px;
-      margin-bottom: 12px;
-    }
-
-    /* ── MODE TABS ────────────────────────────────────────────────────────────  */
-    .mode-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-    .mode-tab {
-      flex: 1;
-      padding: 10px;
-      border: 2px solid var(--gold);
-      border-radius: 12px;
-      background: var(--cream);
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'Nunito', sans-serif;
-      color: var(--light);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.18s;
-    }
-    .mode-tab.active {
-      border-color: var(--brown);
-      background: var(--brown);
-      color: var(--cream);
-    }
-
-    /* ── QUICK MODE ───────────────────────────────────────────────────────────  */
-    #mode-quick label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--brown);
-      margin-bottom: 6px;
-    }
-    .stepper {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .stepper-btn {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      border: 2px solid var(--gold);
-      background: var(--cream);
-      font-size: 26px;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
+    .tier-badge { display: inline-block; font-size: 12px; font-weight: 800; border-radius: 50px; padding: 3px 10px; margin-bottom: 8px; }
+    .tier-bronze { background: #cd7f32; color: #fff; }
+    .tier-silver { background: #c0c0c0; color: #333; }
+    .tier-gold   { background: linear-gradient(135deg,#d4a017,#f0d060); color: #3A3426; }
+    .award-pill { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg,#d4a017,#e8c840); color: var(--brown); font-size: 13px; font-weight: 800; border-radius: 50px; padding: 5px 14px; margin-bottom: 10px; }
+    .mode-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .mode-tab { flex: 1; padding: 10px; border: 2px solid var(--gold); border-radius: 12px; background: var(--cream); font-size: 13px; font-weight: 700; font-family: 'Nunito', sans-serif; color: var(--light); cursor: pointer; text-align: center; transition: all 0.18s; }
+    .mode-tab.active { border-color: var(--brown); background: var(--brown); color: var(--cream); }
+    .stepper { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .stepper-btn { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--gold); background: var(--cream); font-size: 28px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .stepper-btn:hover { border-color: var(--brown); background: var(--brown); color: var(--cream); }
-    .stepper-btn:active { transform: scale(0.93); }
-    #quick-count {
-      flex: 1;
-      font-size: 40px;
-      font-weight: 800;
-      color: var(--brown);
-      text-align: center;
-      padding: 10px 0;
-      border: 2px solid var(--gold);
-      border-radius: 12px;
-      background: var(--cream);
-      letter-spacing: 0;
-    }
-
-    /* ── PURCHASE MODE ────────────────────────────────────────────────────────  */
-    .products-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .product-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--cream);
-      border: 2px solid var(--gold);
-      border-radius: 14px;
-      padding: 10px 14px;
-    }
+    .stepper-btn:active { transform: scale(0.92); }
+    #quick-count { flex: 1; font-size: 44px; font-weight: 800; color: var(--brown); text-align: center; padding: 10px 0; border: 2px solid var(--gold); border-radius: 12px; background: var(--cream); }
+    #mode-quick label { display: block; font-size: 13px; font-weight: 700; color: var(--brown); margin-bottom: 8px; }
+    .products-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .product-row { display: flex; align-items: center; justify-content: space-between; background: var(--cream); border: 2px solid var(--gold); border-radius: 14px; padding: 10px 14px; }
     .product-info { flex: 1; }
     .product-name { font-size: 14px; font-weight: 700; color: var(--brown); }
     .product-sub  { font-size: 12px; color: var(--light); }
-    .product-ctrl {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .p-btn {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      border: 2px solid var(--gold);
-      background: #fff;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-    .p-btn:hover  { border-color: var(--brown); background: var(--brown); color: var(--cream); }
+    .product-ctrl { display: flex; align-items: center; gap: 10px; }
+    .p-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gold); background: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .p-btn:hover { border-color: var(--brown); background: var(--brown); color: var(--cream); }
     .p-btn:active { transform: scale(0.9); }
-    .p-qty {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--brown);
-      min-width: 24px;
-      text-align: center;
-    }
-
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--brown);
-      color: var(--cream);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 14px;
-    }
+    .p-qty { font-size: 18px; font-weight: 800; color: var(--brown); min-width: 24px; text-align: center; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; background: var(--brown); color: var(--cream); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; }
     .total-row .lbl { font-size: 14px; opacity: 0.8; }
     .total-row .val { font-size: 22px; font-weight: 800; }
-
-    /* ── SUCCESS SCREEN ───────────────────────────────────────────────────────  */
-    .success-wrap {
-      text-align: center;
-      padding: 30px 0;
-    }
+    .success-wrap { text-align: center; padding: 30px 0; }
     .success-wrap .big-icon { font-size: 72px; margin-bottom: 12px; }
-    .success-wrap h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 26px;
-      color: var(--brown);
-      margin-bottom: 6px;
-    }
+    .success-wrap h2 { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--brown); margin-bottom: 6px; }
     .success-wrap p { font-size: 15px; color: var(--light); margin-bottom: 4px; }
-    .success-wrap .reward-alert {
-      background: linear-gradient(135deg, #d4a017, #e8c840);
-      color: var(--brown);
-      border-radius: 14px;
-      padding: 14px;
-      margin: 16px 0;
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    /* ── ERROR / INFO MSGS ────────────────────────────────────────────────────  */
-    .err-msg  { color: #c0392b; font-size: 13px; text-align: center; display: none; margin-bottom: 10px; }
-    .info-msg { color: var(--light); font-size: 13px; text-align: center; margin-bottom: 10px; }
+    .reward-alert { background: linear-gradient(135deg,#d4a017,#e8c840); color: var(--brown); border-radius: 14px; padding: 14px; margin: 16px 0; font-weight: 700; font-size: 15px; }
+    .err-msg { color: #c0392b; font-size: 13px; text-align: center; display: none; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <span class="logo-txt">🍪 Sukie Cookie</span>
-  <span class="badge">Panel Caja</span>
+  <span class="logo-txt">🍪 {{ business_name }}</span>
+  <span class="badge">Caja</span>
 </div>
-
 <div class="wrapper">
 
-  <!-- ══════════════════════════════════════════════════════
-       SCREEN 1 — PIN LOGIN
-  ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN 1: PIN -->
   <div class="screen active" id="screen-pin">
     <div class="pin-wrap">
       <div class="icon">🔐</div>
       <h2>Acceso de caja</h2>
-      <p>Introduce el PIN para continuar</p>
+      <p>Introduce el PIN para comenzar</p>
     </div>
     <div class="err-msg" id="pin-error">PIN incorrecto. Inténtalo de nuevo.</div>
-    <input type="password" id="pin-input" placeholder="••••" maxlength="8"
-           onkeydown="if(event.key==='Enter') doLogin()">
+    <input type="password" id="pin-input" placeholder="••••" maxlength="8">
     <button class="btn btn-primary" onclick="doLogin()">Entrar →</button>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       SCREEN 2 — CAMERA SCANNER
-  ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN 2: CAMERA -->
   <div class="screen" id="screen-camera">
     <div class="card">
       <div class="card-head">
-        <h2>📷 Escanear tarjeta</h2>
+        <h2>📷 Escanear tarjeta cliente</h2>
         <p>Apunta la cámara al QR del cliente</p>
       </div>
       <div class="card-body" style="padding:16px;">
@@ -453,19 +127,15 @@
             <div class="cam-frame"></div>
           </div>
         </div>
-        <p id="scan-status">Buscando QR...</p>
+        <p id="scan-status">Buscando QR…</p>
       </div>
     </div>
     <button class="btn btn-ghost" onclick="logout()">← Cerrar sesión</button>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       SCREEN 3 — CUSTOMER + STAMP MODES
-  ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN 3: STAMP -->
   <div class="screen" id="screen-stamp">
-
-    <!-- Customer info card -->
-    <div class="card" id="customer-card">
+    <div class="card">
       <div class="card-body">
         <div class="customer-row">
           <div class="customer-avatar" id="cust-avatar">🍪</div>
@@ -474,24 +144,20 @@
             <div class="customer-sub"  id="cust-sub">—</div>
           </div>
         </div>
-        <div id="reward-pill-wrap"></div>
+        <div id="tier-badge-wrap"></div>
+        <div id="award-wrap"></div>
         <div class="stamps-mini" id="stamps-mini"></div>
       </div>
     </div>
-
-    <!-- Mode tabs -->
     <div class="mode-tabs">
       <button class="mode-tab active" id="tab-quick"    onclick="setMode('quick')">⚡ Sello rápido</button>
-      <button class="mode-tab"         id="tab-purchase" onclick="setMode('purchase')">🛍 Modo compra</button>
+      <button class="mode-tab"        id="tab-purchase" onclick="setMode('purchase')">🛍 Modo compra</button>
     </div>
-
-    <!-- ── QUICK MODE ── -->
+    <!-- Quick mode -->
     <div id="mode-quick">
       <div class="card">
         <div class="card-body">
-          <label style="font-size:13px;font-weight:700;color:var(--brown);display:block;margin-bottom:8px;">
-            ¿Cuántas cookies compró?
-          </label>
+          <label>¿Cuántas cookies compró?</label>
           <div class="stepper">
             <button class="stepper-btn" onclick="stepQuick(-1)">−</button>
             <div id="quick-count">1</div>
@@ -499,51 +165,41 @@
           </div>
           <div class="err-msg" id="quick-error"></div>
           <button class="btn btn-primary" id="quick-add-btn" onclick="submitStamps('quick')">
-            ✅ Añadir <span id="quick-label">1</span> sello
+            ✅ Añadir <span id="quick-label">1 sello</span>
           </button>
           <div id="redeem-wrap-quick"></div>
           <button class="btn btn-ghost" onclick="goBackToScanner()">📷 Escanear otro cliente</button>
         </div>
       </div>
     </div>
-
-    <!-- ── PURCHASE MODE ── -->
+    <!-- Purchase mode -->
     <div id="mode-purchase" style="display:none;">
       <div class="card">
         <div class="card-body">
-          <div class="products-grid" id="products-grid">
-            <!-- Products rendered by JS -->
-          </div>
+          <div class="products-grid" id="products-grid"></div>
           <div class="total-row">
-            <span class="lbl">Total sellos a añadir</span>
+            <span class="lbl">Total sellos</span>
             <span class="val" id="purchase-total">0</span>
           </div>
           <div class="err-msg" id="purchase-error"></div>
-          <button class="btn btn-primary" id="purchase-add-btn" onclick="submitStamps('purchase')">
-            ✅ Confirmar compra
-          </button>
+          <button class="btn btn-primary" id="purchase-add-btn" onclick="submitStamps('purchase')">✅ Confirmar compra</button>
           <div id="redeem-wrap-purchase"></div>
           <button class="btn btn-ghost" onclick="goBackToScanner()">📷 Escanear otro cliente</button>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       SCREEN 4 — SUCCESS
-  ══════════════════════════════════════════════════════ -->
+  <!-- SCREEN 4: SUCCESS -->
   <div class="screen" id="screen-success">
     <div class="card">
       <div class="card-body">
         <div class="success-wrap">
-          <div class="big-icon">🍪</div>
-          <h2>¡Hecho!</h2>
+          <div class="big-icon" id="success-icon">🍪</div>
+          <h2 id="success-title">¡Hecho!</h2>
           <p id="success-name"></p>
           <p id="success-detail"></p>
-          <div id="success-reward" style="display:none;" class="reward-alert">
-            🎉 ¡Premio disponible! El cliente tiene una galleta gratis esperándole.
-          </div>
+          <div id="success-reward" style="display:none;" class="reward-alert"></div>
         </div>
         <button class="btn btn-primary" onclick="goBackToScanner()">📷 Siguiente cliente</button>
         <button class="btn btn-ghost"   onclick="logout()">← Cerrar sesión</button>
@@ -551,408 +207,216 @@
     </div>
   </div>
 
-</div><!-- /wrapper -->
-
-<!-- jsQR for QR decoding -->
+</div>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════════════════════════════════════
-let adminPin      = "";
-let currentCardId = "";
-let currentCard   = null;
-let scanActive    = false;
-let scanInterval  = null;
-let videoStream   = null;
-let quickCount    = 1;
+const SLUG        = "{{ slug }}";
+const BIZ_NAME    = "{{ business_name }}";
 const BASE_URL    = "{{ base_url }}";
-const SPR         = {{ stamps_per_reward }};
+const DEFAULT_SPR = {{ stamps_per_reward }};
 
-// ── Products catalogue (Modo Compra) ─────────────────────────────────────────
+let adminPin = "", currentCardId = "", currentCard = null;
+let scanActive = false, videoStream = null, quickCount = 1;
+
 const PRODUCTS = [
-  { id: "cookie",     name: "Cookie individual",  sub: "1 sello por unidad",  stamps: 1 },
-  { id: "box6",       name: "Caja 6 galletas",    sub: "6 sellos",             stamps: 6 },
-  { id: "box12",      name: "Caja 12 galletas",   sub: "12 sellos",            stamps: 12 },
-  { id: "brownie",    name: "Brownie",             sub: "1 sello por unidad",  stamps: 1 },
+  { id:"cookie",  name:"Cookie individual", sub:"1 sello por unidad", stamps:1 },
+  { id:"box6",    name:"Caja 6 galletas",   sub:"6 sellos",           stamps:6 },
+  { id:"box12",   name:"Caja 12 galletas",  sub:"12 sellos",          stamps:12 },
+  { id:"brownie", name:"Brownie",           sub:"1 sello por unidad", stamps:1 },
 ];
-let productQty = {};  // { id: qty }
+let productQty = {};
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  SCREEN MANAGEMENT
-// ══════════════════════════════════════════════════════════════════════════════
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  PIN LOGIN
-// ══════════════════════════════════════════════════════════════════════════════
+// PIN LOGIN — validates against this business's slug
 async function doLogin() {
   const pin = document.getElementById('pin-input').value.trim();
   if (!pin) return;
-
-  // Verify PIN by trying a dummy call — using a non-existent card will 404 before PIN check,
-  // so we verify via the API key pattern instead.
-  // We store the PIN and verify it on first real stamp addition.
-  // For security, we do a lightweight check: POST stamps on a known-invalid card → expect 400/404 not 403
+  const errEl = document.getElementById('pin-error');
   try {
-    const resp = await fetch('/api/cards/00000000-0000-0000-0000-000000000000/stamps', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: pin, stamps: 0 })
-    });
-    // 404 = card not found (PIN was accepted by the check), 403 = wrong PIN
-    if (resp.status === 403) {
-      document.getElementById('pin-error').style.display = 'block';
+    const resp = await fetch(`/api/biz/${SLUG}/verify-pin?pin=${encodeURIComponent(pin)}`);
+    if (resp.status === 403 || resp.status === 404) {
+      errEl.style.display = 'block';
       document.getElementById('pin-input').value = '';
+      document.getElementById('pin-input').focus();
       return;
     }
-    // Any other code (400, 404, 200) means PIN passed the check
-    adminPin = pin;
-    document.getElementById('pin-error').style.display = 'none';
+    adminPin = pin; errEl.style.display = 'none';
     startCamera();
   } catch(e) {
-    // Network error — assume PIN ok for now, will fail on actual stamp add
-    adminPin = pin;
-    startCamera();
+    errEl.textContent = 'Error de red. Inténtalo de nuevo.';
+    errEl.style.display = 'block';
   }
 }
 
 function logout() {
-  stopCamera();
-  adminPin = "";
-  currentCardId = "";
-  currentCard = null;
+  stopCamera(); adminPin = ""; currentCardId = ""; currentCard = null;
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').style.display = 'none';
   showScreen('pin');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  CAMERA & QR SCANNING
-// ══════════════════════════════════════════════════════════════════════════════
+// CAMERA
 async function startCamera() {
   showScreen('camera');
-  const status = document.getElementById('scan-status');
-  status.textContent = 'Iniciando cámara…';
-  status.className = '';
-
+  const st = document.getElementById('scan-status');
+  st.textContent = 'Iniciando cámara…'; st.className = '';
   try {
     videoStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      video: { facingMode:{ ideal:'environment' }, width:{ ideal:1280 } }
     });
-    const video = document.getElementById('cam-video');
-    video.srcObject = videoStream;
-    await video.play();
-    scanActive = true;
-    status.textContent = 'Buscando QR…';
+    const v = document.getElementById('cam-video');
+    v.srcObject = videoStream; await v.play();
+    scanActive = true; st.textContent = 'Buscando QR…';
     requestAnimationFrame(scanFrame);
   } catch(e) {
-    status.textContent = '⚠ No se pudo acceder a la cámara. Revisa los permisos.';
-    status.className = 'err';
+    st.textContent = '⚠ Sin acceso a la cámara. Revisa los permisos.'; st.className = 'err';
   }
 }
-
 function stopCamera() {
   scanActive = false;
-  if (videoStream) {
-    videoStream.getTracks().forEach(t => t.stop());
-    videoStream = null;
-  }
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
 }
-
 function scanFrame() {
   if (!scanActive) return;
-  const video  = document.getElementById('cam-video');
-  const canvas = document.getElementById('cam-canvas');
-  if (video.readyState < video.HAVE_ENOUGH_DATA) {
-    requestAnimationFrame(scanFrame);
-    return;
-  }
-
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
-
+  const v = document.getElementById('cam-video'), c = document.getElementById('cam-canvas');
+  if (v.readyState < v.HAVE_ENOUGH_DATA) { requestAnimationFrame(scanFrame); return; }
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
+  const img = ctx.getImageData(0, 0, c.width, c.height);
+  const code = jsQR(img.data, img.width, img.height, { inversionAttempts:'dontInvert' });
   if (code) {
-    const cardId = extractCardId(code.data);
-    if (cardId) {
-      scanActive = false;
-      stopCamera();
-      loadCustomer(cardId);
-      return;
-    }
+    const id = code.data.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    if (id) { scanActive = false; stopCamera(); loadCustomer(id[0]); return; }
   }
-
   requestAnimationFrame(scanFrame);
 }
 
-function extractCardId(qrText) {
-  // QR encodes: https://...../card/{uuid}  or just the uuid
-  const uuidRx = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-  const match = qrText.match(uuidRx);
-  return match ? match[0] : null;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  LOAD CUSTOMER DATA
-// ══════════════════════════════════════════════════════════════════════════════
+// LOAD CUSTOMER
 async function loadCustomer(cardId) {
-  const status = document.getElementById('scan-status');
-  status.textContent = 'Cargando datos del cliente…';
-  status.className   = 'ok';
-
+  const st = document.getElementById('scan-status');
+  st.textContent = 'Cargando datos…'; st.className = 'ok';
   try {
-    const resp = await fetch(`/api/cards/${cardId}`);
-    if (!resp.ok) throw new Error('not found');
-    currentCard   = await resp.json();
-    currentCardId = cardId;
-    renderCustomer();
-    showScreen('stamp');
+    const r = await fetch(`/api/cards/${cardId}`);
+    if (!r.ok) throw new Error();
+    currentCard = await r.json(); currentCardId = cardId;
+    renderCustomer(); showScreen('stamp');
   } catch(e) {
-    status.textContent = '⚠ Tarjeta no encontrada. Escanea de nuevo.';
-    status.className   = 'err';
-    scanActive = true;
-    await startCamera();
+    st.textContent = '⚠ Tarjeta no encontrada. Inténtalo de nuevo.'; st.className = 'err';
+    scanActive = true; await startCamera();
   }
 }
+
+function getSPR() { return (currentCard && currentCard.stampsOnCard) ? currentCard.stampsOnCard : DEFAULT_SPR; }
 
 function renderCustomer() {
-  const c = currentCard;
-  document.getElementById('cust-name').textContent =
-    (c.first_name + ' ' + (c.last_name || '')).trim();
-  document.getElementById('cust-sub').textContent =
-    `${c.stamps} / ${SPR} sellos · ${c.total_stamps} sellos totales`;
-  document.getElementById('cust-avatar').textContent =
-    c.reward_available ? '🎁' : '🍪';
-
-  // Reward pill
-  const pillWrap = document.getElementById('reward-pill-wrap');
-  pillWrap.innerHTML = c.reward_available
-    ? '<div class="reward-pill">🎉 ¡Premio disponible!</div>'
-    : '';
-
-  // Mini stamps grid
-  const grid = document.getElementById('stamps-mini');
-  grid.innerHTML = '';
-  for (let i = 0; i < SPR; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'sm-dot ' + (i < c.stamps ? 'filled' : 'empty');
-    dot.textContent = i < c.stamps ? '🍪' : '○';
-    grid.appendChild(dot);
+  const c = currentCard, spr = getSPR();
+  const hasAward = (c.awardBalance || 0) > 0;
+  document.getElementById('cust-name').textContent = c.name || ((c.firstName||'') + ' ' + (c.lastName||'')).trim();
+  document.getElementById('cust-sub').textContent  = `${c.stamps} / ${spr} sellos · ${c.totalStamps} totales`;
+  document.getElementById('cust-avatar').textContent = hasAward ? '🎁' : '🍪';
+  const tier = c.tier || 'bronze';
+  const tierLabel = { bronze:'🥉 Bronce', silver:'🥈 Plata', gold:'🥇 Oro' };
+  document.getElementById('tier-badge-wrap').innerHTML = `<span class="tier-badge tier-${tier}">${tierLabel[tier]||tier}</span>`;
+  const aw = document.getElementById('award-wrap');
+  aw.innerHTML = hasAward ? `<div class="award-pill">🎉 ${c.awardBalance} premio${c.awardBalance>1?'s':''} disponible${c.awardBalance>1?'s':''}</div>` : '';
+  const grid = document.getElementById('stamps-mini'); grid.innerHTML = '';
+  for (let i = 0; i < spr; i++) {
+    const d = document.createElement('div');
+    d.className = 'sm-dot ' + (i < c.stamps ? 'filled' : 'empty');
+    d.textContent = i < c.stamps ? '🍪' : '○';
+    grid.appendChild(d);
   }
-
-  // Reset modes
-  quickCount = 1;
-  updateQuickDisplay();
-  resetProducts();
-  renderRedeemButtons();
+  quickCount = 1; updateQuickDisplay(); resetProducts(); renderRedeemButtons();
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  MODE TABS
-// ══════════════════════════════════════════════════════════════════════════════
 function setMode(mode) {
-  document.getElementById('tab-quick').classList.toggle('active',    mode === 'quick');
-  document.getElementById('tab-purchase').classList.toggle('active', mode === 'purchase');
-  document.getElementById('mode-quick').style.display    = mode === 'quick'    ? 'block' : 'none';
-  document.getElementById('mode-purchase').style.display = mode === 'purchase' ? 'block' : 'none';
+  document.getElementById('tab-quick').classList.toggle('active', mode==='quick');
+  document.getElementById('tab-purchase').classList.toggle('active', mode==='purchase');
+  document.getElementById('mode-quick').style.display    = mode==='quick'    ? 'block' : 'none';
+  document.getElementById('mode-purchase').style.display = mode==='purchase' ? 'block' : 'none';
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  QUICK MODE
-// ══════════════════════════════════════════════════════════════════════════════
-function stepQuick(delta) {
-  quickCount = Math.max(1, Math.min(50, quickCount + delta));
-  updateQuickDisplay();
-}
-
+function stepQuick(d) { quickCount = Math.max(1, Math.min(50, quickCount+d)); updateQuickDisplay(); }
 function updateQuickDisplay() {
   document.getElementById('quick-count').textContent = quickCount;
-  const lbl = document.getElementById('quick-label');
-  if (lbl) lbl.textContent = quickCount === 1 ? '1 sello' : `${quickCount} sellos`;
+  const l = document.getElementById('quick-label');
+  if (l) l.textContent = quickCount===1 ? '1 sello' : `${quickCount} sellos`;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  PURCHASE MODE
-// ══════════════════════════════════════════════════════════════════════════════
-function resetProducts() {
-  productQty = {};
-  PRODUCTS.forEach(p => { productQty[p.id] = 0; });
-  renderProducts();
-}
-
+function resetProducts() { PRODUCTS.forEach(p => { productQty[p.id]=0; }); renderProducts(); }
 function renderProducts() {
-  const grid = document.getElementById('products-grid');
-  grid.innerHTML = '';
+  const g = document.getElementById('products-grid'); g.innerHTML = '';
   PRODUCTS.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'product-row';
-    row.innerHTML = `
-      <div class="product-info">
-        <div class="product-name">${p.name}</div>
-        <div class="product-sub">${p.sub}</div>
-      </div>
-      <div class="product-ctrl">
-        <button class="p-btn" onclick="stepProduct('${p.id}', -1)">−</button>
-        <span class="p-qty" id="qty-${p.id}">0</span>
-        <button class="p-btn" onclick="stepProduct('${p.id}', +1)">+</button>
-      </div>`;
-    grid.appendChild(row);
-  });
-  updatePurchaseTotal();
+    const r = document.createElement('div'); r.className = 'product-row';
+    r.innerHTML = `<div class="product-info"><div class="product-name">${p.name}</div><div class="product-sub">${p.sub}</div></div>
+      <div class="product-ctrl"><button class="p-btn" onclick="stepP('${p.id}',-1)">−</button>
+      <span class="p-qty" id="qty-${p.id}">0</span>
+      <button class="p-btn" onclick="stepP('${p.id}',+1)">+</button></div>`;
+    g.appendChild(r);
+  }); updatePTotal();
 }
+function stepP(id,d) { productQty[id]=Math.max(0,(productQty[id]||0)+d); document.getElementById(`qty-${id}`).textContent=productQty[id]; updatePTotal(); }
+function updatePTotal() { let t=0; PRODUCTS.forEach(p=>{t+=(productQty[p.id]||0)*p.stamps;}); document.getElementById('purchase-total').textContent=t; }
+function getPTotal() { let t=0; PRODUCTS.forEach(p=>{t+=(productQty[p.id]||0)*p.stamps;}); return t; }
+function getPNote()  { return PRODUCTS.filter(p=>productQty[p.id]>0).map(p=>`${p.name} ×${productQty[p.id]}`).join(', '); }
 
-function stepProduct(id, delta) {
-  productQty[id] = Math.max(0, (productQty[id] || 0) + delta);
-  document.getElementById(`qty-${id}`).textContent = productQty[id];
-  updatePurchaseTotal();
-}
-
-function updatePurchaseTotal() {
-  let total = 0;
-  PRODUCTS.forEach(p => {
-    total += (productQty[p.id] || 0) * p.stamps;
-  });
-  document.getElementById('purchase-total').textContent = total;
-}
-
-function getPurchaseTotal() {
-  let total = 0;
-  PRODUCTS.forEach(p => {
-    total += (productQty[p.id] || 0) * p.stamps;
-  });
-  return total;
-}
-
-function buildPurchaseNote() {
-  const parts = [];
-  PRODUCTS.forEach(p => {
-    if (productQty[p.id] > 0) {
-      parts.push(`${p.name} ×${productQty[p.id]}`);
-    }
-  });
-  return parts.join(', ');
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  REDEEM BUTTONS (shown if reward available)
-// ══════════════════════════════════════════════════════════════════════════════
 function renderRedeemButtons() {
-  ['quick', 'purchase'].forEach(mode => {
-    const wrap = document.getElementById(`redeem-wrap-${mode}`);
-    if (currentCard && currentCard.reward_available) {
-      wrap.innerHTML = `<button class="btn btn-reward" onclick="redeemReward()">🎁 Canjear galleta gratis</button>`;
-    } else {
-      wrap.innerHTML = '';
-    }
+  ['quick','purchase'].forEach(mode => {
+    const w = document.getElementById(`redeem-wrap-${mode}`);
+    const n = (currentCard && currentCard.awardBalance) || 0;
+    w.innerHTML = n > 0 ? `<button class="btn btn-reward" onclick="redeemReward()">🎁 Canjear galleta gratis${n>1?' ('+n+' disponibles)':''}</button>` : '';
   });
 }
-
 async function redeemReward() {
-  if (!confirm(`¿Canjear la galleta gratis de ${currentCard.first_name}? Se descontarán ${SPR} sellos.`)) return;
+  const n = (currentCard&&currentCard.awardBalance)||0;
+  const name = currentCard.name||(currentCard.firstName||'');
+  if (!confirm(`¿Canjear 1 galleta gratis para ${name}? (${n} disponible${n>1?'s':''})`)) return;
   try {
-    const resp = await fetch(`/api/cards/${currentCardId}/redeem`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: adminPin })
-    });
-    const data = await resp.json();
-    if (data.success) {
-      document.getElementById('success-name').textContent   = currentCard.first_name + ' ' + (currentCard.last_name || '');
-      document.getElementById('success-detail').textContent = `🎁 Premio canjeado. Sellos restantes: ${data.stamps_remaining}`;
-      document.getElementById('success-reward').style.display = 'none';
-      showScreen('success');
-    }
-  } catch(e) { alert('Error al canjear. Inténtalo de nuevo.'); }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  SUBMIT STAMPS
-// ══════════════════════════════════════════════════════════════════════════════
-async function submitStamps(mode) {
-  let stampsToAdd, note;
-
-  if (mode === 'quick') {
-    stampsToAdd = quickCount;
-    note        = `Venta caja: ${stampsToAdd} cookie${stampsToAdd > 1 ? 's' : ''}`;
-  } else {
-    stampsToAdd = getPurchaseTotal();
-    note        = buildPurchaseNote();
-    if (stampsToAdd === 0) {
-      const err = document.getElementById('purchase-error');
-      err.textContent = 'Añade al menos un producto.';
-      err.style.display = 'block';
-      return;
-    }
-  }
-
-  const btnId = mode === 'quick' ? 'quick-add-btn' : 'purchase-add-btn';
-  const btn   = document.getElementById(btnId);
-  btn.disabled = true;
-  btn.textContent = 'Añadiendo…';
-
-  try {
-    const resp = await fetch(`/api/cards/${currentCardId}/stamps`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: adminPin, stamps: stampsToAdd, note: note })
-    });
-    const data = await resp.json();
-
-    if (resp.status === 403) {
-      alert('PIN incorrecto. Cerrando sesión.');
-      logout();
-      return;
-    }
-    if (!data.success) {
-      const errEl = document.getElementById(mode === 'quick' ? 'quick-error' : 'purchase-error');
-      errEl.textContent = data.detail || 'Error al añadir sellos.';
-      errEl.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = '✅ ' + (mode === 'quick' ? 'Añadir sellos' : 'Confirmar compra');
-      return;
-    }
-
-    // Success
-    const name = (currentCard.first_name + ' ' + (currentCard.last_name || '')).trim();
-    document.getElementById('success-name').textContent   = name;
-    document.getElementById('success-detail').textContent =
-      `+${stampsToAdd} sello${stampsToAdd > 1 ? 's' : ''} añadido${stampsToAdd > 1 ? 's' : ''}. Total: ${data.stamps} / ${SPR}`;
-    document.getElementById('success-reward').style.display =
-      data.reward_available ? 'block' : 'none';
+    const r = await fetch(`/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin})});
+    const d = await r.json();
+    document.getElementById('success-icon').textContent='🎁';
+    document.getElementById('success-title').textContent='¡Premio canjeado!';
+    document.getElementById('success-name').textContent=name;
+    document.getElementById('success-detail').textContent=`Premios restantes: ${d.award_balance}`;
+    document.getElementById('success-reward').style.display='none';
     showScreen('success');
-
-  } catch(e) {
-    btn.disabled = false;
-    btn.textContent = '✅ ' + (mode === 'quick' ? 'Añadir sellos' : 'Confirmar compra');
-    alert('Error de red. Inténtalo de nuevo.');
-  }
+  } catch(e) { alert('Error al canjear.'); }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  NAVIGATION
-// ══════════════════════════════════════════════════════════════════════════════
+async function submitStamps(mode) {
+  let stamps, note;
+  if (mode==='quick') { stamps=quickCount; note=`Venta: ${stamps} cookie${stamps>1?'s':''}`; }
+  else { stamps=getPTotal(); note=getPNote(); if(!stamps){const e=document.getElementById('purchase-error');e.textContent='Añade al menos un producto.';e.style.display='block';return;} }
+  const btnId=mode==='quick'?'quick-add-btn':'purchase-add-btn';
+  const btn=document.getElementById(btnId); btn.disabled=true; btn.textContent='Añadiendo…';
+  try {
+    const r = await fetch(`/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:adminPin, stamps:stamps, note:note, store:BIZ_NAME})});
+    const d = await r.json();
+    if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
+    const spr=getSPR(), name=currentCard.name||(currentCard.firstName||'');
+    document.getElementById('success-icon').textContent='🍪';
+    document.getElementById('success-title').textContent='¡Hecho!';
+    document.getElementById('success-name').textContent=name;
+    document.getElementById('success-detail').textContent=`+${stamps} sello${stamps>1?'s':''} añadido${stamps>1?'s':''}. Total: ${d.stamps} / ${spr}`;
+    const aw=(d.award_balance||0), ar=document.getElementById('success-reward');
+    if(aw>0){ar.innerHTML=`🎉 ¡Premio desbloqueado! ${name} tiene ${aw} galleta${aw>1?'s':''} gratis.`;ar.style.display='block';}
+    else{ar.style.display='none';}
+    showScreen('success');
+  } catch(e) { btn.disabled=false; btn.textContent=mode==='quick'?'✅ Añadir sellos':'✅ Confirmar compra'; alert('Error de red.'); }
+}
+
 function goBackToScanner() {
-  currentCardId = "";
-  currentCard   = null;
-  // Reset error messages
-  ['quick-error', 'purchase-error'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+  currentCardId=''; currentCard=null;
+  ['quick-error','purchase-error'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
   startCamera();
 }
 
-// Init: Focus PIN input
-document.getElementById('pin-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') doLogin();
-});
+document.getElementById('pin-input').addEventListener('keydown', e=>{if(e.key==='Enter')doLogin();});
 </script>
 </body>
 </html>

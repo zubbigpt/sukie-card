@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZubCard - Programa de Lealtad Digital para Negocios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark: #1a1714;
+            --cream: #FFF5B6;
+            --gold: #c8a84b;
+            --white: #ffffff;
+            --light-dark: #2a2520;
+            --gray: #999999;
+            --light-gray: #f5f5f5;
+            --success: #10b981;
+            --text-dark: #333333;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--white);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        nav {
+            background-color: var(--dark);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        nav .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav .logo {
+            color: var(--gold);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--gold);
+        }
+
+        .btn-primary {
+            background-color: var(--gold);
+            color: var(--dark);
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #d4b85f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(200, 168, 75, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--gold);
+            padding: 0.6rem 1.5rem;
+            border: 2px solid var(--gold);
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gold);
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Countdown Banner */
+        .countdown-banner {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--light-dark) 100%);
+            border-bottom: 3px solid var(--gold);
+            padding: 1rem 2rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--cream);
+            animation: pulse-banner 2s infinite;
+        }
+
+        @keyframes pulse-banner {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+
+        .countdown-banner .fire {
+            display: inline-block;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .countdown-banner-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .countdown-timer {
+            background-color: var(--gold);
+            color: var(--dark);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--white) 0%, #faf8f3 100%);
+        }
+
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 2.8rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-content .highlight {
+            color: var(--gold);
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-cta button, .hero-cta a {
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hero-features {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-feature {
+            display: flex;
+            gap: 0.8rem;
+            align-items: flex-start;
+        }
+
+        .hero-feature .icon {
+            font-size: 1.5rem;
+            min-width: 2rem;
+        }
+
+        .hero-feature p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Interactive Card Demo */
+        .card-demo {
+            background: linear-gradient(135deg, var(--light-dark) 0%, #3a342f 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-demo-title {
+            color: var(--gold);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .virtual-card {
+            background: linear-gradient(135deg, var(--gold) 0%, #d4b85f 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 25px rgba(200, 168, 75, 0.3);
+        }
+
+        .card-header {
+            color: var(--dark);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .stamps-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .stamp {
+            width: 100%;
+            aspect-ratio: 1;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 2px dashed rgba(26, 23, 20, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: scaleIn 0.4s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .stamp:hover {
+            transform: scale(1.05);
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .stamp.filled {
+            background-color: var(--dark);
+            border-color: var(--dark);
+            cursor: default;
+        }
+
+        .stamp.filled:hover {
+            transform: scale(1);
+        }
+
+        .stamp.empty {
+            color: rgba(26, 23, 20, 0.3);
+        }
+
+        .card-progress {
+            color: var(--dark);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(26, 23, 20, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--dark);
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+
+        .stamp-hint {
+            color: rgba(26, 23, 20, 0.7);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .demo-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            animation: popupIn 0.4s ease-out;
+            display: none;
+        }
+
+        @keyframes popupIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .demo-popup.show {
+            display: block;
+        }
+
+        .demo-popup h3 {
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .demo-popup .emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .demo-overlay.show {
+            display: block;
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--light-dark) 100%);
+        }
+
+        .stats .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-label {
+            color: var(--cream);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Social Proof */
+        .social-proof {
+            padding: 3rem 2rem;
+            background-color: var(--light-gray);
+            text-align: center;
+        }
+
+        .social-proof h3 {
+            color: var(--dark);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray);
+        }
+
+        .logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            font-size: 2rem;
+            color: var(--dark);
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .logo-item:hover {
+            opacity: 1;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            border-radius: 12px;
+            background: var(--light-gray);
+            border-left: 4px solid var(--gold);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(200, 168, 75, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h4 {
+            color: var(--dark);
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* VIP Tiers Section */
+        .vip-tiers {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #faf8f3 0%, var(--light-gray) 100%);
+        }
+
+        .vip-tiers .section-title {
+            margin-bottom: 3rem;
+        }
+
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .tier-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2.5rem;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tier-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), #d4b85f);
+        }
+
+        .tier-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(200, 168, 75, 0.25);
+            border-color: var(--gold);
+        }
+
+        .tier-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tier-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .tier-requirement {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .tier-reward {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(200, 168, 75, 0.1);
+            border-radius: 8px;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            background-color: var(--gold);
+            color: var(--dark);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* How it Works */
+        .how-it-works {
+            padding: 4rem 2rem;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step {
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background-color: var(--gold);
+            color: var(--dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+        }
+
+        .step h4 {
+            color: var(--dark);
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .step p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--light-gray) 0%, #f9f7f2 100%);
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .price-card:hover {
+            border-color: var(--gold);
+            box-shadow: 0 10px 30px rgba(200, 168, 75, 0.2);
+        }
+
+        .price-card.featured {
+            border-color: var(--gold);
+            box-shadow: 0 10px 40px rgba(200, 168, 75, 0.3);
+            transform: scale(1.05);
+        }
+
+        .price-badge {
+            background-color: var(--gold);
+            color: var(--dark);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .price-card h3 {
+            color: var(--dark);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            color: var(--gold);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-period {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .price-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            text-align: left;
+            font-size: 0.95rem;
+            color: var(--gray);
+        }
+
+        .price-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .price-features li:before {
+            content: '✓ ';
+            color: var(--gold);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 4rem 2rem;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: var(--light-gray);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .testimonial-rating {
+            color: var(--gold);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-text {
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .testimonial-role {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #faf8f3 0%, var(--light-gray) 100%);
+        }
+
+        .faq .section-title {
+            margin-bottom: 3rem;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--white);
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            background-color: var(--white);
+            border-bottom: 2px solid var(--light-gray);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .faq-question:hover {
+            background-color: #faf8f3;
+            color: var(--gold);
+        }
+
+        .faq-toggle {
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+            color: var(--gold);
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+            background-color: #faf8f3;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 1.5rem;
+            max-height: 500px;
+        }
+
+        .faq-answer p {
+            color: var(--gray);
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.8;
+        }
+
+        /* CTA Section */
+        .final-cta {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--light-dark) 100%);
+            text-align: center;
+            color: var(--white);
+        }
+
+        .final-cta h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--cream);
+        }
+
+        .final-cta p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: var(--cream);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav .nav-links {
+                gap: 1rem;
+            }
+
+            nav a {
+                font-size: 0.85rem;
+            }
+
+            .hero .container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+            }
+
+            .hero-cta button, .hero-cta a {
+                width: 100%;
+                text-align: center;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .tiers-grid, .testimonials-grid, .pricing-cards, .steps {
+                grid-template-columns: 1fr;
+            }
+
+            .price-card.featured {
+                transform: scale(1);
+            }
+
+            .countdown-banner-text {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .countdowns {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .countdown-item {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-2 {
+            margin-top: 2rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <div class="container">
+            <a href="#" class="logo">
+                <span>🍪</span> ZubCard
+            </a>
+            <div class="nav-links">
+                <a href="#features">Características</a>
+                <a href="#pricing">Precios</a>
+                <a href="#testimonials">Testimonios</a>
+                <a href="#faq">FAQ</a>
+                <a href="/app/login" class="btn-secondary">Iniciar Sesión</a>
+                <a href="/app/register" class="btn-primary">Registrarse</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Countdown Banner -->
+    <div class="countdown-banner">
+        <div class="countdown-banner-text">
+            <span class="fire">🔥</span>
+            <span>Oferta de lanzamiento · Plan Pro a solo €19/mes · Termina en</span>
+            <div class="countdown-timer">
+                <span id="days">00</span>d
+                <span id="hours">00</span>h
+                <span id="minutes">00</span>m
+                <span id="seconds">00</span>s
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>La forma más <span class="highlight">inteligente</span> de fidelizar clientes</h1>
+                <p>ZubCard transforma la experiencia de compra con tarjetas de lealtad digitales. Sin papel, sin límites, puro engagement.</p>
+                
+                <div class="hero-cta">
+                    <a href="/app/register" class="btn-primary">Comienza Ahora Gratis</a>
+                    <a href="/biz/sukiecookie/card/5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f" class="btn-secondary">Ver Demo en Vivo</a>
+                </div>
+
+                <div class="hero-features">
+                    <div class="hero-feature">
+                        <span class="icon">⚡</span>
+                        <p><strong>Setup en 5 minutos</strong><br>Sin código, solo configuración</p>
+                    </div>
+                    <div class="hero-feature">
+                        <span class="icon">📱</span>
+                        <p><strong>Totalmente móvil</strong><br>Web y app incluidas</p>
+                    </div>
+                    <div class="hero-feature">
+                        <span class="icon">🎯</span>
+                        <p><strong>Datos en tiempo real</strong><br>Analytics detallados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-demo">
+                <div class="card-demo-title">Prueba interactiva (haz clic en los sellos)</div>
+                <div class="virtual-card">
+                    <div class="card-header">Tu tarjeta de lealtad</div>
+                    <div class="stamps-grid" id="stampsGrid">
+                        <div class="stamp empty" data-index="0">
+                            <span class="stamp-slot">1</span>
+                        </div>
+                        <div class="stamp empty" data-index="1">
+                            <span class="stamp-slot">2</span>
+                        </div>
+                        <div class="stamp empty" data-index="2">
+                            <span class="stamp-slot">3</span>
+                        </div>
+                        <div class="stamp empty" data-index="3">
+                            <span class="stamp-slot">4</span>
+                        </div>
+                        <div class="stamp empty" data-index="4">
+                            <span class="stamp-slot">5</span>
+                        </div>
+                        <div class="stamp empty" data-index="5">
+                            <span class="stamp-slot">6</span>
+                        </div>
+                        <div class="stamp empty" data-index="6">
+                            <span class="stamp-slot">7</span>
+                        </div>
+                        <div class="stamp empty" data-index="7">
+                            <span class="stamp-slot">8</span>
+                        </div>
+                        <div class="stamp empty" data-index="8">
+                            <span class="stamp-slot">9</span>
+                        </div>
+                        <div class="stamp empty" data-index="9">
+                            <span class="stamp-slot">10</span>
+                        </div>
+                    </div>
+                    <div class="card-progress">
+                        <span id="stampCount">0</span>/10 sellos
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                    <div class="stamp-hint">👆 Haz clic en los cuadros vacíos para agregar sellos</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-businesses">0</div>
+                <div class="stat-label">Negocios confían en ZubCard</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-customers">0</div>
+                <div class="stat-label">Clientes en el programa</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-satisfaction">0</div>
+                <div class="stat-label">Satisfacción de clientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-minutes">0</div>
+                <div class="stat-label">Minutos para activar</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof -->
+    <section class="social-proof">
+        <div class="container">
+            <h3>Confían en nosotros</h3>
+            <div class="logos">
+                <div class="logo-item">🏪</div>
+                <div class="logo-item">☕</div>
+                <div class="logo-item">🎂</div>
+                <div class="logo-item">🍕</div>
+                <div class="logo-item">💇</div>
+                <div class="logo-item">⌚</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Características Poderosas</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h4>Segmentación Inteligente</h4>
+                    <p>Crea campañas dirigidas basadas en el comportamiento y preferencias de tus clientes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h4>Analytics Detallados</h4>
+                    <p>Visualiza métricas en tiempo real: adopción, redempciones, lifetime value.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h4>Notificaciones Inteligentes</h4>
+                    <p>Automensajes que hacen volver a tus clientes sin resultar molestos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h4>Personalización Total</h4>
+                    <p>Adapta colores, logos y mensajes a tu marca sin tocar una línea de código.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h4>Seguridad Enterprise</h4>
+                    <p>Encriptación end-to-end, cumplimiento GDPR y backups automáticos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h4>Integración Fácil</h4>
+                    <p>API potente y webhooks para conectar con tu sistema POS o e-commerce.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIP Tiers Section -->
+    <section class="vip-tiers">
+        <div class="container">
+            <h2 class="section-title">Niveles VIP - Recompensas Crecientes</h2>
+            <div class="tiers-grid">
+                <div class="tier-card">
+                    <div class="tier-icon">🥉</div>
+                    <div class="tier-name">Bronce</div>
+                    <div class="tier-requirement">Desde el inicio</div>
+                    <div class="tier-reward">
+                        <strong>Cookie gratis</strong><br>
+                        Cada 10 sellos
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Primer nivel automático para todos los clientes. Comienzan a acumular puntos desde su primera compra.</p>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-icon">🥈</div>
+                    <div class="tier-name">Plata</div>
+                    <div class="tier-requirement">50+ sellos</div>
+                    <div class="tier-reward">
+                        <strong>Box 6 cookies</strong><br>
+                        Cada 8 sellos
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Desbloquea premios mejores. Menos sellos necesarios y recompensas más generosas.</p>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-icon">👑</div>
+                    <div class="tier-name">Oro</div>
+                    <div class="tier-requirement">150+ sellos</div>
+                    <div class="tier-reward">
+                        <strong>Box Premium + Bebida</strong><br>
+                        Cada 7 sellos
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Máxima exclusividad. Acceso VIP a nuevos productos y recompensas personalizadas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">¿Cómo Funciona?</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>Registra tu Negocio</h4>
+                    <p>Crea una cuenta en minutos y completa tu perfil con datos y branding.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>Configura Recompensas</h4>
+                    <p>Define sellos, premios, tiers y campañas según tu modelo de negocio.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>Comparte con Clientes</h4>
+                    <p>Distribúyelo vía código QR, link o en tu POS. Sin app a descargar.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>Incrementa Compras</h4>
+                    <p>Observa cómo suben las repeticiones de compra y la vida útil del cliente.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Planes Transparentes</h2>
+            <div class="pricing-cards">
+                <div class="price-card">
+                    <h3>Starter</h3>
+                    <div class="price-amount">€9</div>
+                    <div class="price-period">por mes</div>
+                    <ul class="price-features">
+                        <li>Hasta 500 clientes</li>
+                        <li>1 programa de lealtad</li>
+                        <li>Analytics básico</li>
+                        <li>Soporte por email</li>
+                    </ul>
+                    <button class="btn-primary" onclick="scrollToRegister()">Comenzar</button>
+                </div>
+                <div class="price-card featured">
+                    <div class="price-badge">MÁS POPULAR</div>
+                    <h3>Pro</h3>
+                    <div class="price-amount">€19</div>
+                    <div class="price-period">por mes</div>
+                    <ul class="price-features">
+                        <li>Clientes ilimitados</li>
+                        <li>3 programas de lealtad</li>
+                        <li>Analytics avanzado</li>
+                        <li>Automatizaciones</li>
+                        <li>API access</li>
+                        <li>Soporte prioritario</li>
+                    </ul>
+                    <button class="btn-primary" onclick="scrollToRegister()">Comenzar</button>
+                </div>
+                <div class="price-card">
+                    <h3>Enterprise</h3>
+                    <div class="price-amount">Custom</div>
+                    <div class="price-period">contacta ventas</div>
+                    <ul class="price-features">
+                        <li>Todo lo del Pro</li>
+                        <li>Programas ilimitados</li>
+                        <li>Integraciones custom</li>
+                        <li>Datos en tu servidor</li>
+                        <li>Consultoría incluida</li>
+                        <li>SLA 99.9%</li>
+                    </ul>
+                    <button class="btn-secondary" onclick="alert('Contactando equipo de ventas...')">Contactar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <h2 class="section-title">Lo que Dicen Nuestros Clientes</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="testimonial-text">"Implementamos ZubCard en nuestros 12 locales hace 6 meses. Las repeticiones de compra subieron 34%. Es increíblemente simple y nuestros clientes aman recibir notificaciones cuando están cerca de un premio."</div>
+                    <div class="testimonial-author">Carolina Pérez</div>
+                    <div class="testimonial-role">Gerente, Cadena de Cafeterías Buenos Aires</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="testimonial-text">"El servicio técnico de ZubCard es excepcional. Tuvimos preguntas específicas sobre integraciones y respondieron en menos de 2 horas. Ya no queremos cambiar a otra plataforma."</div>
+                    <div class="testimonial-author">Miguel Rodríguez</div>
+                    <div class="testimonial-role">Dueño, Barbería Premium CDMX</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                    <div class="testimonial-text">"Pasamos de tarjetas físicas a ZubCard. Menos papel, más datos, clientes más contentos. El ROI se vio en el primer mes. Muy recomendado para retail moderno."</div>
+                    <div class="testimonial-author">Sofía Martínez</div>
+                    <div class="testimonial-role">Directora de Marketing, Pastelería Artesanal Madrid</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>¿Cuánto tarda implementar ZubCard en mi negocio?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Menos de 5 minutos. Registra tu negocio, configura tus recompensas, y comparte el enlace con tus clientes. No requiere código ni conocimientos técnicos. Si necesitas integraciones custom, nuestro equipo técnico lo resuelve en 24-48 horas.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>¿Mis clientes necesitan descargar una app?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>No. Tu tarjeta de lealtad funciona 100% en web, responsive para móviles. Los clientes acceden escaneando un código QR o haciendo clic en un enlace. Es más simple, más rápido y tienes mayores tasas de adopción que con apps tradicionales.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>¿Puedo personalizar completamente los colores y logos?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, completamente. En el panel de control tienes un editor visual donde defines todos los colores, fontes, logos y textos. Tu tarjeta se ve 100% como tu marca sin necesidad de CSS o código.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>¿Cómo integro ZubCard con mi POS o e-commerce?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Tenemos API REST y webhooks. Disponemos de documentación completa y ejemplos en Node.js, Python y PHP. Para integraciones complejas, nuestro equipo de desarrollo puede asistirte. Muchos sistemas POS ya tienen integraciones pre-construidas.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>¿Dónde están almacenados mis datos?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>En servidores seguros de AWS en centros de datos de la UE, cumpliendo GDPR. Tu información está encriptada en tránsito y en reposo. Realizamos backups diarios automáticos. Para clientes Enterprise, ofrecemos opciones de data residency personalizada.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>Empieza a Fidelizar Clientes Hoy</h2>
+            <p>Únete a cientos de negocios que ya están viendo resultados. Plan gratuito, sin tarjeta de crédito.</p>
+            <a href="/app/register" class="btn-primary" style="display: inline-block; padding: 1rem 2.5rem; font-size: 1.1rem;">Registrarse Gratis</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 ZubCard. Todos los derechos reservados. | <a href="#">Privacidad</a> | <a href="#">Términos</a> | <a href="#">Contacto</a></p>
+        </div>
+    </footer>
+
+    <!-- Demo Overlay and Popup -->
+    <div class="demo-overlay" id="demoOverlay"></div>
+    <div class="demo-popup" id="demoPopup">
+        <div class="emoji">🎉</div>
+        <h3>¡Premio Conseguido!</h3>
+        <p>Has completado tu tarjeta de lealtad.</p>
+        <p style="margin-top: 1rem; font-weight: 600; color: var(--gold);">Cookie Gratis</p>
+        <button class="btn-primary" style="margin-top: 1.5rem; border: none;" onclick="closeDemoPopup()">Genial!</button>
+    </div>
+
+    <script>
+        // Interactive Card Demo
+        const stampsGrid = document.getElementById('stampsGrid');
+        const stampCount = document.getElementById('stampCount');
+        const progressFill = document.getElementById('progressFill');
+        const demoPopup = document.getElementById('demoPopup');
+        const demoOverlay = document.getElementById('demoOverlay');
+        
+        let currentStamps = 0;
+        const maxStamps = 10;
+
+        function addStamp(index) {
+            const stamp = document.querySelector(`[data-index="${index}"]`);
+            if (!stamp.classList.contains('filled')) {
+                stamp.classList.remove('empty');
+                stamp.classList.add('filled');
+                stamp.innerHTML = '🍪';
+                currentStamps++;
+                updateProgress();
+                
+                if (currentStamps === maxStamps) {
+                    showRewardPopup();
+                }
+            }
+        }
+
+        function updateProgress() {
+            stampCount.textContent = currentStamps;
+            const progress = (currentStamps / maxStamps) * 100;
+            progressFill.style.width = progress + '%';
+        }
+
+        function showRewardPopup() {
+            demoOverlay.classList.add('show');
+            demoPopup.classList.add('show');
+        }
+
+        function closeDemoPopup() {
+            demoOverlay.classList.remove('show');
+            demoPopup.classList.remove('show');
+            resetDemo();
+        }
+
+        function resetDemo() {
+            currentStamps = 0;
+            stampsGrid.querySelectorAll('.stamp').forEach((stamp, index) => {
+                stamp.classList.remove('filled');
+                stamp.classList.add('empty');
+                stamp.innerHTML = '<span class="stamp-slot">' + (index + 1) + '</span>';
+            });
+            updateProgress();
+        }
+
+        // Add click handlers to stamps
+        stampsGrid.querySelectorAll('.stamp').forEach((stamp, index) => {
+            stamp.addEventListener('click', () => addStamp(index));
+        });
+
+        demoOverlay.addEventListener('click', closeDemoPopup);
+
+        // Countdown Timer
+        function updateCountdown() {
+            const targetDate = new Date('2026-04-30T23:59:59').getTime();
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference > 0) {
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            } else {
+                document.querySelector('.countdown-banner').innerHTML = '<div class="countdown-banner-text"><span class="fire">🔥</span><span>¡La oferta de lanzamiento ha terminado! Contáctanos para ofertas especiales.</span></div>';
+            }
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Stats Counter with IntersectionObserver
+        const statsSection = document.querySelector('.stats');
+        const statElements = {
+            'stat-businesses': { target: 500, suffix: '+' },
+            'stat-customers': { target: 20000, suffix: '+', format: 'k' },
+            'stat-satisfaction': { target: 99, suffix: '%' },
+            'stat-minutes': { target: 3, suffix: ' min' }
+        };
+
+        function animateCounter(elementId, targetValue, suffix, format) {
+            const element = document.getElementById(elementId);
+            let currentValue = 0;
+            const increment = Math.ceil(targetValue / 50);
+            const maxValue = format === 'k' ? targetValue / 1000 : targetValue;
+
+            const interval = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    currentValue = targetValue;
+                    clearInterval(interval);
+                }
+                
+                if (format === 'k') {
+                    element.textContent = (currentValue / 1000).toFixed(0) + 'k' + suffix;
+                } else {
+                    element.textContent = currentValue + suffix;
+                }
+            }, 30);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !statsSection.classList.contains('animated')) {
+                    statsSection.classList.add('animated');
+                    Object.entries(statElements).forEach(([id, config]) => {
+                        animateCounter(id, config.target, config.suffix, config.format);
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        observer.observe(statsSection);
+
+        // FAQ Accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                faqItems.forEach(other => {
+                    if (other !== item && other.classList.contains('active')) {
+                        other.classList.remove('active');
+                    }
+                });
+                item.classList.toggle('active');
+            });
+        });
+
+        // Smooth scroll helper
+        function scrollToRegister() {
+            document.querySelector('.final-cta').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Add smooth scroll behavior for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

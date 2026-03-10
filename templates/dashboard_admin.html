@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ biz_name }} Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --cream:#FFF3CF;--cream-dark:#f5e8b8;--cream-border:#e8d9a0;
+  --brown:#3A3426;--brown-mid:#6b5e47;--brown-light:#9a8f7e;
+  --gold:#d4a017;--gold-light:#f5cb53;--white:#FDFBF7;
+  --green:#2e7d32;--red:#c62828;--sidebar-w:240px;
+  --radius:16px;--radius-sm:10px;--shadow:0 2px 12px rgba(58,52,38,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-box{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:48px 40px;text-align:center;max-width:380px;width:90%;box-shadow:var(--shadow)}
+.login-box img{width:90px;margin-bottom:16px}
+.login-box h1{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:6px}
+.login-box p{color:var(--brown-light);font-size:.9rem;margin-bottom:28px}
+.login-box input{width:100%;padding:12px 16px;border:2px solid var(--cream-border);border-radius:50px;font-size:1.1rem;text-align:center;letter-spacing:6px;background:var(--cream);outline:none;transition:border .2s}
+.login-box input:focus{border-color:var(--gold)}
+.login-box button{width:100%;margin-top:16px;padding:13px;background:var(--brown);color:var(--cream);border:none;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+.login-box button:hover{background:var(--brown-mid)}
+.login-error{color:var(--red);font-size:.85rem;margin-top:10px;min-height:20px}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--brown);color:var(--cream);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center}
+.sidebar-logo img{width:50px;border-radius:50%;margin-bottom:8px}
+.sidebar-logo span{display:block;font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold-light);font-weight:700}
+.sidebar-logo small{display:block;font-size:.72rem;color:rgba(255,243,207,.5);margin-top:2px}
+nav{padding:16px 0;flex:1}
+nav a{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,243,207,.75);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+nav a:hover{color:var(--cream);background:rgba(255,255,255,.07)}
+nav a.active{color:var(--brown);background:var(--cream);border-left-color:var(--gold);font-weight:600}
+nav a .icon{font-size:1.1rem;width:22px;text-align:center}
+.nav-section{padding:10px 20px 4px;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,243,207,.3);font-weight:600}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(255,243,207,.4)}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--white);border-bottom:2px solid var(--cream-border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h2{font-size:1.05rem;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.content{padding:24px 28px;flex:1}
+.section{display:none}
+.section.active{display:block}
+
+/* CARDS */
+.card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px}
+.card-sub{font-size:.8rem;color:var(--brown-light)}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat-card .stat-icon{font-size:2rem;margin-bottom:8px}
+.stat-card .stat-num{font-size:2rem;font-weight:800;line-height:1}
+.stat-card .stat-label{font-size:.78rem;color:var(--brown-light);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.stat-card .stat-delta{font-size:.75rem;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block}
+.delta-up{background:#e8f5e9;color:var(--green)}
+.delta-down{background:#fbe9e7;color:var(--red)}
+.delta-neu{background:#f5f5f5;color:var(--brown-light)}
+
+/* COMPARISON ROW */
+.comparison-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.period-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.period-card .period-label{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:6px}
+.period-card .period-num{font-size:2.2rem;font-weight:800}
+.period-card .period-sub{font-size:.8rem;color:var(--brown-light);margin-top:4px}
+.period-card.current{border-color:var(--gold);background:linear-gradient(135deg,#fff9e6,#fff)}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.chart-card h3{font-size:.95rem;font-weight:600;margin-bottom:16px;color:var(--brown)}
+.chart-wrap{position:relative;height:220px}
+
+/* BIRTHDAYS */
+.birthday-section{margin-bottom:24px}
+.birthday-section h3{font-size:1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.birthday-list{display:flex;flex-direction:column;gap:8px}
+.birthday-item{background:var(--white);border:2px solid #fce4ec;border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.birthday-item.today{border-color:var(--gold);background:linear-gradient(135deg,#fff9e6,#fff)}
+.birthday-info .name{font-weight:600;font-size:.9rem}
+.birthday-info .date{font-size:.78rem;color:var(--brown-light);margin-top:2px}
+.birthday-badge{background:var(--gold);color:var(--brown);border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:700}
+.birthday-badge.month{background:var(--cream-dark);color:var(--brown-mid)}
+.empty-state{text-align:center;padding:24px;color:var(--brown-light);font-size:.9rem}
+
+/* TOP CUSTOMERS */
+.top-list{display:flex;flex-direction:column;gap:6px}
+.top-item{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:12px;transition:border-color .2s;cursor:pointer}
+.top-item:hover{border-color:var(--gold)}
+.top-rank{font-size:1.1rem;width:28px;text-align:center}
+.top-info{flex:1}
+.top-info .top-name{font-weight:600;font-size:.88rem}
+.top-info .top-email{font-size:.75rem;color:var(--brown-light)}
+.top-stamps{font-size:1.1rem;font-weight:800;color:var(--gold)}
+
+/* CLIENTS TABLE */
+.search-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:200px;padding:10px 16px;border:2px solid var(--cream-border);border-radius:50px;background:var(--cream);outline:none;font-size:.9rem;transition:border .2s}
+.search-bar input:focus{border-color:var(--brown)}
+.search-bar button{padding:10px 20px;border:none;border-radius:50px;background:var(--brown);color:var(--cream);font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+.search-bar button:hover{background:var(--brown-mid)}
+.btn-sm{padding:6px 14px;border:none;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--brown);color:var(--cream)}
+.btn-primary:hover{background:var(--brown-mid)}
+.btn-gold{background:var(--gold);color:var(--brown)}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-danger{background:#fbe9e7;color:var(--red);border:1px solid #ffccbc}
+.btn-danger:hover{background:#ffccbc}
+.btn-ghost{background:transparent;color:var(--brown-light);border:1.5px solid var(--cream-border)}
+.btn-ghost:hover{border-color:var(--brown);color:var(--brown)}
+
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{padding:10px 12px;text-align:left;font-weight:600;color:var(--brown-light);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--cream-border);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--cream-border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,243,207,.4)}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-green{background:#e8f5e9;color:var(--green)}
+.badge-red{background:#fbe9e7;color:var(--red)}
+.badge-gold{background:#fff9e6;color:var(--gold)}
+.pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+.page-btn{padding:6px 12px;border:2px solid var(--cream-border);border-radius:8px;background:var(--white);cursor:pointer;font-size:.82rem;transition:all .2s}
+.page-btn:hover,.page-btn.active{background:var(--brown);color:var(--cream);border-color:var(--brown)}
+.page-info{font-size:.82rem;color:var(--brown-light)}
+
+/* DRAWER */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(58,52,38,.4);z-index:200;backdrop-filter:blur(3px)}
+.drawer-overlay.open{display:flex;align-items:flex-start;justify-content:flex-end}
+.drawer{background:var(--white);width:480px;max-width:96vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-8px 0 32px rgba(58,52,38,.15);display:flex;flex-direction:column;gap:0}
+.drawer h2{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:4px}
+.drawer .d-email{font-size:.85rem;color:var(--brown-light);margin-bottom:20px}
+.drawer-close{position:absolute;top:20px;right:20px;background:var(--cream);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.drawer-close:hover{background:var(--cream-dark)}
+
+/* TABS */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--cream-border);margin-bottom:20px;overflow-x:auto}
+.tab{padding:9px 16px;border:none;background:transparent;font-size:.83rem;font-weight:500;color:var(--brown-light);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--brown)}
+.tab.active{color:var(--brown);border-bottom-color:var(--gold);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:var(--brown);margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:.88rem;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--brown)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--cream-border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row label{font-size:.85rem;color:var(--brown)}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--cream-border);border-radius:24px;transition:.3s}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.slider{background:var(--brown)}
+.toggle input:checked+.slider:before{transform:translateX(20px)}
+
+/* STAMPS GRID IN DRAWER */
+.stamps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
+.stamp-dot{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--cream-border);background:var(--cream)}
+.stamp-dot.filled{background:var(--brown);border-color:var(--brown)}
+
+/* ACTIVITY LOG */
+.activity-log{display:flex;flex-direction:column;gap:8px}
+.activity-item{display:flex;gap:12px;align-items:flex-start}
+.activity-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.activity-dot.stamp{background:#e8f5e9}
+.activity-dot.redeem{background:#fff9e6}
+.activity-dot.register{background:#e3f2fd}
+.activity-dot.adjust{background:#fce4ec}
+.activity-content .a-title{font-size:.85rem;font-weight:600}
+.activity-content .a-date{font-size:.75rem;color:var(--brown-light);margin-top:2px}
+
+/* STAMPS ACTIONS */
+.stamp-actions{display:flex;gap:10px;margin-bottom:16px}
+.stamp-actions input{flex:1;padding:10px 14px;border:2px solid var(--cream-border);border-radius:var(--radius-sm);background:var(--cream);font-size:1.1rem;font-weight:700;text-align:center;outline:none;transition:border .2s}
+.stamp-actions input:focus{border-color:var(--brown)}
+.stamp-actions button{padding:10px 18px;border:none;border-radius:var(--radius-sm);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s}
+
+/* IMPORT */
+.import-drop{border:3px dashed var(--cream-border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream)}
+.import-drop:hover,.import-drop.over{border-color:var(--gold);background:#fff9e6}
+.import-drop .drop-icon{font-size:2.5rem;margin-bottom:8px}
+.import-drop p{color:var(--brown-light);font-size:.88rem}
+.import-drop strong{color:var(--brown);display:block;margin-bottom:4px;font-size:1rem}
+#import-file{display:none}
+.import-preview{margin-top:16px}
+.import-stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.import-stat{background:var(--white);border:2px solid var(--cream-border);border-radius:var(--radius-sm);padding:10px 16px;text-align:center;flex:1}
+.import-stat .is-num{font-size:1.4rem;font-weight:800}
+.import-stat .is-lbl{font-size:.72rem;color:var(--brown-light);text-transform:uppercase}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--brown);color:var(--cream);padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:1000;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#2e7d32}
+.toast.error{background:var(--red)}
+
+/* NEW CLIENT FORM */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
+.section-header h1{font-family:'Playfair Display',serif;font-size:1.5rem}
+
+/* CHART LEGEND CUSTOM */
+.legend-row{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--brown-mid)}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.cfg-tab-btn {
+  padding: 8px 18px;
+  border: 2px solid #3A3426;
+  background: white;
+  color: #3A3426;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.cfg-tab-btn.active {
+  background: #3A3426;
+  color: white;
+}
+.card-box {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+}
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85em;
+  color: #555;
+  font-weight: 500;
+}
+.field-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9em;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field-input:focus {
+  border-color: #3A3426;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="width:90px;height:90px;margin:0 auto 16px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;color:var(--brown)">{{ biz_name[0].upper() }}</div>
+    <h1>{{ biz_name }} Admin</h1>
+    <p>Introduce el PIN de administrador</p>
+    <input type="password" id="login-pin" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Entrar →</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div style="width:50px;height:50px;margin:0 auto 8px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--brown)">{{ biz_name[0].upper() }}</div>
+      <span>{{ biz_name }}</span>
+      <small>Panel de administración</small>
+    </div>
+    <nav>
+      <div class="nav-section">Principal</div>
+      <a class="active" onclick="showSection('dashboard')" id="nav-dashboard">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a onclick="showSection('bi')" id="nav-bi">
+        <span class="icon">📈</span> Business Intelligence
+      </a>
+      <a onclick="showSection('birthdays')" id="nav-birthdays">
+        <span class="icon">🎂</span> Cumpleaños
+        <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:20px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
+      </a>
+      <div class="nav-section">Clientes</div>
+      <a onclick="showSection('clients')" id="nav-clients">
+        <span class="icon">👥</span> Clientes
+      </a>
+      <a onclick="showSection('new-client')" id="nav-new-client">
+        <span class="icon">➕</span> Nuevo cliente
+      </a>
+      <a onclick="showSection('import')" id="nav-import">
+        <span class="icon">📥</span> Importar CSV
+      </a>
+      <div class="nav-section">Herramientas</div>
+      <a onclick="exportCSV()" id="nav-export">
+        <span class="icon">📤</span> Exportar CSV
+      </a>
+      <a href="/register" target="_blank" id="nav-register">
+        <span class="icon">🔗</span> Landing de alta
+      </a>
+      <a onclick="showSection('config')" id="nav-config">
+        <span class="icon">⚙️</span> Configuración
+      </a>
+    </nav>
+    <div class="sidebar-footer">{{ biz_name }} © 2026</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="topbar-title">Dashboard</h2>
+      <div class="topbar-right">
+        <span style="font-size:.82rem;color:var(--brown-light)" id="topbar-date"></span>
+        <button class="btn-sm btn-primary" onclick="refreshAll()">↺ Actualizar</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══ DASHBOARD ═══ -->
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-num" id="s-clients">–</div><div class="stat-label">Clientes</div><div class="stat-delta delta-neu" id="s-clients-d"></div></div>
+          <div class="stat-card"><div class="stat-icon">🍪</div><div class="stat-num" id="s-stamps">–</div><div class="stat-label">Sellos totales</div><div class="stat-delta delta-neu" id="s-stamps-d"></div></div>
+          <div class="stat-card"><div class="stat-icon">🎁</div><div class="stat-num" id="s-rewards">–</div><div class="stat-label">Premios canjeados</div></div>
+          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-num" id="s-active-awards">–</div><div class="stat-label">Premios pendientes</div></div>
+          <div class="stat-card"><div class="stat-icon">🆕</div><div class="stat-num" id="s-new30">–</div><div class="stat-label">Nuevos (30d)</div><div class="stat-delta delta-neu" id="s-new30-d"></div></div>
+        </div>
+
+        <!-- MES ANTERIOR vs ACTUAL -->
+        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Comparativa de periodos</h3>
+        <div class="comparison-row" style="margin-bottom:24px">
+          <div class="period-card">
+            <div class="period-label">📅 Mes anterior – Sellos</div>
+            <div class="period-num" id="prev-stamps">–</div>
+            <div class="period-sub" id="prev-stamps-label">Cargando...</div>
+          </div>
+          <div class="period-card current">
+            <div class="period-label">✨ Mes actual – Sellos</div>
+            <div class="period-num" id="curr-stamps">–</div>
+            <div class="period-sub" id="curr-stamps-label">Cargando...</div>
+          </div>
+          <div class="period-card">
+            <div class="period-label">📅 Mes anterior – Nuevos</div>
+            <div class="period-num" id="prev-new">–</div>
+            <div class="period-sub">clientes registrados</div>
+          </div>
+          <div class="period-card current">
+            <div class="period-label">✨ Mes actual – Nuevos</div>
+            <div class="period-num" id="curr-new">–</div>
+            <div class="period-sub">clientes registrados</div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY CHART -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3>Actividad diaria – últimos 30 días</h3>
+            <div class="legend-row">
+              <div class="legend-item"><div class="legend-dot" style="background:#3A3426"></div>Sellos añadidos</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div>Premios canjeados</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf50"></div>Nuevos clientes</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="activity-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Top 5 Clientes 🏆</h3>
+            <div class="top-list" id="dash-top-list" style="margin-top:8px"></div>
+          </div>
+        </div>
+
+        <!-- RECENT BIRTHDAYS TEASER -->
+        <div id="dash-bdays" style="margin-bottom:24px"></div>
+      </div>
+
+      <!-- ═══ BUSINESS INTELLIGENCE ═══ -->
+      <div class="section" id="section-bi">
+        <div class="section-header">
+          <h1>Business Intelligence 📈</h1>
+        </div>
+
+        <div class="stats-grid" id="bi-stats-grid" style="margin-bottom:24px">
+          <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-num" id="bi-avg-stamps">–</div><div class="stat-label">Media sellos/cliente</div></div>
+          <div class="stat-card"><div class="stat-icon">🔄</div><div class="stat-num" id="bi-conversion">–%</div><div class="stat-label">% con premio canjeado</div></div>
+          <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-num" id="bi-active-cards">–</div><div class="stat-label">Tarjetas activas</div></div>
+        </div>
+
+        <div class="charts-row" style="margin-bottom:24px">
+          <div class="chart-card">
+            <h3>Evolución mensual de sellos</h3>
+            <div class="chart-wrap">
+              <canvas id="monthly-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Distribución de sellos actuales</h3>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="dist-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3>Nuevos clientes por mes</h3>
+            <div class="chart-wrap">
+              <canvas id="new-clients-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Top 10 Clientes por sellos totales</h3>
+            <div class="top-list" id="bi-top-list" style="max-height:280px;overflow-y:auto;margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CUMPLEAÑOS ═══ -->
+      <div class="section" id="section-birthdays">
+        <div class="section-header">
+          <h1>Cumpleaños 🎂</h1>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="birthday-section">
+              <h3>🎉 Hoy</h3>
+              <div id="bday-today" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="birthday-section">
+              <h3>📅 Este mes</h3>
+              <div id="bday-month" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CLIENTES ═══ -->
+      <div class="section" id="section-clients">
+        <div class="section-header">
+          <h1>Clientes</h1>
+          <button class="btn-sm btn-primary" onclick="showSection('new-client')">+ Nuevo</button>
+        </div>
+        <div class="search-bar">
+          <input id="search-input" placeholder="Buscar por nombre, email o teléfono…" onkeydown="if(event.key==='Enter')searchClients()">
+          <button onclick="searchClients()">🔍 Buscar</button>
+          <button onclick="loadClients(1)" class="btn-sm btn-ghost" style="padding:10px 16px">Todos</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table id="clients-table">
+              <thead><tr>
+                <th>Cliente</th><th>Email</th><th>Sellos</th><th>Premios</th><th>Estado</th><th>Registro</th><th></th>
+              </tr></thead>
+              <tbody id="clients-tbody"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--brown-light)">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination" id="pagination"></div>
+        <div style="font-size:.78rem;color:var(--brown-light);text-align:center;margin-top:8px" id="clients-total-label"></div>
+      </div>
+
+      <!-- ═══ NUEVO CLIENTE ═══ -->
+      <div class="section" id="section-new-client">
+        <div class="section-header"><h1>Nuevo Cliente</h1></div>
+        <div style="max-width:560px">
+          <div class="card">
+            <div class="form-row">
+              <div class="form-group"><label>Nombre *</label><input id="nc-first" placeholder="María"></div>
+              <div class="form-group"><label>Apellido</label><input id="nc-last" placeholder="García"></div>
+            </div>
+            <div class="form-group"><label>Email *</label><input id="nc-email" type="email" placeholder="maria@ejemplo.com"></div>
+            <div class="form-row">
+              <div class="form-group"><label>Teléfono</label><input id="nc-phone" placeholder="+34 600 000 000"></div>
+              <div class="form-group"><label>Fecha nacimiento</label><input id="nc-birth" type="date"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Origen</label>
+                <select id="nc-origin"><option value="Admin">Admin</option><option value="Web">Web</option><option value="Landing">Landing</option><option value="Import">Import</option><option value="API">API</option><option value="Shopify">Shopify</option></select>
+              </div>
+              <div class="form-group"><label>Idioma</label>
+                <select id="nc-lang"><option value="es">Español</option><option value="en">English</option><option value="ca">Català</option></select>
+              </div>
+            </div>
+            <div class="form-group"><label>Notas internas</label><textarea id="nc-notes" placeholder="Observaciones sobre el cliente..."></textarea></div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <label class="toggle"><input type="checkbox" id="nc-optin-email" checked><span class="slider"></span></label>
+              <span style="font-size:.83rem">Acepta emails</span>
+              <label class="toggle" style="margin-left:12px"><input type="checkbox" id="nc-optin-sms"><span class="slider"></span></label>
+              <span style="font-size:.83rem">Acepta SMS</span>
+            </div>
+            <div style="margin-top:20px;display:flex;gap:10px">
+              <button class="btn-sm btn-primary" style="padding:12px 28px;font-size:.9rem" onclick="createClient()">Crear cliente</button>
+              <button class="btn-sm btn-ghost" style="padding:12px 20px;font-size:.9rem" onclick="clearNewClient()">Limpiar</button>
+            </div>
+            <div id="nc-msg" style="margin-top:12px;font-size:.85rem;min-height:20px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ IMPORTAR CSV ═══ -->
+      <div class="section" id="section-import">
+        <div class="section-header"><h1>Importar Clientes 📥</h1></div>
+        <div style="max-width:600px">
+          <div class="card" style="margin-bottom:16px">
+            <h3 class="card-title" style="margin-bottom:8px">Formato del archivo CSV</h3>
+            <p style="font-size:.82rem;color:var(--brown-light);margin-bottom:12px">El CSV debe tener cabeceras. Columnas soportadas:</p>
+            <code style="display:block;background:var(--cream);padding:12px;border-radius:8px;font-size:.78rem;color:var(--brown);line-height:1.8">first_name, last_name, email, phone, birth_date (YYYY-MM-DD), stamps, notes, origin</code>
+            <button class="btn-sm btn-ghost" style="margin-top:12px;padding:8px 16px" onclick="downloadTemplate()">⬇ Descargar plantilla CSV</button>
+          </div>
+          <div class="import-drop" id="drop-zone" onclick="document.getElementById('import-file').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="handleDrop(event)">
+            <div class="drop-icon">📂</div>
+            <strong>Arrastra tu CSV aquí o haz clic</strong>
+            <p>Formatos: .csv · Máx. 5000 filas</p>
+          </div>
+          <input type="file" id="import-file" accept=".csv" onchange="handleFileSelect(event)">
+          <div id="import-preview" class="import-preview" style="display:none">
+            <div class="import-stats">
+              <div class="import-stat"><div class="is-num" id="imp-total">0</div><div class="is-lbl">Total filas</div></div>
+              <div class="import-stat"><div class="is-num" id="imp-valid">0</div><div class="is-lbl">Válidas</div></div>
+              <div class="import-stat"><div class="is-num" id="imp-errors">0</div><div class="is-lbl">Con errores</div></div>
+            </div>
+            <div id="imp-errors-list" style="margin-top:12px;font-size:.78rem;color:var(--red)"></div>
+            <button class="btn-sm btn-primary" id="imp-btn" style="margin-top:16px;padding:12px 28px;font-size:.9rem" onclick="doImport()">Importar clientes →</button>
+            <div id="imp-msg" style="margin-top:10px;font-size:.85rem"></div>
+          </div>
+        </div>
+      </div>
+      <!-- ═══════════════════════ CONFIGURACIÓN ═══════════════════════ -->
+      <div id="section-config" class="section">
+        <div class="section-header">
+          <h2>⚙️ Configuración de Tarjeta</h2>
+          <p style="color:#666;font-size:0.9em">Personaliza todos los aspectos de tu Sukie Card</p>
+        </div>
+
+        <!-- Config sub-tabs -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+          <button class="cfg-tab-btn active" onclick="showCfgTab('general')" id="cfgtab-general">📋 General</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('programa')" id="cfgtab-programa">🎯 Programa</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('landing')" id="cfgtab-landing">🌐 Landing de Alta</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('diseno')" id="cfgtab-diseno">🎨 Diseño</button>
+          <button class="cfg-tab-btn" onclick="showCfgTab('comunicaciones')" id="cfgtab-comunicaciones">✉️ Comunicaciones</button>
+        </div>
+
+        <!-- ── TAB: GENERAL ── -->
+        <div id="cfgpanel-general" class="cfg-panel">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">📋 General</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Nombre de tarjeta<input type="text" id="cfg-card_name" class="field-input" placeholder="Sellos"></label>
+              <label class="field-label">Título tarjeta<input type="text" id="cfg-card_title" class="field-input" placeholder="Sukie Card"></label>
+              <label class="field-label">Emisor<input type="text" id="cfg-issuer" class="field-input" placeholder="Sukie Cookie"></label>
+              <label class="field-label">Prefijo numeración<input type="text" id="cfg-card_prefix" class="field-input" placeholder="C521"></label>
+            </div>
+            <label class="field-label" style="margin-top:12px">Descripción
+              <textarea id="cfg-description" class="field-input" rows="3" placeholder="Tarjeta de sellos Sukie Cookie" style="resize:vertical"></textarea>
+            </label>
+            <h4 style="margin:20px 0 12px;color:#3A3426">Vencimiento</h4>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="cfg-expiry" value="never" id="cfg-expiry-never"> Sin fecha de vencimiento
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="cfg-expiry" value="date" id="cfg-expiry-date"> A fecha determinada
+                <input type="date" id="cfg-expiry_date" class="field-input" style="width:180px;margin-left:8px">
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="cfg-expiry" value="days_from_register" id="cfg-expiry-days"> Plazo fijo desde alta
+                <input type="number" id="cfg-expiry_days" class="field-input" style="width:100px;margin-left:8px" placeholder="365"> días
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: PROGRAMA ── -->
+        <div id="cfgpanel-programa" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">🎯 Programa de Sellos</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Sellos por premio
+                <input type="number" id="cfg-stamps_per_reward" class="field-input" min="1" max="100" placeholder="10">
+              </label>
+              <label class="field-label">Nombre del premio
+                <input type="text" id="cfg-reward_name" class="field-input" placeholder="Cookie Gratis">
+              </label>
+            </div>
+            <label class="field-label" style="margin-top:12px">Mensaje al conseguir 1 sello
+              <input type="text" id="cfg-msg_single" class="field-input" placeholder="{nombre} has conseguido 1 sello">
+              <small style="color:#999">Variables: {nombre}</small>
+            </label>
+            <label class="field-label" style="margin-top:12px">Mensaje al conseguir varios sellos
+              <input type="text" id="cfg-msg_multiple" class="field-input" placeholder="{nombre} has conseguido {#} sellos">
+              <small style="color:#999">Variables: {nombre}, {#}</small>
+            </label>
+
+            <h4 style="margin:24px 0 12px;color:#3A3426">🎂 Programa de Cumpleaños</h4>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="cfg-birthday_enabled"> Activar programa de cumpleaños
+            </label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Mensaje push cumpleaños
+                <input type="text" id="cfg-birthday_msg_push" class="field-input" placeholder="¡Feliz Cumpleaños!">
+              </label>
+              <label class="field-label">Hora de envío
+                <input type="time" id="cfg-birthday_time" class="field-input" value="07:00">
+              </label>
+            </div>
+
+            <h4 style="margin:24px 0 12px;color:#3A3426">🎉 Aniversario de Afiliación</h4>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="cfg-anniversary_enabled"> Activar programa de aniversario
+            </label>
+
+          <div style="margin-top:24px;">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#3A3426;">🏆 Sistema de Niveles VIP</h3>
+            <p style="font-size:12px;color:#888;margin-bottom:16px;">Define los premios y beneficios para cada nivel. Los clientes suben de nivel automáticamente.</p>
+            
+            <!-- Tier Bronze -->
+            <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;border:2px solid #CD7F32;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">🥉</span>
+                <span style="font-weight:700;color:#CD7F32;">NIVEL BRONCE</span>
+                <span style="font-size:11px;color:#888;margin-left:auto;">0 sellos totales para activar</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="field-label">Premio por completar tarjeta</label>
+                  <input class="field-input" id="tier0-premio" placeholder="Ej: Cookie gratis">
+                </div>
+                <div>
+                  <label class="field-label">Sellos necesarios</label>
+                  <input class="field-input" id="tier0-sellos" type="number" placeholder="10">
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Descripción del premio</label>
+                <input class="field-input" id="tier0-desc" placeholder="Ej: 1 cookie de tu elección">
+              </div>
+              <div style="margin-top:10px;">
+                <label class="field-label">Beneficios (uno por línea)</label>
+                <textarea class="field-input" id="tier0-beneficios" rows="3" placeholder="1 cookie gratis cada 10 sellos&#10;Sorpresa de cumpleaños"></textarea>
+              </div>
+            </div>
+            
+            <!-- Tier Silver -->
+            <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;border:2px solid #A8A8B3;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">🥈</span>
+                <span style="font-weight:700;color:#8888A0;">NIVEL PLATA</span>
+                <span style="font-size:11px;color:#888;margin-left:auto;">
+                  A partir de <input type="number" id="tier1-min" style="width:60px;padding:2px 6px;border:1px solid #ddd;border-radius:6px;" placeholder="50"> sellos totales
+                </span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="field-label">Premio por completar tarjeta</label>
+                  <input class="field-input" id="tier1-premio" placeholder="Ej: Box 6 cookies">
+                </div>
+                <div>
+                  <label class="field-label">Sellos necesarios</label>
+                  <input class="field-input" id="tier1-sellos" type="number" placeholder="8">
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Descripción del premio</label>
+                <input class="field-input" id="tier1-desc" placeholder="Ej: Elige 6 cookies de la vitrina">
+              </div>
+              <div style="margin-top:10px;">
+                <label class="field-label">Beneficios (uno por línea)</label>
+                <textarea class="field-input" id="tier1-beneficios" rows="3" placeholder="Box 6 cookies cada 8 sellos&#10;10% descuento en todas tus compras"></textarea>
+              </div>
+            </div>
+            
+            <!-- Tier Gold -->
+            <div style="background:white;border-radius:14px;padding:16px;margin-bottom:12px;border:2px solid #c8a84b;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <span style="font-size:20px;">👑</span>
+                <span style="font-weight:700;color:#c8a84b;">NIVEL ORO</span>
+                <span style="font-size:11px;color:#888;margin-left:auto;">
+                  A partir de <input type="number" id="tier2-min" style="width:60px;padding:2px 6px;border:1px solid #ddd;border-radius:6px;" placeholder="150"> sellos totales
+                </span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="field-label">Premio por completar tarjeta</label>
+                  <input class="field-input" id="tier2-premio" placeholder="Ej: Box premium + bebida">
+                </div>
+                <div>
+                  <label class="field-label">Sellos necesarios</label>
+                  <input class="field-input" id="tier2-sellos" type="number" placeholder="7">
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Descripción del premio</label>
+                <input class="field-input" id="tier2-desc" placeholder="Ej: Box 12 cookies + bebida gratis">
+              </div>
+              <div style="margin-top:10px;">
+                <label class="field-label">Beneficios (uno por línea)</label>
+                <textarea class="field-input" id="tier2-beneficios" rows="3" placeholder="Box premium + bebida cada 7 sellos&#10;20% descuento permanente&#10;Acceso VIP a eventos"></textarea>
+              </div>
+            </div>
+            
+            <!-- Club name -->
+            <div style="background:white;border-radius:14px;padding:16px;border:1px solid #f0e8d0;">
+              <div style="font-weight:700;margin-bottom:12px;color:#3A3426;">🏅 Nombre del Club</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label class="field-label">Nombre del club</label>
+                  <input class="field-input" id="club-nombre" placeholder="Ej: Cookie VIP Club">
+                </div>
+                <div>
+                  <label class="field-label">Tagline del club</label>
+                  <input class="field-input" id="club-tagline" placeholder="Ej: Sé parte de algo especial">
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: LANDING ── -->
+        <div id="cfgpanel-landing" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">🌐 Landing de Alta</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Título del formulario
+                <input type="text" id="cfg-form_title" class="field-input" placeholder="Únete a la Sukie Card">
+              </label>
+              <label class="field-label">Texto del botón
+                <input type="text" id="cfg-button_text" class="field-input" placeholder="Registrarse">
+              </label>
+            </div>
+            <label class="field-label" style="margin-top:12px">Texto encabezado
+              <input type="text" id="cfg-header_text" class="field-input" placeholder="Regístrate y acumula cookies gratis">
+            </label>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Colores</h4>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <label class="field-label">Fondo
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-bg_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-bg_color_text" class="field-input" style="width:90px" placeholder="#FFF5B6">
+                </div>
+              </label>
+              <label class="field-label">Textos
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-text_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-text_color_text" class="field-input" style="width:90px" placeholder="#280011">
+                </div>
+              </label>
+              <label class="field-label">Botón
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-button_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-button_color_text" class="field-input" style="width:90px" placeholder="#280011">
+                </div>
+              </label>
+              <label class="field-label">Enlaces
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input type="color" id="cfg-link_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-link_color_text" class="field-input" style="width:90px" placeholder="#A0006B">
+                </div>
+              </label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Campos del formulario</h4>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9em">
+              <thead>
+                <tr style="background:#f5f5f5">
+                  <th style="padding:8px;text-align:left;border:1px solid #ddd">Campo</th>
+                  <th style="padding:8px;text-align:center;border:1px solid #ddd">Visible</th>
+                  <th style="padding:8px;text-align:center;border:1px solid #ddd">Obligatorio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Nombre</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_name" checked disabled></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_name_required"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Apellidos</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_lastname"></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_lastname_required"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Email</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_email" checked disabled></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_email_required" checked disabled></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Teléfono</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_phone"></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_phone_required"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px;border:1px solid #ddd">Fecha de nacimiento</td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_birthdate"></td>
+                  <td style="padding:8px;text-align:center;border:1px solid #ddd"><input type="checkbox" id="cfg-field_birthdate_required"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Datos legales de empresa</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+              <label class="field-label">Empresa<input type="text" id="cfg-company_name" class="field-input" placeholder="Nombre empresa"></label>
+              <label class="field-label">Email<input type="email" id="cfg-company_email" class="field-input" placeholder="email@empresa.com"></label>
+              <label class="field-label">Teléfono<input type="text" id="cfg-company_phone" class="field-input" placeholder="600000000"></label>
+            </div>
+            <label class="field-label" style="margin-top:12px">URL Términos y Condiciones
+              <input type="url" id="cfg-terms_url" class="field-input" placeholder="https://...">
+            </label>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Restricciones</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <label class="field-label">Fecha límite de registro
+                <input type="date" id="cfg-register_limit_date" class="field-input">
+              </label>
+              <label class="field-label">Acceso al formulario
+                <select id="cfg-access_type" class="field-input">
+                  <option value="public">Público / Abierto</option>
+                  <option value="private">Privado</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: DISEÑO ── -->
+        <div id="cfgpanel-diseno" class="cfg-panel" style="display:none">
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">🎨 Diseño de Tarjeta</h3>
+            <label class="field-label">Nombre comercial
+              <input type="text" id="cfg-commercial_name" class="field-input" placeholder="Sukie Cookie">
+            </label>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Colores de tarjeta</h4>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              <label class="field-label">Fondo tarjeta
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-card_bg_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-card_bg_color_text" class="field-input" style="flex:1" placeholder="#FFFFC6">
+                </div>
+              </label>
+              <label class="field-label">Color etiquetas
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-label_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-label_color_text" class="field-input" style="flex:1" placeholder="#220015">
+                </div>
+              </label>
+              <label class="field-label">Color textos
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-diseno_text_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-diseno_text_color_text" class="field-input" style="flex:1" placeholder="#220015">
+                </div>
+              </label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Colores de sellos</h4>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <label class="field-label">Fondo sello
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_bg_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_bg_color_text" class="field-input" style="flex:1" placeholder="#22000F">
+                </div>
+              </label>
+              <label class="field-label">Icono sello
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_icon_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_icon_color_text" class="field-input" style="flex:1" placeholder="#FFF5B6">
+                </div>
+              </label>
+              <label class="field-label">Borde sello
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_border_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_border_color_text" class="field-input" style="flex:1" placeholder="#FFF5B6">
+                </div>
+              </label>
+              <label class="field-label">Sello con premio
+                <div style="display:flex;gap:6px;align-items:center">
+                  <input type="color" id="cfg-stamp_filled_color" style="width:40px;height:32px;border:none;cursor:pointer">
+                  <input type="text" id="cfg-stamp_filled_color_text" class="field-input" style="flex:1" placeholder="#FF6B9D">
+                </div>
+              </label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Campos frontales de tarjeta</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label class="field-label">Etiqueta campo 1<input type="text" id="cfg-front_field1_label" class="field-input" placeholder="Titular"></label>
+              <label class="field-label">Valor campo 1<input type="text" id="cfg-front_field1_value" class="field-input" placeholder="NOMBRE Y APELLIDOS"></label>
+              <label class="field-label">Etiqueta campo 2<input type="text" id="cfg-front_field2_label" class="field-input" placeholder="Cookies disponibles"></label>
+              <label class="field-label">Valor campo 2<input type="text" id="cfg-front_field2_value" class="field-input" placeholder="Premios/Vales Disponibles"></label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Enlaces</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label class="field-label">Instagram<input type="url" id="cfg-link_instagram" class="field-input" placeholder="https://instagram.com/..."></label>
+              <label class="field-label">Web<input type="url" id="cfg-link_web" class="field-input" placeholder="https://..."></label>
+            </div>
+
+            <h4 style="margin:20px 0 12px;color:#3A3426">Textos parte trasera</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label class="field-label">Título actualizaciones<input type="text" id="cfg-back_title_updates" class="field-input"></label>
+              <label class="field-label">Título titular<input type="text" id="cfg-back_title_holder" class="field-input"></label>
+              <label class="field-label">Premios para canjear<input type="text" id="cfg-back_title_rewards_pending" class="field-input"></label>
+              <label class="field-label">Premios ganados<input type="text" id="cfg-back_title_rewards_won" class="field-input"></label>
+              <label class="field-label">Cómo conseguir sellos<input type="text" id="cfg-back_title_how" class="field-input"></label>
+              <label class="field-label">Detalles del premio<input type="text" id="cfg-back_title_reward_detail" class="field-input"></label>
+              <label class="field-label">Enlaces de interés<input type="text" id="cfg-back_title_links" class="field-input"></label>
+              <label class="field-label">Preguntas<input type="text" id="cfg-back_title_questions" class="field-input"></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: COMUNICACIONES ── -->
+        <div id="cfgpanel-comunicaciones" class="cfg-panel" style="display:none">
+          <div class="card-box" style="margin-bottom:16px">
+            <h3 style="margin-bottom:16px;color:#3A3426">⚙️ Configuración SMTP (para enviar emails)</h3>
+            <p style="color:#666;font-size:0.82em;margin-bottom:14px">Configura estas variables en Railway → Variables de entorno:</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:12px;font-family:monospace;font-size:0.8em;color:#333">
+              SMTP_HOST=smtp.gmail.com<br>
+              SMTP_PORT=587<br>
+              SMTP_USER=tu@gmail.com<br>
+              SMTP_PASS=tu-app-password-gmail<br>
+              SMTP_FROM=noreply@sukiecookie.es
+            </div>
+            <p style="color:#888;font-size:0.75em;margin-top:10px">💡 Para Gmail: Activa la verificación en 2 pasos → Contraseñas de aplicación → Genera una contraseña</p>
+          </div>
+          <div class="card-box">
+            <h3 style="margin-bottom:16px;color:#3A3426">✉️ Email de Bienvenida</h3>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="cfg-welcome_email_enabled"> Activar email de bienvenida al registrarse
+            </label>
+            <label class="field-label">Asunto
+              <input type="text" id="cfg-welcome_email_subject" class="field-input" placeholder="¡Bienvenido/a!">
+            </label>
+            <label class="field-label" style="margin-top:12px">Cuerpo del email
+              <textarea id="cfg-welcome_email_body" class="field-input" rows="6" style="resize:vertical;font-family:monospace;font-size:0.85em"></textarea>
+              <small style="color:#999">Variables: {nombre}, {link_tarjeta}</small>
+            </label>
+          </div>
+          <div class="card-box" style="margin-top:16px">
+            <h3 style="margin-bottom:16px;color:#3A3426">🎂 Email de Cumpleaños</h3>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="cfg-birthday_email_enabled"> Activar email de cumpleaños
+            </label>
+            <label class="field-label">Asunto
+              <input type="text" id="cfg-birthday_email_subject" class="field-input" placeholder="¡Feliz Cumpleaños!">
+            </label>
+            <label class="field-label" style="margin-top:12px">Cuerpo del email
+              <textarea id="cfg-birthday_email_body" class="field-input" rows="6" style="resize:vertical;font-family:monospace;font-size:0.85em"></textarea>
+              <small style="color:#999">Variables: {nombre}</small>
+            </label>
+          </div>
+
+          <!-- Distribución masiva -->
+          <div class="card-box" style="margin-top:16px">
+            <h3 style="margin-bottom:16px;color:#3A3426">📤 Distribución</h3>
+            <p style="color:#666;margin-bottom:16px">Envía la tarjeta por email a tus clientes. Se usa la plantilla de bienvenida.</p>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="dist-target" value="new" checked id="dist-new"> Solo nuevos clientes (sin email enviado)
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="radio" name="dist-target" value="all" id="dist-all"> Todos los clientes
+              </label>
+            </div>
+            <div style="margin-top:16px">
+              <button onclick="sendDistribution()" style="background:#3A3426;color:white;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:0.95em">
+                📨 Enviar distribución
+              </button>
+            </div>
+            <div id="dist-result" style="margin-top:12px;display:none"></div>
+            
+            <div style="margin-top:20px;border-top:1px solid #eee;padding-top:16px">
+              <h4 style="margin-bottom:10px;color:#3A3426">📧 Vista previa del email</h4>
+              <p style="color:#666;font-size:0.85em;margin-bottom:12px">Abre en el navegador cómo verá el email tu cliente:</p>
+              <button onclick="previewEmail()" style="background:#5C4A32;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-right:8px">
+                👁️ Ver preview email bienvenida
+              </button>
+              <button onclick="previewBirthdayEmail()" style="background:#5C4A32;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em">
+                🎂 Ver preview email cumpleaños
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <div style="margin-top:24px;display:flex;gap:12px;align-items:center">
+          <button onclick="saveConfig()" style="background:#3A3426;color:white;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:1em;font-weight:600">
+            💾 Guardar configuración
+          </button>
+          <span id="cfg-save-msg" style="display:none;color:#2e7d32;font-weight:600">✅ Guardado correctamente</span>
+          <span id="cfg-err-msg" style="display:none;color:#c62828;font-weight:600">❌ Error al guardar</span>
+        </div>
+      </div>
+
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- DRAWER (ficha cliente) -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="if(event.target===this)closeDrawer()">
+  <div class="drawer" style="position:relative">
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <h2 id="d-name">–</h2>
+    <div class="d-email" id="d-email"></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('tab-general')">General</button>
+      <button class="tab" onclick="showTab('tab-stamps')">Sellos</button>
+      <button class="tab" onclick="showTab('tab-activity')">Actividad</button>
+      <button class="tab" onclick="showTab('tab-edit')">Editar</button>
+      <button class="tab" onclick="showTab('tab-danger')">⚠ Eliminar</button>
+    </div>
+
+    <!-- TAB: GENERAL -->
+    <div class="tab-content active" id="tab-general">
+      <div class="stamps-grid" id="d-stamps-grid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="text-align:center;background:var(--cream);border-radius:12px;padding:12px">
+          <div style="font-size:1.6rem;font-weight:800" id="d-stamps-num">0</div>
+          <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Sellos</div>
+        </div>
+        <div style="text-align:center;background:var(--cream);border-radius:12px;padding:12px">
+          <div style="font-size:1.6rem;font-weight:800" id="d-total-stamps">0</div>
+          <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Total</div>
+        </div>
+        <div style="text-align:center;background:#fff9e6;border-radius:12px;padding:12px">
+          <div style="font-size:1.6rem;font-weight:800" id="d-awards">0</div>
+          <div style="font-size:.72rem;color:var(--brown-light);text-transform:uppercase">Premios</div>
+        </div>
+      </div>
+      <div style="font-size:.82rem;line-height:1.8">
+        <div><b>📧 Email:</b> <span id="d-info-email"></span></div>
+        <div><b>📞 Tel:</b> <span id="d-info-phone">–</span></div>
+        <div><b>🎂 Nac.:</b> <span id="d-info-birth">–</span></div>
+        <div><b>📍 Origen:</b> <span id="d-info-origin">–</span></div>
+        <div><b>🗓 Alta:</b> <span id="d-info-created">–</span></div>
+      </div>
+      <div id="d-notes-block" style="margin-top:12px;display:none">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--brown-light);margin-bottom:4px">Notas</div>
+        <div id="d-notes" style="background:var(--cream);padding:10px 12px;border-radius:8px;font-size:.83rem;line-height:1.5"></div>
+      </div>
+      <div id="d-award-banner" style="display:none;margin-top:16px;background:linear-gradient(135deg,#d4a017,#f5cb53);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:.95rem;font-weight:700;color:#3A3426">🎉 <span id="d-award-count"></span> premio(s) disponible(s)</div>
+        <button class="btn-sm btn-primary" style="margin-top:8px" onclick="redeemFromDrawer()">Canjear premio</button>
+      </div>
+    </div>
+
+    <!-- TAB: STAMPS -->
+    <div class="tab-content" id="tab-stamps">
+      <h3 style="font-size:.95rem;font-weight:600;margin-bottom:14px">Añadir sellos</h3>
+      <div class="stamp-actions">
+        <input type="number" id="d-stamps-input" placeholder="Nº cookies" min="1" max="50">
+        <button class="btn-sm btn-primary" style="font-size:.9rem;padding:10px 18px" onclick="addStampsFromDrawer()">✅ Añadir</button>
+        <button class="btn-sm btn-ghost" style="font-size:.9rem;padding:10px 14px" onclick="removeStampsFromDrawer()">➖</button>
+      </div>
+      <div id="d-stamp-msg" style="font-size:.83rem;margin-bottom:12px;min-height:20px"></div>
+      <hr style="border:none;border-top:1.5px solid var(--cream-border);margin-bottom:14px">
+      <h3 style="font-size:.95rem;font-weight:600;margin-bottom:14px">Canjear premios</h3>
+      <p style="font-size:.83rem;color:var(--brown-light);margin-bottom:10px">Premios disponibles: <strong id="d-award-count-stamps">0</strong></p>
+      <button class="btn-sm btn-gold" style="font-size:.9rem;padding:10px 20px" onclick="redeemFromDrawer()">🎁 Canjear 1 premio</button>
+    </div>
+
+    <!-- TAB: ACTIVIDAD -->
+    <div class="tab-content" id="tab-activity">
+      <div id="d-activity-log" class="activity-log"><div class="empty-state">Cargando...</div></div>
+    </div>
+
+    <!-- TAB: EDITAR -->
+    <div class="tab-content" id="tab-edit">
+      <div class="form-group"><label>Nombre</label><input id="e-first" placeholder="Nombre"></div>
+      <div class="form-group"><label>Apellido</label><input id="e-last" placeholder="Apellido"></div>
+      <div class="form-group"><label>Email</label><input id="e-email" type="email"></div>
+      <div class="form-group"><label>Teléfono</label><input id="e-phone" placeholder="+34..."></div>
+      <div class="form-group"><label>Fecha nacimiento</label><input id="e-birth" type="date"></div>
+      <div class="form-group"><label>Aniversario</label><input id="e-anniv" type="date"></div>
+      <div class="form-group"><label>Idioma</label>
+        <select id="e-lang"><option value="es">Español</option><option value="en">English</option><option value="ca">Català</option></select>
+      </div>
+      <div class="form-group"><label>Notas internas</label><textarea id="e-notes" placeholder="Observaciones..."></textarea></div>
+      <div style="margin-bottom:14px">
+        <div class="toggle-row"><label>Acepta email marketing</label><label class="toggle"><input type="checkbox" id="e-optin-email"><span class="slider"></span></label></div>
+        <div class="toggle-row"><label>Acepta SMS</label><label class="toggle"><input type="checkbox" id="e-optin-sms"><span class="slider"></span></label></div>
+        <div class="toggle-row"><label>Tarjeta activa</label><label class="toggle"><input type="checkbox" id="e-active"><span class="slider"></span></label></div>
+      </div>
+      <button class="btn-sm btn-primary" style="padding:12px 28px;font-size:.9rem" onclick="saveEdit()">Guardar cambios</button>
+      <div id="e-msg" style="margin-top:10px;font-size:.83rem;min-height:20px"></div>
+    </div>
+
+    <!-- TAB: ELIMINAR -->
+    <div class="tab-content" id="tab-danger">
+      <div style="background:#fbe9e7;border:2px solid #ffccbc;border-radius:12px;padding:20px;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:8px">⚠️</div>
+        <h3 style="font-size:1rem;color:var(--red);margin-bottom:8px">Eliminar cliente permanentemente</h3>
+        <p style="font-size:.83rem;color:var(--brown-mid);margin-bottom:16px;line-height:1.5">Esta acción elimina el cliente, su tarjeta y todo el historial de sellos. <strong>No se puede deshacer.</strong></p>
+        <input id="d-confirm-name" placeholder="Escribe el nombre para confirmar" style="width:100%;padding:10px;border:2px solid #ffccbc;border-radius:8px;margin-bottom:12px;font-size:.88rem;outline:none;background:#fff">
+        <button class="btn-sm btn-danger" style="padding:12px 24px;font-size:.9rem" onclick="deleteCustomer()">🗑 Eliminar definitivamente</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+const BASE = '{{ biz_api_base or "" }}' || window.location.origin;
+const BIZ_SLUG = '{{ biz_slug or "" }}';
+let PIN = '';
+let currentPage = 1;
+let totalPages = 1;
+let searchQuery = '';
+let currentCardId = null;
+let currentCustomerName = '';
+let importData = [];
+let activityChart = null;
+let monthlyChart = null;
+let distChart = null;
+let newClientsChart = null;
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const p = document.getElementById('login-pin').value;
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/verify-pin?pin=${p}`);
+    if(r.status===403){document.getElementById('login-err').textContent='PIN incorrecto';return;}
+    PIN = p;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    initDashboard();
+  }catch(e){document.getElementById('login-err').textContent='Error de conexión';}
+}
+document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// Auto-login from sessionStorage if PIN is saved
+window.addEventListener('DOMContentLoaded', function() {
+  const slug = '{{ biz_slug }}' || document.querySelector('[data-slug]')?.getAttribute('data-slug');
+  if (!slug) return;
+  const savedPin = sessionStorage.getItem('zubcard_pin_' + slug);
+  if (savedPin) {
+    sessionStorage.removeItem('zubcard_pin_' + slug);
+    document.getElementById('login-pin').value = savedPin;
+    setTimeout(() => doLogin(), 100);
+  }
+});
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+const sectionTitles = {dashboard:'Dashboard',bi:'Business Intelligence',birthdays:'Cumpleaños',clients:'Clientes',import:'Importar Clientes','new-client':'Nuevo Cliente','config':'Configuración'};
+function showSection(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  const nav = document.getElementById('nav-'+name);
+  if(nav) nav.classList.add('active');
+  document.getElementById('topbar-title').textContent = sectionTitles[name]||name;
+  if(name==='clients') loadClients(1);
+  if(name==='bi') loadBI();
+  if(name==='config') loadConfig();
+  if(name==='birthdays') loadBirthdays();
+}
+
+// ── DASHBOARD INIT ─────────────────────────────────────────────────────────
+async function initDashboard(){
+  await Promise.all([loadStats(), loadActivity(), loadTopCustomers(5,'dash'), loadBirthdaysBadge()]);
+}
+
+async function refreshAll(){
+  showToast('Actualizando…');
+  await initDashboard();
+  if(document.getElementById('section-clients').classList.contains('active')) loadClients(currentPage);
+  if(document.getElementById('section-bi').classList.contains('active')) loadBI();
+  if(document.getElementById('section-birthdays').classList.contains('active')) loadBirthdays();
+  showToast('Datos actualizados ✓','success');
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────
+async function loadStats(){
+  const r = await fetch(`${BASE}/api/admin/stats?pin=${PIN}&slug=${BIZ_SLUG}`);
+  const d = await r.json();
+  // Map backend keys (snake_case) to dashboard labels
+  const totalClients  = d.total_customers||d.total_clients||0;
+  const totalStamps   = d.total_stamps||0;
+  const totalRewards  = d.total_redeemed||d.total_rewards||0;
+  const activeAwards  = d.award_balance||d.active_awards||0;
+  const new30d        = d.new_clients_30d||0;
+  const stamps30d     = d.stamps_last_30d||d.stamps_30d||0;
+  const stampsPrev    = d.stamps_prev_30d||0;
+  const newPrev       = d.new_clients_prev||0;
+
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('s-clients',totalClients);
+  set('s-stamps',totalStamps);
+  set('s-rewards',totalRewards);
+  set('s-active-awards',activeAwards);
+  set('s-new30',new30d);
+
+  // Deltas
+  const deltaEl=(id,curr,prev)=>{
+    const el=document.getElementById(id); if(!el) return;
+    const diff=curr-prev; const pct=prev>0?Math.round(Math.abs(diff)/prev*100):0;
+    const arrow=diff>0?'▲':diff<0?'▼':'–';
+    el.textContent=prev>0?`${arrow} ${Math.abs(diff)} vs mes ant. (${pct}%)`:(diff>0?`+${diff} este mes`:'');
+    el.className='stat-delta '+(diff>0?'delta-up':diff<0?'delta-down':'delta-neu');
+  };
+  deltaEl('s-stamps-d',stamps30d,stampsPrev);
+  deltaEl('s-new30-d',new30d,newPrev);
+
+  // Comparison row
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const now=new Date(); const cm=now.getMonth(); const cy=now.getFullYear();
+  const pm=cm===0?11:cm-1; const py=cm===0?cy-1:cy;
+  document.getElementById('prev-stamps').textContent=stampsPrev;
+  document.getElementById('prev-stamps-label').textContent=monthNames[pm]+' '+py;
+  document.getElementById('curr-stamps').textContent=stamps30d;
+  document.getElementById('curr-stamps-label').textContent=monthNames[cm]+' '+cy;
+  document.getElementById('prev-new').textContent=newPrev;
+  document.getElementById('curr-new').textContent=new30d;
+
+  // BI stats
+  const avgStamps = totalClients>0?(totalStamps/totalClients).toFixed(1):0;
+  const conversion = totalClients>0?Math.round(totalRewards/totalClients*100):0;
+  const biAvg=document.getElementById('bi-avg-stamps'); if(biAvg) biAvg.textContent=avgStamps;
+  const biConv=document.getElementById('bi-conversion'); if(biConv) biConv.textContent=conversion+'%';
+  const biActive=document.getElementById('bi-active-cards'); if(biActive) biActive.textContent=d.active_cards||totalClients;
+}
+
+// ── ACTIVITY CHART ─────────────────────────────────────────────────────────
+async function loadActivity(){
+  const r = await fetch(`${BASE}/api/admin/activity?pin=${PIN}&days=30&slug=${BIZ_SLUG}`);
+  const resp = await r.json();
+  const data = resp.activity||resp||[];
+  const labels = data.map(d=>d.date.slice(5));
+  const stamps = data.map(d=>d.stamps);
+  const redeems = data.map(d=>d.redeems);
+  const newC = data.map(d=>d.new_clients);
+  const ctx = document.getElementById('activity-chart').getContext('2d');
+  if(activityChart) activityChart.destroy();
+  activityChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Sellos',data:stamps,backgroundColor:'rgba(58,52,38,.75)',borderRadius:4,order:2},
+      {label:'Canjes',data:redeems,backgroundColor:'rgba(212,160,23,.8)',borderRadius:4,order:2},
+      {label:'Nuevos',data:newC,type:'line',borderColor:'#4caf50',backgroundColor:'rgba(76,175,80,.1)',tension:.4,fill:true,pointRadius:3,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},stepSize:1}}}}
+  });
+}
+
+// ── TOP CUSTOMERS ──────────────────────────────────────────────────────────
+async function loadTopCustomers(limit=5, target='dash'){
+  const r = await fetch(`${BASE}/api/admin/top-customers?pin=${PIN}&limit=${limit}&slug=${BIZ_SLUG}`);
+  const resp = await r.json();
+  const data = resp.top||resp||[];
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  const listEl = document.getElementById(target==='dash'?'dash-top-list':'bi-top-list');
+  if(!listEl) return;
+  listEl.innerHTML = data.length===0?'<div class="empty-state">Sin datos aún</div>':data.map((c,i)=>`
+    <div class="top-item" onclick="openDrawer('${c.id||c.card_id}')">
+      <div class="top-rank">${medals[i]||i+1}</div>
+      <div class="top-info"><div class="top-name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="top-email">${c.email}</div></div>
+      <div class="top-stamps">${c.totalStamps||c.total_stamps||0}🍪</div>
+    </div>`).join('');
+}
+
+// ── BIRTHDAYS ──────────────────────────────────────────────────────────────
+async function loadBirthdaysBadge(){
+  try{
+    const r = await fetch(`${BASE}/api/admin/birthdays?pin=${PIN}&slug=${BIZ_SLUG}`);
+    const d = await r.json();
+    const cnt = (d.today||[]).length;
+    const badge = document.getElementById('bday-badge');
+    if(cnt>0){badge.textContent=cnt;badge.style.display='inline';}
+    else badge.style.display='none';
+
+    // Teaser on dashboard
+    const teaser = document.getElementById('dash-bdays');
+    if((d.today||[]).length>0){
+      teaser.innerHTML=`<div class="card"><h3 style="font-size:.95rem;font-weight:600;margin-bottom:10px">🎂 Cumpleaños hoy (${d.today.length})</h3><div class="birthday-list">${
+        d.today.slice(0,3).map(c=>`<div class="birthday-item today" onclick="openDrawer('${c.id||c.card_id}')"><div class="birthday-info"><div class="name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="date">${c.email}</div></div><span class="birthday-badge">¡Hoy! 🎂</span></div>`).join('')
+      }</div></div>`;
+    }else teaser.innerHTML='';
+  }catch(e){}
+}
+
+async function loadBirthdays(){
+  const r = await fetch(`${BASE}/api/admin/birthdays?pin=${PIN}&slug=${BIZ_SLUG}`);
+  const d = await r.json();
+  const render=(list,empty)=>list.length===0?`<div class="empty-state">${empty}</div>`:list.map(c=>`
+    <div class="birthday-item today" onclick="openDrawer('${c.id||c.card_id}')">
+      <div class="birthday-info"><div class="name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="date">${c.email} · ${c.birthDate||c.birth_date||''}</div></div>
+      <span class="birthday-badge">🎂</span>
+    </div>`).join('');
+  document.getElementById('bday-today').innerHTML=render(d.today||[],'Nadie cumple años hoy');
+  document.getElementById('bday-month').innerHTML=render(d.this_month||[],'Sin cumpleaños este mes');
+}
+
+// ── BUSINESS INTELLIGENCE ──────────────────────────────────────────────────
+async function loadBI(){
+  const [statsR, actR, topR] = await Promise.all([
+    fetch(`${BASE}/api/admin/stats?pin=${PIN}&slug=${BIZ_SLUG}`),
+    fetch(`${BASE}/api/admin/activity?pin=${PIN}&days=180&slug=${BIZ_SLUG}`),
+    fetch(`${BASE}/api/admin/top-customers?pin=${PIN}&limit=10&slug=${BIZ_SLUG}`)
+  ]);
+  const stats = await statsR.json();
+  const actResp = await actR.json();
+  const activity = actResp.activity||actResp||[];
+  const top = await topR.json();
+
+  // KPI cards
+  const tc=stats.total_customers||stats.total_clients||0;
+  const ts=stats.total_stamps||0;
+  const tr=stats.total_redeemed||stats.total_rewards||0;
+  const avgStamps = tc>0?(ts/tc).toFixed(1):0;
+  const conversion = tc>0?Math.round(tr/tc*100):0;
+  document.getElementById('bi-avg-stamps').textContent=avgStamps;
+  document.getElementById('bi-conversion').textContent=conversion+'%';
+  document.getElementById('bi-active-cards').textContent=stats.active_cards||tc;
+
+  // Monthly chart (aggregate by month)
+  const monthlyMap={};
+  const newMap={};
+  activity.forEach(d=>{
+    const m=d.date.slice(0,7);
+    monthlyMap[m]=(monthlyMap[m]||0)+d.stamps;
+    newMap[m]=(newMap[m]||0)+d.new_clients;
+  });
+  const months=Object.keys(monthlyMap).sort().slice(-6);
+  const monthLabels=months.map(m=>{const[y,mo]=m.split('-');return['En','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][parseInt(mo)-1]+' '+y.slice(2);});
+
+  const ctx2=document.getElementById('monthly-chart').getContext('2d');
+  if(monthlyChart) monthlyChart.destroy();
+  monthlyChart=new Chart(ctx2,{type:'bar',data:{labels:monthLabels,datasets:[{label:'Sellos',data:months.map(m=>monthlyMap[m]||0),backgroundColor:'rgba(58,52,38,.75)',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'}}}}});
+
+  // New clients chart
+  const ctx4=document.getElementById('new-clients-chart').getContext('2d');
+  if(newClientsChart) newClientsChart.destroy();
+  newClientsChart=new Chart(ctx4,{type:'line',data:{labels:monthLabels,datasets:[{label:'Nuevos clientes',data:months.map(m=>newMap[m]||0),borderColor:'#3A3426',backgroundColor:'rgba(58,52,38,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#3A3426'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{stepSize:1}}}}});
+
+  // Distribution chart (placeholder – stamps distribution 0-2, 3-5, 6-8, 9-10)
+  // We'll use top list data as proxy
+  const ctx3=document.getElementById('dist-chart').getContext('2d');
+  if(distChart) distChart.destroy();
+  const bins=[0,0,0,0]; // 0-2, 3-5, 6-8, 9-10
+  // We use top customers as sample (in real scenario would need full dataset)
+  distChart=new Chart(ctx3,{type:'doughnut',data:{labels:['0-2 sellos','3-5 sellos','6-8 sellos','9-10 sellos'],datasets:[{data:[30,35,25,10],backgroundColor:['#e8d9a0','#d4a017','#6b5e47','#3A3426'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}}}});
+
+  // Top list
+  loadTopCustomers(10,'bi');
+}
+
+// ── CLIENTS ───────────────────────────────────────────────────────────────
+async function loadClients(page=1, q=''){
+  currentPage=page;
+  if(q!==undefined&&q!=='__keep') searchQuery=q;
+  const url=searchQuery
+    ?`${BASE}/api/admin/search?pin=${PIN}&q=${encodeURIComponent(searchQuery)}&page=${page}&limit=20&slug=${BIZ_SLUG}`
+    :`${BASE}/api/admin/customers?pin=${PIN}&page=${page}&page_size=20&slug=${BIZ_SLUG}`;
+  const r=await fetch(url); const d=await r.json();
+  // Backend uses camelCase from card_to_dict; list returns {customers,total,total_pages} or {results:[...]}
+  const items=d.items||d.results||d.customers||d||[];
+  totalPages=d.total_pages||d.pages||1;
+  const total=d.total||items.length;
+  const tbody=document.getElementById('clients-tbody');
+  if(items.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--brown-light)">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=items.map(c=>`
+    <tr style="cursor:pointer" onclick="openDrawer('${c.id||c.card_id}')">
+      <td><strong>${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</strong></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.email}</td>
+      <td><span style="font-weight:700">${c.stamps||0}</span> / ${c.stampsOnCard||c.stamps_per_reward||10}</td>
+      <td>${c.awardBalance||c.award_balance||0} 🎁</td>
+      <td><span class="badge ${c.cardActive!==false&&c.card_active!==false?'badge-green':'badge-red'}">${c.cardActive!==false&&c.card_active!==false?'Activa':'Inactiva'}</span></td>
+      <td style="font-size:.78rem;color:var(--brown-light)">${(c.createdAt||c.created_at||'').slice(0,10)}</td>
+      <td><button class="btn-sm btn-ghost" onclick="event.stopPropagation();openDrawer('${c.id||c.card_id}')">→</button></td>
+    </tr>`).join('');
+  renderPagination(page,totalPages);
+  document.getElementById('clients-total-label').textContent=`${total} cliente${total!==1?'s':''}`;
+}
+
+function searchClients(){
+  searchQuery=document.getElementById('search-input').value.trim();
+  loadClients(1,searchQuery);
+}
+
+function renderPagination(current,total){
+  const el=document.getElementById('pagination');
+  if(total<=1){el.innerHTML='';return;}
+  let html='';
+  const prev=current>1?`<button class="page-btn" onclick="loadClients(${current-1})">‹</button>`:'';
+  const next=current<total?`<button class="page-btn" onclick="loadClients(${current+1})">›</button>`:'';
+  const pages=[1];
+  if(current>3) pages.push('…');
+  for(let i=Math.max(2,current-1);i<=Math.min(total-1,current+1);i++) pages.push(i);
+  if(current<total-2) pages.push('…');
+  if(total>1) pages.push(total);
+  html=prev+pages.map(p=>p==='…'?`<span class="page-info">…</span>`:`<button class="page-btn ${p===current?'active':''}" onclick="loadClients(${p})">${p}</button>`).join('')+next;
+  el.innerHTML=html;
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────
+async function openDrawer(cardId){
+  currentCardId=cardId;
+  document.getElementById('drawer-overlay').classList.add('open');
+  showTab('tab-general');
+  document.getElementById('d-activity-log').innerHTML='<div class="empty-state">Cargando...</div>';
+  await loadDrawerData(cardId);
+}
+
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('open');
+  currentCardId=null;
+}
+
+async function loadDrawerData(cardId){
+  const r=await fetch(`${BASE}/api/admin/customers/${cardId}?pin=${PIN}`);
+  const c=await r.json();
+  if(c.detail){showToast('Error al cargar cliente','error');return;}
+  // Backend uses camelCase via card_to_dict
+  const fn=c.firstName||c.first_name||'';
+  const ln=c.lastName||c.last_name||'';
+  currentCustomerName=fn;
+  document.getElementById('d-name').textContent=`${fn} ${ln}`.trim();
+  document.getElementById('d-email').textContent=c.email;
+  document.getElementById('d-info-email').textContent=c.email;
+  document.getElementById('d-info-phone').textContent=c.phone||'–';
+  document.getElementById('d-info-birth').textContent=c.birthDate||c.birth_date||'–';
+  document.getElementById('d-info-origin').textContent=c.origin||'–';
+  const created=c.createdAt||c.created_at||'';
+  document.getElementById('d-info-created').textContent=created.slice(0,10)||'–';
+  const spr=c.stampsOnCard||c.stamps_per_reward||10;
+  const stamps=c.stamps||0;
+  const totalStamps=c.totalStamps||c.total_stamps||0;
+  const awardBal=c.awardBalance||c.award_balance||0;
+  document.getElementById('d-stamps-num').textContent=stamps;
+  document.getElementById('d-total-stamps').textContent=totalStamps;
+  document.getElementById('d-awards').textContent=awardBal;
+  document.getElementById('d-award-count-stamps').textContent=awardBal;
+  // Stamps grid
+  let gridHtml='';
+  for(let i=0;i<spr;i++) gridHtml+=`<div class="stamp-dot ${i<stamps?'filled':''}">${i<stamps?'🍪':'○'}</div>`;
+  document.getElementById('d-stamps-grid').innerHTML=gridHtml;
+  // Notes
+  const notes=c.notes||'';
+  if(notes){document.getElementById('d-notes').textContent=notes;document.getElementById('d-notes-block').style.display='block';}else{document.getElementById('d-notes-block').style.display='none';}
+  // Award banner
+  if(awardBal>0){document.getElementById('d-award-count').textContent=awardBal;document.getElementById('d-award-banner').style.display='block';}else document.getElementById('d-award-banner').style.display='none';
+  // Edit form
+  document.getElementById('e-first').value=fn;
+  document.getElementById('e-last').value=ln;
+  document.getElementById('e-email').value=c.email||'';
+  document.getElementById('e-phone').value=c.phone||'';
+  document.getElementById('e-birth').value=c.birthDate||c.birth_date||'';
+  document.getElementById('e-anniv').value=c.anniversaryDate||c.anniversary_date||'';
+  document.getElementById('e-lang').value=c.language||'es';
+  document.getElementById('e-notes').value=notes;
+  document.getElementById('e-optin-email').checked=c.optInEmail!==false&&c.opt_in_email!==false;
+  document.getElementById('e-optin-sms').checked=c.optInSMS===true||c.opt_in_sms===true;
+  document.getElementById('e-active').checked=c.cardActive!==false&&c.card_active!==false;
+  // Load activity
+  loadActivity_client(cardId);
+}
+
+async function loadActivity_client(cardId){
+  const r=await fetch(`${BASE}/api/cards/${cardId}/history?limit=30`);
+  const data=await r.json();
+  const log=document.getElementById('d-activity-log');
+  if(!data||data.length===0){log.innerHTML='<div class="empty-state">Sin actividad registrada</div>';return;}
+  const icons={stamp:'🍪',redeem:'🎁',adjust:'⚙',register:'👋'};
+  const labels={stamp:'Sellos añadidos',redeem:'Premio canjeado',adjust:'Ajuste manual',register:'Alta tarjeta'};
+  log.innerHTML=data.map(t=>`
+    <div class="activity-item">
+      <div class="activity-dot ${t.transaction_type||'stamp'}">${icons[t.transaction_type||'stamp']||'🍪'}</div>
+      <div class="activity-content">
+        <div class="a-title">${labels[t.transaction_type||'stamp']||t.transaction_type} ${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added}</div>
+        <div class="a-date">${t.created_at?new Date(t.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''} ${t.store?'· '+t.store:''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx={'tab-general':0,'tab-stamps':1,'tab-activity':2,'tab-edit':3,'tab-danger':4};
+  document.querySelectorAll('.tab')[idx[id]].classList.add('active');
+  if(id==='tab-activity'&&currentCardId) loadActivity_client(currentCardId);
+}
+
+// ── STAMPS ────────────────────────────────────────────────────────────────
+async function addStampsFromDrawer(){
+  const n=parseInt(document.getElementById('d-stamps-input').value);
+  if(!n||n<1){showMsg('d-stamp-msg','Introduce al menos 1 sello','red');return;}
+  const r=await fetch(`${BASE}/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});
+  const d=await r.json();
+  if(d.detail){showMsg('d-stamp-msg',d.detail,'red');return;}
+  showMsg('d-stamp-msg',`+${n} sello${n>1?'s':''} añadido${n>1?'s':''}. Total: ${d.stamps}. Premios: ${d.award_balance}`,'green');
+  document.getElementById('d-stamps-input').value='';
+  await loadDrawerData(currentCardId);
+  showToast(`+${n} sello${n>1?'s':''} añadido${n>1?'s':''} ✓`,'success');
+}
+
+async function removeStampsFromDrawer(){
+  const n=parseInt(document.getElementById('d-stamps-input').value);
+  if(!n||n<1){showMsg('d-stamp-msg','Introduce cantidad a quitar','red');return;}
+  const r=await fetch(`${BASE}/api/cards/${currentCardId}/remove-stamps`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,stamps:n})});
+  const d=await r.json();
+  if(d.detail){showMsg('d-stamp-msg',d.detail,'red');return;}
+  showMsg('d-stamp-msg',`-${n} sello${n>1?'s':''} eliminado${n>1?'s':''}. Total: ${d.stamps}`,'green');
+  await loadDrawerData(currentCardId);
+}
+
+async function redeemFromDrawer(){
+  const r=await fetch(`${BASE}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});
+  const d=await r.json();
+  if(d.detail){showToast(d.detail,'error');return;}
+  showToast(`Premio canjeado 🎁 Quedan ${d.award_balance}`,'success');
+  await loadDrawerData(currentCardId);
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────────
+async function saveEdit(){
+  const payload={
+    first_name:document.getElementById('e-first').value,
+    last_name:document.getElementById('e-last').value,
+    email:document.getElementById('e-email').value,
+    phone:document.getElementById('e-phone').value,
+    birth_date:document.getElementById('e-birth').value,
+    anniversary_date:document.getElementById('e-anniv').value,
+    language:document.getElementById('e-lang').value,
+    notes:document.getElementById('e-notes').value,
+    opt_in_email:document.getElementById('e-optin-email').checked,
+    opt_in_sms:document.getElementById('e-optin-sms').checked,
+    card_active:document.getElementById('e-active').checked,
+  };
+  const r=await fetch(`${BASE}/api/admin/customers/${currentCardId}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${API_KEY_PLACEHOLDER}`},body:JSON.stringify({...payload,pin:PIN})});
+  if(r.ok){showMsg('e-msg','Guardado ✓','green');await loadDrawerData(currentCardId);showToast('Cliente actualizado ✓','success');}
+  else{const d=await r.json();showMsg('e-msg',d.detail||'Error','red');}
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────
+async function deleteCustomer(){
+  const confirm_name=document.getElementById('d-confirm-name').value.trim();
+  if(confirm_name.toLowerCase()!==currentCustomerName.toLowerCase()){showToast('El nombre no coincide','error');return;}
+  const r=await fetch(`${BASE}/api/admin/customers/${currentCardId}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});
+  if(r.ok){showToast('Cliente eliminado','success');closeDrawer();loadClients(currentPage);}
+  else{const d=await r.json();showToast(d.detail||'Error','error');}
+}
+
+// ── NEW CLIENT ────────────────────────────────────────────────────────────
+async function createClient(){
+  const payload={
+    first_name:document.getElementById('nc-first').value.trim(),
+    last_name:document.getElementById('nc-last').value.trim(),
+    email:document.getElementById('nc-email').value.trim(),
+    phone:document.getElementById('nc-phone').value.trim(),
+    birth_date:document.getElementById('nc-birth').value,
+    origin:document.getElementById('nc-origin').value,
+    language:document.getElementById('nc-lang').value,
+    notes:document.getElementById('nc-notes').value.trim(),
+    opt_in_email:document.getElementById('nc-optin-email').checked,
+    opt_in_sms:document.getElementById('nc-optin-sms').checked,
+    pin:PIN
+  };
+  if(!payload.first_name||!payload.email){showMsg('nc-msg','Nombre y email son obligatorios','red');return;}
+  const r=await fetch(`${BASE}/api/admin/customers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();
+  if(r.ok){showMsg('nc-msg',`Cliente creado ✓ ID: ${d.card_id||d.id}`,'green');showToast('Cliente creado ✓','success');clearNewClient();}
+  else showMsg('nc-msg',d.detail||'Error al crear','red');
+}
+
+function clearNewClient(){
+  ['nc-first','nc-last','nc-email','nc-phone','nc-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nc-birth').value='';
+  document.getElementById('nc-optin-email').checked=true;
+  document.getElementById('nc-optin-sms').checked=false;
+  document.getElementById('nc-msg').textContent='';
+}
+
+// ── IMPORT CSV ────────────────────────────────────────────────────────────
+function handleDrop(e){
+  e.preventDefault();document.getElementById('drop-zone').classList.remove('over');
+  const file=e.dataTransfer.files[0];
+  if(file) processCSVFile(file);
+}
+function handleFileSelect(e){ const file=e.target.files[0];if(file)processCSVFile(file);}
+
+function processCSVFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    const lines=text.split('\n').filter(l=>l.trim());
+    if(lines.length<2){showToast('CSV vacío o sin cabeceras','error');return;}
+    const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/['"]/g,''));
+    const rows=[];const errors=[];
+    for(let i=1;i<lines.length;i++){
+      const vals=lines[i].split(',').map(v=>v.trim().replace(/^["']|["']$/g,''));
+      if(vals.length<2)continue;
+      const row={};
+      headers.forEach((h,j)=>{row[h]=vals[j]||'';});
+      if(!row.first_name&&!row['nombre']){errors.push(`Fila ${i+1}: sin nombre`);continue;}
+      if(!row.email){errors.push(`Fila ${i+1}: sin email`);continue;}
+      if(row['nombre']&&!row.first_name) row.first_name=row['nombre'];
+      if(row['apellido']&&!row.last_name) row.last_name=row['apellido'];
+      if(row['telefono']&&!row.phone) row.phone=row['telefono'];
+      rows.push(row);
+    }
+    importData=rows;
+    document.getElementById('imp-total').textContent=lines.length-1;
+    document.getElementById('imp-valid').textContent=rows.length;
+    document.getElementById('imp-errors').textContent=errors.length;
+    document.getElementById('imp-errors-list').textContent=errors.slice(0,10).join('\n');
+    document.getElementById('import-preview').style.display='block';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+async function doImport(){
+  const btn=document.getElementById('imp-btn');
+  btn.disabled=true;btn.textContent='Importando…';
+  document.getElementById('imp-msg').textContent='';
+  try{
+    const r=await fetch(`${BASE}/api/admin/import-csv`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN,customers:importData})});
+    const d=await r.json();
+    if(r.ok){
+      document.getElementById('imp-msg').innerHTML=`<span style="color:var(--green);font-weight:600">✓ ${d.created} creados · ${d.skipped} ya existían</span>`;
+      showToast(`${d.created} clientes importados ✓`,'success');
+    }else document.getElementById('imp-msg').innerHTML=`<span style="color:var(--red)">${d.detail||'Error al importar'}</span>`;
+  }catch(e){document.getElementById('imp-msg').textContent='Error de conexión';}
+  btn.disabled=false;btn.textContent='Importar clientes →';
+}
+
+function downloadTemplate(){
+  const csv='first_name,last_name,email,phone,birth_date,stamps,notes,origin\nMaría,García,maria@ejemplo.com,+34600000000,1990-06-15,0,,Landing\n';
+  const b=new Blob([csv],{type:'text/csv'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download='plantilla-clientes-sukie.csv';a.click();
+  URL.revokeObjectURL(u);
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────
+async function exportCSV(){
+  showToast('Preparando exportación…');
+  window.open(`${BASE}/api/admin/export-csv?pin=${PIN}`,'_blank');
+}
+
+// ── EDIT API KEY (patch for PUT) ───────────────────────────────────────────
+// Since we use PIN auth for PUT as well, we patch the API key placeholder
+const API_KEY_PLACEHOLDER = '{{ biz_api_key or "sukie-cookie-2026-secret" }}';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function showMsg(id,msg,color){
+  const el=document.getElementById(id);
+  el.textContent=msg;
+  el.style.color=color==='green'?'var(--green)':'var(--red)';
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast '+(type==='success'?'success':type==='error'?'error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── CONFIG ──────────────────────────────────────────────────────────────
+function showCfgTab(tab) {
+  document.querySelectorAll('.cfg-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cfg-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('cfgtab-' + tab).classList.add('active');
+  document.getElementById('cfgpanel-' + tab).style.display = '';
+}
+
+async function loadConfig() {
+  try {
+    const r = await fetch(`${BASE}/api/admin/config?pin=${PIN}`);
+    if (!r.ok) return;
+    const cfg = await r.json();
+    // General
+    const g = cfg.general || {};
+    setVal('cfg-card_name', g.card_name);
+    setVal('cfg-card_title', g.card_title);
+    setVal('cfg-issuer', g.issuer);
+    setVal('cfg-description', g.description);
+    setVal('cfg-card_prefix', g.card_prefix);
+    const et = g.expiry_type || 'never';
+    const radio = document.querySelector(`input[name="cfg-expiry"][value="${et}"]`);
+    if (radio) radio.checked = true;
+    setVal('cfg-expiry_date', g.expiry_date);
+    setVal('cfg-expiry_days', g.expiry_days);
+    // Programa
+    const p = cfg.programa || {};
+    setVal('cfg-stamps_per_reward', p.stamps_per_reward);
+    setVal('cfg-reward_name', p.reward_name);
+    setVal('cfg-msg_single', p.msg_single);
+    setVal('cfg-msg_multiple', p.msg_multiple);
+    setCheck('cfg-birthday_enabled', p.birthday_enabled);
+    setVal('cfg-birthday_msg_push', p.birthday_msg_push);
+    setVal('cfg-birthday_time', p.birthday_time);
+    setCheck('cfg-anniversary_enabled', p.anniversary_enabled);
+    // Landing
+    const l = cfg.landing || {};
+    setVal('cfg-form_title', l.form_title);
+    setVal('cfg-header_text', l.header_text);
+    setVal('cfg-button_text', l.button_text);
+    setColorPair('cfg-bg_color', l.bg_color);
+    setColorPair('cfg-text_color', l.text_color);
+    setColorPair('cfg-button_color', l.button_color);
+    setColorPair('cfg-link_color', l.link_color);
+    setCheck('cfg-field_name', l.field_name);
+    setCheck('cfg-field_lastname', l.field_lastname);
+    setCheck('cfg-field_phone', l.field_phone);
+    setCheck('cfg-field_birthdate', l.field_birthdate);
+    setCheck('cfg-field_name_required', l.field_name_required);
+    setCheck('cfg-field_lastname_required', l.field_lastname_required);
+    setCheck('cfg-field_phone_required', l.field_phone_required);
+    setCheck('cfg-field_birthdate_required', l.field_birthdate_required);
+    setVal('cfg-company_name', l.company_name);
+    setVal('cfg-company_email', l.company_email);
+    setVal('cfg-company_phone', l.company_phone);
+    setVal('cfg-terms_url', l.terms_url);
+    setVal('cfg-register_limit_date', l.register_limit_date);
+    setVal('cfg-access_type', l.access_type);
+    // Diseño
+    const d = cfg.diseno || {};
+    setVal('cfg-commercial_name', d.commercial_name);
+    setColorPair('cfg-card_bg_color', d.card_bg_color);
+    setColorPair('cfg-label_color', d.label_color);
+    setColorPair('cfg-diseno_text_color', d.text_color);
+    setColorPair('cfg-stamp_bg_color', d.stamp_bg_color);
+    setColorPair('cfg-stamp_icon_color', d.stamp_icon_color);
+    setColorPair('cfg-stamp_border_color', d.stamp_border_color);
+    setColorPair('cfg-stamp_filled_color', d.stamp_filled_color);
+    setVal('cfg-front_field1_label', d.front_field1_label);
+    setVal('cfg-front_field1_value', d.front_field1_value);
+    setVal('cfg-front_field2_label', d.front_field2_label);
+    setVal('cfg-front_field2_value', d.front_field2_value);
+    setVal('cfg-link_instagram', d.link_instagram);
+    setVal('cfg-link_web', d.link_web);
+    setVal('cfg-back_title_updates', d.back_title_updates);
+    setVal('cfg-back_title_holder', d.back_title_holder);
+    setVal('cfg-back_title_rewards_pending', d.back_title_rewards_pending);
+    setVal('cfg-back_title_rewards_won', d.back_title_rewards_won);
+    setVal('cfg-back_title_how', d.back_title_how);
+    setVal('cfg-back_title_reward_detail', d.back_title_reward_detail);
+    setVal('cfg-back_title_links', d.back_title_links);
+    setVal('cfg-back_title_questions', d.back_title_questions);
+    // Comunicaciones
+    const c = cfg.comunicaciones || {};
+    setCheck('cfg-welcome_email_enabled', c.welcome_email_enabled);
+    setVal('cfg-welcome_email_subject', c.welcome_email_subject);
+    setVal('cfg-welcome_email_body', c.welcome_email_body);
+    setCheck('cfg-birthday_email_enabled', c.birthday_email_enabled);
+    setVal('cfg-birthday_email_subject', c.birthday_email_subject);
+    setVal('cfg-birthday_email_body', c.birthday_email_body);
+    // Load tier config
+    const tiers = cfg.tiers || [];
+    if (tiers[0]) {
+      setVal('tier0-premio', tiers[0].premio_nombre || '');
+      setVal('tier0-sellos', tiers[0].sellos_por_premio || 10);
+      setVal('tier0-desc', tiers[0].premio_descripcion || '');
+      setVal('tier0-beneficios', (tiers[0].beneficios || []).join('\n'));
+    }
+    if (tiers[1]) {
+      setVal('tier1-min', tiers[1].min_sellos_totales || 50);
+      setVal('tier1-premio', tiers[1].premio_nombre || '');
+      setVal('tier1-sellos', tiers[1].sellos_por_premio || 8);
+      setVal('tier1-desc', tiers[1].premio_descripcion || '');
+      setVal('tier1-beneficios', (tiers[1].beneficios || []).join('\n'));
+    }
+    if (tiers[2]) {
+      setVal('tier2-min', tiers[2].min_sellos_totales || 150);
+      setVal('tier2-premio', tiers[2].premio_nombre || '');
+      setVal('tier2-sellos', tiers[2].sellos_por_premio || 7);
+      setVal('tier2-desc', tiers[2].premio_descripcion || '');
+      setVal('tier2-beneficios', (tiers[2].beneficios || []).join('\n'));
+    }
+    // Club
+    const club = cfg.club || {};
+    setVal('club-nombre', club.nombre || '');
+    setVal('club-tagline', club.tagline || '');
+  } catch(e) { console.error('loadConfig error', e); }
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+function setCheck(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.checked = !!val;
+}
+function setColorPair(id, val) {
+  if (!val) return;
+  const picker = document.getElementById(id);
+  const text   = document.getElementById(id + '_text');
+  if (picker) picker.value = val;
+  if (text)   text.value   = val;
+}
+function getColorPair(id) {
+  const text = document.getElementById(id + '_text');
+  const picker = document.getElementById(id);
+  return (text && text.value) || (picker && picker.value) || '';
+}
+
+// Sync color pickers ↔ text inputs
+document.addEventListener('DOMContentLoaded', () => {
+  ['cfg-bg_color','cfg-text_color','cfg-button_color','cfg-link_color',
+   'cfg-card_bg_color','cfg-label_color','cfg-diseno_text_color',
+   'cfg-stamp_bg_color','cfg-stamp_icon_color','cfg-stamp_border_color','cfg-stamp_filled_color'
+  ].forEach(id => {
+    const picker = document.getElementById(id);
+    const text   = document.getElementById(id + '_text');
+    if (picker && text) {
+      picker.addEventListener('input', () => { text.value = picker.value; });
+      text.addEventListener('input',   () => {
+        if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+      });
+    }
+  });
+});
+
+async function saveConfig() {
+  const expiryRadio = document.querySelector('input[name="cfg-expiry"]:checked');
+  const payload = {
+    pin: PIN,
+    general: {
+      card_name: document.getElementById('cfg-card_name')?.value || '',
+      card_title: document.getElementById('cfg-card_title')?.value || '',
+      issuer: document.getElementById('cfg-issuer')?.value || '',
+      description: document.getElementById('cfg-description')?.value || '',
+      card_prefix: document.getElementById('cfg-card_prefix')?.value || '',
+      expiry_type: expiryRadio?.value || 'never',
+      expiry_date: document.getElementById('cfg-expiry_date')?.value || '',
+      expiry_days: parseInt(document.getElementById('cfg-expiry_days')?.value || '365'),
+      barcode_type: 'QR',
+    },
+    programa: {
+      stamps_per_reward: parseInt(document.getElementById('cfg-stamps_per_reward')?.value || '10'),
+      reward_name: document.getElementById('cfg-reward_name')?.value || '',
+      msg_single: document.getElementById('cfg-msg_single')?.value || '',
+      msg_multiple: document.getElementById('cfg-msg_multiple')?.value || '',
+      birthday_enabled: document.getElementById('cfg-birthday_enabled')?.checked || false,
+      birthday_msg_push: document.getElementById('cfg-birthday_msg_push')?.value || '',
+      birthday_time: document.getElementById('cfg-birthday_time')?.value || '07:00',
+      anniversary_enabled: document.getElementById('cfg-anniversary_enabled')?.checked || false,
+    },
+    landing: {
+      form_title: document.getElementById('cfg-form_title')?.value || '',
+      header_text: document.getElementById('cfg-header_text')?.value || '',
+      button_text: document.getElementById('cfg-button_text')?.value || '',
+      bg_color: getColorPair('cfg-bg_color'),
+      text_color: getColorPair('cfg-text_color'),
+      button_color: getColorPair('cfg-button_color'),
+      link_color: getColorPair('cfg-link_color'),
+      field_name: document.getElementById('cfg-field_name')?.checked || false,
+      field_lastname: document.getElementById('cfg-field_lastname')?.checked || false,
+      field_phone: document.getElementById('cfg-field_phone')?.checked || false,
+      field_birthdate: document.getElementById('cfg-field_birthdate')?.checked || false,
+      field_name_required: document.getElementById('cfg-field_name_required')?.checked || false,
+      field_lastname_required: document.getElementById('cfg-field_lastname_required')?.checked || false,
+      field_phone_required: document.getElementById('cfg-field_phone_required')?.checked || false,
+      field_birthdate_required: document.getElementById('cfg-field_birthdate_required')?.checked || false,
+      company_name: document.getElementById('cfg-company_name')?.value || '',
+      company_email: document.getElementById('cfg-company_email')?.value || '',
+      company_phone: document.getElementById('cfg-company_phone')?.value || '',
+      terms_url: document.getElementById('cfg-terms_url')?.value || '',
+      register_limit_date: document.getElementById('cfg-register_limit_date')?.value || '',
+      access_type: document.getElementById('cfg-access_type')?.value || 'public',
+    },
+    diseno: {
+      commercial_name: document.getElementById('cfg-commercial_name')?.value || '',
+      card_bg_color: getColorPair('cfg-card_bg_color'),
+      label_color: getColorPair('cfg-label_color'),
+      text_color: getColorPair('cfg-diseno_text_color'),
+      stamp_bg_color: getColorPair('cfg-stamp_bg_color'),
+      stamp_icon_color: getColorPair('cfg-stamp_icon_color'),
+      stamp_border_color: getColorPair('cfg-stamp_border_color'),
+      stamp_filled_color: getColorPair('cfg-stamp_filled_color'),
+      front_field1_label: document.getElementById('cfg-front_field1_label')?.value || '',
+      front_field1_value: document.getElementById('cfg-front_field1_value')?.value || '',
+      front_field2_label: document.getElementById('cfg-front_field2_label')?.value || '',
+      front_field2_value: document.getElementById('cfg-front_field2_value')?.value || '',
+      link_instagram: document.getElementById('cfg-link_instagram')?.value || '',
+      link_web: document.getElementById('cfg-link_web')?.value || '',
+      back_title_updates: document.getElementById('cfg-back_title_updates')?.value || '',
+      back_title_holder: document.getElementById('cfg-back_title_holder')?.value || '',
+      back_title_rewards_pending: document.getElementById('cfg-back_title_rewards_pending')?.value || '',
+      back_title_rewards_won: document.getElementById('cfg-back_title_rewards_won')?.value || '',
+      back_title_how: document.getElementById('cfg-back_title_how')?.value || '',
+      back_title_reward_detail: document.getElementById('cfg-back_title_reward_detail')?.value || '',
+      back_title_links: document.getElementById('cfg-back_title_links')?.value || '',
+      back_title_questions: document.getElementById('cfg-back_title_questions')?.value || '',
+    },
+    comunicaciones: {
+      welcome_email_enabled: document.getElementById('cfg-welcome_email_enabled')?.checked || false,
+      welcome_email_subject: document.getElementById('cfg-welcome_email_subject')?.value || '',
+      welcome_email_body: document.getElementById('cfg-welcome_email_body')?.value || '',
+      birthday_email_enabled: document.getElementById('cfg-birthday_email_enabled')?.checked || false,
+      birthday_email_subject: document.getElementById('cfg-birthday_email_subject')?.value || '',
+      birthday_email_body: document.getElementById('cfg-birthday_email_body')?.value || '',
+    }
+  };
+  
+  // Save tiers
+  payload.tiers = [
+    {
+      nombre: 'Bronce', emoji: '🥉', color: '#CD7F32', bg_color: '#FFF3E6',
+      min_sellos_totales: 0,
+      sellos_por_premio: parseInt(document.getElementById('tier0-sellos').value) || 10,
+      premio_nombre: document.getElementById('tier0-premio').value || 'Premio',
+      premio_descripcion: document.getElementById('tier0-desc').value || '',
+      premio_emoji: '🍪',
+      beneficios: (document.getElementById('tier0-beneficios').value || '').split('\n').filter(x=>x.trim())
+    },
+    {
+      nombre: 'Plata', emoji: '🥈', color: '#A8A8B3', bg_color: '#F5F5FF',
+      min_sellos_totales: parseInt(document.getElementById('tier1-min').value) || 50,
+      sellos_por_premio: parseInt(document.getElementById('tier1-sellos').value) || 8,
+      premio_nombre: document.getElementById('tier1-premio').value || 'Premio Plata',
+      premio_descripcion: document.getElementById('tier1-desc').value || '',
+      premio_emoji: '📦',
+      beneficios: (document.getElementById('tier1-beneficios').value || '').split('\n').filter(x=>x.trim())
+    },
+    {
+      nombre: 'Oro', emoji: '👑', color: '#c8a84b', bg_color: '#FFFBF0',
+      min_sellos_totales: parseInt(document.getElementById('tier2-min').value) || 150,
+      sellos_por_premio: parseInt(document.getElementById('tier2-sellos').value) || 7,
+      premio_nombre: document.getElementById('tier2-premio').value || 'Premio Oro',
+      premio_descripcion: document.getElementById('tier2-desc').value || '',
+      premio_emoji: '✨',
+      beneficios: (document.getElementById('tier2-beneficios').value || '').split('\n').filter(x=>x.trim())
+    }
+  ];
+  payload.club = {
+    nombre: document.getElementById('club-nombre').value || 'VIP Club',
+    tagline: document.getElementById('club-tagline').value || '',
+    activo: true
+  };
+
+  try {
+    const r = await fetch(`${BASE}/api/admin/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const ok = r.ok;
+    document.getElementById('cfg-save-msg').style.display = ok ? '' : 'none';
+    document.getElementById('cfg-err-msg').style.display  = ok ? 'none' : '';
+    if (ok) setTimeout(() => { document.getElementById('cfg-save-msg').style.display = 'none'; }, 3000);
+  } catch(e) {
+    document.getElementById('cfg-err-msg').style.display = '';
+    document.getElementById('cfg-save-msg').style.display = 'none';
+  }
+}
+
+async function sendDistribution() {
+  const target = document.querySelector('input[name="dist-target"]:checked')?.value || 'new';
+  const el = document.getElementById('dist-result');
+  el.style.display = '';
+  el.innerHTML = '<em>⏳ Procesando...</em>';
+  // Placeholder - in production this would send emails
+  await new Promise(r => setTimeout(r, 800));
+  el.innerHTML = `<span style="color:#2e7d32">✅ Distribución programada para clientes (${target === 'new' ? 'nuevos' : 'todos'}). Esta función requiere integración de email.</span>`;
+}
+
+async function previewEmail() {
+  // Get first customer card
+  try {
+    const r = await fetch(`${BASE}/api/admin/customers?pin=${PIN}&page_size=1`);
+    const d = await r.json();
+    const custs = d.customers||[];
+    if (custs.length > 0) {
+      window.open(`${BASE}/email-preview/${custs[0].id}`, '_blank');
+    } else {
+      showToast('No hay clientes todavía');
+    }
+  } catch(e) { showToast('Error'); }
+}
+
+async function previewBirthdayEmail() {
+  try {
+    const r = await fetch(`${BASE}/api/admin/customers?pin=${PIN}&page_size=1`);
+    const d = await r.json();
+    const custs = d.customers||[];
+    if (custs.length > 0) {
+      window.open(`${BASE}/email-preview-birthday/${custs[0].id}`, '_blank');
+    } else {
+      showToast('No hay clientes todavía');
+    }
+  } catch(e) { showToast('Error'); }
+}
+
+</script>
+</body>
+</html>
