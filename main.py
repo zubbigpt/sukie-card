@@ -99,6 +99,10 @@ def run_migrations():
         "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
         "UPDATE card_config SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
         "DELETE FROM customers WHERE email = 'placeholder_email' OR first_name = 'PLACEHOLDER_FNAME'",
+        # Clean test customers: delete by card ID
+        "DELETE FROM stamp_transactions WHERE card_id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
+        "DELETE FROM loyalty_cards WHERE id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
+        "DELETE FROM customers WHERE id NOT IN (SELECT DISTINCT customer_id FROM loyalty_cards WHERE customer_id IS NOT NULL)",
 
     ]
     from database import SessionLocal
@@ -700,9 +704,15 @@ async def update_customer(card_id: str, request: Request, db: Session = Depends(
 # ADMIN: ELIMINAR CLIENTE
 # ══════════════════════════════════════════════════════════════════════════════
 @app.delete("/api/admin/customers/{card_id}")
-async def delete_customer(card_id: str, request: Request, db: Session = Depends(get_db)):
-    body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+async def delete_customer(card_id: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    # Accept pin as query param OR in body
+    if not pin:
+        try:
+            body = await request.json()
+            pin = str(body.get("pin", ""))
+        except Exception:
+            pin = ""
+    verify_pin(pin)
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
 
