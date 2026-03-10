@@ -126,8 +126,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   <!-- HERO -->
   <div class="hero">
     <div class="hero-eyebrow">Tarjeta de sellos</div>
-    <h1>ÚNETE.<br>SELLA.<br><span class="accent">GANA.</span></h1>
-    <p class="hero-sub">Acumula sellos con cada compra y consigue tu premio. Gratis, sin app, en 30 segundos.</p>
+    {% if form_title %}
+      <h1 style="white-space:pre-line">{{ form_title }}</h1>
+    {% else %}
+      <h1>ÚNETE.<br>SELLA.<br><span class="accent">GANA.</span></h1>
+    {% endif %}
+    <p class="hero-sub">{{ header_text or 'Acumula sellos con cada compra y consigue tu premio. Gratis, sin app, en 30 segundos.' }}</p>
   </div>
 
   <!-- CARD MOCK -->
@@ -226,7 +230,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       </div>
 
       <button class="btn-cta" id="reg-btn" onclick="doRegister()">
-        Crear mi tarjeta gratis →
+        {{ button_text or 'Crear mi tarjeta gratis →' }}
       </button>
 
       <p class="legal">

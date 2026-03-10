@@ -1202,10 +1202,28 @@ DEFAULT_CONFIG = {
 }
 
 @app.get("/api/admin/config")
-def get_config(pin: str = "", db: Session = Depends(get_db)):
+def get_config(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
     verify_pin(pin, db)
-    from database import SessionLocal
-    row = db.execute(text("SELECT config FROM card_config WHERE id=1")).fetchone()
+    # Try to find config by business slug first, fall back to id=1
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            row = db.execute(text(
+                "SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"
+            ), {"bid": str(biz.id)}).fetchone()
+            if not row:
+                # Create config row for this business if missing
+                db.execute(text(
+                    "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT DO NOTHING"
+                ), {"bid": str(biz.id)})
+                db.commit()
+                row = db.execute(text(
+                    "SELECT config FROM card_config WHERE business_id=:bid LIMIT 1"
+                ), {"bid": str(biz.id)}).fetchone()
+        else:
+            row = db.execute(text("SELECT config FROM card_config WHERE id=1")).fetchone()
+    else:
+        row = db.execute(text("SELECT config FROM card_config WHERE id=1")).fetchone()
     if row:
         try:
             stored = json.loads(row[0])
@@ -1227,7 +1245,24 @@ def get_config(pin: str = "", db: Session = Depends(get_db)):
 async def save_config(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
-    data = {k: v for k, v in body.items() if k != "pin"}
+    slug = str(body.get("slug", "")).strip()
+    data = {k: v for k, v in body.items() if k not in ("pin", "slug")}
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            exists = db.execute(text(
+                "SELECT 1 FROM card_config WHERE business_id=:bid LIMIT 1"
+            ), {"bid": str(biz.id)}).fetchone()
+            if exists:
+                db.execute(text(
+                    "UPDATE card_config SET config=:cfg, updated_at=NOW() WHERE business_id=:bid"
+                ), {"cfg": json.dumps(data), "bid": str(biz.id)})
+            else:
+                db.execute(text(
+                    "INSERT INTO card_config (config, business_id, updated_at) VALUES (:cfg, :bid, NOW())"
+                ), {"cfg": json.dumps(data), "bid": str(biz.id)})
+            db.commit()
+            return {"message": "Configuración guardada"}
     db.execute(text("UPDATE card_config SET config=:cfg, updated_at=NOW() WHERE id=1"),
                {"cfg": json.dumps(data)})
     db.commit()
@@ -1619,17 +1654,34 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    # Load landing config for this business
+    landing_cfg = {}
+    try:
+        row = db.execute(text(
+            "SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"
+        ), {"bid": str(biz.id)}).fetchone()
+        if not row:
+            row = db.execute(text("SELECT config FROM card_config WHERE id=1")).fetchone()
+        if row:
+            stored = json.loads(row[0])
+            landing_cfg = stored.get("landing", {})
+    except Exception:
+        pass
     return templates.TemplateResponse("register.html", {
         "request":           request,
         "card_title":        biz.card_title or biz.name,
         "biz_name":          biz.name,
         "logo_url":          biz.logo_url or "",
-        "primary_color":     biz.primary_color or "#3A3426",
-        "accent_color":      biz.accent_color or "#FFF3CF",
+        "primary_color":     biz.primary_color or "#00e676",
+        "accent_color":      biz.accent_color or "#a8f0d0",
         "api_base":          BASE_URL,
         "stamps_per_reward": biz.stamps_per_reward or STAMPS_PER_REWARD,
         "biz_slug":          slug,
         "ref":               ref,
+        # Landing customization from config
+        "form_title":        landing_cfg.get("form_title", ""),
+        "header_text":       landing_cfg.get("header_text", ""),
+        "button_text":       landing_cfg.get("button_text", ""),
     })
 
 
