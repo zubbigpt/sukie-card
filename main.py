@@ -1631,6 +1631,36 @@ def debug_db(pin: str = "", db: Session = Depends(get_db)):
         return {"error": str(e)}
 
 
+@app.post("/api/admin/cleanup-test-data")
+def cleanup_test_data(pin: str = "", db: Session = Depends(get_db)):
+    """One-time cleanup: remove test/placeholder customers"""
+    if pin != ADMIN_PIN:
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    card_ids = [
+        'b67ba1b0-f365-4547-8784-da4a2925ab6d',
+        '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f',
+        '76787185-18d7-4189-9bc1-a256f6f0ea6d'
+    ]
+    results = []
+    for card_id in card_ids:
+        try:
+            cid = f"'{card_id}'::uuid"
+            db.execute(text(f"DELETE FROM push_subscriptions WHERE card_id = {cid}"))
+            db.execute(text(f"DELETE FROM referrals WHERE referrer_card = {cid} OR referred_card = {cid}"))
+            db.execute(text(f"DELETE FROM stamp_transactions WHERE card_id = {cid}"))
+            # Get customer_id before deleting card
+            row = db.execute(text(f"SELECT customer_id FROM loyalty_cards WHERE id = {cid}")).fetchone()
+            db.execute(text(f"DELETE FROM loyalty_cards WHERE id = {cid}"))
+            if row:
+                db.execute(text(f"DELETE FROM customers WHERE id = '{row[0]}'"))
+            db.commit()
+            results.append({"card_id": card_id, "status": "deleted"})
+        except Exception as e:
+            db.rollback()
+            results.append({"card_id": card_id, "status": "error", "detail": str(e)})
+    return {"results": results}
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_rich(request: Request):
     return templates.TemplateResponse("dashboard_admin.html", {"request": request})
