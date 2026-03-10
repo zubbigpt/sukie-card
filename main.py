@@ -141,9 +141,16 @@ def verify_api_key(request: Request):
         raise HTTPException(status_code=401, detail="No autorizado")
 
 
-def verify_pin(pin: str):
-    if str(pin) != str(ADMIN_PIN):
-        raise HTTPException(status_code=403, detail="PIN incorrecto")
+def verify_pin(pin: str, db: Session = None):
+    """Verify PIN against global ADMIN_PIN or any business admin_pin from DB"""
+    if str(pin) == str(ADMIN_PIN):
+        return
+    # If db provided, also check any business's admin_pin
+    if db:
+        biz = db.query(models.Business).filter(models.Business.admin_pin == str(pin)).first()
+        if biz:
+            return
+    raise HTTPException(status_code=403, detail="PIN incorrecto")
 
 
 def get_tier(total_stamps: int) -> dict:
@@ -464,7 +471,7 @@ def get_card(card_id: str, db: Session = Depends(get_db)):
 @app.post("/api/cards/{card_id}/stamps")
 async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     card = get_card_or_404(card_id, db)
 
     n = int(body.get("stamps", 1))
@@ -507,7 +514,7 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
 @app.post("/api/cards/{card_id}/remove-stamps")
 async def remove_stamps(card_id: str, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     card = get_card_or_404(card_id, db)
 
     n = int(body.get("stamps", 1))
@@ -530,7 +537,7 @@ async def remove_stamps(card_id: str, request: Request, db: Session = Depends(ge
 @app.post("/api/cards/{card_id}/redeem")
 async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     card = get_card_or_404(card_id, db)
 
     if (card.award_balance or 0) < 1:
@@ -558,7 +565,7 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/cards/{card_id}/history")
 def card_history(card_id: str, pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+    verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
     txs = (db.query(models.StampTransaction)
            .filter(models.StampTransaction.card_id == card.id)
@@ -581,12 +588,19 @@ def list_customers(
     pin: str = "", search: str = "", active: str = "",
     sort_by: str = "created_at", sort_order: str = "desc",
     page: int = Query(1, ge=1), page_size: int = Query(200, ge=1, le=500),
+    slug: str = "",
     db: Session = Depends(get_db),
 ):
-    verify_pin(pin)
+    verify_pin(pin, db)
     q = (db.query(models.LoyaltyCard, models.Customer)
          .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
          .filter(models.Customer.email != "PLACEHOLDER@sukie.internal"))
+
+    # If slug provided, filter by that business's customers
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            q = q.filter(models.Customer.business_id == biz.id)
 
     if search:
         like = f"%{search}%"
@@ -631,7 +645,7 @@ def list_customers(
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/customers/{card_id}")
 def get_customer_detail(card_id: str, pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+    verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     return card_to_dict(card, customer)
@@ -643,7 +657,7 @@ def get_customer_detail(card_id: str, pin: str = "", db: Session = Depends(get_d
 @app.post("/api/admin/customers")
 async def create_customer_admin(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     email = (body.get("email") or "").strip().lower()
     if not email:
         raise HTTPException(status_code=400, detail="Email requerido")
@@ -685,7 +699,7 @@ async def create_customer_admin(request: Request, db: Session = Depends(get_db))
 @app.put("/api/admin/customers/{card_id}")
 async def update_customer(card_id: str, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     if not customer:
@@ -716,7 +730,7 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
             pin = str(body.get("pin", ""))
         except Exception:
             pin = ""
-    verify_pin(pin)
+    verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
 
@@ -733,19 +747,27 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
 # ADMIN: BUSCAR
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/search")
-def search_customer(pin: str = "", q: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+def search_customer(pin: str = "", q: str = "", slug: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
     if not q or len(q) < 2:
         raise HTTPException(status_code=400, detail="Mínimo 2 caracteres")
     like = f"%{q}%"
-    rows = (db.query(models.LoyaltyCard, models.Customer)
-            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-            .filter(or_(
-                models.Customer.email.ilike(like),
-                models.Customer.first_name.ilike(like),
-                models.Customer.last_name.ilike(like),
-                models.Customer.phone.ilike(like),
-            )).limit(20).all())
+    query = (db.query(models.LoyaltyCard, models.Customer)
+             .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+             .filter(or_(
+                 models.Customer.email.ilike(like),
+                 models.Customer.first_name.ilike(like),
+                 models.Customer.last_name.ilike(like),
+                 models.Customer.phone.ilike(like),
+             )))
+
+    # If slug provided, filter by that business's customers
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            query = query.filter(models.Customer.business_id == biz.id)
+
+    rows = query.limit(20).all()
     return {"results": [card_to_dict(c, cu) for c, cu in rows]}
 
 
@@ -753,11 +775,19 @@ def search_customer(pin: str = "", q: str = "", db: Session = Depends(get_db)):
 # ADMIN: ESTADÍSTICAS GLOBALES
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/stats")
-def admin_stats(pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
-    rows = (db.query(models.LoyaltyCard, models.Customer)
-            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-            .filter(models.Customer.email != "PLACEHOLDER@sukie.internal").all())
+def admin_stats(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    q = (db.query(models.LoyaltyCard, models.Customer)
+         .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+         .filter(models.Customer.email != "PLACEHOLDER@sukie.internal"))
+
+    # If slug provided, filter by that business's customers
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            q = q.filter(models.Customer.business_id == biz.id)
+
+    rows = q.all()
 
     total       = len(rows)
     active      = sum(1 for _, c in rows if c.card_active is not False)
@@ -806,11 +836,25 @@ def admin_stats(pin: str = "", db: Session = Depends(get_db)):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# BUSINESS-SPECIFIC PIN VERIFICATION
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/api/biz/{slug}/verify-pin")
+def verify_business_pin(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Verify PIN against business-specific admin_pin"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if str(pin) != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    return {"status": "ok", "business": biz.name}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # ADMIN: ACTIVIDAD DIARIA (últimos N días)
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/activity")
-def admin_activity(pin: str = "", days: int = 30, db: Session = Depends(get_db)):
-    verify_pin(pin)
+def admin_activity(pin: str = "", days: int = 30, slug: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
     txs = (db.query(models.StampTransaction)
@@ -846,15 +890,23 @@ def admin_activity(pin: str = "", days: int = 30, db: Session = Depends(get_db))
 # ADMIN: CLIENTES CON CUMPLEAÑOS HOY / ESTE MES
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/birthdays")
-def admin_birthdays(pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+def admin_birthdays(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
     today = datetime.now().strftime("%m-%d")
     this_month = datetime.now().strftime("%m")
 
-    all_custs = (db.query(models.Customer, models.LoyaltyCard)
-                 .join(models.LoyaltyCard, models.LoyaltyCard.customer_id == models.Customer.id)
-                 .filter(models.Customer.birth_date.isnot(None),
-                         models.Customer.birth_date != "").all())
+    query = (db.query(models.Customer, models.LoyaltyCard)
+             .join(models.LoyaltyCard, models.LoyaltyCard.customer_id == models.Customer.id)
+             .filter(models.Customer.birth_date.isnot(None),
+                     models.Customer.birth_date != ""))
+
+    # If slug provided, filter by that business's customers
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            query = query.filter(models.Customer.business_id == biz.id)
+
+    all_custs = query.all()
 
     today_list  = []
     month_list  = []
@@ -883,13 +935,19 @@ def admin_birthdays(pin: str = "", db: Session = Depends(get_db)):
 # ADMIN: TOP CLIENTES
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/top-customers")
-def top_customers(pin: str = "", limit: int = 10, db: Session = Depends(get_db)):
-    verify_pin(pin)
-    rows = (db.query(models.LoyaltyCard, models.Customer)
-            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-            .filter(models.Customer.email != "PLACEHOLDER@sukie.internal")
-            .order_by(models.LoyaltyCard.total_stamps.desc())
-            .limit(limit).all())
+def top_customers(pin: str = "", limit: int = 10, slug: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    q = (db.query(models.LoyaltyCard, models.Customer)
+         .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+         .filter(models.Customer.email != "PLACEHOLDER@sukie.internal"))
+
+    # If slug provided, filter by that business's customers
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            q = q.filter(models.Customer.business_id == biz.id)
+
+    rows = q.order_by(models.LoyaltyCard.total_stamps.desc()).limit(limit).all()
     return {"top": [card_to_dict(c, cu) for c, cu in rows]}
 
 
@@ -899,7 +957,7 @@ def top_customers(pin: str = "", limit: int = 10, db: Session = Depends(get_db))
 @app.post("/api/admin/import-csv")
 async def import_csv(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     customers_data = body.get("customers", [])
 
     created = 0; skipped = 0; errors = []
@@ -944,7 +1002,7 @@ async def import_csv(request: Request, db: Session = Depends(get_db)):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/export-csv")
 def export_csv(pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+    verify_pin(pin, db)
     rows = (db.query(models.LoyaltyCard, models.Customer)
             .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
             .filter(models.Customer.email != "PLACEHOLDER@sukie.internal")
@@ -1145,7 +1203,7 @@ DEFAULT_CONFIG = {
 
 @app.get("/api/admin/config")
 def get_config(pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+    verify_pin(pin, db)
     from database import SessionLocal
     row = db.execute(text("SELECT config FROM card_config WHERE id=1")).fetchone()
     if row:
@@ -1168,7 +1226,7 @@ def get_config(pin: str = "", db: Session = Depends(get_db)):
 @app.put("/api/admin/config")
 async def save_config(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     data = {k: v for k, v in body.items() if k != "pin"}
     db.execute(text("UPDATE card_config SET config=:cfg, updated_at=NOW() WHERE id=1"),
                {"cfg": json.dumps(data)})
@@ -1206,7 +1264,7 @@ def email_preview_birthday(card_id: str, db: Session = Depends(get_db)):
 @app.post("/api/admin/send-email/{card_id}")
 async def send_email_to_customer(card_id: str, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     email_type = body.get("type", "welcome")  # welcome | birthday
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
@@ -1231,7 +1289,7 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
 async def send_email_all(request: Request, db: Session = Depends(get_db)):
     """Send welcome email to all customers (or just new ones)"""
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     target = body.get("target", "new")  # new | all
     rows = (db.query(models.LoyaltyCard, models.Customer)
             .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
@@ -1271,7 +1329,7 @@ def get_referral(card_id: str, db: Session = Depends(get_db)):
 
 @app.get("/api/admin/referrals")
 def admin_referrals(pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+    verify_pin(pin, db)
     refs = db.query(models.Referral).filter(models.Referral.used == True).all()
     return {"total_referrals": len(refs), "total_bonus_stamps": sum(r.bonus_stamps for r in refs)}
 
@@ -1310,7 +1368,7 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
 @app.post("/api/admin/push/send")
 async def admin_push_send(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    verify_pin(str(body.get("pin", "")))
+    verify_pin(str(body.get("pin", "")), db)
     title   = body.get("title", "Sukie Cookie")
     message = body.get("message", "")
     # Log intent - actual sending requires pywebpush + VAPID keys
@@ -1325,7 +1383,7 @@ async def admin_push_send(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/api/admin/push/stats")
 def push_stats(pin: str = "", db: Session = Depends(get_db)):
-    verify_pin(pin)
+    verify_pin(pin, db)
     total = db.query(models.PushSubscription).count()
     return {"subscribers": total}
 
