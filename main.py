@@ -1621,9 +1621,13 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     return templates.TemplateResponse("register.html", {
         "request":           request,
-        "card_title":        biz.card_title,
+        "card_title":        biz.card_title or biz.name,
+        "biz_name":          biz.name,
+        "logo_url":          biz.logo_url or "",
+        "primary_color":     biz.primary_color or "#3A3426",
+        "accent_color":      biz.accent_color or "#FFF3CF",
         "api_base":          BASE_URL,
-        "stamps_per_reward": biz.stamps_per_reward,
+        "stamps_per_reward": biz.stamps_per_reward or STAMPS_PER_REWARD,
         "biz_slug":          slug,
         "ref":               ref,
     })

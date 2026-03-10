@@ -11,8 +11,8 @@
   --espresso: #0d0b08;
   --dark-warm: #1a1209;
   --brown-mid: #3a2a14;
-  --gold: #d4a017;
-  --gold-light: #f5cb53;
+  --gold: {{ primary_color or '#d4a017' }};
+  --gold-light: {{ accent_color or '#f5cb53' }};
   --gold-pale: #fff0c0;
   --cream: #FFF3CF;
   --cream-dim: rgba(255,243,207,0.65);
@@ -324,11 +324,17 @@ body {
   <!-- HERO -->
   <div class="hero">
     <div class="logo-wrap">
-      <img src="https://cdn.shopify.com/s/files/1/0942/2743/1749/files/SukieCookie_x320.png?v=1743690314" alt="logo">
+      {% if logo_url %}
+        <img src="{{ logo_url }}" alt="{{ biz_name or card_title }}">
+      {% else %}
+        <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#a07010);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:#1a1209">
+          {{ (biz_name or card_title or 'L')[0].upper() }}
+        </div>
+      {% endif %}
     </div>
-    <div class="hero-eyebrow">Programa de fidelización</div>
+    <div class="hero-eyebrow">{{ biz_name or card_title or 'Programa de fidelización' }}</div>
     <h1>Únete a la<br>familia</h1>
-    <p>Por cada {{ stamps_per_reward }} cookies acumulas sellos y ganas una cookie gratis. Para siempre.</p>
+    <p>Por cada {{ stamps_per_reward }} compras acumulas sellos y consigues tu premio. Para siempre.</p>
   </div>
 
   <!-- BENEFITS -->
