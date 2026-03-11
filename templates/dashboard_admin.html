@@ -45,6 +45,12 @@ nav a:hover{color:var(--cream);background:rgba(255,255,255,.07)}
 nav a.active{color:var(--brown);background:var(--cream);border-left-color:var(--gold);font-weight:700}
 nav a .icon{font-size:1.1rem;width:22px;text-align:center}
 .nav-section{padding:10px 20px 4px;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:rgba(245,245,240,.3);font-weight:600}
+.nav-parent{position:relative}
+.nav-arrow{margin-left:auto;font-size:.7rem;opacity:.5;transition:transform .2s}
+.nav-arrow.open{transform:rotate(90deg);opacity:1}
+.nav-sub{display:none;background:rgba(0,0,0,.2)}
+.nav-sub.open{display:block}
+.nav-sub a{padding-left:36px;font-size:.83rem}
 .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(245,245,240,.4)}
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:var(--white);border-bottom:1.5px solid var(--cream-border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -286,44 +292,80 @@ tr:hover td{background:rgba(245,245,240,.4)}
       <small>Panel de administración</small>
     </div>
     <nav>
-      <div class="nav-section">Principal</div>
       <a class="active" onclick="showSection('dashboard')" id="nav-dashboard">
-        <span class="icon">📊</span> Dashboard
+        <span class="icon">🏠</span> Dashboard
       </a>
-      <a onclick="showSection('birthdays')" id="nav-birthdays">
-        <span class="icon">🎂</span> Cumpleaños
-        <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:2px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
-      </a>
-      <div class="nav-section">Fidelización</div>
-      <a onclick="showSection('fidelizacion')" id="nav-fidelizacion">
-        <span class="icon">🎯</span> Tarjeta de Fidelización
-      </a>
-      <div class="nav-section">Clientes</div>
       <a onclick="showSection('clients')" id="nav-clients">
-        <span class="icon">👥</span> Clientes
+        <span class="icon">🃏</span> Tarjetas
       </a>
-      <a onclick="showSection('activity')" id="nav-activity">
-        <span class="icon">📋</span> Actividad
+
+      <!-- Sellos (collapsible) -->
+      <a onclick="toggleNav('nav-sellos-sub')" id="nav-sellos" class="nav-parent">
+        <span class="icon">🏷️</span> Sellos
+        <span class="nav-arrow" id="nav-sellos-arrow">▸</span>
       </a>
-      <a onclick="showSection('new-client')" id="nav-new-client">
-        <span class="icon">➕</span> Nuevo cliente
-      </a>
-      <a onclick="showSection('import')" id="nav-import">
-        <span class="icon">📥</span> Importar CSV
-      </a>
-      <div class="nav-section">Marketing</div>
-      <a onclick="showSection('campaigns')" id="nav-campaigns">
+      <div class="nav-sub" id="nav-sellos-sub">
+        <a onclick="showSection('fidelizacion')" id="nav-fidelizacion">
+          <span class="icon">🎯</span> Programa
+        </a>
+        <a onclick="showSection('activity')" id="nav-activity">
+          <span class="icon">📋</span> Actividad
+        </a>
+        <a onclick="showSection('birthdays')" id="nav-birthdays">
+          <span class="icon">🎂</span> Cumpleaños
+          <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:2px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
+        </a>
+        <a onclick="showSection('new-client')" id="nav-new-client">
+          <span class="icon">➕</span> Nuevo cliente
+        </a>
+        <a onclick="showSection('import')" id="nav-import">
+          <span class="icon">📥</span> Importar CSV
+        </a>
+        <a onclick="exportCSV()" id="nav-export">
+          <span class="icon">📤</span> Exportar CSV
+        </a>
+      </div>
+
+      <!-- Campañas (collapsible) -->
+      <a onclick="toggleNav('nav-campanas-sub')" id="nav-campanas" class="nav-parent">
         <span class="icon">📣</span> Campañas
+        <span class="nav-arrow" id="nav-campanas-arrow">▸</span>
       </a>
+      <div class="nav-sub" id="nav-campanas-sub">
+        <a onclick="showSection('campaigns')" id="nav-campaigns">
+          <span class="icon">📧</span> Mis campañas
+        </a>
+      </div>
+
       <a onclick="showSection('passcodes')" id="nav-passcodes">
-        <span class="icon">🔑</span> PassCodes
+        <span class="icon">🔑</span> PassCodes / Pin
       </a>
-      <div class="nav-section">Locales</div>
+      <a onclick="showSection('cartas')" id="nav-cartas">
+        <span class="icon">🍽️</span> Cartas Digitales
+      </a>
       <a onclick="showSection('stores')" id="nav-stores">
         <span class="icon">🏪</span> Tiendas / Locales
       </a>
-      <a onclick="exportCSV()" id="nav-export">
-        <span class="icon">📤</span> Exportar CSV
+
+      <!-- Mi Cuenta (collapsible) -->
+      <a onclick="toggleNav('nav-cuenta-sub')" id="nav-cuenta" class="nav-parent">
+        <span class="icon">👤</span> Mi Cuenta
+        <span class="nav-arrow" id="nav-cuenta-arrow">▸</span>
+      </a>
+      <div class="nav-sub" id="nav-cuenta-sub">
+        <a onclick="showSection('cuenta-perfil')" id="nav-cuenta-perfil">
+          <span class="icon">✏️</span> Perfil
+        </a>
+        <a onclick="showSection('cuenta-plan')" id="nav-cuenta-plan">
+          <span class="icon">💳</span> Plan & Billing
+        </a>
+      </div>
+
+      <a onclick="showSection('apps')" id="nav-apps">
+        <span class="icon">⚡</span> Apps
+      </a>
+      <a onclick="showSection('bi')" id="nav-bi">
+        <span class="icon">📈</span> Business Intelligence
       </a>
     </nav>
     <div class="sidebar-footer">{{ biz_name }} © 2026</div>
@@ -437,6 +479,54 @@ tr:hover td{background:rgba(245,245,240,.4)}
             <h3>Top 10 Clientes por sellos totales</h3>
             <div class="top-list" id="bi-top-list" style="max-height:280px;overflow-y:auto;margin-top:8px"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- ═══ CARTAS DIGITALES ═══ -->
+      <div class="section" id="section-cartas">
+        <div class="section-header">
+          <h1>Cartas Digitales 🍽️</h1>
+        </div>
+        <div class="card" style="text-align:center;padding:48px 24px;color:var(--brown-light)">
+          <div style="font-size:3rem;margin-bottom:16px">🍽️</div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Cartas Digitales</h2>
+          <p style="font-size:.9rem">Próximamente — crea y comparte tu menú digital con QR.</p>
+        </div>
+      </div>
+
+      <!-- ═══ MI CUENTA - PERFIL ═══ -->
+      <div class="section" id="section-cuenta-perfil">
+        <div class="section-header">
+          <h1>Mi Cuenta — Perfil ✏️</h1>
+        </div>
+        <div class="card" style="text-align:center;padding:48px 24px;color:var(--brown-light)">
+          <div style="font-size:3rem;margin-bottom:16px">✏️</div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Perfil del negocio</h2>
+          <p style="font-size:.9rem">Próximamente — edita el nombre, logo y datos de tu negocio.</p>
+        </div>
+      </div>
+
+      <!-- ═══ MI CUENTA - PLAN ═══ -->
+      <div class="section" id="section-cuenta-plan">
+        <div class="section-header">
+          <h1>Plan &amp; Billing 💳</h1>
+        </div>
+        <div class="card" style="text-align:center;padding:48px 24px;color:var(--brown-light)">
+          <div style="font-size:3rem;margin-bottom:16px">💳</div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Plan &amp; Billing</h2>
+          <p style="font-size:.9rem">Próximamente — gestiona tu suscripción y métodos de pago.</p>
+        </div>
+      </div>
+
+      <!-- ═══ APPS ═══ -->
+      <div class="section" id="section-apps">
+        <div class="section-header">
+          <h1>Apps ⚡</h1>
+        </div>
+        <div class="card" style="text-align:center;padding:48px 24px;color:var(--brown-light)">
+          <div style="font-size:3rem;margin-bottom:16px">⚡</div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Apps &amp; Integraciones</h2>
+          <p style="font-size:.9rem">Próximamente — conecta ZubCard con WhatsApp, Instagram y más.</p>
         </div>
       </div>
 
@@ -1417,11 +1507,25 @@ window.addEventListener('DOMContentLoaded', function() {
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
 const sectionTitles = {
     dashboard:'Dashboard', birthdays:'Cumpleaños',
-    fidelizacion:'🎯 Tarjeta de Fidelización',
-    clients:'Clientes', import:'Importar Clientes', 'new-client':'Nuevo Cliente',
-    activity:'📋 Actividad', campaigns:'📣 Campañas',
-    passcodes:'🔑 PassCodes', stores:'🏪 Tiendas / Locales'
+    fidelizacion:'Sellos — Programa',
+    clients:'Tarjetas', import:'Importar Clientes', 'new-client':'Nuevo Cliente',
+    activity:'Sellos — Actividad', campaigns:'Campañas',
+    passcodes:'PassCodes / Pin', stores:'Tiendas / Locales',
+    bi:'Business Intelligence',
+    cartas:'Cartas Digitales',
+    'cuenta-perfil':'Mi Cuenta — Perfil',
+    'cuenta-plan':'Mi Cuenta — Plan & Billing',
+    apps:'Apps'
   };
+
+function toggleNav(subId){
+  const sub = document.getElementById(subId);
+  const arrowId = subId.replace('-sub','-arrow');
+  const arrow = document.getElementById(arrowId);
+  const isOpen = sub.classList.contains('open');
+  sub.classList.toggle('open', !isOpen);
+  if(arrow) arrow.classList.toggle('open', !isOpen);
+}
 function showSection(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
