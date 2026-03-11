@@ -1563,7 +1563,14 @@ function showSection(name){
   const nav = document.getElementById('nav-'+name);
   if(nav) nav.classList.add('active');
   document.getElementById('topbar-title').textContent = sectionTitles[name]||name;
-  if(name==='tarjetas')  loadTarjetas();
+  if(name==='tarjetas'){
+    loadTarjetas();
+    // Auto-expand sub-nav immediately when clicking Tarjetas
+    const sub   = document.getElementById('nav-tarjetas-sub');
+    const arrow = document.getElementById('nav-tarjetas-arrow');
+    if(sub)   sub.classList.add('open');
+    if(arrow) arrow.classList.add('open');
+  }
   if(name==='clients')   loadClients(1);
   if(name==='fidelizacion'){ loadConfig(); loadDesign(); initFidLandingQR(); }
   if(name==='birthdays') loadBirthdays();
@@ -3269,17 +3276,15 @@ async function loadTarjetas(){
       <div class="tarjeta-label">${cardTitle}</div>
       <div class="tarjeta-status">● Publicada</div>
       <div class="tarjeta-actions">
-        <button class="btn-accion" onclick="openCardDetail('${cardTitle}')">
-          <span>⚙ Administrar</span>
-        </button>
-        <button class="btn-accion" style="margin-top:6px;background:transparent;border:2px solid rgba(255,255,255,.15);color:var(--cream);font-weight:500"
-          onclick="toggleTarjetaDropdown('dd-sellos', this)">
-          <span style="font-size:.8rem">▾ Más opciones</span>
+        <button class="btn-accion" onclick="toggleTarjetaDropdown('dd-sellos', this)">
+          <span>⚙ Acción</span> <span style="font-size:.7rem">▾</span>
         </button>
         <div class="tarjeta-dropdown" id="dd-sellos">
-          <a onclick="openCardDetail('${cardTitle}');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">🎨 Editar diseño</a>
-          <a onclick="openCardDetail('${cardTitle}');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
-          <a onclick="window.open('/biz/${slug}/card/demo','_blank');closeTarjetaDropdowns()">👁 Vista previa</a>
+          <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">🎯 Programa</a>
+          <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">🎨 Editar diseño</a>
+          <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
+          <a onclick="showSection('activity');closeTarjetaDropdowns()">📋 Actividad</a>
+          <a onclick="showSection('clients');closeTarjetaDropdowns()">👥 Clientes</a>
         </div>
       </div>`;
 
