@@ -195,6 +195,8 @@ def run_migrations():
         "CREATE TABLE IF NOT EXISTS campaigns (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, subject VARCHAR DEFAULT '', body TEXT DEFAULT '', type VARCHAR DEFAULT 'email', status VARCHAR DEFAULT 'draft', segment VARCHAR DEFAULT 'all', created_at TIMESTAMPTZ DEFAULT NOW(), sent_at TIMESTAMPTZ)",
         # ── Custom QRs de Alta ────────────────────────────────────────────────────
         "CREATE TABLE IF NOT EXISTS custom_qrs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), canal VARCHAR NOT NULL, local_name VARCHAR DEFAULT '', created_at TIMESTAMPTZ DEFAULT NOW())",
+        # ── Card Programs (multi-tarjeta) ────────────────────────────────────────
+        "CREATE TABLE IF NOT EXISTS card_programs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, emoji VARCHAR DEFAULT '🃏', stamps_per_reward INTEGER DEFAULT 10, reward_name VARCHAR DEFAULT 'Premio', bg_color VARCHAR DEFAULT '#0a0a0a', accent_color VARCHAR DEFAULT '#00e676', text_color VARCHAR DEFAULT '#ffffff', status VARCHAR DEFAULT 'active', sort_order INTEGER DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW())",
 
     ]
     from database import SessionLocal
@@ -2156,6 +2158,57 @@ def delete_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = De
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     db.execute(text("DELETE FROM campaigns WHERE id=:id AND business_id=:bid"),
                {"id": campaign_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "deleted"}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# CARD PROGRAMS (multi-tarjeta)
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/card-programs")
+def list_card_programs(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    rows = db.execute(text(
+        "SELECT id, name, emoji, stamps_per_reward, reward_name, bg_color, accent_color, text_color, status, sort_order, created_at "
+        "FROM card_programs WHERE business_id=:bid ORDER BY sort_order, created_at"
+    ), {"bid": str(biz.id)}).fetchall()
+    return [dict(r._mapping) for r in rows]
+
+@app.post("/api/biz/{slug}/card-programs")
+async def create_card_program(slug: str, request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")), db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    row = db.execute(text(
+        "INSERT INTO card_programs (business_id, name, emoji, stamps_per_reward, reward_name, bg_color, accent_color, text_color, status) "
+        "VALUES (:bid, :name, :emoji, :stamps, :reward, :bg, :accent, :txt, 'active') RETURNING id"
+    ), {
+        "bid":    str(biz.id),
+        "name":   body.get("name", "Nueva Tarjeta"),
+        "emoji":  body.get("emoji", "🃏"),
+        "stamps": int(body.get("stamps_per_reward", 10)),
+        "reward": body.get("reward_name", "Premio"),
+        "bg":     body.get("bg_color", "#0a0a0a"),
+        "accent": body.get("accent_color", "#00e676"),
+        "txt":    body.get("text_color", "#ffffff"),
+    }).fetchone()
+    db.commit()
+    return {"id": str(row[0]), "status": "created"}
+
+@app.delete("/api/biz/{slug}/card-programs/{program_id}")
+def delete_card_program(slug: str, program_id: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text("DELETE FROM card_programs WHERE id=:id AND business_id=:bid"),
+               {"id": program_id, "bid": str(biz.id)})
     db.commit()
     return {"status": "deleted"}
 

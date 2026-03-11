@@ -574,10 +574,69 @@ tr:hover td{background:rgba(245,245,240,.4)}
 
       <!-- ═══ TARJETAS ═══ -->
       <div class="section" id="section-tarjetas">
-        <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
           <h1 style="font-size:1.4rem;font-weight:800">Tarjetas</h1>
+          <button class="btn-sm btn-primary" onclick="openNewCardModal()" style="padding:10px 18px;font-size:.88rem">+ Nueva tarjeta</button>
         </div>
         <div id="tarjetas-grid" style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;padding-bottom:32px"></div>
+      </div>
+
+      <!-- ═══ MODAL NUEVA TARJETA ═══ -->
+      <div id="modal-nueva-tarjeta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:8px;padding:32px;width:460px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.2);position:relative">
+          <button onclick="closeNewCardModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">×</button>
+          <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;margin-bottom:20px">Nueva Tarjeta de Fidelización</h2>
+
+          <div style="display:grid;grid-template-columns:56px 1fr;gap:12px;margin-bottom:14px;align-items:center">
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">EMOJI</label>
+              <input id="nc-emoji" type="text" value="🃏" maxlength="2"
+                style="width:100%;text-align:center;font-size:1.6rem;padding:6px;border:2px solid #e0e0e0;border-radius:6px;background:#fafafa">
+            </div>
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">NOMBRE DE LA TARJETA</label>
+              <input id="nc-name" type="text" placeholder="Ej: 10 Cafés, Cookie Card…"
+                style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:.95rem;outline:none">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">SELLOS PARA PREMIO</label>
+              <input id="nc-stamps" type="number" value="10" min="1" max="50"
+                style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:.95rem;outline:none">
+            </div>
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">NOMBRE DEL PREMIO</label>
+              <input id="nc-reward" type="text" placeholder="Ej: Café Gratis"
+                style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:.95rem;outline:none">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">FONDO</label>
+              <input id="nc-bg" type="color" value="#0a0a0a"
+                style="width:100%;height:40px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;padding:2px">
+            </div>
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">ACENTO</label>
+              <input id="nc-accent" type="color" value="#00e676"
+                style="width:100%;height:40px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;padding:2px">
+            </div>
+            <div>
+              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">TEXTO</label>
+              <input id="nc-text" type="color" value="#ffffff"
+                style="width:100%;height:40px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;padding:2px">
+            </div>
+          </div>
+
+          <button onclick="saveNewCard()" id="btn-save-card"
+            style="width:100%;padding:14px;background:#0a0a0a;color:#fff;border:none;border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer">
+            Crear tarjeta →
+          </button>
+          <div id="nc-error" style="color:#cc2222;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+        </div>
       </div>
 
       <!-- ═══ CLIENTES ═══ -->
@@ -3208,151 +3267,147 @@ function fidCopyLink() {
 }
 
 // ── TARJETAS ────────────────────────────────────────────────────────────────
+function buildCardMockup(card){
+  const dotSize = card.stamps <= 10 ? 34 : 26;
+  const dots = Array.from({length: card.stamps}, (_,i) => {
+    const f = i < (card.filled || 0);
+    return `<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;
+            background:${f ? card.accent_color : 'rgba(255,255,255,0.18)'};
+            display:flex;align-items:center;justify-content:center;font-size:${dotSize*.45}px">
+            ${f ? `<span style="color:${card.bg_color}">✓</span>` : ''}</div>`;
+  }).join('');
+
+  const cardHtml = `
+    <div style="width:100%;height:100%;background:${card.bg_color};display:flex;flex-direction:column;
+         justify-content:space-between;padding:20px 16px 16px;font-family:sans-serif;box-sizing:border-box">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:1.4rem">${card.emoji}</span>
+        <div style="font-size:.95rem;font-weight:900;color:${card.accent_color};line-height:1.1">${card.name}</div>
+      </div>
+      <div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px">${dots}</div>
+        <div style="display:flex;justify-content:space-between;font-size:.62rem;color:${card.text_color};opacity:.6;margin-bottom:4px">
+          <span>TITULAR</span><span>PREMIO</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:${card.text_color}">
+          <span>SUKIE COOKIE</span><span style="color:${card.accent_color}">${card.reward_name}</span>
+        </div>
+      </div>
+    </div>`;
+
+  const ddId = `dd-${card.id}`;
+  const wrap = document.createElement('div');
+  wrap.className = 'tarjeta-card-wrap';
+  wrap.innerHTML = `
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">${cardHtml}</div>
+    </div>
+    <div class="tarjeta-label">${card.name}</div>
+    <div class="tarjeta-status">● Activa</div>
+    <div class="tarjeta-actions">
+      <button class="btn-accion" onclick="toggleTarjetaDropdown('${ddId}', event)">
+        <span>⚙ Acción</span> <span style="font-size:.7rem">▾</span>
+      </button>
+      <div class="tarjeta-dropdown" id="${ddId}">
+        <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">🎯 Programa</a>
+        <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">🎨 Editar diseño</a>
+        <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
+        <a onclick="showSection('activity');closeTarjetaDropdowns()">📋 Actividad</a>
+        <a onclick="showSection('clients');closeTarjetaDropdowns()">👥 Clientes</a>
+        <a onclick="deleteCardProgram('${card.id}');closeTarjetaDropdowns()" style="color:#cc2222">🗑 Eliminar</a>
+      </div>
+    </div>`;
+  return wrap;
+}
+
 async function loadTarjetas(){
   const grid = document.getElementById('tarjetas-grid');
-  grid.innerHTML = '<div style="color:var(--brown-light);font-size:.9rem">Cargando...</div>';
+  grid.innerHTML = '<div style="color:var(--brown-light);font-size:.9rem;padding:8px">Cargando...</div>';
   try {
-    const slug = BIZ_SLUG;
-    const pin  = PIN;
-    // Load design config to build card preview
-    const res = await fetch(`${BASE}/api/admin/config?pin=${pin}&slug=${slug}`);
-    const cfg = await res.json();
-    const design    = cfg.design    || {};
-    const programa  = cfg.programa  || {};
-    const general   = cfg.general   || {};
-
-    // ── Real card from config ──────────────────────────────────────────────
-    const liveCard = {
-      id:      'sellos',
-      title:   general.card_title || '{{ biz_name }}',
-      reward:  programa.reward_name || 'Premio',
-      stamps:  programa.stamps_per_reward || 10,
-      filled:  2,
-      bg:      design.card_bg_color        || '#0a0a0a',
-      accent:  design.accent_color         || '#00e676',
-      text:    design.text_color           || '#ffffff',
-      logo:    design.logo_url             || '',
-      status:  'live',
-      emoji:   '🍪'
-    };
-
-    // ── Demo cards (visual test) ────────────────────────────────────────────
-    const demoCards = [
-      {
-        id: 'cookies', title: '10 Cookies', reward: 'Cookie Gratis',
-        stamps: 10, filled: 3,
-        bg: '#1a0800', accent: '#f5a623', text: '#fff',
-        logo: '', status: 'demo', emoji: '🍪'
-      },
-      {
-        id: 'cafes', title: '10 Cafés', reward: 'Café Gratis',
-        stamps: 10, filled: 6,
-        bg: '#1c0f05', accent: '#c8956c', text: '#fff',
-        logo: '', status: 'demo', emoji: '☕'
-      },
-      {
-        id: 'tostadas', title: '10 Tostadas', reward: 'Tostada Gratis',
-        stamps: 10, filled: 9,
-        bg: '#1a1200', accent: '#ffcc44', text: '#fff',
-        logo: '', status: 'demo', emoji: '🥐'
-      }
-    ];
-
-    const allCards = [liveCard, ...demoCards];
-
-    function buildCardMockup(card){
-      const rows  = Math.ceil(card.stamps / 5);
-      const perRow = Math.min(card.stamps, 5);
-      const dotSize = card.stamps <= 10 ? 34 : 26;
-      const dots = Array.from({length: card.stamps}, (_,i) => {
-        const f = i < card.filled;
-        return `<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;
-                background:${f ? card.accent : 'rgba(255,255,255,0.18)'};
-                display:flex;align-items:center;justify-content:center;font-size:${dotSize*.45}px">
-                ${f ? `<span style="color:${card.bg}">✓</span>` : ''}</div>`;
-      }).join('');
-
-      const cardHtml = `
-        <div style="width:100%;height:100%;background:${card.bg};display:flex;flex-direction:column;
-             justify-content:space-between;padding:20px 16px 16px;font-family:sans-serif;box-sizing:border-box">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:1.4rem">${card.emoji}</span>
-            <div style="font-size:.95rem;font-weight:900;color:${card.accent};line-height:1.1">${card.title}</div>
-          </div>
-          <div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px">
-              ${dots}
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.62rem;color:${card.text};opacity:.6;margin-bottom:4px">
-              <span>TITULAR</span><span>PREMIO</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:${card.text}">
-              <span>SUKIE COOKIE</span><span style="color:${card.accent}">${card.reward}</span>
-            </div>
-          </div>
-        </div>`;
-
-      const statusLabel = card.status === 'live'
-        ? `<div class="tarjeta-status">● Publicada</div>`
-        : `<div class="tarjeta-status draft">◌ Demo</div>`;
-
-      const ddId = `dd-${card.id}`;
-      const wrap = document.createElement('div');
-      wrap.className = 'tarjeta-card-wrap';
-      wrap.innerHTML = `
-        <div class="phone-frame">
-          <div class="phone-notch"></div>
-          <div class="phone-screen">${cardHtml}</div>
-        </div>
-        <div class="tarjeta-label">${card.title}</div>
-        ${statusLabel}
-        <div class="tarjeta-actions">
-          <button class="btn-accion" onclick="toggleTarjetaDropdown('${ddId}', this)">
-            <span>⚙ Acción</span> <span style="font-size:.7rem">▾</span>
-          </button>
-          <div class="tarjeta-dropdown" id="${ddId}">
-            <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">🎯 Programa</a>
-            <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">🎨 Editar diseño</a>
-            <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
-            <a onclick="showSection('activity');closeTarjetaDropdowns()">📋 Actividad</a>
-            <a onclick="showSection('clients');closeTarjetaDropdowns()">👥 Clientes</a>
-          </div>
-        </div>`;
-      return wrap;
-    }
+    const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs?pin=${PIN}`);
+    const programs = await res.json();
 
     grid.innerHTML = '';
-    allCards.forEach(c => grid.appendChild(buildCardMockup(c)));
+    if(!programs.length){
+      grid.innerHTML = `<div style="color:var(--brown-light);font-size:.9rem;padding:16px 0">
+        Aún no tienes tarjetas. Haz clic en <strong>+ Nueva tarjeta</strong> para crear la primera.</div>`;
+      return;
+    }
+    programs.forEach(p => grid.appendChild(buildCardMockup(p)));
 
     document.addEventListener('click', function(e){
       if(!e.target.closest('.tarjeta-actions')) closeTarjetaDropdowns();
     });
-
   } catch(e){
     grid.innerHTML = `<div style="color:var(--red);font-size:.85rem">Error cargando tarjetas.</div>`;
     console.error('loadTarjetas', e);
   }
 }
 
-function openCardDetail(cardName){
-  // Update card label in sidebar sub-nav
-  const nameEl = document.getElementById('nav-card-name');
-  if(nameEl) nameEl.textContent = cardName;
-  // Expand Tarjetas sub-nav in sidebar
-  const sub   = document.getElementById('nav-tarjetas-sub');
-  const arrow = document.getElementById('nav-tarjetas-arrow');
-  if(sub)   sub.classList.add('open');
-  if(arrow) arrow.classList.add('open');
-  // Mark nav-tarjetas as active parent
-  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
-  const navTarjetas = document.getElementById('nav-tarjetas');
-  if(navTarjetas) navTarjetas.classList.add('active');
-  // Navigate to Programa section
-  showSection('fidelizacion');
+async function deleteCardProgram(id){
+  if(!confirm('¿Eliminar esta tarjeta? Esta acción no se puede deshacer.')) return;
+  await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${id}?pin=${PIN}`, {method:'DELETE'});
+  loadTarjetas();
 }
 
-function toggleTarjetaDropdown(id, btn){
-  event.stopPropagation();
+// ── MODAL NUEVA TARJETA ──────────────────────────────────────────────────────
+function openNewCardModal(){
+  document.getElementById('modal-nueva-tarjeta').style.display = 'flex';
+  document.getElementById('nc-error').textContent = '';
+  document.getElementById('nc-name').value = '';
+  document.getElementById('nc-reward').value = '';
+  document.getElementById('nc-emoji').value = '🃏';
+  document.getElementById('nc-stamps').value = '10';
+  document.getElementById('nc-bg').value = '#0a0a0a';
+  document.getElementById('nc-accent').value = '#00e676';
+  document.getElementById('nc-text').value = '#ffffff';
+  setTimeout(()=>document.getElementById('nc-name').focus(), 100);
+}
+function closeNewCardModal(){
+  document.getElementById('modal-nueva-tarjeta').style.display = 'none';
+}
+async function saveNewCard(){
+  const name   = document.getElementById('nc-name').value.trim();
+  const reward = document.getElementById('nc-reward').value.trim();
+  const errEl  = document.getElementById('nc-error');
+  if(!name)   { errEl.textContent = 'El nombre es obligatorio.'; return; }
+  if(!reward) { errEl.textContent = 'El nombre del premio es obligatorio.'; return; }
+
+  const btn = document.getElementById('btn-save-card');
+  btn.textContent = 'Creando…'; btn.disabled = true;
+
+  try {
+    const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        pin:               PIN,
+        name:              name,
+        emoji:             document.getElementById('nc-emoji').value || '🃏',
+        stamps_per_reward: parseInt(document.getElementById('nc-stamps').value) || 10,
+        reward_name:       reward,
+        bg_color:          document.getElementById('nc-bg').value,
+        accent_color:      document.getElementById('nc-accent').value,
+        text_color:        document.getElementById('nc-text').value,
+      })
+    });
+    const data = await res.json();
+    if(data.id){
+      closeNewCardModal();
+      loadTarjetas();
+      showToast('Tarjeta creada ✓', 'success');
+    } else {
+      errEl.textContent = data.detail || 'Error al crear la tarjeta.';
+    }
+  } catch(e){
+    errEl.textContent = 'Error de conexión.';
+  }
+  btn.textContent = 'Crear tarjeta →'; btn.disabled = false;
+}
+
+function toggleTarjetaDropdown(id, e){
+  if(e) e.stopPropagation();
   const dd = document.getElementById(id);
   const isOpen = dd.classList.contains('open');
   closeTarjetaDropdowns();
