@@ -51,6 +51,7 @@ nav a .icon{font-size:1.1rem;width:22px;text-align:center}
 .nav-sub{display:none;background:rgba(0,0,0,.2)}
 .nav-sub.open{display:block}
 .nav-sub a{padding-left:36px;font-size:.83rem}
+.nav-card-label{padding:8px 20px 4px 24px;font-size:.72rem;font-weight:700;color:rgba(245,245,240,.45);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,.07);margin-top:4px}
 .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:.75rem;color:rgba(245,245,240,.4)}
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:var(--white);border-bottom:1.5px solid var(--cream-border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -313,16 +314,15 @@ tr:hover td{background:rgba(245,245,240,.4)}
       <a class="active" onclick="showSection('dashboard')" id="nav-dashboard">
         <span class="icon">🏠</span> Dashboard
       </a>
-      <a onclick="showSection('tarjetas')" id="nav-tarjetas">
+      <!-- Tarjetas (collapsible — expands on card click) -->
+      <a onclick="showSection('tarjetas')" id="nav-tarjetas" class="nav-parent">
         <span class="icon">🃏</span> Tarjetas
+        <span class="nav-arrow" id="nav-tarjetas-arrow">▸</span>
       </a>
-
-      <!-- Sellos (collapsible) -->
-      <a onclick="toggleNav('nav-sellos-sub')" id="nav-sellos" class="nav-parent">
-        <span class="icon">🏷️</span> Sellos
-        <span class="nav-arrow" id="nav-sellos-arrow">▸</span>
-      </a>
-      <div class="nav-sub" id="nav-sellos-sub">
+      <div class="nav-sub" id="nav-tarjetas-sub">
+        <div class="nav-card-label" id="nav-card-label">
+          <span class="icon">🏷️</span> <span id="nav-card-name">Sellos</span>
+        </div>
         <a onclick="showSection('fidelizacion')" id="nav-fidelizacion">
           <span class="icon">🎯</span> Programa
         </a>
@@ -332,6 +332,9 @@ tr:hover td{background:rgba(245,245,240,.4)}
         <a onclick="showSection('birthdays')" id="nav-birthdays">
           <span class="icon">🎂</span> Cumpleaños
           <span id="bday-badge" style="margin-left:auto;background:var(--gold);color:var(--brown);border-radius:2px;padding:1px 8px;font-size:.7rem;font-weight:700;display:none"></span>
+        </a>
+        <a onclick="showSection('clients')" id="nav-clients">
+          <span class="icon">👥</span> Clientes
         </a>
         <a onclick="showSection('new-client')" id="nav-new-client">
           <span class="icon">➕</span> Nuevo cliente
@@ -1569,6 +1572,17 @@ function showSection(name){
   if(name==='campaigns') loadCampaigns();
   if(name==='passcodes') loadPassCodes();
   if(name==='stores')    loadStores();
+
+  // Keep Tarjetas parent highlighted when inside a card sub-section
+  const cardSubSections = ['fidelizacion','activity','birthdays','clients','new-client','import'];
+  if(cardSubSections.includes(name)){
+    const sub   = document.getElementById('nav-tarjetas-sub');
+    const arrow = document.getElementById('nav-tarjetas-arrow');
+    const navTarjetas = document.getElementById('nav-tarjetas');
+    if(sub)   sub.classList.add('open');
+    if(arrow) arrow.classList.add('open');
+    if(navTarjetas) navTarjetas.classList.add('active');
+  }
 }
 
 // ── DASHBOARD INIT ─────────────────────────────────────────────────────────
@@ -3255,13 +3269,17 @@ async function loadTarjetas(){
       <div class="tarjeta-label">${cardTitle}</div>
       <div class="tarjeta-status">● Publicada</div>
       <div class="tarjeta-actions">
-        <button class="btn-accion" onclick="toggleTarjetaDropdown('dd-sellos', this)">
-          <span>⚙ Acción</span> <span style="font-size:.7rem">▾</span>
+        <button class="btn-accion" onclick="openCardDetail('${cardTitle}')">
+          <span>⚙ Administrar</span>
+        </button>
+        <button class="btn-accion" style="margin-top:6px;background:transparent;border:2px solid rgba(255,255,255,.15);color:var(--cream);font-weight:500"
+          onclick="toggleTarjetaDropdown('dd-sellos', this)">
+          <span style="font-size:.8rem">▾ Más opciones</span>
         </button>
         <div class="tarjeta-dropdown" id="dd-sellos">
-          <a onclick="window.open('/biz/${slug}/card/preview','_blank');closeTarjetaDropdowns()">👁 Ver tarjeta</a>
-          <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">✏️ Editar diseño</a>
-          <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),300);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
+          <a onclick="openCardDetail('${cardTitle}');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">🎨 Editar diseño</a>
+          <a onclick="openCardDetail('${cardTitle}');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
+          <a onclick="window.open('/biz/${slug}/card/demo','_blank');closeTarjetaDropdowns()">👁 Vista previa</a>
         </div>
       </div>`;
 
@@ -3277,6 +3295,23 @@ async function loadTarjetas(){
     grid.innerHTML = `<div style="color:var(--red);font-size:.85rem">Error cargando tarjetas.</div>`;
     console.error('loadTarjetas', e);
   }
+}
+
+function openCardDetail(cardName){
+  // Update card label in sidebar sub-nav
+  const nameEl = document.getElementById('nav-card-name');
+  if(nameEl) nameEl.textContent = cardName;
+  // Expand Tarjetas sub-nav in sidebar
+  const sub   = document.getElementById('nav-tarjetas-sub');
+  const arrow = document.getElementById('nav-tarjetas-arrow');
+  if(sub)   sub.classList.add('open');
+  if(arrow) arrow.classList.add('open');
+  // Mark nav-tarjetas as active parent
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  const navTarjetas = document.getElementById('nav-tarjetas');
+  if(navTarjetas) navTarjetas.classList.add('active');
+  // Navigate to Programa section
+  showSection('fidelizacion');
 }
 
 function toggleTarjetaDropdown(id, btn){
