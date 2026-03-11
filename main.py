@@ -1562,6 +1562,12 @@ async def zubcard_landing(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+@app.get("/login", response_class=HTMLResponse)
+async def biz_login_page(request: Request):
+    """General business owner login page — enter slug + PIN → redirect to dashboard"""
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
 @app.get("/app/login", response_class=HTMLResponse)
 async def app_login(request: Request):
     return templates.TemplateResponse("app_login.html", {"request": request})
