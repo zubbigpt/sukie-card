@@ -848,13 +848,23 @@ def admin_stats(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/biz/{slug}/verify-pin")
 def verify_business_pin(slug: str, pin: str = "", db: Session = Depends(get_db)):
-    """Verify PIN against business-specific admin_pin"""
+    """Verify PIN — accepts admin PIN or any active store employee PIN"""
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    if str(pin) != str(biz.admin_pin):
-        raise HTTPException(status_code=403, detail="PIN incorrecto")
-    return {"status": "ok", "business": biz.name}
+    # Admin PIN check
+    if str(pin) == str(biz.admin_pin):
+        return {"status": "ok", "business": biz.name, "role": "admin"}
+    # Store employee PIN check
+    try:
+        store = db.execute(text(
+            "SELECT name FROM stores WHERE business_id=:bid AND pin=:pin AND active=TRUE LIMIT 1"
+        ), {"bid": str(biz.id), "pin": str(pin)}).fetchone()
+        if store:
+            return {"status": "ok", "business": biz.name, "role": "employee", "store": store[0]}
+    except Exception:
+        pass
+    raise HTTPException(status_code=403, detail="PIN incorrecto")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
