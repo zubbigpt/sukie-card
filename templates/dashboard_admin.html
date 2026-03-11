@@ -266,6 +266,24 @@ tr:hover td{background:rgba(245,245,240,.4)}
 .field-input:focus {
   border-color: #0a0a0a;
 }
+
+/* ── TARJETAS SECTION ── */
+.tarjeta-card-wrap{display:flex;flex-direction:column;align-items:center;width:220px}
+.phone-frame{width:220px;height:430px;background:#1a1a1a;border-radius:36px;padding:12px 10px 16px;box-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 0 0 2px #333;position:relative;overflow:hidden}
+.phone-notch{width:80px;height:18px;background:#1a1a1a;border-radius:0 0 12px 12px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10}
+.phone-screen{width:100%;height:100%;border-radius:26px;overflow:hidden;background:#fff;position:relative}
+.phone-screen iframe{width:200%;height:200%;transform:scale(.5);transform-origin:top left;border:none;pointer-events:none}
+.tarjeta-label{margin-top:12px;font-size:.88rem;font-weight:600;color:var(--brown);text-align:center}
+.tarjeta-status{font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:2px;margin-top:4px;background:#e8f5e9;color:#00916a}
+.tarjeta-status.draft{background:var(--cream-dark);color:var(--brown-light)}
+.tarjeta-actions{margin-top:12px;position:relative;width:100%}
+.tarjeta-actions .btn-accion{width:100%;padding:10px;background:var(--brown);color:var(--cream);border:none;border-radius:4px;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.tarjeta-actions .btn-accion:hover{background:var(--brown-mid)}
+.tarjeta-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:2px solid var(--cream-border);border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200}
+.tarjeta-dropdown.open{display:block}
+.tarjeta-dropdown a{display:block;padding:10px 14px;font-size:.85rem;color:var(--brown);cursor:pointer;border-bottom:1px solid var(--cream-border);text-decoration:none}
+.tarjeta-dropdown a:last-child{border-bottom:none}
+.tarjeta-dropdown a:hover{background:var(--cream)}
 </style>
 </head>
 <body>
@@ -295,7 +313,7 @@ tr:hover td{background:rgba(245,245,240,.4)}
       <a class="active" onclick="showSection('dashboard')" id="nav-dashboard">
         <span class="icon">🏠</span> Dashboard
       </a>
-      <a onclick="showSection('clients')" id="nav-clients">
+      <a onclick="showSection('tarjetas')" id="nav-tarjetas">
         <span class="icon">🃏</span> Tarjetas
       </a>
 
@@ -549,6 +567,14 @@ tr:hover td{background:rgba(245,245,240,.4)}
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ═══ TARJETAS ═══ -->
+      <div class="section" id="section-tarjetas">
+        <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <h1 style="font-size:1.4rem;font-weight:800">Tarjetas</h1>
+        </div>
+        <div id="tarjetas-grid" style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;padding-bottom:32px"></div>
       </div>
 
       <!-- ═══ CLIENTES ═══ -->
@@ -1507,8 +1533,9 @@ window.addEventListener('DOMContentLoaded', function() {
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
 const sectionTitles = {
     dashboard:'Dashboard', birthdays:'Cumpleaños',
+    tarjetas:'Tarjetas',
     fidelizacion:'Sellos — Programa',
-    clients:'Tarjetas', import:'Importar Clientes', 'new-client':'Nuevo Cliente',
+    clients:'Clientes', import:'Importar Clientes', 'new-client':'Nuevo Cliente',
     activity:'Sellos — Actividad', campaigns:'Campañas',
     passcodes:'PassCodes / Pin', stores:'Tiendas / Locales',
     bi:'Business Intelligence',
@@ -1533,6 +1560,7 @@ function showSection(name){
   const nav = document.getElementById('nav-'+name);
   if(nav) nav.classList.add('active');
   document.getElementById('topbar-title').textContent = sectionTitles[name]||name;
+  if(name==='tarjetas')  loadTarjetas();
   if(name==='clients')   loadClients(1);
   if(name==='fidelizacion'){ loadConfig(); loadDesign(); initFidLandingQR(); }
   if(name==='birthdays') loadBirthdays();
@@ -3156,6 +3184,110 @@ function fidCopyLink() {
       if (btn) { const orig = btn.textContent; btn.textContent = '✅ Copiado!'; setTimeout(()=>btn.textContent=orig, 2000); }
     });
   }
+}
+
+// ── TARJETAS ────────────────────────────────────────────────────────────────
+async function loadTarjetas(){
+  const grid = document.getElementById('tarjetas-grid');
+  grid.innerHTML = '<div style="color:var(--brown-light);font-size:.9rem">Cargando...</div>';
+  try {
+    const slug = BIZ_SLUG;
+    const pin  = PIN;
+    // Load design config to build card preview
+    const res = await fetch(`${BASE}/api/admin/config?pin=${pin}&slug=${slug}`);
+    const cfg = await res.json();
+    const design    = cfg.design    || {};
+    const programa  = cfg.programa  || {};
+    const general   = cfg.general   || {};
+
+    const cardTitle   = general.card_title || '{{ biz_name }}';
+    const stampsTotal = programa.stamps_per_reward || 10;
+    const bgColor     = design.card_bg_color   || '#0a0a0a';
+    const accentColor = design.accent_color    || '#00e676';
+    const textColor   = design.text_color      || '#ffffff';
+    const stampFilled = design.stamp_filled_color || accentColor;
+    const stampEmpty  = design.stamp_empty_color  || 'rgba(255,255,255,0.25)';
+    const logoUrl     = design.logo_url        || '';
+
+    // Build stamp dots HTML
+    const dots = Array.from({length: stampsTotal}, (_,i) => {
+      const filled = i < 2; // demo: 2 filled
+      return `<div style="width:32px;height:32px;border-radius:50%;background:${filled ? stampFilled : stampEmpty};
+              display:flex;align-items:center;justify-content:center;font-size:14px">
+              ${filled ? `<span style="color:${bgColor}">✓</span>` : ''}</div>`;
+    }).join('');
+
+    // Card URL for preview iframe
+    const cardPreviewUrl = `/${slug}/card-preview?pin=${pin}`;
+
+    // Build phone mockup card inline
+    const cardHtml = `
+      <div style="width:100%;height:100%;background:${bgColor};display:flex;flex-direction:column;
+           align-items:center;justify-content:space-between;padding:20px 16px;font-family:sans-serif">
+        <div style="width:100%;text-align:left">
+          ${logoUrl
+            ? `<img src="${logoUrl}" style="height:40px;object-fit:contain;max-width:120px">`
+            : `<div style="font-size:1.1rem;font-weight:900;color:${accentColor};line-height:1.1">${cardTitle}</div>`
+          }
+        </div>
+        <div style="width:100%">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px">
+            ${dots}
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;color:${textColor};opacity:.7;margin-bottom:6px">
+            <span>TITULAR</span><span>DISPONIBLES</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:${textColor}">
+            <span>SUKIE COOKIE</span><span>2</span>
+          </div>
+        </div>
+      </div>`;
+
+    const cardWrapper = document.createElement('div');
+    cardWrapper.className = 'tarjeta-card-wrap';
+    cardWrapper.innerHTML = `
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" id="phone-screen-sellos">
+          ${cardHtml}
+        </div>
+      </div>
+      <div class="tarjeta-label">${cardTitle}</div>
+      <div class="tarjeta-status">● Publicada</div>
+      <div class="tarjeta-actions">
+        <button class="btn-accion" onclick="toggleTarjetaDropdown('dd-sellos', this)">
+          <span>⚙ Acción</span> <span style="font-size:.7rem">▾</span>
+        </button>
+        <div class="tarjeta-dropdown" id="dd-sellos">
+          <a onclick="window.open('/biz/${slug}/card/preview','_blank');closeTarjetaDropdowns()">👁 Ver tarjeta</a>
+          <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">✏️ Editar diseño</a>
+          <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),300);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
+        </div>
+      </div>`;
+
+    grid.innerHTML = '';
+    grid.appendChild(cardWrapper);
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e){
+      if(!e.target.closest('.tarjeta-actions')) closeTarjetaDropdowns();
+    }, {once: false});
+
+  } catch(e){
+    grid.innerHTML = `<div style="color:var(--red);font-size:.85rem">Error cargando tarjetas.</div>`;
+    console.error('loadTarjetas', e);
+  }
+}
+
+function toggleTarjetaDropdown(id, btn){
+  event.stopPropagation();
+  const dd = document.getElementById(id);
+  const isOpen = dd.classList.contains('open');
+  closeTarjetaDropdowns();
+  if(!isOpen) dd.classList.add('open');
+}
+function closeTarjetaDropdowns(){
+  document.querySelectorAll('.tarjeta-dropdown').forEach(d=>d.classList.remove('open'));
 }
 
 </script>
