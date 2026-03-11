@@ -3,6 +3,7 @@ import uuid
 import csv
 import io
 import json
+import time
 from fastapi import FastAPI, Depends, HTTPException, Request, Query, File, UploadFile, Body
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -51,6 +52,85 @@ SMTP_PASS     = os.environ.get("SMTP_PASS", "")
 SMTP_FROM     = os.environ.get("SMTP_FROM", "noreply@sukiecookie.es")
 VAPID_PUBLIC  = os.environ.get("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE = os.environ.get("VAPID_PRIVATE_KEY", "")
+
+# GOOGLE WALLET CONFIG
+GOOGLE_WALLET_ISSUER_ID   = os.environ.get("GOOGLE_WALLET_ISSUER_ID", "")
+GOOGLE_WALLET_CREDENTIALS = os.environ.get("GOOGLE_WALLET_CREDENTIALS", "")  # JSON string
+
+def generate_google_wallet_url(
+    card_id: str,
+    biz_slug: str,
+    biz_name: str,
+    customer_name: str,
+    stamps: int,
+    stamps_per_reward: int,
+    card_url: str,
+    primary_color: str = "#3A3426",
+) -> str | None:
+    """Generate a signed Google Wallet 'Save to Wallet' URL for a loyalty pass.
+    Returns None if Google Wallet env vars are not configured."""
+    if not GOOGLE_WALLET_ISSUER_ID or not GOOGLE_WALLET_CREDENTIALS:
+        return None
+    try:
+        import jwt as pyjwt
+        sa = json.loads(GOOGLE_WALLET_CREDENTIALS)
+        issuer_id = GOOGLE_WALLET_ISSUER_ID
+        class_suffix = biz_slug.replace("-", "_")
+        class_id  = f"{issuer_id}.{class_suffix}"
+        object_id = f"{issuer_id}.{card_id.replace('-', '_')}"
+        hex_color = primary_color if primary_color.startswith("#") else "#3A3426"
+        stamps_left = max(0, stamps_per_reward - stamps)
+        header_val = f"{stamps}/{stamps_per_reward} sellos"
+        if stamps_left == 0:
+            header_val = "🎉 ¡Premio disponible!"
+        generic_object = {
+            "id": object_id,
+            "classId": class_id,
+            "genericType": "GENERIC_TYPE_UNSPECIFIED",
+            "hexBackgroundColor": hex_color,
+            "cardTitle": {
+                "defaultValue": {"language": "es", "value": biz_name}
+            },
+            "subheader": {
+                "defaultValue": {"language": "es", "value": "Tarjeta de Fidelidad"}
+            },
+            "header": {
+                "defaultValue": {"language": "es", "value": customer_name}
+            },
+            "textModulesData": [
+                {
+                    "id": "stamps",
+                    "header": "Sellos",
+                    "body": header_val
+                }
+            ],
+            "barcode": {
+                "type": "QR_CODE",
+                "value": card_url,
+                "alternateText": card_id[:8].upper()
+            },
+            "state": "ACTIVE",
+        }
+        claims = {
+            "iss": sa["client_email"],
+            "aud": "google",
+            "typ": "savetowallet",
+            "iat": int(time.time()),
+            "payload": {"genericObjects": [generic_object]},
+            "origins": [BASE_URL],
+        }
+        token = pyjwt.encode(
+            claims,
+            sa["private_key"],
+            algorithm="RS256",
+            headers={"kid": sa.get("private_key_id", "")},
+        )
+        if isinstance(token, bytes):
+            token = token.decode("utf-8")
+        return f"https://pay.google.com/gp/v/save/{token}"
+    except Exception as e:
+        print(f"[Google Wallet] Error generating JWT: {e}")
+        return None
 
 
 # ── MIGRACIÓN AUTOMÁTICA ──────────────────────────────────────────────────────
@@ -1717,20 +1797,36 @@ async def biz_card(slug: str, card_id: str, request: Request, db: Session = Depe
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
-    name = customer.first_name if customer else "Cliente"
+    first_name = customer.first_name if customer else "Cliente"
+    card_url = f"{BASE_URL}/biz/{slug}/card/{card_id}"
+    primary_color = biz.primary_color or "#3A3426"
+    # Generate Google Wallet URL (None if not configured)
+    google_wallet_url = generate_google_wallet_url(
+        card_id=card_id,
+        biz_slug=slug,
+        biz_name=biz.name,
+        customer_name=first_name,
+        stamps=card.stamps or 0,
+        stamps_per_reward=biz.stamps_per_reward or STAMPS_PER_REWARD,
+        card_url=card_url,
+        primary_color=primary_color,
+    )
     return templates.TemplateResponse("card.html", {
-        "request":           request,
-        "card_id":           card_id,
-        "name":              name,
-        "stamps":            card.stamps or 0,
-        "stamps_per_reward": biz.stamps_per_reward,
-        "rewards_redeemed":  card.rewards_redeemed or 0,
-        "award_balance":     card.award_balance or 0,
-        "total_stamps":      card.total_stamps or 0,
-        "biz_name":          biz.name,
-        "biz_slug":          slug,
-        "primary_color":     biz.primary_color,
-        "accent_color":      biz.accent_color,
+        "request":            request,
+        "card_id":            card_id,
+        "first_name":         first_name,
+        "stamps":             card.stamps or 0,
+        "stamps_per_reward":  biz.stamps_per_reward,
+        "rewards_redeemed":   card.rewards_redeemed or 0,
+        "award_balance":      card.award_balance or 0,
+        "total_stamps":       card.total_stamps or 0,
+        "biz_name":           biz.name,
+        "biz_slug":           slug,
+        "card_title":         biz.card_title or biz.name,
+        "primary_color":      primary_color,
+        "accent_color":       biz.accent_color or "#a8f0d0",
+        "api_base":           BASE_URL,
+        "google_wallet_url":  google_wallet_url or "",
     })
 
 
