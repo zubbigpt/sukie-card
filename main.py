@@ -204,6 +204,12 @@ def run_migrations():
         "CREATE TABLE IF NOT EXISTS custom_qrs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), canal VARCHAR NOT NULL, local_name VARCHAR DEFAULT '', created_at TIMESTAMPTZ DEFAULT NOW())",
         # ── Card Programs (multi-tarjeta) ────────────────────────────────────────
         "CREATE TABLE IF NOT EXISTS card_programs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, emoji VARCHAR DEFAULT '🃏', stamps_per_reward INTEGER DEFAULT 10, reward_name VARCHAR DEFAULT 'Premio', bg_color VARCHAR DEFAULT '#0a0a0a', accent_color VARCHAR DEFAULT '#00e676', text_color VARCHAR DEFAULT '#ffffff', status VARCHAR DEFAULT 'active', sort_order INTEGER DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW())",
+        # ── Fix card_config.id to auto-increment (multi-tenant fix) ──────────────
+        "CREATE SEQUENCE IF NOT EXISTS card_config_id_seq START WITH 100",
+        "ALTER TABLE card_config ALTER COLUMN id SET DEFAULT nextval('card_config_id_seq')",
+        "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS id_fixed BOOLEAN DEFAULT FALSE",
+        # ── Unique index on card_config.business_id for safe upserts ─────────────
+        "CREATE UNIQUE INDEX IF NOT EXISTS uidx_card_config_business ON card_config(business_id) WHERE business_id IS NOT NULL",
 
     ]
     from database import SessionLocal
@@ -896,11 +902,22 @@ def admin_stats(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
     cutoff30  = now - timedelta(days=30)
     cutoff60  = now - timedelta(days=60)
 
-    txs30 = (db.query(models.StampTransaction)
-             .filter(models.StampTransaction.created_at >= cutoff30).all())
-    txs_prev = (db.query(models.StampTransaction)
-                .filter(models.StampTransaction.created_at >= cutoff60,
-                        models.StampTransaction.created_at < cutoff30).all())
+    # Get card IDs for this business to filter transactions
+    biz_card_ids = [card.id for card, _ in rows]
+
+    txs_q30 = db.query(models.StampTransaction).filter(
+        models.StampTransaction.created_at >= cutoff30)
+    txs_q_prev = db.query(models.StampTransaction).filter(
+        models.StampTransaction.created_at >= cutoff60,
+        models.StampTransaction.created_at < cutoff30)
+
+    # Filter by business cards when slug provided
+    if slug and biz_card_ids:
+        txs_q30   = txs_q30.filter(models.StampTransaction.card_id.in_(biz_card_ids))
+        txs_q_prev = txs_q_prev.filter(models.StampTransaction.card_id.in_(biz_card_ids))
+
+    txs30    = txs_q30.all()
+    txs_prev = txs_q_prev.all()
 
     stamps_30d  = sum(t.stamps_added for t in txs30 if (t.stamps_added or 0) > 0)
     redeems_30d = sum(1 for t in txs30 if t.transaction_type == "redeem")
@@ -910,10 +927,9 @@ def admin_stats(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
     new_30d  = sum(1 for _, c in rows if c.created_at and c.created_at >= cutoff30)
     new_prev = sum(1 for _, c in rows if c.created_at and cutoff60 <= c.created_at < cutoff30)
 
-    # Awards emitidos (nuevos) en 30d
-    awards_30d  = sum(t.stamps_added == 0 and t.transaction_type == "stamp" for t in txs30)
-    # Better: count from stamps overflow → just approximate
-    awards_issued_30d = stamps_30d // STAMPS_PER_REWARD
+    # Per-business stamps_per_reward
+    biz_stamps_per_reward = biz.stamps_per_reward if (slug and biz) else STAMPS_PER_REWARD
+    awards_issued_30d = stamps_30d // max(biz_stamps_per_reward, 1)
 
     return {
         "total_customers":    total,
@@ -921,7 +937,7 @@ def admin_stats(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
         "total_stamps":       t_stamps,
         "award_balance":      t_balance,
         "total_redeemed":     t_redeem,
-        "stamps_per_reward":  STAMPS_PER_REWARD,
+        "stamps_per_reward":  biz_stamps_per_reward,
         "stamps_last_30d":    stamps_30d,
         "redeems_last_30d":   redeems_30d,
         "stamps_prev_30d":    stamps_prev,
@@ -964,10 +980,20 @@ def admin_activity(pin: str = "", days: int = 30, slug: str = "", db: Session = 
     verify_pin(pin, db)
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
-    txs = (db.query(models.StampTransaction)
-           .filter(models.StampTransaction.created_at >= cutoff)
-           .order_by(models.StampTransaction.created_at.asc())
-           .all())
+    txs_q = (db.query(models.StampTransaction)
+             .filter(models.StampTransaction.created_at >= cutoff))
+
+    # Filter by business when slug provided
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            biz_card_ids = [c.id for c in db.query(models.LoyaltyCard)
+                            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+                            .filter(models.Customer.business_id == biz.id).all()]
+            if biz_card_ids:
+                txs_q = txs_q.filter(models.StampTransaction.card_id.in_(biz_card_ids))
+
+    txs = txs_q.order_by(models.StampTransaction.created_at.asc()).all()
 
     # Agrupa por fecha
     by_day: dict = {}
@@ -1066,6 +1092,12 @@ async def import_csv(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
     customers_data = body.get("customers", [])
+    slug = body.get("slug", "")
+
+    # Resolve business for multi-tenant import
+    biz = get_business_by_slug(slug, db) if slug else None
+    biz_id = biz.id if biz else None
+    stamps_per_reward = biz.stamps_per_reward if biz else STAMPS_PER_REWARD
 
     created = 0; skipped = 0; errors = []
     for row in customers_data:
@@ -1073,7 +1105,11 @@ async def import_csv(request: Request, db: Session = Depends(get_db)):
         if not email:
             errors.append(f"Fila sin email: {row}")
             continue
-        if db.query(models.Customer).filter(models.Customer.email == email).first():
+        # Check uniqueness within the business (not globally)
+        existing_q = db.query(models.Customer).filter(models.Customer.email == email)
+        if biz_id:
+            existing_q = existing_q.filter(models.Customer.business_id == biz_id)
+        if existing_q.first():
             skipped += 1
             continue
         try:
@@ -1090,11 +1126,12 @@ async def import_csv(request: Request, db: Session = Depends(get_db)):
                 opt_in_email = True,
                 origin       = "Import",
                 channel      = "CSV",
+                business_id  = biz_id,
             )
             db.add(cust)
             db.flush()
             stamps_n = int(row.get("stamps") or row.get("sellos") or 0)
-            card = models.LoyaltyCard(customer_id=cust.id, stamps=stamps_n % STAMPS_PER_REWARD,
+            card = models.LoyaltyCard(customer_id=cust.id, stamps=stamps_n % stamps_per_reward,
                                        total_stamps=stamps_n)
             db.add(card)
             created += 1
@@ -1108,12 +1145,16 @@ async def import_csv(request: Request, db: Session = Depends(get_db)):
 # ADMIN: EXPORTAR CSV
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/admin/export-csv")
-def export_csv(pin: str = "", db: Session = Depends(get_db)):
+def export_csv(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
     verify_pin(pin, db)
-    rows = (db.query(models.LoyaltyCard, models.Customer)
-            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-            .filter(models.Customer.email != "PLACEHOLDER@sukie.internal")
-            .order_by(models.Customer.created_at.desc()).all())
+    q = (db.query(models.LoyaltyCard, models.Customer)
+         .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+         .filter(models.Customer.email != "PLACEHOLDER@sukie.internal"))
+    if slug:
+        biz = get_business_by_slug(slug, db)
+        if biz:
+            q = q.filter(models.Customer.business_id == biz.id)
+    rows = q.order_by(models.Customer.created_at.desc()).all()
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["ID Tarjeta","Nombre","Apellidos","Email","Teléfono",
@@ -1703,12 +1744,12 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(business)
     
-    # Create their default card config
+    # Create their default card config (id uses auto-increment sequence)
     db.execute(text(
-        "INSERT INTO card_config (id, config, business_id) VALUES (gen_random_uuid(), '{}', :bid)"
+        "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT DO NOTHING"
     ), {"bid": str(business.id)})
     db.commit()
-    
+
     return {
         "message":  "Negocio registrado",
         "slug":     slug,
@@ -2545,11 +2586,11 @@ async def auth_google_callback(
         db.commit()
         db.refresh(biz)
 
-        # Create default card_config
+        # Create default card_config (id uses auto-increment sequence)
         db.execute(text(
-            "INSERT INTO card_config (id, config, business_id) VALUES (gen_random_uuid(), '{}', :bid)"
+            "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT (business_id) DO NOTHING"
         ), {"bid": str(biz.id)})
         db.commit()
 
     # Redirect to dashboard (PIN passed in URL for session bootstrap)
-    return RedirectResponse(f"/app/dashboard/{biz.slug}?pin={biz.admin_pin}&google=1")
+    return RedirectResponse(f"/biz/{biz.slug}/dashboard?pin={biz.admin_pin}&google=1")

@@ -370,6 +370,9 @@
 
         if (r.ok) {
           dashboardUrl = d.dashboard_url;
+          // Save PIN to sessionStorage so dashboard auto-logins
+          const pin = document.getElementById('biz-pin').value.trim();
+          sessionStorage.setItem('zubcard_pin_' + d.slug, pin);
           document.getElementById('step2').classList.remove('active');
           document.getElementById('successPanel').style.display = 'block';
           document.getElementById('loginLink').style.display = 'none';

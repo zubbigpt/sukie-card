@@ -1691,10 +1691,21 @@ async function doLogin(){
 }
 document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// Auto-login from sessionStorage if PIN is saved
+// Auto-login from sessionStorage or URL params (Google OAuth / direct links)
 window.addEventListener('DOMContentLoaded', function() {
   const slug = '{{ biz_slug }}' || document.querySelector('[data-slug]')?.getAttribute('data-slug');
   if (!slug) return;
+  // Check URL params first (Google OAuth passes ?pin=...&google=1)
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlPin = urlParams.get('pin');
+  if (urlPin) {
+    document.getElementById('login-pin').value = urlPin;
+    // Clean the URL so PIN isn't visible in address bar
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => doLogin(), 100);
+    return;
+  }
+  // Fallback: sessionStorage (regular login flow)
   const savedPin = sessionStorage.getItem('zubcard_pin_' + slug);
   if (savedPin) {
     sessionStorage.removeItem('zubcard_pin_' + slug);
