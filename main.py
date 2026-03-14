@@ -5,7 +5,9 @@ import io
 import json
 import time
 from fastapi import FastAPI, Depends, HTTPException, Request, Query, File, UploadFile, Body
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, RedirectResponse
+from urllib.parse import urlencode
+import httpx
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -52,6 +54,11 @@ SMTP_PASS     = os.environ.get("SMTP_PASS", "")
 SMTP_FROM     = os.environ.get("SMTP_FROM", "noreply@sukiecookie.es")
 VAPID_PUBLIC  = os.environ.get("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE = os.environ.get("VAPID_PRIVATE_KEY", "")
+
+# GOOGLE OAUTH CONFIG
+GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "800026879544-rj3j2cces61cardtspp0oomhr58ssm8i.apps.googleusercontent.com")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_REDIRECT_URI  = os.environ.get("GOOGLE_REDIRECT_URI", "https://web-production-cdaf7.up.railway.app/auth/google/callback")
 
 # GOOGLE WALLET CONFIG
 GOOGLE_WALLET_ISSUER_ID   = os.environ.get("GOOGLE_WALLET_ISSUER_ID", "")
@@ -2436,3 +2443,113 @@ def activity_log(
             for r in rows
         ],
     }
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# GOOGLE OAUTH 2.0
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/auth/google")
+async def auth_google_redirect(slug: str = ""):
+    """Redirect user to Google's OAuth consent screen.
+    Optionally pass ?slug=... to remember which business they're logging into."""
+    params = {
+        "client_id":     GOOGLE_CLIENT_ID,
+        "redirect_uri":  GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope":         "openid email profile",
+        "access_type":   "online",
+        "prompt":        "select_account",
+        "state":         slug,
+    }
+    google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
+    return RedirectResponse(google_auth_url)
+
+
+@app.get("/auth/google/callback")
+async def auth_google_callback(
+    code: str = "",
+    state: str = "",
+    error: str = "",
+    db: Session = Depends(get_db),
+):
+    """Handle Google OAuth callback. Creates or logs in the business account."""
+    if error or not code:
+        return RedirectResponse(f"/app/login?error=google_cancelled")
+
+    # Exchange code for tokens
+    try:
+        async with httpx.AsyncClient() as client:
+            token_resp = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id":     GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "code":          code,
+                    "redirect_uri":  GOOGLE_REDIRECT_URI,
+                    "grant_type":    "authorization_code",
+                },
+            )
+        tokens = token_resp.json()
+        access_token = tokens.get("access_token")
+        if not access_token:
+            return RedirectResponse(f"/app/login?error=google_token_failed")
+
+        # Fetch user profile
+        async with httpx.AsyncClient() as client:
+            userinfo_resp = await client.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+        userinfo = userinfo_resp.json()
+    except Exception:
+        return RedirectResponse(f"/app/login?error=google_error")
+
+    google_sub = userinfo.get("sub", "")
+    email      = (userinfo.get("email") or "").lower().strip()
+    full_name  = userinfo.get("name") or email.split("@")[0]
+
+    if not email:
+        return RedirectResponse(f"/app/login?error=no_email")
+
+    # 1) Find by google_id first, then by email
+    biz = db.query(models.Business).filter(models.Business.google_id == google_sub).first()
+    if not biz:
+        biz = db.query(models.Business).filter(models.Business.email == email).first()
+        if biz:
+            # Link google_id to existing account
+            biz.google_id = google_sub
+            db.commit()
+
+    if not biz:
+        # Create new business account
+        base_slug = generate_slug(full_name)
+        slug = base_slug
+        counter = 1
+        while db.query(models.Business).filter(models.Business.slug == slug).first():
+            slug = f"{base_slug}{counter}"
+            counter += 1
+
+        random_pin = "".join(secrets.choice(string.digits) for _ in range(6))
+        biz = models.Business(
+            name      = full_name,
+            slug      = slug,
+            email     = email,
+            google_id = google_sub,
+            admin_pin = random_pin,
+            api_key   = generate_api_key(),
+            industry  = "other",
+            plan      = "free",
+        )
+        db.add(biz)
+        db.commit()
+        db.refresh(biz)
+
+        # Create default card_config
+        db.execute(text(
+            "INSERT INTO card_config (id, config, business_id) VALUES (gen_random_uuid(), '{}', :bid)"
+        ), {"bid": str(biz.id)})
+        db.commit()
+
+    # Redirect to dashboard (PIN passed in URL for session bootstrap)
+    return RedirectResponse(f"/app/dashboard/{biz.slug}?pin={biz.admin_pin}&google=1")
