@@ -1735,6 +1735,64 @@ async def login_business(request: Request, db: Session = Depends(get_db)):
     }
 
 
+# ════════════════════════════════════════════════════════════════════════════════
+# BUSINESS PROFILE — GET / PUT / CHANGE-PIN
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/api/biz/{slug}/profile")
+def get_biz_profile(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Get business profile info (name, email, slug, industry)"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    return {
+        "name":     biz.name,
+        "email":    biz.email,
+        "slug":     biz.slug,
+        "industry": getattr(biz, "industry", "other"),
+        "plan":     getattr(biz, "plan", "pro"),
+        "created_at": str(biz.created_at) if hasattr(biz, "created_at") else None,
+    }
+
+
+@app.put("/api/biz/{slug}/profile")
+async def update_biz_profile(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Update business name and industry"""
+    body = await request.json()
+    pin  = str(body.get("pin", "")).strip()
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    name     = (body.get("name") or "").strip()
+    industry = (body.get("industry") or "other").strip()
+    if name:
+        db.execute(text("UPDATE businesses SET name=:name WHERE slug=:slug"), {"name": name, "slug": slug})
+    db.execute(text("UPDATE businesses SET industry=:ind WHERE slug=:slug"), {"ind": industry, "slug": slug})
+    db.commit()
+    return {"status": "updated", "name": name or biz.name, "industry": industry}
+
+
+@app.post("/api/biz/{slug}/change-pin")
+async def change_biz_pin(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Change admin PIN"""
+    body        = await request.json()
+    current_pin = str(body.get("current_pin", "")).strip()
+    new_pin     = str(body.get("new_pin", "")).strip()
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if current_pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN actual incorrecto")
+    if len(new_pin) < 4:
+        raise HTTPException(status_code=400, detail="El nuevo PIN debe tener al menos 4 dígitos")
+    db.execute(text("UPDATE businesses SET admin_pin=:pin WHERE slug=:slug"), {"pin": new_pin, "slug": slug})
+    db.commit()
+    return {"status": "updated"}
+
+
 @app.get("/biz/{slug}/dashboard", response_class=HTMLResponse)
 async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_db)):
     """Business-specific admin dashboard"""
@@ -1897,6 +1955,55 @@ def cleanup_test_data(pin: str = "", db: Session = Depends(get_db)):
             db.rollback()
             results.append({"card_id": card_id, "status": "error", "detail": str(e)})
     return {"results": results}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# DELETE BUSINESS ACCOUNT
+# ══════════════════════════════════════════════════════════════════════════════
+@app.delete("/api/app/businesses/{slug}")
+def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """
+    Permanently delete a business account and ALL its data.
+    Requires the business admin PIN as query param: ?pin=XXXX
+    Protected: cannot delete the seed business (sukiecookie).
+    """
+    if slug == "sukiecookie":
+        raise HTTPException(status_code=403, detail="No puedes eliminar el negocio base.")
+
+    biz = db.execute(
+        text("SELECT id, admin_pin FROM businesses WHERE slug=:slug"),
+        {"slug": slug}
+    ).fetchone()
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    if pin != str(biz[1]):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+
+    bid = str(biz[0])
+    try:
+        # Delete all related data in dependency order
+        db.execute(text("DELETE FROM push_subscriptions WHERE card_id IN (SELECT id FROM loyalty_cards WHERE business_id=:bid)"), {"bid": bid})
+        db.execute(text("DELETE FROM referrals WHERE referrer_card IN (SELECT id FROM loyalty_cards WHERE business_id=:bid) OR referred_card IN (SELECT id FROM loyalty_cards WHERE business_id=:bid)"), {"bid": bid})
+        db.execute(text("DELETE FROM stamp_transactions WHERE card_id IN (SELECT id FROM loyalty_cards WHERE business_id=:bid)"), {"bid": bid})
+        # Get customer IDs before deleting cards
+        customer_ids = db.execute(text("SELECT customer_id FROM loyalty_cards WHERE business_id=:bid"), {"bid": bid}).fetchall()
+        db.execute(text("DELETE FROM loyalty_cards WHERE business_id=:bid"), {"bid": bid})
+        for row in customer_ids:
+            db.execute(text("DELETE FROM customers WHERE id=:cid"), {"cid": str(row[0])})
+        # Delete business-level data
+        db.execute(text("DELETE FROM stores WHERE business_id=:bid"), {"bid": bid})
+        db.execute(text("DELETE FROM campaigns WHERE business_id=:bid"), {"bid": bid})
+        db.execute(text("DELETE FROM card_programs WHERE business_id=:bid"), {"bid": bid})
+        db.execute(text("DELETE FROM custom_qrs WHERE business_id=:bid"), {"bid": bid})
+        db.execute(text("DELETE FROM activity_log WHERE business_id=:bid"), {"bid": bid})
+        # Finally delete the business itself
+        db.execute(text("DELETE FROM businesses WHERE id=:bid"), {"bid": bid})
+        db.commit()
+        return {"status": "deleted", "slug": slug}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar: {str(e)}")
 
 
 @app.get("/dashboard", response_class=HTMLResponse)

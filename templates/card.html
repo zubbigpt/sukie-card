@@ -4,17 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Mi {{ card_title }} – {{ first_name }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
+:root {
+  --surface: #fff8f5;
+  --surface-low: #fff1ea;
+  --surface-mid: #ffeade;
+  --surface-high: #f8e2d4;
+  --primary: #26170c;
+  --primary-mid: #3d2b1f;
+  --on-primary: #ffffff;
+  --honey: #ffca48;
+  --honey-dark: #785a00;
+  --honey-light: #fff3d0;
+  --outline: #a08d83;
+  --outline-var: #e2cfc8;
+  --green: #2e7d32;
+  --r-sm: 0.375rem;
+  --r: 0.75rem;
+  --r-lg: 1.25rem;
+  --shadow-sm: 0 2px 12px rgba(38,23,12,0.06);
+  --shadow: 0 4px 24px rgba(38,23,12,0.10);
+  --shadow-lg: 0 8px 40px rgba(38,23,12,0.14);
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  background: #f5f0e8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--surface-low);
+  font-family: 'Manrope', sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 16px 40px;
+  padding: 16px 16px 48px;
 }
 
 /* === CLUB HEADER === */
@@ -26,16 +50,18 @@ body {
   padding: 20px 16px 12px;
 }
 .club-name {
+  font-family: 'Epilogue', sans-serif;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: #8b7355;
+  color: var(--outline);
   margin-bottom: 4px;
 }
 .club-tagline {
   font-size: 12px;
-  color: #b09070;
+  color: var(--outline);
+  font-weight: 500;
 }
 
 /* === MAIN CARD === */
@@ -44,11 +70,11 @@ body {
   max-width: 400px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-lg);
   margin-bottom: 16px;
 }
 .card-header {
-  background: #3A3426;
+  background: var(--primary);
   padding: 20px 20px 16px;
   position: relative;
 }
@@ -63,18 +89,20 @@ body {
   flex-direction: column;
 }
 .card-title-text {
-  font-size: 16px;
-  font-weight: 800;
-  color: #FFF5B6;
-  letter-spacing: 1px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--honey-light);
+  letter-spacing: 1.5px;
   text-transform: uppercase;
+  line-height: 1;
 }
 .card-subtitle {
   font-size: 10px;
-  color: rgba(255,245,182,0.6);
+  color: rgba(255,243,208,0.55);
   letter-spacing: 2px;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: 4px;
+  font-weight: 600;
 }
 .tier-badge {
   display: flex;
@@ -94,8 +122,9 @@ body {
   align-items: center;
 }
 .member-name {
+  font-family: 'Epilogue', sans-serif;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   color: #ffffff;
 }
 .member-meta {
@@ -103,17 +132,17 @@ body {
 }
 .member-number {
   font-size: 11px;
-  color: rgba(255,245,182,0.7);
+  color: rgba(255,243,208,0.65);
   font-family: monospace;
 }
 .member-since {
   font-size: 10px;
-  color: rgba(255,245,182,0.5);
+  color: rgba(255,243,208,0.45);
 }
 
 /* === CARD BODY === */
 .card-body {
-  background: #FFFCE8;
+  background: var(--surface);
   padding: 20px;
 }
 
@@ -126,16 +155,16 @@ body {
 }
 .stamps-label span {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8b7355;
+  color: var(--outline);
 }
 .stamps-count {
   font-size: 11px;
   font-weight: 800;
-  color: #3A3426;
-  background: rgba(58,52,38,0.08);
+  color: var(--primary);
+  background: rgba(38,23,12,0.07);
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -147,9 +176,9 @@ body {
 }
 .stamp {
   aspect-ratio: 1;
-  border-radius: 12px;
-  border: 2px solid #e8d9b8;
-  background: #fff;
+  border-radius: var(--r);
+  border: 2px solid var(--outline-var);
+  background: var(--on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,8 +187,8 @@ body {
   position: relative;
 }
 .stamp.filled {
-  background: #3A3426;
-  border-color: #3A3426;
+  background: var(--primary);
+  border-color: var(--primary);
   transform: scale(1.03);
 }
 .stamp.filled::after {
@@ -171,14 +200,13 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #e8d9b8;
+  background: var(--outline-var);
 }
 
 /* Progress to reward */
 .reward-progress {
-  background: rgba(200,168,75,0.12);
-  border: 1.5px solid rgba(200,168,75,0.3);
-  border-radius: 14px;
+  background: var(--honey-light);
+  border-radius: var(--r);
   padding: 14px 16px;
   margin-bottom: 14px;
   display: flex;
@@ -188,18 +216,19 @@ body {
 .reward-emoji-big { font-size: 28px; }
 .reward-info { flex: 1; }
 .reward-info-title {
+  font-family: 'Epilogue', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: #3A3426;
+  color: var(--primary);
   margin-bottom: 2px;
 }
 .reward-info-sub {
   font-size: 11px;
-  color: #8b7355;
+  color: var(--outline);
 }
 .reward-badge {
-  background: #c8a84b;
-  color: white;
+  background: var(--honey);
+  color: var(--honey-dark);
   border-radius: 10px;
   padding: 4px 10px;
   font-size: 12px;
@@ -207,7 +236,8 @@ body {
   white-space: nowrap;
 }
 .reward-badge.has-reward {
-  background: #2d7a2d;
+  background: var(--green);
+  color: white;
   animation: pulse 1.5s infinite;
 }
 @keyframes pulse {
@@ -223,39 +253,39 @@ body {
   margin-bottom: 14px;
 }
 .stat-box {
-  background: white;
-  border-radius: 12px;
+  background: var(--surface-low);
+  border-radius: var(--r);
   padding: 12px;
   text-align: center;
-  border: 1px solid #f0e8d0;
 }
 .stat-value {
+  font-family: 'Epilogue', sans-serif;
   font-size: 22px;
-  font-weight: 800;
-  color: #3A3426;
+  font-weight: 900;
+  color: var(--primary);
 }
 .stat-label {
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: #8b7355;
+  color: var(--outline);
   margin-top: 2px;
+  font-weight: 700;
 }
 
 /* Tier progression */
 .tier-progression {
-  background: white;
-  border-radius: 14px;
+  background: var(--surface-low);
+  border-radius: var(--r);
   padding: 16px;
   margin-bottom: 14px;
-  border: 1px solid #f0e8d0;
 }
 .tier-prog-title {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8b7355;
+  color: var(--outline);
   margin-bottom: 12px;
 }
 .tier-prog-bar-wrap {
@@ -264,13 +294,14 @@ body {
 }
 .tier-prog-bar-bg {
   height: 8px;
-  background: #f0e8d0;
+  background: var(--outline-var);
   border-radius: 4px;
   overflow: hidden;
 }
 .tier-prog-bar-fill {
   height: 100%;
   border-radius: 4px;
+  background: var(--honey);
   transition: width 1s ease;
 }
 .tier-prog-labels {
@@ -280,33 +311,33 @@ body {
 }
 .tier-prog-label {
   font-size: 10px;
-  color: #8b7355;
+  color: var(--outline);
   display: flex;
   align-items: center;
   gap: 3px;
+  font-weight: 600;
 }
 .tier-prog-info {
   font-size: 11px;
-  color: #5a4830;
+  color: var(--primary-mid);
   text-align: center;
   margin-top: 8px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Benefits */
 .benefits-section {
-  background: white;
-  border-radius: 14px;
+  background: var(--surface-low);
+  border-radius: var(--r);
   padding: 16px;
   margin-bottom: 14px;
-  border: 1px solid #f0e8d0;
 }
 .benefits-title {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8b7355;
+  color: var(--outline);
   margin-bottom: 10px;
   display: flex;
   align-items: center;
@@ -318,14 +349,14 @@ body {
   gap: 8px;
   padding: 6px 0;
   font-size: 12px;
-  color: #3A3426;
-  border-bottom: 1px solid #f5f0e8;
+  color: var(--primary);
+  border-bottom: 1px solid var(--outline-var);
 }
 .benefit-item:last-child { border-bottom: none; }
 .benefit-check {
   width: 18px;
   height: 18px;
-  background: #3A3426;
+  background: var(--primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -337,18 +368,17 @@ body {
 
 /* Next tier preview */
 .next-tier-card {
-  background: linear-gradient(135deg, #f8f4ec, #fff9f0);
-  border-radius: 14px;
+  background: var(--surface-mid);
+  border-radius: var(--r);
   padding: 16px;
   margin-bottom: 14px;
-  border: 1.5px dashed #e8d9b8;
 }
 .next-tier-title {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8b7355;
+  color: var(--outline);
   margin-bottom: 10px;
 }
 .next-tier-info {
@@ -359,20 +389,21 @@ body {
 .next-tier-emoji { font-size: 32px; }
 .next-tier-details { flex: 1; }
 .next-tier-name {
+  font-family: 'Epilogue', sans-serif;
   font-size: 14px;
   font-weight: 800;
-  color: #3A3426;
+  color: var(--primary);
 }
 .next-tier-reward {
   font-size: 12px;
-  color: #8b7355;
+  color: var(--outline);
   margin-top: 2px;
 }
 .next-tier-stamps {
   font-size: 11px;
-  font-weight: 700;
-  color: #c8a84b;
-  background: rgba(200,168,75,0.15);
+  font-weight: 800;
+  color: var(--honey-dark);
+  background: var(--honey-light);
   padding: 4px 10px;
   border-radius: 10px;
   white-space: nowrap;
@@ -380,31 +411,31 @@ body {
 
 /* QR */
 .qr-section {
-  background: white;
-  border-radius: 14px;
+  background: var(--on-primary);
+  border-radius: var(--r);
   padding: 16px;
   text-align: center;
   margin-bottom: 14px;
-  border: 1px solid #f0e8d0;
+  box-shadow: var(--shadow-sm);
 }
 .qr-label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8b7355;
-  margin-bottom: 10px;
+  color: var(--outline);
+  margin-bottom: 12px;
 }
 #qrcode { display: flex; justify-content: center; }
 
 /* Referral */
 .referral-section {
-  background: #3A3426;
-  border-radius: 14px;
+  background: var(--primary);
+  border-radius: var(--r);
   padding: 16px;
   margin-bottom: 14px;
   text-align: center;
-  color: #FFF5B6;
+  color: var(--honey-light);
 }
 .referral-title {
   font-size: 11px;
@@ -415,10 +446,10 @@ body {
   margin-bottom: 6px;
 }
 .referral-code {
+  font-family: 'Epilogue', sans-serif;
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 4px;
-  font-family: monospace;
   margin-bottom: 6px;
 }
 .referral-sub {
@@ -427,14 +458,15 @@ body {
   margin-bottom: 10px;
 }
 .referral-copy-btn {
-  background: #FFF5B6;
-  color: #3A3426;
+  background: var(--honey);
+  color: var(--honey-dark);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 8px 20px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
+  font-family: 'Manrope', sans-serif;
 }
 
 /* Google Wallet button */
@@ -451,7 +483,7 @@ body {
   width: 100%;
   height: 56px;
   object-fit: contain;
-  border-radius: 14px;
+  border-radius: var(--r);
   display: block;
 }
 
@@ -460,25 +492,26 @@ body {
   width: 100%;
   max-width: 400px;
   padding: 16px;
-  border-radius: 14px;
+  border-radius: var(--r);
   border: none;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: .3px;
 }
 .btn-primary {
-  background: #3A3426;
-  color: #FFF5B6;
+  background: var(--primary);
+  color: var(--honey-light);
 }
 .btn-secondary {
-  background: rgba(58,52,38,0.08);
-  color: #3A3426;
-  border: 1.5px solid rgba(58,52,38,0.2);
+  background: rgba(38,23,12,0.06);
+  color: var(--primary);
 }
 
 /* Toast */
@@ -487,12 +520,12 @@ body {
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%) translateY(100px);
-  background: #3A3426;
-  color: #FFF5B6;
+  background: var(--primary);
+  color: var(--honey-light);
   padding: 12px 24px;
   border-radius: 20px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   z-index: 999;
   transition: transform 0.3s ease;
 }
@@ -559,7 +592,7 @@ body {
       <div class="tier-prog-title">Progreso al siguiente nivel</div>
       <div class="tier-prog-bar-wrap">
         <div class="tier-prog-bar-bg">
-          <div class="tier-prog-bar-fill" id="tier-bar" style="width:0%;background:#c8a84b;"></div>
+          <div class="tier-prog-bar-fill" id="tier-bar" style="width:0%;"></div>
         </div>
       </div>
       <div class="tier-prog-labels">
@@ -673,28 +706,28 @@ function renderCard(card, club) {
   const tier = club.current_tier || {};
   const nextTier = club.next_tier;
   const clubInfo = club.club || {};
-  
+
   // Club header
   document.getElementById('club-name').textContent = clubInfo.nombre || 'VIP Club';
   document.getElementById('club-tagline').textContent = clubInfo.tagline || '';
-  
+
   // Tier badge
   const badge = document.getElementById('tier-badge');
   badge.textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce').toUpperCase();
   badge.style.background = tier.color || '#CD7F32';
   badge.style.color = '#fff';
-  
+
   // Member info
   document.getElementById('member-number').textContent = 'Miembro #' + String(club.member_number || 1).padStart(3,'0');
   document.getElementById('member-since').textContent = club.member_since ? 'Desde ' + club.member_since : '';
-  
+
   // Card header background
-  document.getElementById('card-header').style.background = '#3A3426';
-  
+  document.getElementById('card-header').style.background = '#26170c';
+
   // Stamps
   const stampsPerReward = tier.sellos_por_premio || 10;
   buildStamps(club.stamps_on_card || 0, stampsPerReward);
-  
+
   // Reward box
   const awardsBalance = club.award_balance || 0;
   const toNextReward = club.stamps_to_next_reward || stampsPerReward;
@@ -708,22 +741,22 @@ function renderCard(card, club) {
   } else {
     rewardBadge.textContent = toNextReward + ' más';
   }
-  
+
   // Stats
   document.getElementById('total-stamps').textContent = club.total_stamps || 0;
   document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
-  
+
   // Tier progression
   if (nextTier) {
     const fromStamps = tier.min_sellos_totales || 0;
     const toStamps = nextTier.min_sellos_totales || 999;
     const progress = Math.min(100, Math.round(((club.total_stamps - fromStamps) / (toStamps - fromStamps)) * 100));
     document.getElementById('tier-bar').style.width = progress + '%';
-    document.getElementById('tier-bar').style.background = tier.color || '#c8a84b';
+    document.getElementById('tier-bar').style.background = tier.color || '#ffca48';
     document.getElementById('tier-from-label').textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce');
     document.getElementById('tier-to-label').textContent = (nextTier.emoji || '🥈') + ' ' + (nextTier.nombre || 'Plata');
     document.getElementById('tier-prog-info').textContent = 'Faltan ' + club.stamps_to_next_tier + ' sellos para nivel ' + nextTier.nombre;
-    
+
     // Next tier card
     document.getElementById('next-tier-emoji').textContent = nextTier.emoji || '🥈';
     document.getElementById('next-tier-name').textContent = nextTier.nombre || 'Plata';
@@ -733,7 +766,7 @@ function renderCard(card, club) {
     document.getElementById('tier-progression-box').style.display = 'none';
     document.getElementById('next-tier-box').style.display = 'none';
   }
-  
+
   // Benefits
   const benefits = tier.beneficios || [];
   document.getElementById('benefits-title').textContent = (tier.emoji || '🏆') + ' Tus beneficios ' + (tier.nombre || 'Bronce');
@@ -744,12 +777,12 @@ function renderCard(card, club) {
       <span>${b}</span>
     </div>
   `).join('');
-  
+
   // QR
   new QRCode(document.getElementById('qrcode'), {
     text: window.location.href,
     width: 150, height: 150,
-    colorDark: '#3A3426', colorLight: '#FFFCE8'
+    colorDark: '#26170c', colorLight: '#fff8f5'
   });
 }
 
@@ -760,7 +793,7 @@ function renderCardBasic(card) {
   new QRCode(document.getElementById('qrcode'), {
     text: window.location.href,
     width: 150, height: 150,
-    colorDark: '#3A3426', colorLight: '#FFFCE8'
+    colorDark: '#26170c', colorLight: '#fff8f5'
   });
 }
 
