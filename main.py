@@ -2665,21 +2665,27 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
 
     bid = str(biz[0])
     try:
-        # Delete all related data in dependency order
-        db.execute(text("DELETE FROM push_subscriptions WHERE card_id IN (SELECT id FROM loyalty_cards WHERE business_id=:bid)"), {"bid": bid})
-        db.execute(text("DELETE FROM referrals WHERE referrer_card IN (SELECT id FROM loyalty_cards WHERE business_id=:bid) OR referred_card IN (SELECT id FROM loyalty_cards WHERE business_id=:bid)"), {"bid": bid})
-        db.execute(text("DELETE FROM stamp_transactions WHERE card_id IN (SELECT id FROM loyalty_cards WHERE business_id=:bid)"), {"bid": bid})
-        # Get customer IDs before deleting cards
-        customer_ids = db.execute(text("SELECT customer_id FROM loyalty_cards WHERE business_id=:bid"), {"bid": bid}).fetchall()
-        db.execute(text("DELETE FROM loyalty_cards WHERE business_id=:bid"), {"bid": bid})
-        for row in customer_ids:
-            db.execute(text("DELETE FROM customers WHERE id=:cid"), {"cid": str(row[0])})
-        # Delete business-level data
+        # loyalty_cards → customers → businesses (no direct business_id on loyalty_cards)
+        lc_subq  = "SELECT lc.id FROM loyalty_cards lc JOIN customers c ON c.id=lc.customer_id WHERE c.business_id=:bid"
+        cust_subq = "SELECT id FROM customers WHERE business_id=:bid"
+
+        db.execute(text(f"DELETE FROM push_subscriptions WHERE card_id IN ({lc_subq})"), {"bid": bid})
+        db.execute(text(f"DELETE FROM referrals WHERE referrer_card IN ({lc_subq}) OR referred_card IN ({lc_subq})"), {"bid": bid})
+        db.execute(text(f"DELETE FROM stamp_transactions WHERE card_id IN ({lc_subq})"), {"bid": bid})
+        db.execute(text(f"DELETE FROM loyalty_cards WHERE customer_id IN ({cust_subq})"), {"bid": bid})
+        db.execute(text("DELETE FROM customers WHERE business_id=:bid"), {"bid": bid})
+        # Business-level tables
         db.execute(text("DELETE FROM stores WHERE business_id=:bid"), {"bid": bid})
+        db.execute(text("DELETE FROM passcodes WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM campaigns WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM card_programs WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM custom_qrs WHERE business_id=:bid"), {"bid": bid})
-        db.execute(text("DELETE FROM activity_log WHERE business_id=:bid"), {"bid": bid})
+        db.execute(text("DELETE FROM card_config WHERE business_id=:bid"), {"bid": bid})
+        # activity_log may not exist yet — skip gracefully
+        try:
+            db.execute(text("DELETE FROM activity_log WHERE business_id=:bid"), {"bid": bid})
+        except Exception:
+            db.rollback()
         # Finally delete the business itself
         db.execute(text("DELETE FROM businesses WHERE id=:bid"), {"bid": bid})
         db.commit()
