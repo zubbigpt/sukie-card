@@ -525,22 +525,22 @@ textarea.field-input{resize:vertical;min-height:72px}
         <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Comparativa de periodos</h3>
         <div class="comparison-row" style="margin-bottom:24px">
           <div class="period-card">
-            <div class="period-label">📅 Mes anterior – Sellos</div>
+            <div class="period-label">Mes anterior – Sellos</div>
             <div class="period-num" id="prev-stamps">–</div>
             <div class="period-sub" id="prev-stamps-label">Cargando...</div>
           </div>
           <div class="period-card current">
-            <div class="period-label">✨ Mes actual – Sellos</div>
+            <div class="period-label">Mes actual – Sellos</div>
             <div class="period-num" id="curr-stamps">–</div>
             <div class="period-sub" id="curr-stamps-label">Cargando...</div>
           </div>
           <div class="period-card">
-            <div class="period-label">📅 Mes anterior – Nuevos</div>
+            <div class="period-label">Mes anterior – Nuevos</div>
             <div class="period-num" id="prev-new">–</div>
             <div class="period-sub">clientes registrados</div>
           </div>
           <div class="period-card current">
-            <div class="period-label">✨ Mes actual – Nuevos</div>
+            <div class="period-label">Mes actual – Nuevos</div>
             <div class="period-num" id="curr-new">–</div>
             <div class="period-sub">clientes registrados</div>
           </div>
@@ -549,7 +549,7 @@ textarea.field-input{resize:vertical;min-height:72px}
         <!-- ACTIVITY CHART -->
         <div class="charts-row">
           <div class="chart-card">
-            <h3>Actividad diaria – últimos 30 días</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Actividad Diaria – Últimos 30 Días</h3>
             <div class="legend-row">
               <div class="legend-item"><div class="legend-dot" style="background:#0a0a0a"></div>Sellos añadidos</div>
               <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div>Premios canjeados</div>
@@ -560,7 +560,7 @@ textarea.field-input{resize:vertical;min-height:72px}
             </div>
           </div>
           <div class="chart-card">
-            <h3>Top 5 Clientes 🏆</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Top 5 Clientes</h3>
             <div class="top-list" id="dash-top-list" style="margin-top:8px"></div>
           </div>
         </div>
@@ -572,24 +572,59 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ BUSINESS INTELLIGENCE ═══ -->
       <div class="section" id="section-bi">
         <div class="section-header">
-          <h1>Business Intelligence 📈</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Business Intelligence</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Análisis completo de tu programa de fidelización</p>
+          </div>
+          <button class="btn-sm btn-gold" onclick="refreshAll()" style="display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:.95rem">refresh</span> Actualizar
+          </button>
         </div>
 
-        <div class="stats-grid" id="bi-stats-grid" style="margin-bottom:24px">
-          <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-num" id="bi-avg-stamps">–</div><div class="stat-label">Media sellos/cliente</div></div>
-          <div class="stat-card"><div class="stat-icon">🔄</div><div class="stat-num" id="bi-conversion">–%</div><div class="stat-label">% con premio canjeado</div></div>
-          <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-num" id="bi-active-cards">–</div><div class="stat-label">Tarjetas activas</div></div>
+        <div class="bento-grid" id="bi-stats-grid" style="margin-bottom:24px;grid-template-columns:repeat(4,1fr)">
+          <div class="bento-card bento-accent">
+            <div style="width:36px;height:36px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">toll</span>
+            </div>
+            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Media sellos/cliente</span>
+            <div style="margin-top:8px">
+              <span class="stat-num" id="bi-avg-stamps" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–</span>
+            </div>
+          </div>
+          <div class="bento-card bento-accent">
+            <div style="width:36px;height:36px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">percent</span>
+            </div>
+            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">% con premio canjeado</span>
+            <div style="margin-top:8px">
+              <span class="stat-num" id="bi-conversion" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–%</span>
+            </div>
+          </div>
+          <div class="bento-card bento-accent">
+            <div style="width:36px;height:36px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">credit_card</span>
+            </div>
+            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Tarjetas activas</span>
+            <div style="margin-top:8px">
+              <span class="stat-num" id="bi-active-cards" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–</span>
+            </div>
+          </div>
+          <div class="bento-card bento-sm" style="border-bottom:3px solid var(--honey)">
+            <span style="display:inline-block;background:var(--primary);color:#fff;font-size:.55rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;margin-bottom:10px">TOTAL</span>
+            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1" id="bi-total-stamps">–</div>
+            <div class="stat-label" style="margin-top:6px">Sellos emitidos totales</div>
+          </div>
         </div>
 
         <div class="charts-row" style="margin-bottom:24px">
           <div class="chart-card">
-            <h3>Evolución mensual de sellos</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Evolución Mensual de Sellos</h3>
             <div class="chart-wrap">
               <canvas id="monthly-chart"></canvas>
             </div>
           </div>
           <div class="chart-card">
-            <h3>Distribución de sellos actuales</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Distribución de Sellos Actuales</h3>
             <div class="chart-wrap" style="height:200px">
               <canvas id="dist-chart"></canvas>
             </div>
@@ -598,13 +633,13 @@ textarea.field-input{resize:vertical;min-height:72px}
 
         <div class="charts-row">
           <div class="chart-card">
-            <h3>Nuevos clientes por mes</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Nuevos Clientes por Mes</h3>
             <div class="chart-wrap">
               <canvas id="new-clients-chart"></canvas>
             </div>
           </div>
           <div class="chart-card">
-            <h3>Top 10 Clientes por sellos totales</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Top 10 Clientes por Sellos</h3>
             <div class="top-list" id="bi-top-list" style="max-height:280px;overflow-y:auto;margin-top:8px"></div>
           </div>
         </div>
@@ -613,19 +648,78 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ CARTAS DIGITALES ═══ -->
       <div class="section" id="section-cartas">
         <div class="section-header">
-          <h1>Cartas Digitales 🍽️</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Cartas Digitales</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Crea y comparte menús digitales con QR</p>
+          </div>
+          <button class="btn-sm btn-primary" onclick="alert('Nueva carta — próximamente')" style="padding:10px 18px">+ Nueva carta</button>
         </div>
-        <div class="card" style="text-align:center;padding:48px 24px;color:var(--brown-light)">
-          <div style="font-size:3rem;margin-bottom:16px">🍽️</div>
-          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Cartas Digitales</h2>
-          <p style="font-size:.9rem">Próximamente — crea y comparte tu menú digital con QR.</p>
+
+        <!-- Stats Row -->
+        <div class="bento-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:32px">
+          <div class="bento-card bento-sm">
+            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block">visibility</span>
+            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
+            <div class="stat-label" style="margin-top:6px">Vistas totales</div>
+          </div>
+          <div class="bento-card bento-sm">
+            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block">qr_code_2</span>
+            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
+            <div class="stat-label" style="margin-top:6px">Escaneos QR</div>
+          </div>
+          <div class="bento-card bento-sm">
+            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block">restaurant_menu</span>
+            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
+            <div class="stat-label" style="margin-top:6px">Cartas activas</div>
+          </div>
+          <div class="bento-card bento-sm" style="border-bottom:3px solid var(--honey)">
+            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block;font-variation-settings:'FILL' 1">star</span>
+            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">4.8</div>
+            <div class="stat-label" style="margin-top:6px">Calificación media</div>
+          </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Tus cartas</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+          <div class="card" style="text-align:center;padding:28px 20px;border:2px dashed var(--outline-var);background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:200px;cursor:pointer;transition:all .2s;border-radius:.75rem">
+            <span class="material-symbols-outlined" style="font-size:2.4rem;color:var(--brown-light);margin-bottom:12px">add</span>
+            <p style="font-size:.9rem;font-weight:600;color:var(--primary)">Crear nueva carta</p>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;padding:0;overflow:hidden;opacity:.5">
+            <div style="background:var(--surface-mid);height:120px;display:flex;align-items:center;justify-content:center">
+              <span class="material-symbols-outlined" style="font-size:2.2rem;color:var(--brown-light)">restaurant_menu</span>
+            </div>
+            <div style="padding:16px;flex:1;display:flex;flex-direction:column">
+              <h4 style="font-weight:700;margin-bottom:4px;font-size:.9rem">Carta de ejemplo</h4>
+              <p style="font-size:.75rem;color:var(--brown-light);flex:1">Menú de prueba</p>
+              <div style="display:flex;gap:6px;margin-top:8px">
+                <button class="btn-sm btn-ghost" style="flex:1;font-size:.72rem;padding:6px">Ver</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;padding:0;overflow:hidden;opacity:.5">
+            <div style="background:var(--surface-mid);height:120px;display:flex;align-items:center;justify-content:center">
+              <span class="material-symbols-outlined" style="font-size:2.2rem;color:var(--brown-light)">restaurant_menu</span>
+            </div>
+            <div style="padding:16px;flex:1;display:flex;flex-direction:column">
+              <h4 style="font-weight:700;margin-bottom:4px;font-size:.9rem">Bebidas</h4>
+              <p style="font-size:.75rem;color:var(--brown-light);flex:1">Carta de ejemplo</p>
+              <div style="display:flex;gap:6px;margin-top:8px">
+                <button class="btn-sm btn-ghost" style="flex:1;font-size:.72rem;padding:6px">Ver</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- ═══ MI CUENTA - PERFIL ═══ -->
       <div class="section" id="section-cuenta-perfil">
         <div class="section-header">
-          <h1>Mi Cuenta — Perfil ✏️</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Mi Cuenta — Perfil</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona la información de tu negocio</p>
+          </div>
         </div>
         <!-- Business info card -->
         <div class="card" style="margin-bottom:20px">
@@ -689,7 +783,10 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ MI CUENTA - PLAN ═══ -->
       <div class="section" id="section-cuenta-plan">
         <div class="section-header">
-          <h1>Plan &amp; Billing 💳</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Plan &amp; Suscripción</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Manage your subscription and billing</p>
+          </div>
         </div>
         <!-- Current plan -->
         <div class="card" style="margin-bottom:20px;background:var(--brown);color:white">
@@ -740,30 +837,77 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ APPS ═══ -->
       <div class="section" id="section-apps">
         <div class="section-header">
-          <h1>Apps ⚡</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Apps e Integraciones</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Conecta ZubCard con tus herramientas favoritas</p>
+          </div>
         </div>
-        <div class="card" style="text-align:center;padding:48px 24px;color:var(--brown-light)">
-          <div style="font-size:3rem;margin-bottom:16px">⚡</div>
-          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Apps &amp; Integraciones</h2>
-          <p style="font-size:.9rem">Próximamente — conecta ZubCard con WhatsApp, Instagram y más.</p>
+
+        <!-- Featured Integration -->
+        <div class="card" style="background:var(--primary);color:white;margin-bottom:32px;padding:28px">
+          <div style="display:flex;align-items:center;gap:20px">
+            <div style="width:80px;height:80px;background:#25D366;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <span class="material-symbols-outlined" style="font-size:2.5rem;color:white;font-variation-settings:'FILL' 1">chat</span>
+            </div>
+            <div style="flex:1">
+              <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;margin-bottom:6px;color:white">WhatsApp Business</h3>
+              <p style="font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:12px;line-height:1.5">Envía notificaciones automáticas, confirmaciones de sellos y campañas a través de WhatsApp directamente a tus clientes.</p>
+              <button class="btn-sm" style="background:#25D366;color:white;border:none;padding:10px 18px;border-radius:var(--r-sm);font-weight:700;cursor:pointer">Conectar →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integration Grid -->
+        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Más integraciones disponibles</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+          <!-- Zapier -->
+          <div class="card">
+            <div style="width:48px;height:48px;background:#FF4A00;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+              <span style="font-weight:900;color:white;font-size:1.4rem">⚙️</span>
+            </div>
+            <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">Zapier</h4>
+            <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Automatiza flujos de trabajo entre ZubCard y miles de apps.</p>
+            <button class="btn-sm btn-ghost" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
+          </div>
+          <!-- Shopify -->
+          <div class="card">
+            <div style="width:48px;height:48px;background:#96BF48;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+              <span style="font-weight:900;color:white;font-size:1.4rem">🛍️</span>
+            </div>
+            <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">Shopify</h4>
+            <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Sincroniza clientes y órdenes desde tu tienda Shopify.</p>
+            <button class="btn-sm btn-ghost" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
+          </div>
+          <!-- Custom API -->
+          <div class="card">
+            <div style="width:48px;height:48px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+              <span class="material-symbols-outlined" style="color:white;font-size:1.4rem">api</span>
+            </div>
+            <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">API Personalizada</h4>
+            <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Integra ZubCard con tu sistema personalizado vía REST API.</p>
+            <button class="btn-sm btn-ghost" style="width:100%;padding:8px;font-size:.8rem">Ver docs</button>
+          </div>
         </div>
       </div>
 
       <!-- ═══ CUMPLEAÑOS ═══ -->
       <div class="section" id="section-birthdays">
         <div class="section-header">
-          <h1>Cumpleaños 🎂</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Cumpleaños</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona los cumpleaños de tus clientes</p>
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
           <div>
             <div class="birthday-section">
-              <h3>🎉 Hoy</h3>
+              <h3 style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:1.2rem">today</span> Hoy</h3>
               <div id="bday-today" class="birthday-list"><div class="empty-state">Cargando...</div></div>
             </div>
           </div>
           <div>
             <div class="birthday-section">
-              <h3>📅 Este mes</h3>
+              <h3 style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:1.2rem">calendar_month</span> Este mes</h3>
               <div id="bday-month" class="birthday-list"><div class="empty-state">Cargando...</div></div>
             </div>
           </div>
@@ -772,8 +916,11 @@ textarea.field-input{resize:vertical;min-height:72px}
 
       <!-- ═══ TARJETAS ═══ -->
       <div class="section" id="section-tarjetas">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
-          <h1 style="font-size:1.4rem;font-weight:800">Tarjetas</h1>
+        <div class="section-header">
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Gestión de Tarjetas</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Crea y gestiona tus programas de fidelización</p>
+          </div>
           <button class="btn-sm btn-primary" onclick="openNewCardModal()" style="padding:10px 18px;font-size:.88rem">+ Nueva tarjeta</button>
         </div>
         <div id="tarjetas-grid" style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;padding-bottom:32px"></div>
@@ -840,8 +987,11 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ CLIENTES ═══ -->
       <div class="section" id="section-clients">
         <div class="section-header">
-          <h1>Clientes</h1>
-          <button class="btn-sm btn-primary" onclick="showSection('new-client')">+ Nuevo</button>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Clientes</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona tu base de clientes y sus sellos</p>
+          </div>
+          <button class="btn-sm btn-primary" onclick="showSection('new-client')">+ Nuevo cliente</button>
         </div>
         <div class="search-bar">
           <input id="search-input" placeholder="Buscar por nombre, email o teléfono…" onkeydown="if(event.key==='Enter')searchClients()">
@@ -864,7 +1014,12 @@ textarea.field-input{resize:vertical;min-height:72px}
 
       <!-- ═══ NUEVO CLIENTE ═══ -->
       <div class="section" id="section-new-client">
-        <div class="section-header"><h1>Nuevo Cliente</h1></div>
+        <div class="section-header">
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Nuevo Cliente</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Registra un nuevo cliente en tu programa de fidelización</p>
+          </div>
+        </div>
         <div style="max-width:560px">
           <div class="card">
             <div class="form-row">
@@ -902,7 +1057,12 @@ textarea.field-input{resize:vertical;min-height:72px}
 
       <!-- ═══ IMPORTAR CSV ═══ -->
       <div class="section" id="section-import">
-        <div class="section-header"><h1>Importar Clientes 📥</h1></div>
+        <div class="section-header">
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Importar Clientes</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Carga clientes en masa desde un archivo CSV</p>
+          </div>
+        </div>
         <div style="max-width:600px">
           <div class="card" style="margin-bottom:16px">
             <h3 class="card-title" style="margin-bottom:8px">Formato del archivo CSV</h3>
@@ -1004,8 +1164,13 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ ACTIVIDAD ═══ -->
       <div class="section" id="section-activity">
         <div class="section-header">
-          <h1>📋 Actividad de Clientes</h1>
-          <button class="btn-sm btn-ghost" onclick="loadActivityLog()">↺ Actualizar</button>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Actividad</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Historial completo de movimientos y transacciones</p>
+          </div>
+          <button class="btn-sm btn-ghost" onclick="loadActivityLog()" style="display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:.95rem">refresh</span> Actualizar
+          </button>
         </div>
         <!-- KPI row -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
@@ -1060,8 +1225,36 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ CAMPAÑAS ═══ -->
       <div class="section" id="section-campaigns">
         <div class="section-header">
-          <h1>📣 Campañas</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Campañas</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Envía mensajes y ofertas a tus clientes</p>
+          </div>
           <button class="btn-sm btn-primary" onclick="showNewCampaign()">+ Nueva campaña</button>
+        </div>
+
+        <!-- Bento stats row (decorative) -->
+        <div class="bento-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:32px">
+          <div class="bento-card bento-accent">
+            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem;margin-bottom:12px;display:block">mail</span>
+            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Mensajes enviados</span>
+            <div style="margin-top:8px">
+              <span class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–</span>
+            </div>
+          </div>
+          <div class="bento-card bento-accent">
+            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem;margin-bottom:12px;display:block">open_in_browser</span>
+            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Tasa apertura</span>
+            <div style="margin-top:8px">
+              <span class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–%</span>
+            </div>
+          </div>
+          <div class="bento-card bento-accent">
+            <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem;margin-bottom:12px;display:block">today</span>
+            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Nuevo este mes</span>
+            <div style="margin-top:8px">
+              <span class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–</span>
+            </div>
+          </div>
         </div>
         <!-- type pills -->
         <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
@@ -1116,7 +1309,10 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ PASSCODES ═══ -->
       <div class="section" id="section-passcodes">
         <div class="section-header">
-          <h1>🔑 PassCodes / PinCodes</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Seguridad &amp; PassCodes</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Genera códigos de un solo uso para sellos</p>
+          </div>
           <button class="btn-sm btn-primary" onclick="showGenCodes()">+ Generar códigos</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px">
@@ -1164,7 +1360,10 @@ textarea.field-input{resize:vertical;min-height:72px}
       <!-- ═══ TIENDAS / LOCALES ═══ -->
       <div class="section" id="section-stores">
         <div class="section-header">
-          <h1>🏪 Tiendas / Locales</h1>
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">Tiendas &amp; Locales</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona tus puntos de venta</p>
+          </div>
           <button class="btn-sm btn-primary" onclick="showAddStore()">+ Añadir local</button>
         </div>
         <p style="color:var(--brown-light);font-size:.85rem;margin-bottom:20px">Gestiona tus puntos de venta. Cada local tiene su propio usuario para poner sellos desde el panel.</p>
