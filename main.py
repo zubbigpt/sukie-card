@@ -1475,7 +1475,9 @@ def get_config(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
             if not row:
                 # Create config row for this business if missing
                 db.execute(text(
-                    "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT DO NOTHING"
+                    "INSERT INTO card_config (config, business_id, updated_at) "
+                    "SELECT '{}', :bid, NOW() WHERE NOT EXISTS "
+                    "(SELECT 1 FROM card_config WHERE business_id=:bid)"
                 ), {"bid": str(biz.id)})
                 db.commit()
                 row = db.execute(text(
@@ -1896,7 +1898,9 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
 
     # Create default card config
     db.execute(text(
-        "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT DO NOTHING"
+        "INSERT INTO card_config (config, business_id, updated_at) "
+        "SELECT '{}', :bid, NOW() WHERE NOT EXISTS "
+        "(SELECT 1 FROM card_config WHERE business_id=:bid)"
     ), {"bid": str(business.id)})
     db.commit()
 
@@ -3231,9 +3235,11 @@ async def auth_google_callback(
         db.commit()
         db.refresh(biz)
 
-        # Create default card_config
+        # Create default card_config (safe INSERT — no UNIQUE constraint assumed)
         db.execute(text(
-            "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT (business_id) DO NOTHING"
+            "INSERT INTO card_config (config, business_id, updated_at) "
+            "SELECT '{}', :bid, NOW() WHERE NOT EXISTS "
+            "(SELECT 1 FROM card_config WHERE business_id=:bid)"
         ), {"bid": str(biz.id)})
         db.commit()
 
