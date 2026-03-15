@@ -10,17 +10,16 @@
   <style>
     :root {
       --surface: #fff8f5;
-      --surface-low: #fff1ea;
       --surface-mid: #ffeade;
       --primary: #26170c;
       --primary-mid: #3d2b1f;
       --on-primary: #ffffff;
       --honey: #ffca48;
       --honey-dark: #785a00;
-      --honey-light: #fff3d0;
       --outline: #a08d83;
       --outline-var: #e2cfc8;
       --red: #c62828;
+      --green: #2e7d32;
       --r-sm: 0.375rem;
       --r-lg: 1.25rem;
       --shadow-sm: 0 2px 12px rgba(38,23,12,0.06);
@@ -47,27 +46,121 @@
       box-shadow: var(--shadow-lg);
     }
 
-    .brand { margin-bottom: 32px; }
+    .brand { margin-bottom: 32px; text-align: center; }
     .brand-logo {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.9rem;
+      font-size: 2.1rem;
       color: var(--primary);
       letter-spacing: .5px;
       line-height: 1;
     }
     .brand-logo span { color: var(--honey-dark); }
-    .brand-sub { color: var(--outline); font-size: 0.87rem; margin-top: 5px; font-weight: 500; }
+    .brand-sub {
+      color: var(--outline);
+      font-size: 0.86rem;
+      margin-top: 5px;
+      font-weight: 500;
+    }
 
-    .error {
+    .headline {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--outline);
+      margin-bottom: 5px;
+      margin-top: 14px;
+    }
+
+    .input-wrap { position: relative; }
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: 0.93rem;
+      outline: none;
+      transition: box-shadow 0.18s;
+      background: var(--surface);
+      color: var(--primary);
+      font-family: 'Manrope', sans-serif;
+    }
+    input:focus { box-shadow: 0 0 0 2.5px var(--honey); }
+    input::placeholder { color: var(--outline); }
+
+    .toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--outline);
+      font-size: 1.05rem;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .forgot-link {
+      text-align: right;
+      font-size: 0.76rem;
+      margin-top: 4px;
+    }
+    .forgot-link a {
+      color: var(--honey-dark);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .error-box {
       background: #fbe9e7;
       color: var(--red);
       padding: 10px 14px;
       border-radius: var(--r-sm);
       font-size: 0.84rem;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       display: none;
       border-left: 3px solid var(--red);
+      line-height: 1.5;
     }
+
+    .info-box {
+      background: #e8f5e9;
+      color: var(--green);
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      font-size: 0.84rem;
+      margin-bottom: 16px;
+      display: none;
+      border-left: 3px solid var(--green);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      padding: 13px;
+      border-radius: var(--r-sm);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: .5px;
+      cursor: pointer;
+      margin-top: 18px;
+      transition: background 0.18s;
+      font-family: 'Manrope', sans-serif;
+    }
+    .btn-primary:hover { background: var(--primary-mid); }
+    .btn-primary:disabled { background: var(--outline); cursor: not-allowed; }
 
     .btn-google {
       width: 100%;
@@ -75,26 +168,29 @@
       color: var(--primary);
       border: none;
       box-shadow: inset 0 0 0 1.5px var(--outline-var);
-      padding: 12px;
+      padding: 13px;
       border-radius: var(--r-sm);
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      transition: box-shadow 0.18s;
-      margin-bottom: 18px;
+      transition: box-shadow 0.18s, transform 0.12s;
       font-family: 'Manrope', sans-serif;
+      margin-bottom: 16px;
     }
-    .btn-google:hover { box-shadow: inset 0 0 0 1.5px var(--outline), var(--shadow-sm); }
+    .btn-google:hover {
+      box-shadow: inset 0 0 0 1.5px var(--outline), var(--shadow-sm);
+      transform: translateY(-1px);
+    }
 
     .divider {
       text-align: center;
       color: var(--outline-var);
       font-size: 0.78rem;
-      margin: 16px 0;
+      margin: 16px 0 4px;
       position: relative;
       font-weight: 600;
     }
@@ -102,92 +198,54 @@
       content: '';
       position: absolute;
       top: 50%;
-      width: 42%;
+      width: 40%;
       height: 1px;
       background: var(--outline-var);
     }
     .divider::before { left: 0; }
     .divider::after { right: 0; }
 
-    .input-group { margin-bottom: 16px; }
-
-    label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--outline);
-      margin-bottom: 6px;
-    }
-
-    input {
-      width: 100%;
-      padding: 11px 14px;
-      border: none;
-      border-radius: var(--r-sm);
-      font-size: 0.94rem;
-      outline: none;
-      transition: box-shadow 0.18s;
-      background: var(--surface);
-      color: var(--primary);
-      font-family: 'Manrope', sans-serif;
-    }
-    input:focus { box-shadow: 0 0 0 2.5px var(--honey), var(--shadow-sm); }
-    input::placeholder { color: var(--outline); }
-
-    .btn-primary {
-      width: 100%;
-      background: var(--primary);
-      color: var(--on-primary);
-      border: none;
-      padding: 14px;
-      border-radius: var(--r-sm);
-      font-size: 0.93rem;
-      font-weight: 800;
-      letter-spacing: .5px;
-      cursor: pointer;
+    .badge-secure {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--green);
       margin-top: 20px;
-      margin-bottom: 12px;
-      transition: background 0.18s;
-      font-family: 'Manrope', sans-serif;
+      letter-spacing: .3px;
     }
-    .btn-primary:hover { background: var(--primary-mid); }
 
-    .link {
+    .footer-links {
       text-align: center;
-      font-size: 0.83rem;
+      font-size: 0.82rem;
       color: var(--outline);
-      margin-top: 18px;
+      margin-top: 20px;
+      line-height: 1.8;
     }
-    .link a { color: var(--primary); font-weight: 700; text-decoration: none; }
+    .footer-links a {
+      color: var(--honey-dark);
+      font-weight: 700;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="brand">
       <div class="brand-logo">Zub<span>Card</span></div>
-      <div class="brand-sub">Panel de administración para negocios</div>
+      <div class="brand-sub">Panel de negocios</div>
     </div>
 
-    <div class="error" id="err"></div>
+    <div class="error-box" id="err"></div>
+    <div class="info-box" id="info"></div>
 
-    <div class="input-group">
-      <label>Email del negocio</label>
-      <input type="email" id="email" placeholder="tu@negocio.com">
-    </div>
+    <p class="headline">Accede a tu panel</p>
 
-    <div class="input-group">
-      <label>PIN de administrador</label>
-      <input type="password" id="pin" placeholder="4 dígitos" maxlength="4" onkeypress="if(event.key==='Enter')doLogin()">
-    </div>
-
-    <button class="btn-primary" onclick="doLogin()">Entrar →</button>
-
-    <div class="divider">o</div>
-
-    <button class="btn-google" onclick="googleLogin()">
-      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+    <!-- Google -->
+    <button class="btn-google" onclick="googleLogin()" type="button">
+      <svg width="20" height="20" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
         <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
         <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
         <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
@@ -196,54 +254,105 @@
       Continuar con Google
     </button>
 
-    <div class="link">¿No tienes cuenta? <a href="/app/register">Regístrate gratis</a></div>
+    <div class="divider">o accede con email</div>
+
+    <!-- Email + Password form -->
+    <form onsubmit="emailLogin(event)" autocomplete="on">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@negocio.com" autocomplete="email" required>
+
+      <label>Contraseña</label>
+      <div class="input-wrap">
+        <input type="password" id="login-pw" placeholder="Tu contraseña" autocomplete="current-password" required>
+        <button type="button" class="toggle-pw" onclick="togglePw()" tabindex="-1">👁</button>
+      </div>
+      <div class="forgot-link"><a href="/app/forgot-password">¿Olvidaste tu contraseña?</a></div>
+
+      <button class="btn-primary" id="btnLogin" type="submit">Iniciar sesión →</button>
+    </form>
+
+    <div class="badge-secure">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Conexión segura — tus datos están protegidos
+    </div>
+
+    <div class="footer-links">
+      ¿Primera vez? <a href="/app/register">Crea tu cuenta gratis</a><br>
+      ¿Eres empleado? <a href="/app/scanner-login">Accede con PIN de empleado</a>
+    </div>
   </div>
 
   <script>
-    // Show Google error if redirected back with error
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('error')) {
-      const err = document.getElementById('err');
-      err.textContent = 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.';
-      err.style.display = 'block';
+    // ── Show error/info from URL params ──
+    const params = new URLSearchParams(window.location.search);
+    const errCode = params.get('error');
+    const infoCode = params.get('confirmed');
+
+    if (infoCode === '1') {
+      show('info', '✅ ¡Email confirmado! Ya puedes iniciar sesión.');
+    }
+    if (errCode) {
+      const msgs = {
+        google_cancelled: 'Inicio de sesión con Google cancelado.',
+        google_token_failed: 'No se pudo completar el login con Google. Inténtalo de nuevo.',
+        google_error: 'Error al conectar con Google.',
+        no_email: 'No se pudo obtener el email de tu cuenta Google.',
+      };
+      show('err', msgs[errCode] || 'Error al iniciar sesión. Inténtalo de nuevo.');
     }
 
-    async function doLogin() {
-      const email = document.getElementById('email').value.trim();
-      const pin = document.getElementById('pin').value.trim();
-      const err = document.getElementById('err');
+    function show(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+    function hide(id) { document.getElementById(id).style.display = 'none'; }
 
-      if (!email || !pin) {
-        err.textContent = 'Completa todos los campos';
-        err.style.display = 'block';
-        return;
-      }
+    function togglePw() {
+      const inp = document.getElementById('login-pw');
+      const btn = document.querySelector('.toggle-pw');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+    }
+
+    function googleLogin() {
+      window.location.href = '/auth/google';
+    }
+
+    async function emailLogin(e) {
+      e.preventDefault();
+      hide('err');
+      const btn   = document.getElementById('btnLogin');
+      const email = document.getElementById('login-email').value.trim();
+      const pw    = document.getElementById('login-pw').value;
+
+      btn.textContent = 'Entrando…';
+      btn.disabled = true;
 
       try {
         const r = await fetch('/api/app/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, pin })
+          body: JSON.stringify({ email, password: pw })
         });
         const d = await r.json();
-        if (r.ok) {
-          // Save PIN to sessionStorage before redirecting
-          if (d.slug) {
-            sessionStorage.setItem('zubcard_pin_' + d.slug, pin);
-          }
-          window.location.href = d.dashboard_url;
-        } else {
-          err.textContent = d.detail || 'Error al iniciar sesión';
-          err.style.display = 'block';
-        }
-      } catch (e) {
-        err.textContent = 'Error de conexión';
-        err.style.display = 'block';
-      }
-    }
 
-    function googleLogin() {
-      window.location.href = '/auth/google';
+        if (r.ok) {
+          // Store internal PIN in sessionStorage so dashboard API calls work
+          if (d.pin && d.slug) {
+            sessionStorage.setItem('zubcard_pin_' + d.slug, d.pin);
+          }
+          window.location.href = d.dashboard_url || '/app/login';
+        } else {
+          show('err', d.detail || 'Email o contraseña incorrectos');
+          btn.textContent = 'Iniciar sesión →';
+          btn.disabled = false;
+        }
+      } catch (ex) {
+        show('err', 'Error de conexión. Inténtalo de nuevo.');
+        btn.textContent = 'Iniciar sesión →';
+        btn.disabled = false;
+      }
     }
   </script>
 </body>

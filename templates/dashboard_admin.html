@@ -837,7 +837,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Clientes ilimitados</div>
             <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Negocios ilimitados</div>
             <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Escáner QR para caja</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Programa de niveles VIP</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Geo-notificaciones de proximidad</div>
             <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Email de bienvenida y cumpleaños</div>
             <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Campañas por segmento</div>
             <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Códigos de referido</div>
@@ -951,62 +951,232 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
       </div>
 
       <!-- ═══ MODAL NUEVA TARJETA ═══ -->
-      <div id="modal-nueva-tarjeta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center">
-        <div style="background:#fff;border-radius:8px;padding:32px;width:460px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.2);position:relative">
-          <button onclick="closeNewCardModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">×</button>
-          <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;margin-bottom:20px">Nueva Tarjeta de Fidelización</h2>
+      <div id="modal-nueva-tarjeta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px">
+        <div style="background:#fff;border-radius:16px;padding:0;width:740px;max-width:98vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.3);position:relative;display:grid;grid-template-columns:1fr 240px">
 
-          <div style="display:grid;grid-template-columns:56px 1fr;gap:12px;margin-bottom:14px;align-items:center">
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">EMOJI</label>
-              <input id="nc-emoji" type="text" value="🃏" maxlength="2"
-                style="width:100%;text-align:center;font-size:1.6rem;padding:6px;border:2px solid #e0e0e0;border-radius:6px;background:#fafafa">
+          <!-- LEFT: form -->
+          <div style="padding:32px 28px 28px">
+            <button onclick="closeNewCardModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#aaa;z-index:2">×</button>
+            <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:6px">NUEVA TARJETA</div>
+            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;margin-bottom:22px;color:#1a1a1a">Crear tarjeta de fidelización</h2>
+
+            <!-- Nombre + emoji -->
+            <div style="display:grid;grid-template-columns:60px 1fr;gap:10px;margin-bottom:14px;align-items:end">
+              <div>
+                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">EMOJI</label>
+                <input id="nc-emoji" type="text" value="🎁" maxlength="2" oninput="ncUpdatePreview()"
+                  style="width:100%;text-align:center;font-size:1.6rem;padding:6px 4px;border:2px solid #e8e8e8;border-radius:8px;background:#fafafa;outline:none;cursor:text">
+              </div>
+              <div>
+                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DE LA TARJETA</label>
+                <input id="nc-name" type="text" placeholder="Ej: Coffee Card, Cookie Card…" oninput="ncUpdatePreview()"
+                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none;transition:border-color .15s"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+              </div>
             </div>
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">NOMBRE DE LA TARJETA</label>
-              <input id="nc-name" type="text" placeholder="Ej: 10 Cafés, Cookie Card…"
-                style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:.95rem;outline:none">
+
+            <!-- Stamps + reward -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+              <div>
+                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">SELLOS PARA PREMIO</label>
+                <input id="nc-stamps" type="number" value="10" min="1" max="99" oninput="ncUpdatePreview()"
+                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none;transition:border-color .15s"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+              </div>
+              <div>
+                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DEL PREMIO</label>
+                <input id="nc-reward" type="text" placeholder="Ej: Café Gratis, Pizza Gratis" oninput="ncUpdatePreview()"
+                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none;transition:border-color .15s"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+              </div>
             </div>
+
+            <!-- Colors -->
+            <div style="margin-bottom:14px">
+              <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:8px">COLORES DE LA TARJETA</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div>
+                  <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Fondo</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input id="nc-bg" type="color" value="#0a0a0a" oninput="ncSyncColor('nc-bg');ncUpdatePreview()"
+                      style="width:38px;height:38px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
+                    <input id="nc-bg-txt" type="text" value="#0a0a0a" maxlength="7"
+                      style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
+                      oninput="ncSyncText('nc-bg');ncUpdatePreview()">
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Acento</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input id="nc-accent" type="color" value="#00e676" oninput="ncSyncColor('nc-accent');ncUpdatePreview()"
+                      style="width:38px;height:38px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
+                    <input id="nc-accent-txt" type="text" value="#00e676" maxlength="7"
+                      style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
+                      oninput="ncSyncText('nc-accent');ncUpdatePreview()">
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Texto</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input id="nc-text" type="color" value="#ffffff" oninput="ncSyncColor('nc-text');ncUpdatePreview()"
+                      style="width:38px;height:38px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
+                    <input id="nc-text-txt" type="text" value="#ffffff" maxlength="7"
+                      style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
+                      oninput="ncSyncText('nc-text');ncUpdatePreview()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logo upload -->
+            <div style="margin-bottom:22px">
+              <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:8px">LOGO DEL NEGOCIO (opcional)</label>
+              <div id="nc-logo-drop" onclick="document.getElementById('nc-logo-input').click()"
+                style="border:2px dashed #e0e0e0;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;background:#fafafa"
+                onmouseover="this.style.borderColor='#aaa'" onmouseout="this.style.borderColor='#e0e0e0'">
+                <div id="nc-logo-preview" style="width:44px;height:44px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;overflow:hidden">🏪</div>
+                <div>
+                  <div style="font-size:.85rem;font-weight:600;color:#555">Haz clic para subir tu logo</div>
+                  <div style="font-size:.72rem;color:#aaa;margin-top:2px">PNG, JPG o SVG — máx. 2 MB</div>
+                </div>
+                <input id="nc-logo-input" type="file" accept="image/*" style="display:none" onchange="ncHandleLogo(this)">
+              </div>
+              <input id="nc-logo-url" type="hidden" value="">
+            </div>
+
+            <button onclick="saveNewCard()" id="btn-save-card"
+              style="width:100%;padding:14px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:800;letter-spacing:.5px;cursor:pointer;transition:background .15s"
+              onmouseover="this.style.background='#333'" onmouseout="this.style.background='#1a1a1a'">
+              Crear tarjeta →
+            </button>
+            <div id="nc-error" style="color:#cc2222;font-size:.82rem;margin-top:8px;min-height:18px;text-align:center"></div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">SELLOS PARA PREMIO</label>
-              <input id="nc-stamps" type="number" value="10" min="1" max="50"
-                style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:.95rem;outline:none">
+          <!-- RIGHT: live preview -->
+          <div style="background:#f5f5f5;border-radius:0 16px 16px 0;padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:16px">
+            <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:4px">PREVIEW</div>
+
+            <!-- Card visual preview -->
+            <div id="nc-card-preview" style="width:100%;aspect-ratio:1.7/1;border-radius:14px;padding:16px 18px;background:#0a0a0a;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.25);position:relative;overflow:hidden;transition:background .2s">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div id="nc-prev-logo" style="font-size:1.4rem">🎁</div>
+                <div id="nc-prev-name" style="font-size:.75rem;font-weight:800;letter-spacing:.5px;text-align:right;opacity:.9">TARJETA</div>
+              </div>
+              <div id="nc-prev-stamps" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                <div style="font-size:.65rem;opacity:.6">0 / <span id="nc-prev-total">10</span> sellos</div>
+                <div id="nc-prev-reward" style="font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.15)">Premio</div>
+              </div>
             </div>
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">NOMBRE DEL PREMIO</label>
-              <input id="nc-reward" type="text" placeholder="Ej: Café Gratis"
-                style="width:100%;padding:10px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:.95rem;outline:none">
+
+            <!-- Stamp scale hint -->
+            <div style="width:100%;background:#fff;border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:.65rem;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Escala de sellos</div>
+              <div id="nc-stamp-scale" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center"></div>
+            </div>
+
+            <div style="font-size:.72rem;color:#aaa;text-align:center;line-height:1.4;padding:0 4px">
+              Así verán los clientes su tarjeta en Google Wallet e iOS Wallet
             </div>
           </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">FONDO</label>
-              <input id="nc-bg" type="color" value="#0a0a0a"
-                style="width:100%;height:40px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;padding:2px">
-            </div>
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">ACENTO</label>
-              <input id="nc-accent" type="color" value="#00e676"
-                style="width:100%;height:40px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;padding:2px">
-            </div>
-            <div>
-              <label style="font-size:.75rem;font-weight:600;color:#888;display:block;margin-bottom:4px">TEXTO</label>
-              <input id="nc-text" type="color" value="#ffffff"
-                style="width:100%;height:40px;border:2px solid #e0e0e0;border-radius:6px;cursor:pointer;padding:2px">
-            </div>
-          </div>
-
-          <button onclick="saveNewCard()" id="btn-save-card"
-            style="width:100%;padding:14px;background:#0a0a0a;color:#fff;border:none;border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer">
-            Crear tarjeta →
-          </button>
-          <div id="nc-error" style="color:#cc2222;font-size:.82rem;margin-top:8px;min-height:18px"></div>
         </div>
       </div>
+
+      <!-- Script para el modal de nueva tarjeta -->
+      <script>
+      function ncSyncColor(id) {
+        const picker = document.getElementById(id);
+        const txt = document.getElementById(id + '-txt');
+        if (picker && txt) txt.value = picker.value;
+      }
+      function ncSyncText(id) {
+        const txt = document.getElementById(id + '-txt');
+        const picker = document.getElementById(id);
+        if (txt && picker && /^#[0-9a-fA-F]{6}$/.test(txt.value)) picker.value = txt.value;
+      }
+      function ncUpdatePreview() {
+        const bg     = document.getElementById('nc-bg')?.value || '#0a0a0a';
+        const accent = document.getElementById('nc-accent')?.value || '#00e676';
+        const text   = document.getElementById('nc-text')?.value || '#ffffff';
+        const name   = document.getElementById('nc-name')?.value || 'MI TARJETA';
+        const stamps = parseInt(document.getElementById('nc-stamps')?.value) || 10;
+        const reward = document.getElementById('nc-reward')?.value || 'Premio';
+        const emoji  = document.getElementById('nc-emoji')?.value || '🎁';
+
+        // Update card background + colors
+        const card = document.getElementById('nc-card-preview');
+        if (card) {
+          card.style.background = bg;
+          card.style.color = text;
+        }
+        const prevName = document.getElementById('nc-prev-name');
+        if (prevName) prevName.textContent = name.toUpperCase();
+        const prevLogo = document.getElementById('nc-prev-logo');
+        if (prevLogo && !prevLogo.querySelector('img')) prevLogo.textContent = emoji;
+        const prevTotal = document.getElementById('nc-prev-total');
+        if (prevTotal) prevTotal.textContent = stamps;
+        const prevReward = document.getElementById('nc-prev-reward');
+        if (prevReward) { prevReward.textContent = reward; prevReward.style.color = accent; }
+
+        // Render stamp dots on preview
+        const stampsEl = document.getElementById('nc-prev-stamps');
+        if (stampsEl) {
+          stampsEl.innerHTML = '';
+          const max = Math.min(stamps, 20);
+          for (let i = 0; i < max; i++) {
+            const dot = document.createElement('div');
+            dot.style.cssText = `width:18px;height:18px;border-radius:50%;border:1.5px solid ${accent};background:${i < 3 ? accent : 'transparent'};opacity:${i < 3 ? '1' : '.45'}`;
+            stampsEl.appendChild(dot);
+          }
+          if (stamps > 20) {
+            const more = document.createElement('div');
+            more.style.cssText = `font-size:.55rem;color:${accent};align-self:center;opacity:.7`;
+            more.textContent = `+${stamps - 20}`;
+            stampsEl.appendChild(more);
+          }
+        }
+
+        // Stamp scale
+        const scaleEl = document.getElementById('nc-stamp-scale');
+        if (scaleEl) {
+          scaleEl.innerHTML = '';
+          const max2 = Math.min(stamps, 15);
+          for (let i = 0; i < max2; i++) {
+            const dot = document.createElement('div');
+            const filled = i < Math.round(stamps / 3);
+            dot.style.cssText = `width:16px;height:16px;border-radius:50%;border:1.5px solid ${accent};background:${filled ? accent : 'transparent'};transition:background .2s`;
+            dot.title = `Sello ${i+1}`;
+            scaleEl.appendChild(dot);
+          }
+          if (stamps > 15) {
+            const el = document.createElement('span');
+            el.style.cssText = `font-size:.65rem;color:#aaa`;
+            el.textContent = `… ${stamps} total`;
+            scaleEl.appendChild(el);
+          }
+        }
+      }
+      function ncHandleLogo(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { alert('El logo no puede superar 2 MB'); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const src = e.target.result;
+          // Update drop area preview
+          const prev = document.getElementById('nc-logo-preview');
+          if (prev) prev.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`;
+          // Update card preview logo
+          const cardLogo = document.getElementById('nc-prev-logo');
+          if (cardLogo) cardLogo.innerHTML = `<img src="${src}" style="width:32px;height:32px;object-fit:contain;border-radius:4px">`;
+          // Store as data URL for upload later
+          document.getElementById('nc-logo-url').value = src;
+        };
+        reader.readAsDataURL(file);
+      }
+      // Init preview on page load
+      document.addEventListener('DOMContentLoaded', () => { if (document.getElementById('nc-card-preview')) ncUpdatePreview(); });
+      </script>
 
       <!-- ═══ CLIENTES ═══ -->
       <div class="section" id="section-clients">
@@ -1377,6 +1547,45 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             </div>
           </div>
         </div>
+
+        <!-- ── GEO-NOTIFICACIONES ── -->
+        <div class="card-box" style="margin-top:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+            <div>
+              <h3 style="margin-bottom:4px;color:#0a0a0a">📍 Notificaciones de Proximidad</h3>
+              <p style="font-size:.8rem;color:var(--brown-light);line-height:1.6">Cuando un cliente con la app instalada se acerque a tu local, recibirá una notificación automática.</p>
+            </div>
+            <button class="btn-sm btn-ghost" onclick="sendGeoPush()" id="geo-push-btn" style="font-size:.76rem;white-space:nowrap">📤 Enviar notificación ahora</button>
+          </div>
+          <hr style="border:none;border-top:1.5px solid var(--cream-border);margin:14px 0">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label>Dirección del local</label>
+              <input id="geo-address" type="text" placeholder="Calle Mayor 1, Madrid" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Latitud</label>
+              <input id="geo-lat" type="number" step="any" placeholder="40.4168" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Longitud</label>
+              <input id="geo-lng" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Radio de activación (metros)</label>
+              <input id="geo-radius" type="number" value="300" min="50" max="5000" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Mensaje de la notificación</label>
+              <input id="geo-msg" type="text" placeholder="¡Estás cerca! Visítanos y acumula sellos 🎉" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <button class="btn-sm btn-primary" onclick="saveGeoConfig()" style="padding:10px 24px">💾 Guardar configuración geo</button>
+            <button class="btn-sm btn-ghost" onclick="detectLocation()" style="font-size:.76rem">📡 Usar mi ubicación actual</button>
+            <span id="geo-msg-status" style="font-size:.8rem;color:var(--brown-light);min-height:16px"></span>
+          </div>
+        </div>
       </div>
 
       <!-- ═══ TIENDAS / LOCALES ═══ -->
@@ -1485,56 +1694,6 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:14px">
               <input type="checkbox" id="cfg-anniversary_enabled"> <span style="font-size:.88rem;font-weight:500">Activar programa de aniversario</span>
             </label>
-          </div>
-
-          <!-- VIP Tiers -->
-          <div class="card-box">
-            <div class="card-title" style="margin-bottom:4px">🏆 Niveles VIP</div>
-            <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:16px">Los clientes suben de nivel según sellos totales acumulados.</p>
-
-            <div style="border:2px solid #CD7F32;border-radius:var(--radius);padding:16px;margin-bottom:12px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span>🥉</span><span style="font-weight:700;color:#CD7F32">BRONCE</span><span style="font-size:.72rem;color:var(--brown-light);margin-left:auto">Desde 0 sellos totales</span></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <label class="field-label">Premio tarjeta completa<input class="field-input" id="tier0-premio" placeholder="Cookie gratis"></label>
-                <label class="field-label">Sellos necesarios<input class="field-input" id="tier0-sellos" type="number" placeholder="10"></label>
-              </div>
-              <label class="field-label" style="margin-top:8px">Descripción<input class="field-input" id="tier0-desc" placeholder="1 cookie de tu elección"></label>
-              <label class="field-label" style="margin-top:8px">Beneficios (uno por línea)<textarea class="field-input" id="tier0-beneficios" rows="2" placeholder="1 cookie gratis cada 10 sellos"></textarea></label>
-            </div>
-
-            <div style="border:2px solid #A8A8B3;border-radius:var(--radius);padding:16px;margin-bottom:12px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                <span>🥈</span><span style="font-weight:700;color:#8888A0">PLATA</span>
-                <span style="font-size:.72rem;color:var(--brown-light);margin-left:auto">A partir de <input type="number" id="tier1-min" style="width:55px;padding:2px 4px;border:1px solid var(--cream-border);border-radius:2px;font-size:.72rem" placeholder="50"> sellos totales</span>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <label class="field-label">Premio<input class="field-input" id="tier1-premio" placeholder="Box 6 cookies"></label>
-                <label class="field-label">Sellos<input class="field-input" id="tier1-sellos" type="number" placeholder="8"></label>
-              </div>
-              <label class="field-label" style="margin-top:8px">Descripción<input class="field-input" id="tier1-desc" placeholder="Elige 6 cookies"></label>
-              <label class="field-label" style="margin-top:8px">Beneficios<textarea class="field-input" id="tier1-beneficios" rows="2" placeholder="Box 6 cookies cada 8 sellos"></textarea></label>
-            </div>
-
-            <div style="border:2px solid #c8a84b;border-radius:var(--radius);padding:16px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                <span>👑</span><span style="font-weight:700;color:#c8a84b">ORO</span>
-                <span style="font-size:.72rem;color:var(--brown-light);margin-left:auto">A partir de <input type="number" id="tier2-min" style="width:55px;padding:2px 4px;border:1px solid var(--cream-border);border-radius:2px;font-size:.72rem" placeholder="150"> sellos totales</span>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <label class="field-label">Premio<input class="field-input" id="tier2-premio" placeholder="Box premium + bebida"></label>
-                <label class="field-label">Sellos<input class="field-input" id="tier2-sellos" type="number" placeholder="7"></label>
-              </div>
-              <label class="field-label" style="margin-top:8px">Descripción<input class="field-input" id="tier2-desc" placeholder="Box 12 cookies + bebida gratis"></label>
-              <label class="field-label" style="margin-top:8px">Beneficios<textarea class="field-input" id="tier2-beneficios" rows="2" placeholder="Box premium + bebida cada 7 sellos"></textarea></label>
-            </div>
-
-            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--cream-border)">
-              <div style="font-weight:600;font-size:.82rem;margin-bottom:10px">🏅 Nombre del Club</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <label class="field-label">Nombre del club<input class="field-input" id="club-nombre" placeholder="VIP Club"></label>
-                <label class="field-label">Tagline<input class="field-input" id="club-tagline" placeholder="Sé parte de algo especial"></label>
-              </div>
-            </div>
           </div>
 
           <!-- General (collapsed secondary settings) -->
@@ -1688,7 +1847,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
                         <div id="android-strip" style="padding:12px 14px;display:flex;align-items:center;gap:8px;transition:background .3s">
                           <div id="android-logo" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.2)">🍪</div>
                           <div style="flex:1;min-width:0"><div id="android-bizname" style="font-size:.68rem;font-weight:800;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ biz_name | upper }}</div><div id="android-cardname" style="font-size:.55rem;opacity:.75;margin-top:1px">Programa de fidelización</div></div>
-                          <div id="android-tier-badge" style="font-size:.52rem;background:rgba(255,255,255,.2);padding:3px 7px;border-radius:2px;font-weight:700;white-space:nowrap">🥉 BRONCE</div>
+                          <div id="android-stamps-count" style="font-size:.52rem;background:rgba(255,255,255,.2);padding:3px 7px;border-radius:2px;font-weight:700;white-space:nowrap">0 sellos</div>
                         </div>
                         <div style="background:white;padding:10px 14px">
                           <div style="font-size:.52rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">Sellos acumulados</div>
@@ -2679,32 +2838,6 @@ async function loadConfig() {
     setCheck('cfg-birthday_email_enabled', c.birthday_email_enabled);
     setVal('cfg-birthday_email_subject', c.birthday_email_subject);
     setVal('cfg-birthday_email_body', c.birthday_email_body);
-    // Load tier config
-    const tiers = cfg.tiers || [];
-    if (tiers[0]) {
-      setVal('tier0-premio', tiers[0].premio_nombre || '');
-      setVal('tier0-sellos', tiers[0].sellos_por_premio || 10);
-      setVal('tier0-desc', tiers[0].premio_descripcion || '');
-      setVal('tier0-beneficios', (tiers[0].beneficios || []).join('\n'));
-    }
-    if (tiers[1]) {
-      setVal('tier1-min', tiers[1].min_sellos_totales || 50);
-      setVal('tier1-premio', tiers[1].premio_nombre || '');
-      setVal('tier1-sellos', tiers[1].sellos_por_premio || 8);
-      setVal('tier1-desc', tiers[1].premio_descripcion || '');
-      setVal('tier1-beneficios', (tiers[1].beneficios || []).join('\n'));
-    }
-    if (tiers[2]) {
-      setVal('tier2-min', tiers[2].min_sellos_totales || 150);
-      setVal('tier2-premio', tiers[2].premio_nombre || '');
-      setVal('tier2-sellos', tiers[2].sellos_por_premio || 7);
-      setVal('tier2-desc', tiers[2].premio_descripcion || '');
-      setVal('tier2-beneficios', (tiers[2].beneficios || []).join('\n'));
-    }
-    // Club
-    const club = cfg.club || {};
-    setVal('club-nombre', club.nombre || '');
-    setVal('club-tagline', club.tagline || '');
   } catch(e) { console.error('loadConfig error', e); }
 }
 
@@ -2829,42 +2962,6 @@ async function saveConfig() {
     }
   };
   
-  // Save tiers
-  payload.tiers = [
-    {
-      nombre: 'Bronce', emoji: '🥉', color: '#CD7F32', bg_color: '#FFF3E6',
-      min_sellos_totales: 0,
-      sellos_por_premio: parseInt(document.getElementById('tier0-sellos').value) || 10,
-      premio_nombre: document.getElementById('tier0-premio').value || 'Premio',
-      premio_descripcion: document.getElementById('tier0-desc').value || '',
-      premio_emoji: '🍪',
-      beneficios: (document.getElementById('tier0-beneficios').value || '').split('\n').filter(x=>x.trim())
-    },
-    {
-      nombre: 'Plata', emoji: '🥈', color: '#A8A8B3', bg_color: '#F5F5FF',
-      min_sellos_totales: parseInt(document.getElementById('tier1-min').value) || 50,
-      sellos_por_premio: parseInt(document.getElementById('tier1-sellos').value) || 8,
-      premio_nombre: document.getElementById('tier1-premio').value || 'Premio Plata',
-      premio_descripcion: document.getElementById('tier1-desc').value || '',
-      premio_emoji: '📦',
-      beneficios: (document.getElementById('tier1-beneficios').value || '').split('\n').filter(x=>x.trim())
-    },
-    {
-      nombre: 'Oro', emoji: '👑', color: '#c8a84b', bg_color: '#FFFBF0',
-      min_sellos_totales: parseInt(document.getElementById('tier2-min').value) || 150,
-      sellos_por_premio: parseInt(document.getElementById('tier2-sellos').value) || 7,
-      premio_nombre: document.getElementById('tier2-premio').value || 'Premio Oro',
-      premio_descripcion: document.getElementById('tier2-desc').value || '',
-      premio_emoji: '✨',
-      beneficios: (document.getElementById('tier2-beneficios').value || '').split('\n').filter(x=>x.trim())
-    }
-  ];
-  payload.club = {
-    nombre: document.getElementById('club-nombre').value || 'VIP Club',
-    tagline: document.getElementById('club-tagline').value || '',
-    activo: true
-  };
-
   try {
     const r = await fetch(`${BASE}/api/admin/config`, {
       method: 'PUT',
@@ -3537,6 +3634,73 @@ async function loadPassCodes(){
     const data=await r.json();
     renderPassCodes(data.codes||[]);
   }catch(e){ renderPassCodes([]); }
+  loadGeoConfig();
+}
+
+async function loadGeoConfig(){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`);
+    if(!r.ok) return;
+    const d=await r.json();
+    if(document.getElementById('geo-address')) document.getElementById('geo-address').value=d.address||'';
+    if(document.getElementById('geo-lat'))     document.getElementById('geo-lat').value=d.latitude||'';
+    if(document.getElementById('geo-lng'))     document.getElementById('geo-lng').value=d.longitude||'';
+    if(document.getElementById('geo-radius'))  document.getElementById('geo-radius').value=d.geo_radius_m||300;
+    if(document.getElementById('geo-msg'))     document.getElementById('geo-msg').value=d.geo_push_msg||'';
+  }catch(e){}
+}
+
+async function saveGeoConfig(){
+  const status=document.getElementById('geo-msg-status');
+  if(status) status.textContent='Guardando…';
+  const body={
+    address:   document.getElementById('geo-address').value.trim(),
+    latitude:  parseFloat(document.getElementById('geo-lat').value)||null,
+    longitude: parseFloat(document.getElementById('geo-lng').value)||null,
+    geo_radius_m: parseInt(document.getElementById('geo-radius').value)||300,
+    geo_push_msg: document.getElementById('geo-msg').value.trim()
+  };
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error((await r.json()).detail||'Error');
+    if(status){status.textContent='✅ Guardado';setTimeout(()=>{status.textContent='';},3000);}
+    showToast('Configuración geo guardada','success');
+  }catch(e){
+    if(status) status.textContent='❌ '+e.message;
+    showToast('Error al guardar: '+e.message,'error');
+  }
+}
+
+async function sendGeoPush(){
+  const btn=document.getElementById('geo-push-btn');
+  if(btn){btn.disabled=true;btn.textContent='📤 Enviando…';}
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo/push-nearby?pin=${PIN}`,{method:'POST'});
+    const d=await r.json();
+    showToast(d.message||`Notificación enviada a ${d.sent||0} cliente(s)`,'success');
+  }catch(e){
+    showToast('Error al enviar notificación','error');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='📤 Enviar notificación ahora';}
+  }
+}
+
+function detectLocation(){
+  const status=document.getElementById('geo-msg-status');
+  if(!navigator.geolocation){
+    if(status) status.textContent='⚠️ Geolocalización no disponible en este navegador';
+    return;
+  }
+  if(status) status.textContent='📡 Detectando ubicación…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById('geo-lat').value=pos.coords.latitude.toFixed(6);
+    document.getElementById('geo-lng').value=pos.coords.longitude.toFixed(6);
+    if(status){status.textContent='✅ Ubicación detectada';setTimeout(()=>{status.textContent='';},3000);}
+  },err=>{
+    if(status) status.textContent='❌ '+err.message;
+  });
 }
 
 function renderPassCodes(codes){
@@ -3831,12 +3995,20 @@ function openNewCardModal(){
   document.getElementById('nc-error').textContent = '';
   document.getElementById('nc-name').value = '';
   document.getElementById('nc-reward').value = '';
-  document.getElementById('nc-emoji').value = '🃏';
+  document.getElementById('nc-emoji').value = '🎁';
   document.getElementById('nc-stamps').value = '10';
   document.getElementById('nc-bg').value = '#0a0a0a';
   document.getElementById('nc-accent').value = '#00e676';
   document.getElementById('nc-text').value = '#ffffff';
-  setTimeout(()=>document.getElementById('nc-name').focus(), 100);
+  // Reset text inputs
+  const bgt = document.getElementById('nc-bg-txt'); if(bgt) bgt.value = '#0a0a0a';
+  const act = document.getElementById('nc-accent-txt'); if(act) act.value = '#00e676';
+  const txt = document.getElementById('nc-text-txt'); if(txt) txt.value = '#ffffff';
+  // Reset logo
+  const logoPrev = document.getElementById('nc-logo-preview'); if(logoPrev) logoPrev.innerHTML = '🏪';
+  const logoUrl = document.getElementById('nc-logo-url'); if(logoUrl) logoUrl.value = '';
+  const logoInput = document.getElementById('nc-logo-input'); if(logoInput) logoInput.value = '';
+  setTimeout(()=>{ document.getElementById('nc-name').focus(); ncUpdatePreview(); }, 80);
 }
 function closeNewCardModal(){
   document.getElementById('modal-nueva-tarjeta').style.display = 'none';

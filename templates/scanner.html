@@ -50,7 +50,7 @@
       letter-spacing: 1px;
       color: var(--accent);
     }
-    .top-bar .badge {
+    .top-bar .employee-info {
       font-size: 11px;
       font-weight: 700;
       background: rgba(255,255,255,0.12);
@@ -105,6 +105,12 @@
       margin-bottom: 4px;
     }
     .pin-wrap p { color: var(--outline); font-size: 14px; margin-bottom: 28px; }
+    .pin-desc {
+      color: var(--outline);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
     input[type=password] {
       width: 100%;
       padding: 14px 16px;
@@ -140,6 +146,9 @@
     .btn-primary:hover { filter: brightness(1.12); }
     .btn-primary:active { transform: scale(0.98); }
     .btn-reward { background: var(--honey); color: var(--honey-dark); font-weight: 800; }
+    .btn-danger { background: #c0392b; color: #fff; font-weight: 800; }
+    .btn-danger:hover { filter: brightness(1.1); }
+    .btn-danger:active { transform: scale(0.98); }
     .btn-ghost { background: transparent; color: var(--outline); font-size: 14px; font-weight: 600; }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
 
@@ -209,35 +218,42 @@
     }
     .customer-sub { font-size: 13px; color: var(--outline); }
 
-    /* Stamps mini */
-    .stamps-mini { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-    .sm-dot {
-      width: 28px;
-      height: 28px;
+    /* Stamps progress bar */
+    .stamps-progress {
+      margin: 12px 0;
+      padding: 12px;
+      background: var(--surface);
       border-radius: var(--r-sm);
+    }
+    .stamps-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .stamp-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
-      background: var(--surface);
+      font-size: 12px;
+      background: var(--surface-mid);
+      color: var(--outline);
     }
-    .sm-dot.filled { background: var(--primary); color: var(--honey-light); }
-    .sm-dot.empty  { color: var(--outline-var); }
+    .stamp-dot.filled {
+      background: var(--primary);
+      color: var(--honey-light);
+    }
+    .stamps-count {
+      font-size: 12px;
+      color: var(--outline);
+      font-weight: 600;
+      text-align: center;
+    }
 
-    /* Tier + award pills */
-    .tier-badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 800;
-      border-radius: 50px;
-      padding: 3px 12px;
-      margin-bottom: 8px;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-    }
-    .tier-bronze { background: #cd7f32; color: #fff; }
-    .tier-silver { background: #c0c0c0; color: #333; }
-    .tier-gold   { background: var(--honey); color: var(--honey-dark); }
+    /* Award pill */
     .award-pill {
       display: inline-flex;
       align-items: center;
@@ -380,13 +396,16 @@
 
     /* Error messages */
     .err-msg { color: #c0392b; font-size: 13px; text-align: center; display: none; margin-bottom: 10px; font-weight: 600; }
+
+    /* Admin action buttons */
+    .admin-actions { margin-top: 16px; border-top: 1px solid var(--outline-var); padding-top: 16px; }
   </style>
 </head>
 <body>
 
 <div class="top-bar">
-  <span class="logo-txt">🍪 {{ business_name }}</span>
-  <span class="badge">Caja</span>
+  <span class="logo-txt" id="store-name">{{ business_name }}</span>
+  <span class="employee-info" id="employee-badge">Caja</span>
 </div>
 <div class="wrapper">
 
@@ -394,11 +413,15 @@
   <div class="screen active" id="screen-pin">
     <div class="pin-wrap">
       <div class="icon">🔐</div>
-      <h2>Acceso de caja</h2>
-      <p>Introduce el PIN para comenzar</p>
+      <h2>Acceso de Caja</h2>
+      <p class="pin-desc">
+        <strong>Usuario / PIN del empleado</strong><br>
+        Este es un acceso separado del propietario.<br>
+        Úsalo para acceder a las funciones de caja.
+      </p>
     </div>
     <div class="err-msg" id="pin-error">PIN incorrecto. Inténtalo de nuevo.</div>
-    <input type="password" id="pin-input" placeholder="••••" maxlength="8">
+    <input type="password" id="pin-input" placeholder="••••" maxlength="8" autocomplete="off">
     <button class="btn btn-primary" onclick="doLogin()">Entrar →</button>
   </div>
 
@@ -429,20 +452,22 @@
     <div class="card">
       <div class="card-body">
         <div class="customer-row">
-          <div class="customer-avatar" id="cust-avatar">🍪</div>
+          <div class="customer-avatar" id="cust-avatar">⭐</div>
           <div>
             <div class="customer-name" id="cust-name">—</div>
-            <div class="customer-sub"  id="cust-sub">—</div>
+            <div class="customer-sub" id="cust-sub">—</div>
           </div>
         </div>
-        <div id="tier-badge-wrap"></div>
         <div id="award-wrap"></div>
-        <div class="stamps-mini" id="stamps-mini"></div>
+        <div class="stamps-progress">
+          <div class="stamps-bar" id="stamps-bar"></div>
+          <div class="stamps-count" id="stamps-count">0 / 0 sellos</div>
+        </div>
       </div>
     </div>
     <div class="mode-tabs">
-      <button class="mode-tab active" id="tab-quick"    onclick="setMode('quick')">⚡ Sello rápido</button>
-      <button class="mode-tab"        id="tab-purchase" onclick="setMode('purchase')">🛍 Modo compra</button>
+      <button class="mode-tab active" id="tab-quick" onclick="setMode('quick')">⚡ Sello rápido</button>
+      <button class="mode-tab" id="tab-purchase" onclick="setMode('purchase')">🛍 Modo compra</button>
     </div>
     <!-- Quick mode -->
     <div id="mode-quick">
@@ -460,6 +485,11 @@
           </button>
           <div id="redeem-wrap-quick"></div>
           <button class="btn btn-ghost" onclick="goBackToScanner()">📷 Escanear otro cliente</button>
+          <div class="admin-actions">
+            <button class="btn btn-danger" id="remove-stamp-quick-btn" onclick="removeStamp()" style="display:none;">
+              − Quitar sello
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -476,6 +506,11 @@
           <button class="btn btn-primary" id="purchase-add-btn" onclick="submitStamps('purchase')">✅ Confirmar compra</button>
           <div id="redeem-wrap-purchase"></div>
           <button class="btn btn-ghost" onclick="goBackToScanner()">📷 Escanear otro cliente</button>
+          <div class="admin-actions">
+            <button class="btn btn-danger" id="remove-stamp-purchase-btn" onclick="removeStamp()" style="display:none;">
+              − Quitar sello
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -486,14 +521,14 @@
     <div class="card">
       <div class="card-body">
         <div class="success-wrap">
-          <div class="big-icon" id="success-icon">🍪</div>
+          <div class="big-icon" id="success-icon">✅</div>
           <h2 id="success-title">¡Hecho!</h2>
           <p id="success-name"></p>
           <p id="success-detail"></p>
           <div id="success-reward" style="display:none;" class="reward-alert"></div>
         </div>
         <button class="btn btn-primary" onclick="goBackToScanner()">📷 Siguiente cliente</button>
-        <button class="btn btn-ghost"   onclick="logout()">← Cerrar sesión</button>
+        <button class="btn btn-ghost" onclick="logout()">← Cerrar sesión</button>
       </div>
     </div>
   </div>
@@ -507,6 +542,7 @@ const BASE_URL    = "{{ base_url }}";
 const DEFAULT_SPR = {{ stamps_per_reward }};
 
 let adminPin = "", currentCardId = "", currentCard = null;
+let employeeRole = "", employeeStore = "";
 let scanActive = false, videoStream = null, quickCount = 1;
 
 const PRODUCTS = [
@@ -528,14 +564,19 @@ async function doLogin() {
   if (!pin) return;
   const errEl = document.getElementById('pin-error');
   try {
-    const resp = await fetch(`/api/biz/${SLUG}/verify-pin?pin=${encodeURIComponent(pin)}`);
+    const resp = await fetch(`{{ base_url }}/api/biz/${SLUG}/verify-pin?pin=${encodeURIComponent(pin)}`);
     if (resp.status === 403 || resp.status === 404) {
       errEl.style.display = 'block';
       document.getElementById('pin-input').value = '';
       document.getElementById('pin-input').focus();
       return;
     }
-    adminPin = pin; errEl.style.display = 'none';
+    const data = await resp.json();
+    adminPin = pin;
+    employeeRole = data.role || "";
+    employeeStore = data.store || BIZ_NAME;
+    updateTopBar();
+    errEl.style.display = 'none';
     startCamera();
   } catch(e) {
     errEl.textContent = 'Error de red. Inténtalo de nuevo.';
@@ -543,10 +584,23 @@ async function doLogin() {
   }
 }
 
+function updateTopBar() {
+  const badge = document.getElementById('employee-badge');
+  if (employeeStore) {
+    badge.textContent = employeeStore.toUpperCase();
+  }
+}
+
 function logout() {
-  stopCamera(); adminPin = ""; currentCardId = ""; currentCard = null;
+  stopCamera();
+  adminPin = "";
+  employeeRole = "";
+  employeeStore = "";
+  currentCardId = "";
+  currentCard = null;
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('employee-badge').textContent = 'Caja';
   showScreen('pin');
 }
 
@@ -591,10 +645,12 @@ async function loadCustomer(cardId) {
   const st = document.getElementById('scan-status');
   st.textContent = 'Cargando datos…'; st.className = 'ok';
   try {
-    const r = await fetch(`/api/cards/${cardId}`);
+    const r = await fetch(`{{ base_url }}/api/cards/${cardId}`);
     if (!r.ok) throw new Error();
-    currentCard = await r.json(); currentCardId = cardId;
-    renderCustomer(); showScreen('stamp');
+    currentCard = await r.json();
+    currentCardId = cardId;
+    renderCustomer();
+    showScreen('stamp');
   } catch(e) {
     st.textContent = '⚠ Tarjeta no encontrada. Inténtalo de nuevo.'; st.className = 'err';
     scanActive = true; await startCamera();
@@ -607,31 +663,40 @@ function renderCustomer() {
   const c = currentCard, spr = getSPR();
   const hasAward = (c.awardBalance || 0) > 0;
   document.getElementById('cust-name').textContent = c.name || ((c.firstName||'') + ' ' + (c.lastName||'')).trim();
-  document.getElementById('cust-sub').textContent  = `${c.stamps} / ${spr} sellos · ${c.totalStamps} totales`;
+  document.getElementById('cust-sub').textContent = `${c.totalStamps} sellos totales`;
   document.getElementById('cust-avatar').textContent = hasAward ? '🎁' : '⭐';
-  // tier may be a string or an object {name, color, emoji, next, next_at}
-  const tierObj = c.tier || {};
-  const tierName = (typeof tierObj === 'object') ? (tierObj.name || 'Bronce') : String(tierObj);
-  const tierEmoji = (typeof tierObj === 'object') ? (tierObj.emoji || '🥉') : '🥉';
-  const tierKey = tierName.toLowerCase();
-  const tierColor = (typeof tierObj === 'object' && tierObj.color) ? tierObj.color : '#CD7F32';
-  document.getElementById('tier-badge-wrap').innerHTML = `<span class="tier-badge tier-${tierKey}" style="background:${tierColor}20;color:${tierColor}">${tierEmoji} ${tierName}</span>`;
+
+  // Render stamps progress bar
+  const bar = document.getElementById('stamps-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < spr; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'stamp-dot ' + (i < c.stamps ? 'filled' : '');
+    dot.textContent = i < c.stamps ? '●' : '○';
+    bar.appendChild(dot);
+  }
+  document.getElementById('stamps-count').textContent = `${c.stamps} / ${spr} sellos`;
+
+  // Render awards
   const aw = document.getElementById('award-wrap');
   aw.innerHTML = hasAward ? `<div class="award-pill">🎉 ${c.awardBalance} premio${c.awardBalance>1?'s':''} disponible${c.awardBalance>1?'s':''}</div>` : '';
-  const grid = document.getElementById('stamps-mini'); grid.innerHTML = '';
-  for (let i = 0; i < spr; i++) {
-    const d = document.createElement('div');
-    d.className = 'sm-dot ' + (i < c.stamps ? 'filled' : 'empty');
-    d.textContent = i < c.stamps ? '✦' : '○';
-    grid.appendChild(d);
-  }
-  quickCount = 1; updateQuickDisplay(); resetProducts(); renderRedeemButtons();
+
+  // Show remove stamp button only if customer has stamps
+  const removeButtons = document.querySelectorAll('[id^="remove-stamp-"]');
+  removeButtons.forEach(btn => {
+    btn.style.display = c.stamps > 0 ? 'block' : 'none';
+  });
+
+  quickCount = 1;
+  updateQuickDisplay();
+  resetProducts();
+  renderRedeemButtons();
 }
 
 function setMode(mode) {
   document.getElementById('tab-quick').classList.toggle('active', mode==='quick');
   document.getElementById('tab-purchase').classList.toggle('active', mode==='purchase');
-  document.getElementById('mode-quick').style.display    = mode==='quick'    ? 'block' : 'none';
+  document.getElementById('mode-quick').style.display = mode==='quick' ? 'block' : 'none';
   document.getElementById('mode-purchase').style.display = mode==='purchase' ? 'block' : 'none';
 }
 
@@ -652,7 +717,8 @@ function renderProducts() {
       <span class="p-qty" id="qty-${p.id}">0</span>
       <button class="p-btn" onclick="stepP('${p.id}',+1)">+</button></div>`;
     g.appendChild(r);
-  }); updatePTotal();
+  });
+  updatePTotal();
 }
 function stepP(id,d) { productQty[id]=Math.max(0,(productQty[id]||0)+d); document.getElementById(`qty-${id}`).textContent=productQty[id]; updatePTotal(); }
 function updatePTotal() { let t=0; PRODUCTS.forEach(p=>{t+=(productQty[p.id]||0)*p.stamps;}); document.getElementById('purchase-total').textContent=t; }
@@ -666,12 +732,13 @@ function renderRedeemButtons() {
     w.innerHTML = n > 0 ? `<button class="btn btn-reward" onclick="redeemReward()">🎁 Canjear galleta gratis${n>1?' ('+n+' disponibles)':''}</button>` : '';
   });
 }
+
 async function redeemReward() {
   const n = (currentCard&&currentCard.awardBalance)||0;
   const name = currentCard.name||(currentCard.firstName||'');
   if (!confirm(`¿Canjear 1 galleta gratis para ${name}? (${n} disponible${n>1?'s':''})`)) return;
   try {
-    const r = await fetch(`/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin})});
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin})});
     const d = await r.json();
     document.getElementById('success-icon').textContent='🎁';
     document.getElementById('success-title').textContent='¡Premio canjeado!';
@@ -682,6 +749,42 @@ async function redeemReward() {
   } catch(e) { alert('Error al canjear.'); }
 }
 
+async function removeStamp() {
+  const c = currentCard;
+  if (!c || c.stamps <= 0) {
+    alert('No hay sellos para quitar.');
+    return;
+  }
+  const name = c.name||(c.firstName||'');
+  if (!confirm(`¿Quitar 1 sello a ${name}?`)) return;
+
+  const btn = document.getElementById('remove-stamp-quick-btn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Quitando…';
+
+  try {
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/stamps`,{
+      method:'DELETE',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:adminPin})
+    });
+    const d = await r.json();
+    if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
+    const spr=getSPR();
+    document.getElementById('success-icon').textContent='−';
+    document.getElementById('success-title').textContent='Sello eliminado';
+    document.getElementById('success-name').textContent=name;
+    document.getElementById('success-detail').textContent=`−1 sello. Total: ${d.stamps} / ${spr}`;
+    document.getElementById('success-reward').style.display='none';
+    showScreen('success');
+  } catch(e) {
+    btn.disabled=false;
+    btn.textContent=originalText;
+    alert('Error de red.');
+  }
+}
+
 async function submitStamps(mode) {
   let stamps, note;
   if (mode==='quick') { stamps=quickCount; note=`Sello rápido: ${stamps} sello${stamps>1?'s':''}`; }
@@ -689,8 +792,8 @@ async function submitStamps(mode) {
   const btnId=mode==='quick'?'quick-add-btn':'purchase-add-btn';
   const btn=document.getElementById(btnId); btn.disabled=true; btn.textContent='Añadiendo…';
   try {
-    const r = await fetch(`/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pin:adminPin, stamps:stamps, note:note, store:BIZ_NAME})});
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:adminPin, stamps:stamps, note:note, store:employeeStore||BIZ_NAME})});
     const d = await r.json();
     if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
     const spr=getSPR(), name=currentCard.name||(currentCard.firstName||'');

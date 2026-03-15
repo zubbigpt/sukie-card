@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from database import Base
@@ -96,12 +96,21 @@ class Business(Base):
     plan            = Column(String, default="free")           # free | pro | enterprise
     card_title      = Column(String, default="Mi Tarjeta")
     stamps_per_reward = Column(Integer, default=10)
-    admin_pin       = Column(String, nullable=False)           # hashed or plain for now
-    api_key         = Column(String, nullable=False)
-    active          = Column(Boolean, default=True)
-    logo_url        = Column(String, nullable=True)
-    primary_color   = Column(String, default="#3A3426")
-    accent_color    = Column(String, default="#FFF5B6")
-    industry        = Column(String, nullable=True)            # café | retail | beauty | other
+    admin_pin           = Column(String, nullable=False)       # random 6-digit internal API token (auto-generated)
+    hashed_password     = Column(String, nullable=True)        # bcrypt hash — only for email+password accounts
+    email_confirmed     = Column(Boolean, default=False)       # True after clicking confirmation email or Google login
+    email_confirm_token = Column(String, nullable=True)        # UUID token sent in confirmation email
+    api_key             = Column(String, nullable=False)
+    active              = Column(Boolean, default=True)
+    logo_url            = Column(String, nullable=True)
+    primary_color       = Column(String, default="#3A3426")
+    accent_color        = Column(String, default="#FFF5B6")
+    industry            = Column(String, nullable=True)        # café | retail | beauty | other
+    # Geo-location for proximity push notifications
+    address         = Column(String, nullable=True)
+    latitude        = Column(Float, nullable=True)
+    longitude       = Column(Float, nullable=True)
+    geo_radius_m    = Column(Integer, default=300)
+    geo_push_msg    = Column(String, default="¡Estás cerca! Visítanos y acumula sellos 🎉")
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

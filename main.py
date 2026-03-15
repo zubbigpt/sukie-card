@@ -1,6 +1,7 @@
 import os
 import uuid
 import csv
+import bcrypt
 import io
 import json
 import time
@@ -175,16 +176,20 @@ def run_migrations():
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS tier VARCHAR DEFAULT 'bronze'",
         # ZubCard SaaS Platform
         "CREATE TABLE IF NOT EXISTS businesses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR NOT NULL, slug VARCHAR UNIQUE NOT NULL, email VARCHAR UNIQUE NOT NULL, google_id VARCHAR UNIQUE, plan VARCHAR DEFAULT 'free', card_title VARCHAR DEFAULT 'Mi Tarjeta', stamps_per_reward INTEGER DEFAULT 10, admin_pin VARCHAR NOT NULL, api_key VARCHAR NOT NULL, active BOOLEAN DEFAULT TRUE, logo_url VARCHAR, primary_color VARCHAR DEFAULT '#3A3426', accent_color VARCHAR DEFAULT '#FFF5B6', industry VARCHAR, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())",
-        # Force-seed Sukie Cookie: delete any conflicting rows first, then insert fresh
-        "DELETE FROM businesses WHERE email='zubbigpt@gmail.com' AND slug != 'sukiecookie'",
-        "DELETE FROM businesses WHERE id='00000000-0000-0000-0000-000000000001'::uuid AND slug != 'sukiecookie'",
-        "INSERT INTO businesses (id, name, slug, email, admin_pin, api_key, plan, primary_color, accent_color, industry, card_title, stamps_per_reward, active) VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'Sukie Cookie', 'sukiecookie', 'zubbigpt@gmail.com', '5678', 'sukie-cookie-2026-secret', 'pro', '#3A3426', '#FFF5B6', 'bakery', 'Sukie Card', 10, TRUE) ON CONFLICT (slug) DO UPDATE SET id='00000000-0000-0000-0000-000000000001'::uuid, name='Sukie Cookie', email='zubbigpt@gmail.com', admin_pin='5678', api_key='sukie-cookie-2026-secret', plan='pro', active=TRUE",
-        # Also force-update via plain UPDATE as safety net
-        "UPDATE businesses SET active=TRUE, admin_pin='5678', email='zubbigpt@gmail.com' WHERE slug='sukiecookie'",
+        # ── Geo-location / address fields for push notifications ──────────────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS address VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS geo_radius_m INTEGER DEFAULT 300",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS geo_push_msg VARCHAR DEFAULT '¡Estás cerca! Visítanos y acumula sellos 🎉'",
+        # Auth security upgrade
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS hashed_password VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_confirmed BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_confirm_token VARCHAR",
+        # Mark existing Google-linked accounts as confirmed
+        "UPDATE businesses SET email_confirmed = TRUE WHERE google_id IS NOT NULL AND google_id != ''",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
         "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id)",
-        "UPDATE customers SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
-        "UPDATE card_config SET business_id='00000000-0000-0000-0000-000000000001'::uuid WHERE business_id IS NULL",
         "DELETE FROM customers WHERE email = 'placeholder_email' OR first_name = 'PLACEHOLDER_FNAME'",
         # Clean test customers: delete in FK order (push_subscriptions → referrals → stamp_transactions → loyalty_cards → customers)
         "DELETE FROM push_subscriptions WHERE card_id IN ('b67ba1b0-f365-4547-8784-da4a2925ab6d'::uuid, '5b8461c4-b2ee-4b9c-a0bb-90e34fbd855f'::uuid, '76787185-18d7-4189-9bc1-a256f6f0ea6d'::uuid)",
@@ -254,16 +259,6 @@ def verify_pin(pin: str, db: Session = None):
         if biz:
             return
     raise HTTPException(status_code=403, detail="PIN incorrecto")
-
-
-def get_tier(total_stamps: int) -> dict:
-    """Returns tier info based on total lifetime stamps"""
-    if total_stamps >= 150:
-        return {"name": "Oro", "color": "#FFD700", "emoji": "🥇", "next": None, "next_at": None}
-    elif total_stamps >= 50:
-        return {"name": "Plata", "color": "#C0C0C0", "emoji": "🥈", "next": "Oro", "next_at": 150}
-    else:
-        return {"name": "Bronce", "color": "#CD7F32", "emoji": "🥉", "next": "Plata", "next_at": 50}
 
 
 def generate_referral_code(length=8) -> str:
@@ -391,7 +386,7 @@ def card_to_dict(card: models.LoyaltyCard, customer: models.Customer) -> dict:
         "awardBalance":   card.award_balance or 0,
         "rewardsRedeemed": card.rewards_redeemed or 0,
         "awardTotal":     (card.rewards_redeemed or 0) + (card.award_balance or 0),
-        "tier":           get_tier(card.total_stamps or 0),
+        "tier":           None,  # VIP tiers removed
         "createdAt":      customer.created_at.isoformat() if customer.created_at else "",
         "updatedAt":      card.updated_at.isoformat() if card.updated_at else "",
     }
@@ -740,6 +735,11 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
     verify_pin(str(body.get("pin", "")), db)
     card = get_card_or_404(card_id, db)
 
+    # Resolve per-business stamps_per_reward
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if (customer and customer.business_id) else None
+    stamps_per_reward = (biz.stamps_per_reward or STAMPS_PER_REWARD) if biz else STAMPS_PER_REWARD
+
     n = int(body.get("stamps", 1))
     if n < 0 or n > 50:
         raise HTTPException(status_code=400, detail="stamps debe estar entre 0 y 50")
@@ -749,8 +749,8 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
         card.total_stamps = (card.total_stamps or 0) + n
 
     awards_earned = 0
-    while (card.stamps or 0) >= STAMPS_PER_REWARD:
-        card.stamps        -= STAMPS_PER_REWARD
+    while (card.stamps or 0) >= stamps_per_reward:
+        card.stamps        -= stamps_per_reward
         card.award_balance  = (card.award_balance or 0) + 1
         awards_earned      += 1
 
@@ -1460,67 +1460,6 @@ DEFAULT_CONFIG = {
         "birthday_email_subject": "¡Feliz Cumpleaños! 🎂",
         "birthday_email_body": "Hola {nombre},\n\n¡Hoy es tu día especial!\nPasa a visitarnos y llévate un regalo.\n\nCon cariño,\n{nombre_negocio}",
     },
-    "club": {
-        "nombre": "Club VIP",
-        "descripcion": "Los mejores clientes merecen los mejores premios",
-        "tagline": "Sé parte de algo especial",
-        "activo": True
-    },
-    "tiers": [
-        {
-            "nombre": "Bronce",
-            "emoji": "🥉",
-            "color": "#CD7F32",
-            "bg_color": "#FFF3E6",
-            "min_sellos_totales": 0,
-            "sellos_por_premio": 10,
-            "premio_nombre": "Premio Bronce",
-            "premio_descripcion": "Tu recompensa por 10 sellos",
-            "premio_emoji": "🎁",
-            "beneficios": [
-                "1 premio cada 10 sellos",
-                "Sorpresa especial en tu cumpleaños",
-                "Acceso a ofertas exclusivas del club"
-            ]
-        },
-        {
-            "nombre": "Plata",
-            "emoji": "🥈",
-            "color": "#A8A8B3",
-            "bg_color": "#F5F5FF",
-            "min_sellos_totales": 50,
-            "sellos_por_premio": 8,
-            "premio_nombre": "Premio Plata",
-            "premio_descripcion": "Tu recompensa por 8 sellos",
-            "premio_emoji": "🎀",
-            "beneficios": [
-                "1 premio cada 8 sellos",
-                "10% descuento en todas tus compras",
-                "Acceso anticipado a novedades",
-                "Doble sorpresa de cumpleaños",
-                "Badge exclusivo de miembro Plata"
-            ]
-        },
-        {
-            "nombre": "Oro",
-            "emoji": "👑",
-            "color": "#c8a84b",
-            "bg_color": "#FFFBF0",
-            "min_sellos_totales": 150,
-            "sellos_por_premio": 7,
-            "premio_nombre": "Premio Oro",
-            "premio_descripcion": "Tu recompensa exclusiva por 7 sellos",
-            "premio_emoji": "✨",
-            "beneficios": [
-                "Premio exclusivo cada 7 sellos",
-                "20% descuento permanente",
-                "Pedidos especiales y personalizados",
-                "Acceso VIP a eventos exclusivos",
-                "Regalo de aniversario como miembro",
-                "Línea directa WhatsApp prioritaria"
-            ]
-        }
-    ]
 }
 
 @app.get("/api/admin/config")
@@ -1795,15 +1734,12 @@ self.addEventListener('notificationclick', function(event) {
     return Response(content=sw_code, media_type="application/javascript")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TIER INFO
-# ══════════════════════════════════════════════════════════════════════════════
+# ── /tier endpoint kept for backward compat — VIP tiers removed ──────────────
 @app.get("/api/cards/{card_id}/tier")
 def get_card_tier(card_id: str, db: Session = Depends(get_db)):
     card = get_card_or_404(card_id, db)
-    tier = get_tier(card.total_stamps or 0)
     return {
-        "tier": tier,
+        "tier": None,
         "total_stamps": card.total_stamps or 0,
     }
 
@@ -1826,14 +1762,14 @@ async def get_card_info(card_id: str, db: Session = Depends(get_db)):
 
 @app.get("/api/cards/{card_id}/club-info")
 async def get_club_info(card_id: str, db: Session = Depends(get_db)):
-    """Returns full club/tier config for a card"""
+    """Returns loyalty card info and program config — no VIP tiers"""
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
 
-    # ── Multi-tenant: load config scoped to this card's business ─────────────
     biz_id = customer.business_id if customer else None
     biz = db.query(models.Business).filter(models.Business.id == biz_id).first() if biz_id else None
 
+    # Load config for this business
     config = {}
     if biz_id:
         row = db.execute(
@@ -1842,54 +1778,16 @@ async def get_club_info(card_id: str, db: Session = Depends(get_db)):
         ).fetchone()
         if row:
             config = json.loads(row[0]) if row[0] else {}
-    else:
-        # Legacy fallback — row id=1 (Sukie Cookie or first business)
-        config_row = db.query(models.CardConfig).first()
-        config = json.loads(config_row.config) if config_row else {}
 
-    # ── Merge with defaults, then apply biz-specific overrides ───────────────
-    result = {}
-    for section, defaults in DEFAULT_CONFIG.items():
-        if not isinstance(defaults, dict):
-            # Non-dict sections (e.g. 'tiers' list) — use stored or default as-is
-            result[section] = config.get(section, defaults)
-            continue
-        stored = config.get(section, {})
-        if not isinstance(stored, dict):
-            stored = {}
-        merged = {**defaults, **{k: v for k, v in stored.items() if v not in (None, "")}}
-        result[section] = merged
+    programa = {**DEFAULT_CONFIG.get("programa", {}), **config.get("programa", {})}
+    stamps_per_reward = biz.stamps_per_reward if biz else programa.get("stamps_per_reward", 10)
+    reward_name = programa.get("reward_name", "Premio")
 
-    # Dynamic biz-name override (mirrors get_config logic)
-    if biz:
-        club_sec = dict(result.get("club", {}))
-        if not config.get("club", {}).get("nombre"):
-            club_sec["nombre"] = f"Club VIP {biz.name}"
-        result["club"] = club_sec
-
-    # Merge with defaults
-    default_tiers = DEFAULT_CONFIG.get("tiers", [])
-    tiers = config.get("tiers", default_tiers)
-    club = result.get("club", DEFAULT_CONFIG.get("club", {}))
-
+    stamps_on_card = card.stamps or 0
+    stamps_to_next_reward = max(0, stamps_per_reward - stamps_on_card)
     total = card.total_stamps or 0
-    current_tier = tiers[0] if tiers else {}
-    next_tier = None
 
-    for i, t in enumerate(tiers):
-        if total >= t.get("min_sellos_totales", 0):
-            current_tier = t
-            next_tier = tiers[i+1] if i+1 < len(tiers) else None
-
-    stamps_in_tier_cycle = card.stamps  # current stamps on card
-    stamps_per_reward = current_tier.get("sellos_por_premio", 10)
-    stamps_to_next_reward = max(0, stamps_per_reward - stamps_in_tier_cycle)
-
-    stamps_to_next_tier = None
-    if next_tier:
-        stamps_to_next_tier = max(0, next_tier.get("min_sellos_totales", 0) - total)
-
-    # ── Member number: scoped to this business ────────────────────────────────
+    # Member number scoped to this business
     if customer:
         member_q = db.query(models.Customer).filter(
             models.Customer.created_at <= customer.created_at
@@ -1901,16 +1799,16 @@ async def get_club_info(card_id: str, db: Session = Depends(get_db)):
         member_number = 1
 
     return {
-        "club": club,
-        "current_tier": current_tier,
-        "next_tier": next_tier,
-        "total_stamps": total,
-        "stamps_on_card": stamps_in_tier_cycle,
+        "program_name":       biz.card_title if biz else "Tarjeta de Fidelización",
+        "reward_name":        reward_name,
+        "stamps_per_reward":  stamps_per_reward,
+        "stamps_on_card":     stamps_on_card,
         "stamps_to_next_reward": stamps_to_next_reward,
-        "stamps_to_next_tier": stamps_to_next_tier,
-        "award_balance": card.award_balance,
-        "member_number": member_number,
-        "member_since": customer.created_at.strftime("%B %Y") if customer and customer.created_at else "",
+        "total_stamps":       total,
+        "award_balance":      card.award_balance or 0,
+        "rewards_redeemed":   card.rewards_redeemed or 0,
+        "member_number":      member_number,
+        "member_since":       customer.created_at.strftime("%B %Y") if customer and customer.created_at else "",
     }
 
 
@@ -1946,19 +1844,32 @@ async def app_register_page(request: Request):
 
 @app.post("/api/app/register")
 async def register_business(request: Request, db: Session = Depends(get_db)):
-    """Register a new business on ZubCard"""
-    body = await request.json()
-    name  = (body.get("name") or "").strip()
-    email = (body.get("email") or "").strip().lower()
-    pin   = str(body.get("pin") or "").strip()
-    industry = body.get("industry", "retail")
-    
-    if not name or not email or len(pin) < 4:
-        raise HTTPException(status_code=400, detail="Nombre, email y PIN (4 dígitos) requeridos")
-    
+    """Register a new business on ZubCard with email + password (no PIN required from user)."""
+    body     = await request.json()
+    name     = (body.get("name") or "").strip()
+    email    = (body.get("email") or "").strip().lower()
+    password = str(body.get("password") or "").strip()
+    industry = body.get("industry", "other")
+
+    if not name:
+        raise HTTPException(status_code=400, detail="El nombre del negocio es obligatorio")
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Email inválido")
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 8 caracteres")
+
     if db.query(models.Business).filter(models.Business.email == email).first():
-        raise HTTPException(status_code=409, detail="Ya existe una cuenta con ese email")
-    
+        raise HTTPException(status_code=409, detail="Ya existe una cuenta con ese email. ¿Quieres iniciar sesión?")
+
+    # Hash password with bcrypt
+    hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    # Auto-generate internal API PIN (random 6 digits — user never sees/sets this)
+    random_pin = "".join(secrets.choice(string.digits) for _ in range(6))
+
+    # Email confirmation token
+    confirm_token = secrets.token_urlsafe(32)
+
     # Generate unique slug
     base_slug = generate_slug(name)
     slug = base_slug
@@ -1966,55 +1877,348 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     while db.query(models.Business).filter(models.Business.slug == slug).first():
         slug = f"{base_slug}{counter}"
         counter += 1
-    
+
     business = models.Business(
-        name      = name,
-        slug      = slug,
-        email     = email,
-        admin_pin = pin,
-        api_key   = generate_api_key(),
-        industry  = industry,
-        plan      = "free",
+        name                = name,
+        slug                = slug,
+        email               = email,
+        hashed_password     = hashed_pw,
+        email_confirmed     = False,
+        email_confirm_token = confirm_token,
+        admin_pin           = random_pin,
+        api_key             = generate_api_key(),
+        industry            = industry,
+        plan                = "free",
     )
     db.add(business)
     db.commit()
     db.refresh(business)
-    
-    # Create their default card config (id uses auto-increment sequence)
+
+    # Create default card config
     db.execute(text(
         "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT DO NOTHING"
     ), {"bid": str(business.id)})
     db.commit()
 
+    # Send confirmation email
+    confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
+    try:
+        _send_email(
+            to=email,
+            subject="Confirma tu cuenta en ZubCard",
+            html=f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+  <h2 style="color:#26170c;font-size:1.4rem;margin-bottom:8px">¡Bienvenido a ZubCard, {name}! 🎉</h2>
+  <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
+    Para activar tu cuenta y acceder a tu panel de administración, confirma tu email haciendo clic en el botón de abajo.
+  </p>
+  <a href="{confirm_url}" style="display:inline-block;background:#26170c;color:#fff;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.95rem">
+    ✅ Confirmar mi cuenta
+  </a>
+  <p style="color:#a08d83;font-size:.82rem;margin-top:28px;line-height:1.6">
+    Si no creaste esta cuenta, ignora este mensaje.<br>
+    El enlace expira en 24 horas.
+  </p>
+</div>"""
+        )
+        email_sent = True
+    except Exception:
+        email_sent = False
+
     return {
-        "message":  "Negocio registrado",
-        "slug":     slug,
-        "name":     name,
-        "dashboard_url": f"/biz/{slug}/dashboard",
-        "api_key":  business.api_key,
+        "message":    "Cuenta creada. Revisa tu email para confirmarla.",
+        "email_sent": email_sent,
+        "slug":       slug,
+        "name":       name,
     }
+
+
+@app.get("/api/app/confirm-email")
+async def confirm_email(token: str = "", db: Session = Depends(get_db)):
+    """Confirm email address from the link sent after registration."""
+    if not token:
+        raise HTTPException(status_code=400, detail="Token requerido")
+    biz = db.query(models.Business).filter(
+        models.Business.email_confirm_token == token
+    ).first()
+    if not biz:
+        return HTMLResponse(
+            "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+            "<h2 style='color:#c62828'>Enlace inválido o ya utilizado</h2>"
+            "<p><a href='/app/login'>Ir al inicio de sesión</a></p></body></html>",
+            status_code=400
+        )
+    # Mark confirmed
+    db.execute(text(
+        "UPDATE businesses SET email_confirmed=TRUE, email_confirm_token=NULL WHERE id=:bid"
+    ), {"bid": str(biz.id)})
+    db.commit()
+    # Redirect to dashboard — PIN bootstraps sessionStorage; notify about confirmation
+    return RedirectResponse(f"/biz/{biz.slug}/dashboard?pin={biz.admin_pin}&confirmed=1")
+
+
+@app.post("/api/app/resend-confirm")
+async def resend_confirm(request: Request, db: Session = Depends(get_db)):
+    """Resend the email confirmation link to a registered-but-unconfirmed business."""
+    body  = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email requerido")
+
+    biz = db.query(models.Business).filter(models.Business.email == email).first()
+    if not biz:
+        # Don't reveal whether the email exists
+        return {"message": "Si existe una cuenta con ese email, recibirás el enlace en breve."}
+    if biz.email_confirmed:
+        return {"message": "Esta cuenta ya está confirmada. Puedes iniciar sesión."}
+
+    # Regenerate token
+    confirm_token = secrets.token_urlsafe(32)
+    db.execute(text(
+        "UPDATE businesses SET email_confirm_token=:tok WHERE id=:bid"
+    ), {"tok": confirm_token, "bid": str(biz.id)})
+    db.commit()
+
+    confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
+    try:
+        _send_email(
+            to=email,
+            subject="Confirma tu cuenta en ZubCard",
+            html=f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+  <h2 style="color:#26170c;font-size:1.3rem;margin-bottom:8px">Confirma tu cuenta en ZubCard</h2>
+  <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">Haz clic en el enlace para activar tu cuenta:</p>
+  <a href="{confirm_url}" style="display:inline-block;background:#26170c;color:#fff;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.95rem">
+    ✅ Confirmar mi cuenta
+  </a>
+  <p style="color:#a08d83;font-size:.82rem;margin-top:28px">El enlace expira en 24 horas.</p>
+</div>"""
+        )
+    except Exception:
+        pass
+
+    return {"message": "Si existe una cuenta con ese email, recibirás el enlace en breve."}
+
+
+@app.get("/app/forgot-password", response_class=HTMLResponse)
+async def forgot_password_page(request: Request):
+    """Simple forgot password page."""
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Recuperar contraseña – ZubCard</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(135deg,#fff8f5,#ffeade);font-family:'Manrope',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.c{background:#fff;border-radius:1.25rem;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(38,23,12,.14)}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:#26170c;margin-bottom:24px;text-align:center}
+.brand span{color:#785a00}
+h2{font-size:1.1rem;font-weight:700;color:#26170c;margin-bottom:8px;text-align:center}
+p{color:#a08d83;font-size:.88rem;line-height:1.7;text-align:center;margin-bottom:24px}
+label{display:block;font-size:.72rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#a08d83;margin-bottom:5px;margin-top:14px}
+input{width:100%;padding:11px 14px;border:none;border-radius:.375rem;font-size:.93rem;outline:none;background:#fff8f5;color:#26170c;font-family:'Manrope',sans-serif}
+input:focus{box-shadow:0 0 0 2.5px #ffca48}
+.btn{width:100%;background:#26170c;color:#fff;border:none;padding:13px;border-radius:.375rem;font-size:.9rem;font-weight:800;cursor:pointer;margin-top:18px;font-family:'Manrope',sans-serif}
+.btn:disabled{background:#a08d83;cursor:not-allowed}
+.msg{padding:10px 14px;border-radius:.375rem;font-size:.83rem;margin-top:14px;display:none;line-height:1.5}
+.msg.ok{background:#e8f5e9;color:#2e7d32;border-left:3px solid #2e7d32}
+.msg.err{background:#fbe9e7;color:#c62828;border-left:3px solid #c62828}
+.back{text-align:center;font-size:.82rem;color:#a08d83;margin-top:18px}
+.back a{color:#785a00;font-weight:700;text-decoration:none}
+</style></head><body>
+<div class="c">
+  <div class="brand">Zub<span>Card</span></div>
+  <h2>Recuperar contraseña</h2>
+  <p>Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.</p>
+  <label>Email</label>
+  <input type="email" id="fp-email" placeholder="tu@negocio.com" autocomplete="email">
+  <div class="msg" id="fp-msg"></div>
+  <button class="btn" id="fp-btn" onclick="sendReset()">Enviar enlace →</button>
+  <div class="back"><a href="/app/login">← Volver al inicio de sesión</a></div>
+</div>
+<script>
+async function sendReset(){
+  const email=document.getElementById('fp-email').value.trim();
+  const btn=document.getElementById('fp-btn');
+  const msg=document.getElementById('fp-msg');
+  if(!email){msg.className='msg err';msg.textContent='Introduce tu email';msg.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Enviando…';
+  try{
+    const r=await fetch('/api/app/reset-password-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    msg.className='msg ok';
+    msg.textContent='Si existe una cuenta con ese email, recibirás el enlace en breve. Revisa tu bandeja de entrada.';
+    msg.style.display='block';
+    btn.textContent='Enviado ✅';
+  }catch(e){
+    msg.className='msg err';msg.textContent='Error de conexión. Inténtalo de nuevo.';msg.style.display='block';
+    btn.disabled=false;btn.textContent='Enviar enlace →';
+  }
+}
+</script></body></html>""")
+
+
+@app.post("/api/app/reset-password-request")
+async def reset_password_request(request: Request, db: Session = Depends(get_db)):
+    """Send a password reset link by email."""
+    body  = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email requerido")
+
+    biz = db.query(models.Business).filter(models.Business.email == email).first()
+    # Always respond the same way to prevent email enumeration
+    if biz and biz.hashed_password:
+        reset_token = secrets.token_urlsafe(32)
+        db.execute(text(
+            "UPDATE businesses SET email_confirm_token=:tok WHERE id=:bid"
+        ), {"tok": f"reset_{reset_token}", "bid": str(biz.id)})
+        db.commit()
+        reset_url = f"{BASE_URL}/app/reset-password?token={reset_token}"
+        try:
+            _send_email(
+                to=email,
+                subject="Restablece tu contraseña en ZubCard",
+                html=f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+  <h2 style="color:#26170c;margin-bottom:8px">Restablecer contraseña</h2>
+  <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
+    Haz clic en el enlace para crear una nueva contraseña. Válido durante 1 hora.
+  </p>
+  <a href="{reset_url}" style="display:inline-block;background:#26170c;color:#fff;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700">
+    🔑 Restablecer contraseña
+  </a>
+  <p style="color:#a08d83;font-size:.82rem;margin-top:28px">Si no solicitaste este cambio, ignora este mensaje.</p>
+</div>"""
+            )
+        except Exception:
+            pass
+    return {"message": "Si existe una cuenta con ese email, recibirás el enlace en breve."}
+
+
+@app.get("/app/reset-password", response_class=HTMLResponse)
+async def reset_password_page(request: Request, token: str = ""):
+    """Password reset form."""
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Nueva contraseña – ZubCard</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:linear-gradient(135deg,#fff8f5,#ffeade);font-family:'Manrope',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
+.c{{background:#fff;border-radius:1.25rem;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(38,23,12,.14)}}
+.brand{{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:#26170c;margin-bottom:24px;text-align:center}}
+.brand span{{color:#785a00}}
+h2{{font-size:1.1rem;font-weight:700;color:#26170c;margin-bottom:20px;text-align:center}}
+label{{display:block;font-size:.72rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#a08d83;margin-bottom:5px;margin-top:14px}}
+.iw{{position:relative}}
+input{{width:100%;padding:11px 14px;border:none;border-radius:.375rem;font-size:.93rem;outline:none;background:#fff8f5;color:#26170c;font-family:'Manrope',sans-serif}}
+input:focus{{box-shadow:0 0 0 2.5px #ffca48}}
+.tpw{{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#a08d83;font-size:1.05rem;background:none;border:none;padding:0}}
+.btn{{width:100%;background:#26170c;color:#fff;border:none;padding:13px;border-radius:.375rem;font-size:.9rem;font-weight:800;cursor:pointer;margin-top:18px;font-family:'Manrope',sans-serif}}
+.btn:disabled{{background:#a08d83;cursor:not-allowed}}
+.msg{{padding:10px 14px;border-radius:.375rem;font-size:.83rem;margin-top:14px;display:none}}
+.msg.ok{{background:#e8f5e9;color:#2e7d32;border-left:3px solid #2e7d32}}
+.msg.err{{background:#fbe9e7;color:#c62828;border-left:3px solid #c62828}}
+</style></head><body>
+<div class="c">
+  <div class="brand">Zub<span>Card</span></div>
+  <h2>Crea una nueva contraseña</h2>
+  <label>Nueva contraseña</label>
+  <div class="iw">
+    <input type="password" id="np1" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+    <button type="button" class="tpw" onclick="t('np1',this)">👁</button>
+  </div>
+  <label>Confirmar contraseña</label>
+  <div class="iw">
+    <input type="password" id="np2" placeholder="Repite la contraseña" autocomplete="new-password">
+    <button type="button" class="tpw" onclick="t('np2',this)">👁</button>
+  </div>
+  <div class="msg" id="rp-msg"></div>
+  <button class="btn" id="rp-btn" onclick="doReset()">Guardar nueva contraseña →</button>
+</div>
+<script>
+const TOKEN='{token}';
+function t(id,btn){{const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}}
+async function doReset(){{
+  const pw=document.getElementById('np1').value;
+  const pw2=document.getElementById('np2').value;
+  const msg=document.getElementById('rp-msg');
+  const btn=document.getElementById('rp-btn');
+  msg.style.display='none';
+  if(pw.length<8){{msg.className='msg err';msg.textContent='Mínimo 8 caracteres';msg.style.display='block';return;}}
+  if(pw!==pw2){{msg.className='msg err';msg.textContent='Las contraseñas no coinciden';msg.style.display='block';return;}}
+  btn.disabled=true;btn.textContent='Guardando…';
+  try{{
+    const r=await fetch('/api/app/reset-password',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{token:TOKEN,password:pw}})}});
+    const d=await r.json();
+    if(r.ok){{msg.className='msg ok';msg.textContent='Contraseña actualizada. Redirigiendo…';msg.style.display='block';setTimeout(()=>window.location.href='/app/login',2000);}}
+    else{{msg.className='msg err';msg.textContent=d.detail||'Error';msg.style.display='block';btn.disabled=false;btn.textContent='Guardar nueva contraseña →';}}
+  }}catch(e){{msg.className='msg err';msg.textContent='Error de conexión';msg.style.display='block';btn.disabled=false;btn.textContent='Guardar nueva contraseña →';}}
+}}
+</script></body></html>""")
+
+
+@app.post("/api/app/reset-password")
+async def reset_password_apply(request: Request, db: Session = Depends(get_db)):
+    """Apply the new password after clicking the reset link."""
+    body     = await request.json()
+    token    = (body.get("token") or "").strip()
+    password = str(body.get("password") or "").strip()
+
+    if not token or len(password) < 8:
+        raise HTTPException(status_code=400, detail="Token y contraseña (min. 8 caracteres) requeridos")
+
+    biz = db.query(models.Business).filter(
+        models.Business.email_confirm_token == f"reset_{token}"
+    ).first()
+    if not biz:
+        raise HTTPException(status_code=400, detail="Enlace inválido o ya utilizado")
+
+    hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    db.execute(text(
+        "UPDATE businesses SET hashed_password=:pw, email_confirm_token=NULL, email_confirmed=TRUE WHERE id=:bid"
+    ), {"pw": hashed_pw, "bid": str(biz.id)})
+    db.commit()
+    return {"message": "Contraseña actualizada correctamente"}
 
 
 @app.post("/api/app/login")
 async def login_business(request: Request, db: Session = Depends(get_db)):
-    """Login to business account"""
-    body  = await request.json()
-    email = (body.get("email") or "").strip().lower()
-    pin   = str(body.get("pin") or "").strip()
-    
+    """Login to business account with email + password (bcrypt)."""
+    body     = await request.json()
+    email    = (body.get("email") or "").strip().lower()
+    password = str(body.get("password") or "").strip()
+
     biz = db.query(models.Business).filter(
         models.Business.email == email,
         models.Business.active == True
     ).first()
-    
-    if not biz or biz.admin_pin != pin:
-        raise HTTPException(status_code=401, detail="Email o PIN incorrectos")
-    
+
+    # Must exist and have a password (Google-only accounts have no password)
+    if not biz or not biz.hashed_password:
+        raise HTTPException(status_code=401, detail="Email o contraseña incorrectos")
+
+    # Verify password
+    try:
+        password_ok = bcrypt.checkpw(password.encode(), biz.hashed_password.encode())
+    except Exception:
+        password_ok = False
+
+    if not password_ok:
+        raise HTTPException(status_code=401, detail="Email o contraseña incorrectos")
+
+    if not biz.email_confirmed:
+        raise HTTPException(
+            status_code=403,
+            detail="Confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada."
+        )
+
     return {
         "message":       "Login correcto",
         "slug":          biz.slug,
         "name":          biz.name,
-        "plan":          biz.plan,
+        "plan":          biz.plan or "free",
+        "pin":           biz.admin_pin,           # internal token for dashboard API calls
         "dashboard_url": f"/biz/{biz.slug}/dashboard",
     }
 
@@ -2024,20 +2228,140 @@ async def login_business(request: Request, db: Session = Depends(get_db)):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/biz/{slug}/profile")
 def get_biz_profile(slug: str, pin: str = "", db: Session = Depends(get_db)):
-    """Get business profile info (name, email, slug, industry)"""
+    """Get business profile info (name, email, slug, industry, geo)"""
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     if pin != str(biz.admin_pin):
         raise HTTPException(status_code=403, detail="PIN incorrecto")
     return {
-        "name":     biz.name,
-        "email":    biz.email,
-        "slug":     biz.slug,
-        "industry": getattr(biz, "industry", "other"),
-        "plan":     getattr(biz, "plan", "pro"),
-        "created_at": str(biz.created_at) if hasattr(biz, "created_at") else None,
+        "name":          biz.name,
+        "email":         biz.email,
+        "slug":          biz.slug,
+        "industry":      getattr(biz, "industry", "other"),
+        "plan":          getattr(biz, "plan", "pro"),
+        "created_at":    str(biz.created_at) if hasattr(biz, "created_at") else None,
+        # Geo-location fields
+        "address":       getattr(biz, "address", None) or "",
+        "latitude":      getattr(biz, "latitude", None),
+        "longitude":     getattr(biz, "longitude", None),
+        "geo_radius_m":  getattr(biz, "geo_radius_m", 300) or 300,
+        "geo_push_msg":  getattr(biz, "geo_push_msg", "") or "¡Estás cerca! Visítanos y acumula sellos 🎉",
     }
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# GEO-LOCATION / ADDRESS — GET & PUT
+# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/api/biz/{slug}/geo")
+def get_biz_geo(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Get geo/address config for push notifications"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    return {
+        "address":      getattr(biz, "address", None) or "",
+        "latitude":     getattr(biz, "latitude", None),
+        "longitude":    getattr(biz, "longitude", None),
+        "geo_radius_m": getattr(biz, "geo_radius_m", 300) or 300,
+        "geo_push_msg": getattr(biz, "geo_push_msg", "") or "¡Estás cerca! Visítanos y acumula sellos 🎉",
+    }
+
+
+@app.put("/api/biz/{slug}/geo")
+async def update_biz_geo(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Update geo/address for proximity push notifications"""
+    body = await request.json()
+    pin  = str(body.get("pin", "")).strip()
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    db.execute(text(
+        "UPDATE businesses SET address=:addr, latitude=:lat, longitude=:lng, "
+        "geo_radius_m=:radius, geo_push_msg=:msg WHERE slug=:slug"
+    ), {
+        "addr":   body.get("address", ""),
+        "lat":    body.get("latitude"),
+        "lng":    body.get("longitude"),
+        "radius": int(body.get("geo_radius_m", 300)),
+        "msg":    body.get("geo_push_msg", "¡Estás cerca! Visítanos y acumula sellos 🎉"),
+        "slug":   slug,
+    })
+    db.commit()
+    return {"status": "updated"}
+
+
+@app.post("/api/biz/{slug}/geo/push-nearby")
+def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """
+    Send a proximity push notification to all subscribers of this business.
+    Uses pywebpush if VAPID keys are configured; otherwise returns a dry-run report.
+    """
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+
+    push_msg  = getattr(biz, "geo_push_msg", None) or "¡Estás cerca! Visítanos y acumula sellos 🎉"
+    biz_name  = biz.name or "ZubCard"
+
+    # Collect all push subscriptions for this business via loyalty_cards → customers → business_id
+    rows = db.execute(text(
+        "SELECT ps.endpoint, ps.p256dh, ps.auth "
+        "FROM push_subscriptions ps "
+        "JOIN loyalty_cards lc ON lc.id = ps.card_id "
+        "JOIN customers c ON c.id = lc.customer_id "
+        "WHERE c.business_id = :bid"
+    ), {"bid": str(biz.id)}).fetchall()
+
+    if not rows:
+        return {"message": "Sin suscriptores activos", "sent": 0}
+
+    # Attempt real sends if VAPID keys are present
+    if VAPID_PUBLIC and VAPID_PRIVATE:
+        try:
+            from pywebpush import webpush, WebPushException  # type: ignore
+        except ImportError:
+            return {
+                "message": f"{len(rows)} suscriptor(es) encontrado(s) — instala pywebpush en el servidor para enviar",
+                "sent": 0,
+                "subscribers": len(rows),
+            }
+
+        import json as _json
+        payload = _json.dumps({"title": biz_name, "body": push_msg, "icon": "/static/icon-192.png"})
+        vapid_claims = {"sub": f"mailto:{biz.email}"}
+        sent = 0
+        failed = 0
+        for endpoint, p256dh, auth_key in rows:
+            try:
+                webpush(
+                    subscription_info={"endpoint": endpoint, "keys": {"p256dh": p256dh, "auth": auth_key}},
+                    data=payload,
+                    vapid_private_key=VAPID_PRIVATE,
+                    vapid_claims=vapid_claims,
+                )
+                sent += 1
+            except Exception:
+                failed += 1
+        return {
+            "message": f"Notificación enviada a {sent} suscriptor(es)",
+            "sent": sent,
+            "failed": failed,
+        }
+    else:
+        # No VAPID keys — dry run
+        return {
+            "message": f"{len(rows)} suscriptor(es) encontrado(s). Configura VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY en Railway para enviar.",
+            "sent": 0,
+            "subscribers": len(rows),
+            "note": "Dry run — VAPID keys not configured",
+        }
 
 
 @app.put("/api/biz/{slug}/profile")
@@ -2242,6 +2566,82 @@ def cleanup_test_data(pin: str = "", db: Session = Depends(get_db)):
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# RESET OWNER — borra TODOS los datos de un email dado (para pruebas desde 0)
+# POST /api/admin/reset-owner?email=zubbigpt@gmail.com&master_pin=XXXX
+# ══════════════════════════════════════════════════════════════════════════════
+@app.post("/api/admin/reset-owner")
+def reset_owner(email: str = "", master_pin: str = "", db: Session = Depends(get_db)):
+    """
+    Permanently deletes ALL data for a given business email.
+    Requires master ADMIN_PIN. Use only for testing / demo resets.
+    """
+    if master_pin != ADMIN_PIN:
+        raise HTTPException(status_code=403, detail="PIN maestro incorrecto")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email requerido")
+
+    email = email.strip().lower()
+
+    # Fetch the business(es) matching this email
+    biz_rows = db.execute(
+        text("SELECT id FROM businesses WHERE email=:email"),
+        {"email": email}
+    ).fetchall()
+
+    if not biz_rows:
+        return {"status": "not_found", "email": email}
+
+    deleted = []
+    for biz_row in biz_rows:
+        bid = str(biz_row[0])
+        try:
+            # Delete in FK dependency order
+            db.execute(text(
+                "DELETE FROM push_subscriptions WHERE card_id IN ("
+                "  SELECT lc.id FROM loyalty_cards lc"
+                "  JOIN customers c ON lc.customer_id=c.id"
+                "  WHERE c.business_id=:bid)"
+            ), {"bid": bid})
+            db.execute(text(
+                "DELETE FROM referrals WHERE referrer_card IN ("
+                "  SELECT lc.id FROM loyalty_cards lc"
+                "  JOIN customers c ON lc.customer_id=c.id WHERE c.business_id=:bid)"
+                " OR referred_card IN ("
+                "  SELECT lc.id FROM loyalty_cards lc"
+                "  JOIN customers c ON lc.customer_id=c.id WHERE c.business_id=:bid)"
+            ), {"bid": bid})
+            db.execute(text(
+                "DELETE FROM stamp_transactions WHERE card_id IN ("
+                "  SELECT lc.id FROM loyalty_cards lc"
+                "  JOIN customers c ON lc.customer_id=c.id WHERE c.business_id=:bid)"
+            ), {"bid": bid})
+            db.execute(text(
+                "DELETE FROM loyalty_cards WHERE customer_id IN ("
+                "  SELECT id FROM customers WHERE business_id=:bid)"
+            ), {"bid": bid})
+            db.execute(text("DELETE FROM customers WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM stores WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM passcodes WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM campaigns WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM card_programs WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM custom_qrs WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM card_config WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM businesses WHERE id=:bid"), {"bid": bid})
+            db.commit()
+            deleted.append(bid)
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Error al borrar business {bid}: {str(e)}")
+
+    return {
+        "status":  "deleted",
+        "email":   email,
+        "deleted_ids": deleted,
+        "message": f"Cuenta eliminada. Puedes registrarte de nuevo con Google en /auth/google"
+    }
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # DELETE BUSINESS ACCOUNT
 # ══════════════════════════════════════════════════════════════════════════════
 @app.delete("/api/app/businesses/{slug}")
@@ -2249,10 +2649,9 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
     """
     Permanently delete a business account and ALL its data.
     Requires the business admin PIN as query param: ?pin=XXXX
-    Protected: cannot delete the seed business (sukiecookie).
+    Permanently delete a business account and ALL its data.
     """
-    if slug == "sukiecookie":
-        raise HTTPException(status_code=403, detail="No puedes eliminar el negocio base.")
+    # Any business can be deleted by its owner PIN
 
     biz = db.execute(
         text("SELECT id, admin_pin FROM businesses WHERE slug=:slug"),
@@ -2454,7 +2853,7 @@ def redeem_passcode(slug: str, payload: dict = Body(...), db: Session = Depends(
         "UPDATE passcodes SET used=TRUE, used_by=:cid, used_at=NOW() WHERE id=:id"
     ), {"cid": card_id, "id": str(row[0])})
     db.execute(text(
-        "UPDATE loyalty_cards SET stamp_count = stamp_count + :s WHERE id=:cid"
+        "UPDATE loyalty_cards SET stamps = stamps + :s WHERE id=:cid"
     ), {"s": stamps, "cid": card_id})
     db.execute(text(
         "INSERT INTO stamp_transactions (id, card_id, stamps_added, transaction_type, note, created_at) "
@@ -2523,7 +2922,7 @@ def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depe
         "WHERE c.business_id=:bid AND c.opt_in_email=TRUE AND c.email NOT LIKE '%placeholder%'"
     )
     if segment == "active":
-        q_base += " AND lc.stamp_count > 0"
+        q_base += " AND lc.stamps > 0"
     customers = db.execute(text(q_base), {"bid": str(biz.id)}).fetchall()
     sent = 0
     for cust in customers:
@@ -2794,12 +3193,13 @@ async def auth_google_callback(
     if not biz:
         biz = db.query(models.Business).filter(models.Business.email == email).first()
         if biz:
-            # Link google_id to existing account
+            # Link google_id to existing account and mark confirmed
             biz.google_id = google_sub
+            biz.email_confirmed = True
             db.commit()
 
     if not biz:
-        # Create new business account
+        # Create new business account via Google
         base_slug = generate_slug(full_name)
         slug = base_slug
         counter = 1
@@ -2809,24 +3209,25 @@ async def auth_google_callback(
 
         random_pin = "".join(secrets.choice(string.digits) for _ in range(6))
         biz = models.Business(
-            name      = full_name,
-            slug      = slug,
-            email     = email,
-            google_id = google_sub,
-            admin_pin = random_pin,
-            api_key   = generate_api_key(),
-            industry  = "other",
-            plan      = "free",
+            name            = full_name,
+            slug            = slug,
+            email           = email,
+            google_id       = google_sub,
+            admin_pin       = random_pin,
+            email_confirmed = True,   # Google verifies email — no confirmation needed
+            api_key         = generate_api_key(),
+            industry        = "other",
+            plan            = "free",
         )
         db.add(biz)
         db.commit()
         db.refresh(biz)
 
-        # Create default card_config (id uses auto-increment sequence)
+        # Create default card_config
         db.execute(text(
             "INSERT INTO card_config (config, business_id, updated_at) VALUES ('{}', :bid, NOW()) ON CONFLICT (business_id) DO NOTHING"
         ), {"bid": str(biz.id)})
         db.commit()
 
-    # Redirect to dashboard (PIN passed in URL for session bootstrap)
+    # Redirect to dashboard (internal PIN bootstraps sessionStorage — not user-visible secret)
     return RedirectResponse(f"/biz/{biz.slug}/dashboard?pin={biz.admin_pin}&google=1")
