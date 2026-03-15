@@ -26,7 +26,7 @@ from database import engine, get_db
 # ── CREAR TABLAS ──────────────────────────────────────────────────────────────
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Sukie Card API")
+app = FastAPI(title="ZubCard API")
 templates = Jinja2Templates(directory="templates")
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
@@ -42,16 +42,16 @@ app.add_middleware(
 STAMPS_PER_REWARD = int(os.environ.get("STAMPS_PER_REWARD", "10"))
 ADMIN_PIN         = os.environ.get("ADMIN_PIN", "1234")
 BASE_URL          = os.environ.get("BASE_URL", "http://localhost:8000")
-API_KEY           = os.environ.get("API_KEY", "sukie-secret-key")
-CARD_TITLE        = os.environ.get("CARD_TITLE", "SukieCookie")
-REWARD_NAME       = os.environ.get("REWARD_NAME", "Cookie Gratis 🍪")
+API_KEY           = os.environ.get("API_KEY", "zubcard-api-key")
+CARD_TITLE        = os.environ.get("CARD_TITLE", "Tarjeta de Fidelización")
+REWARD_NAME       = os.environ.get("REWARD_NAME", "Premio")
 
 # SMTP CONFIG
 SMTP_HOST     = os.environ.get("SMTP_HOST", "")
 SMTP_PORT     = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER     = os.environ.get("SMTP_USER", "")
 SMTP_PASS     = os.environ.get("SMTP_PASS", "")
-SMTP_FROM     = os.environ.get("SMTP_FROM", "noreply@sukiecookie.es")
+SMTP_FROM     = os.environ.get("SMTP_FROM", "noreply@zubcard.com")
 VAPID_PUBLIC  = os.environ.get("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE = os.environ.get("VAPID_PRIVATE_KEY", "")
 
@@ -353,7 +353,7 @@ def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_cod
         stamps=stamps,
         referral_code=referral_code,
         referral_url=referral_url,
-        subject="¡Bienvenido/a a la Sukie Card! 🍪",
+        subject="¡Bienvenido/a! 🎉",
     )
 
 
@@ -402,7 +402,7 @@ def card_to_dict(card: models.LoyaltyCard, customer: models.Customer) -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "Sukie Card"}
+    return {"status": "ok", "service": "ZubCard"}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -821,7 +821,7 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
     db.add(tx)
     db.commit()
     db.refresh(card)
-    return {"message": "Premio canjeado 🍪",
+    return {"message": "Premio canjeado ✅",
             "award_balance": card.award_balance,
             "rewards_redeemed": card.rewards_redeemed}
 
@@ -1348,7 +1348,7 @@ def export_csv(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
         ])
     output.seek(0)
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv",
-                             headers={"Content-Disposition": "attachment; filename=sukiecard_clientes.csv"})
+                             headers={"Content-Disposition": "attachment; filename=zubcard_clientes.csv"})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1474,11 +1474,11 @@ DEFAULT_CONFIG = {
             "bg_color": "#FFF3E6",
             "min_sellos_totales": 0,
             "sellos_por_premio": 10,
-            "premio_nombre": "Cookie gratis",
-            "premio_descripcion": "1 cookie de tu elección",
-            "premio_emoji": "🍪",
+            "premio_nombre": "Premio Bronce",
+            "premio_descripcion": "Tu recompensa por 10 sellos",
+            "premio_emoji": "🎁",
             "beneficios": [
-                "1 cookie gratis cada 10 sellos",
+                "1 premio cada 10 sellos",
                 "Sorpresa especial en tu cumpleaños",
                 "Acceso a ofertas exclusivas del club"
             ]
@@ -1490,13 +1490,13 @@ DEFAULT_CONFIG = {
             "bg_color": "#F5F5FF",
             "min_sellos_totales": 50,
             "sellos_por_premio": 8,
-            "premio_nombre": "Box de 6 cookies",
-            "premio_descripcion": "Elige 6 cookies de la vitrina",
-            "premio_emoji": "📦",
+            "premio_nombre": "Premio Plata",
+            "premio_descripcion": "Tu recompensa por 8 sellos",
+            "premio_emoji": "🎀",
             "beneficios": [
-                "Box 6 cookies cada 8 sellos",
+                "1 premio cada 8 sellos",
                 "10% descuento en todas tus compras",
-                "Acceso anticipado a nuevas recetas",
+                "Acceso anticipado a novedades",
                 "Doble sorpresa de cumpleaños",
                 "Badge exclusivo de miembro Plata"
             ]
@@ -1508,11 +1508,11 @@ DEFAULT_CONFIG = {
             "bg_color": "#FFFBF0",
             "min_sellos_totales": 150,
             "sellos_por_premio": 7,
-            "premio_nombre": "Box premium + bebida",
-            "premio_descripcion": "Box 12 cookies premium + bebida gratis a elegir",
+            "premio_nombre": "Premio Oro",
+            "premio_descripcion": "Tu recompensa exclusiva por 7 sellos",
             "premio_emoji": "✨",
             "beneficios": [
-                "Box premium + bebida cada 7 sellos",
+                "Premio exclusivo cada 7 sellos",
                 "20% descuento permanente",
                 "Pedidos especiales y personalizados",
                 "Acceso VIP a eventos exclusivos",
@@ -1653,12 +1653,12 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
     card_url = f"{BASE_URL}/card/{card_id}"
     if email_type == "birthday":
         html    = render_birthday_email(name, card_url)
-        subject = f"¡Feliz Cumpleaños {name}! 🎂🍪"
+        subject = f"¡Feliz Cumpleaños, {name}! 🎂"
     else:
         ref_code = get_or_create_referral_code(card_id, db)
         ref_url  = f"{BASE_URL}/register?ref={ref_code}"
         html    = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url)
-        subject = "¡Bienvenido/a a la Sukie Card! 🍪"
+        subject = "¡Bienvenido/a! 🎉"
     sent = send_email(customer.email, subject, html)
     return {"sent": sent, "to": customer.email, "type": email_type,
             "note": "SMTP no configurado - configura en Railway env vars" if not sent else "Email enviado"}
@@ -1681,7 +1681,7 @@ async def send_email_all(request: Request, db: Session = Depends(get_db)):
             html    = render_welcome_email(cust.first_name or "Cliente",
                                            f"{BASE_URL}/card/{card.id}",
                                            card.stamps or 0, ref_code, ref_url)
-            if send_email(cust.email, "Tu Sukie Card está esperándote 🍪", html):
+            if send_email(cust.email, "¡Tu tarjeta de fidelización te espera! 🎉", html):
                 sent_count += 1
     return {"sent": sent_count, "total": len(rows)}
 
@@ -1748,7 +1748,7 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
 async def admin_push_send(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
-    title   = body.get("title", "Sukie Cookie")
+    title   = body.get("title", "ZubCard")
     message = body.get("message", "")
     # Log intent - actual sending requires pywebpush + VAPID keys
     subs = db.query(models.PushSubscription).count()
@@ -1773,7 +1773,7 @@ def service_worker():
     sw_code = """
 self.addEventListener('push', function(event) {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Sukie Cookie';
+  const title = data.title || 'ZubCard';
   const options = {
     body: data.body || '¡Tienes una notificación!',
     icon: '/static/icon-192.png',
