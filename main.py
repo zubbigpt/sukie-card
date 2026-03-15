@@ -1850,7 +1850,13 @@ async def get_club_info(card_id: str, db: Session = Depends(get_db)):
     # ── Merge with defaults, then apply biz-specific overrides ───────────────
     result = {}
     for section, defaults in DEFAULT_CONFIG.items():
+        if not isinstance(defaults, dict):
+            # Non-dict sections (e.g. 'tiers' list) — use stored or default as-is
+            result[section] = config.get(section, defaults)
+            continue
         stored = config.get(section, {})
+        if not isinstance(stored, dict):
+            stored = {}
         merged = {**defaults, **{k: v for k, v in stored.items() if v not in (None, "")}}
         result[section] = merged
 
