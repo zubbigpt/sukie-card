@@ -549,16 +549,32 @@ def cookies_page(request: Request):
 def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
-    name = customer.first_name if customer else "Cliente"
+    first_name = customer.first_name if customer else "Cliente"
+
+    # Load business-scoped card_title for the page header
+    card_title = CARD_TITLE  # global fallback
+    if customer and customer.business_id:
+        row = db.execute(
+            text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
+            {"bid": str(customer.business_id)}
+        ).fetchone()
+        if row:
+            cfg = json.loads(row[0]) if row[0] else {}
+            card_title = cfg.get("general", {}).get("card_title") or \
+                         cfg.get("general", {}).get("card_name") or card_title
+
     return templates.TemplateResponse("card.html", {
-        "request":        request,
-        "card_id":        card_id,
-        "name":           name,
-        "stamps":         card.stamps or 0,
+        "request":           request,
+        "card_id":           card_id,
+        "first_name":        first_name,
+        "name":              first_name,
+        "card_title":        card_title,
+        "api_base":          BASE_URL,
+        "stamps":            card.stamps or 0,
         "stamps_per_reward": STAMPS_PER_REWARD,
         "rewards_redeemed":  card.rewards_redeemed or 0,
-        "award_balance":  card.award_balance or 0,
-        "total_stamps":   card.total_stamps or 0,
+        "award_balance":     card.award_balance or 0,
+        "total_stamps":      card.total_stamps or 0,
     })
 
 
@@ -1813,37 +1829,71 @@ async def get_club_info(card_id: str, db: Session = Depends(get_db)):
     """Returns full club/tier config for a card"""
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
-    
-    config_row = db.query(models.CardConfig).first()
-    config = json.loads(config_row.config) if config_row else {}
-    
+
+    # ── Multi-tenant: load config scoped to this card's business ─────────────
+    biz_id = customer.business_id if customer else None
+    biz = db.query(models.Business).filter(models.Business.id == biz_id).first() if biz_id else None
+
+    config = {}
+    if biz_id:
+        row = db.execute(
+            text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
+            {"bid": str(biz_id)}
+        ).fetchone()
+        if row:
+            config = json.loads(row[0]) if row[0] else {}
+    else:
+        # Legacy fallback — row id=1 (Sukie Cookie or first business)
+        config_row = db.query(models.CardConfig).first()
+        config = json.loads(config_row.config) if config_row else {}
+
+    # ── Merge with defaults, then apply biz-specific overrides ───────────────
+    result = {}
+    for section, defaults in DEFAULT_CONFIG.items():
+        stored = config.get(section, {})
+        merged = {**defaults, **{k: v for k, v in stored.items() if v not in (None, "")}}
+        result[section] = merged
+
+    # Dynamic biz-name override (mirrors get_config logic)
+    if biz:
+        club_sec = dict(result.get("club", {}))
+        if not config.get("club", {}).get("nombre"):
+            club_sec["nombre"] = f"Club VIP {biz.name}"
+        result["club"] = club_sec
+
     # Merge with defaults
     default_tiers = DEFAULT_CONFIG.get("tiers", [])
     tiers = config.get("tiers", default_tiers)
-    club = config.get("club", DEFAULT_CONFIG.get("club", {}))
-    
+    club = result.get("club", DEFAULT_CONFIG.get("club", {}))
+
     total = card.total_stamps or 0
     current_tier = tiers[0] if tiers else {}
     next_tier = None
-    
+
     for i, t in enumerate(tiers):
         if total >= t.get("min_sellos_totales", 0):
             current_tier = t
             next_tier = tiers[i+1] if i+1 < len(tiers) else None
-    
+
     stamps_in_tier_cycle = card.stamps  # current stamps on card
     stamps_per_reward = current_tier.get("sellos_por_premio", 10)
     stamps_to_next_reward = max(0, stamps_per_reward - stamps_in_tier_cycle)
-    
+
     stamps_to_next_tier = None
     if next_tier:
         stamps_to_next_tier = max(0, next_tier.get("min_sellos_totales", 0) - total)
-    
-    # Member number: count customers registered before or at same time as this one
-    member_number = db.query(models.Customer).filter(
-        models.Customer.created_at <= customer.created_at
-    ).count() if customer else 1
-    
+
+    # ── Member number: scoped to this business ────────────────────────────────
+    if customer:
+        member_q = db.query(models.Customer).filter(
+            models.Customer.created_at <= customer.created_at
+        )
+        if biz_id:
+            member_q = member_q.filter(models.Customer.business_id == biz_id)
+        member_number = member_q.count()
+    else:
+        member_number = 1
+
     return {
         "club": club,
         "current_tier": current_tier,
