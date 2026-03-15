@@ -388,7 +388,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
           <span class="material-symbols-outlined" style="font-size:.9rem">sell</span> <span id="nav-card-name">Sellos</span>
         </div>
         <a onclick="showSection('fidelizacion')" id="nav-fidelizacion">
-          <span class="material-symbols-outlined icon">stars</span> Programa
+          <span class="material-symbols-outlined icon">mail</span> Email & QR
         </a>
         <a onclick="showSection('activity')" id="nav-activity">
           <span class="material-symbols-outlined icon">receipt_long</span> Actividad
@@ -1293,6 +1293,408 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
       document.addEventListener('DOMContentLoaded', () => { ncUpdatePreview(); });
       </script>
 
+      <!-- ═══ MODAL EDITAR TARJETA ═══ -->
+      <div id="modal-editar-tarjeta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px">
+        <div style="background:#fff;border-radius:16px;width:780px;max-width:98vw;max-height:94vh;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.3);position:relative;display:flex;flex-direction:column">
+
+          <!-- Header -->
+          <div style="padding:24px 28px 0;border-bottom:2px solid #f0f0f0">
+            <button onclick="closeEditCardModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#aaa;z-index:2">×</button>
+            <div style="font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:4px">EDITAR TARJETA</div>
+            <h2 id="ec-modal-title" style="font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:#1a1a1a;margin-bottom:0">Tarjeta</h2>
+            <!-- Tabs -->
+            <div style="display:flex;gap:0;margin-top:14px">
+              <button id="ec-tab-card" onclick="ecShowTab('card')"
+                style="padding:9px 20px;background:#1a1a1a;color:#fff;border:none;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:700;cursor:pointer;letter-spacing:.3px">
+                🎨 Tarjeta
+              </button>
+              <button id="ec-tab-email" onclick="ecShowTab('email')"
+                style="padding:9px 20px;background:#f5f5f5;color:#888;border:none;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:700;cursor:pointer;letter-spacing:.3px;margin-left:4px">
+                ✉️ Email al cliente
+              </button>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div style="overflow-y:auto;flex:1;display:grid;grid-template-columns:1fr 280px">
+
+            <!-- LEFT: tabs content -->
+            <div style="padding:24px 28px;border-right:1px solid #f0f0f0">
+
+              <!-- TAB: TARJETA -->
+              <div id="ec-panel-card">
+                <!-- Emoji + Name -->
+                <div style="display:grid;grid-template-columns:60px 1fr;gap:10px;margin-bottom:14px;align-items:end">
+                  <div style="position:relative">
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">EMOJI</label>
+                    <button id="ec-emoji-btn" type="button" onclick="ecToggleEmojiPicker(event)"
+                      style="width:100%;text-align:center;font-size:1.6rem;padding:6px 4px;border:2px solid #e8e8e8;border-radius:8px;background:#fafafa;cursor:pointer;line-height:1.4">🎁</button>
+                    <input id="ec-emoji" type="hidden" value="🎁">
+                    <div id="ec-emoji-picker" style="display:none;position:absolute;top:calc(100% + 4px);left:-8px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:700;padding:10px;width:248px;flex-wrap:wrap;gap:3px"></div>
+                  </div>
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DE LA TARJETA</label>
+                    <input id="ec-name" type="text" placeholder="Ej: Coffee Card" oninput="ecUpdatePreview()"
+                      style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none"
+                      onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+                  </div>
+                </div>
+                <!-- Stamps + reward -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">SELLOS PARA PREMIO</label>
+                    <input id="ec-stamps" type="number" min="1" max="99" oninput="ecUpdatePreview()"
+                      style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none"
+                      onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+                  </div>
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DEL PREMIO</label>
+                    <input id="ec-reward" type="text" placeholder="Ej: Café Gratis" oninput="ecUpdatePreview()"
+                      style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none"
+                      onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+                  </div>
+                </div>
+                <!-- Colors -->
+                <div style="margin-bottom:20px">
+                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:8px">COLORES</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                    <div>
+                      <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Fondo</div>
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <input id="ec-bg" type="color" value="#0a0a0a" oninput="ecSyncColor('ec-bg');ecUpdatePreview()"
+                          style="width:36px;height:36px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
+                        <input id="ec-bg-txt" type="text" value="#0a0a0a" maxlength="7"
+                          style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
+                          oninput="ecSyncText('ec-bg');ecUpdatePreview()">
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Acento</div>
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <input id="ec-accent" type="color" value="#00e676" oninput="ecSyncColor('ec-accent');ecUpdatePreview()"
+                          style="width:36px;height:36px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
+                        <input id="ec-accent-txt" type="text" value="#00e676" maxlength="7"
+                          style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
+                          oninput="ecSyncText('ec-accent');ecUpdatePreview()">
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Texto</div>
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <input id="ec-text" type="color" value="#ffffff" oninput="ecSyncColor('ec-text');ecUpdatePreview()"
+                          style="width:36px;height:36px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
+                        <input id="ec-text-txt" type="text" value="#ffffff" maxlength="7"
+                          style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
+                          oninput="ecSyncText('ec-text');ecUpdatePreview()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button onclick="saveEditCard()" id="btn-ec-save"
+                  style="width:100%;padding:13px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:800;cursor:pointer">
+                  💾 Guardar cambios
+                </button>
+                <div id="ec-msg" style="min-height:18px;margin-top:8px;font-size:.82rem;text-align:center"></div>
+              </div>
+
+              <!-- TAB: EMAIL -->
+              <div id="ec-panel-email" style="display:none">
+                <p style="font-size:.85rem;color:#888;margin-bottom:18px;line-height:1.6">
+                  Este email se envía automáticamente cuando un cliente se une a tu programa de fidelización.
+                </p>
+                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">ASUNTO</label>
+                <input id="ec-email-subject" type="text" placeholder="¡Bienvenido/a! 🎉"
+                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.88rem;outline:none;margin-bottom:14px"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">MENSAJE</label>
+                <textarea id="ec-email-body" rows="7" placeholder="Hola {nombre},..."
+                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.86rem;outline:none;resize:vertical;font-family:inherit;line-height:1.6;margin-bottom:6px"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'"></textarea>
+                <div style="font-size:.72rem;color:#aaa;margin-bottom:16px">
+                  Variables: <code style="background:#f5f5f5;padding:2px 5px;border-radius:3px">{nombre}</code>
+                  <code style="background:#f5f5f5;padding:2px 5px;border-radius:3px">{link_tarjeta}</code>
+                  <code style="background:#f5f5f5;padding:2px 5px;border-radius:3px">{negocio}</code>
+                </div>
+                <div style="display:flex;gap:10px">
+                  <button onclick="saveCardEmail()"
+                    style="flex:1;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:800;cursor:pointer">
+                    💾 Guardar email
+                  </button>
+                  <button onclick="previewCardEmail()"
+                    style="padding:12px 18px;background:#f5f5f5;color:#555;border:2px solid #e8e8e8;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer">
+                    👁️ Preview
+                  </button>
+                </div>
+                <div id="ec-email-msg" style="min-height:18px;margin-top:8px;font-size:.82rem;text-align:center"></div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT: phone preview (only in card tab) -->
+            <div id="ec-right-preview" style="background:#e8e8e8;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
+              <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:2px">PREVIEW</div>
+              <!-- Phone frame (same structure as create modal) -->
+              <div style="background:#1c1c1e;border-radius:40px;padding:10px;box-shadow:0 20px 48px rgba(0,0,0,.4);width:180px;flex-shrink:0">
+                <div style="background:#f2f2f7;border-radius:32px;overflow:hidden">
+                  <div id="ec-phone-card" style="background:#0a0a0a;padding:16px 14px 14px">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                      <div id="ec-phone-logo" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎁</div>
+                      <div>
+                        <div id="ec-phone-name" style="color:#fff;font-size:.7rem;font-weight:800;text-transform:uppercase;line-height:1.2">MI TARJETA</div>
+                        <div style="color:rgba(255,255,255,.45);font-size:.5rem">Sukie Card</div>
+                      </div>
+                    </div>
+                    <div id="ec-phone-stamps" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px"></div>
+                  </div>
+                  <div style="background:#fff;padding:10px 12px">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                      <div>
+                        <div style="font-size:.45rem;color:#aaa;text-transform:uppercase;font-weight:700">Titular</div>
+                        <div style="font-size:.6rem;font-weight:700;color:#222">NOMBRE CLIENTE</div>
+                      </div>
+                      <div style="text-align:right">
+                        <div id="ec-phone-reward-label" style="font-size:.45rem;color:#aaa;text-transform:uppercase;font-weight:700">PREMIO</div>
+                        <div style="font-size:.6rem;font-weight:700;color:#222">0</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:center;padding:4px 0 8px">
+                      <svg viewBox="0 0 60 60" width="60" height="60" style="border-radius:3px">
+                        <rect width="60" height="60" fill="#fff"/>
+                        <rect x="3" y="3" width="16" height="16" rx="2" fill="#222"/>
+                        <rect x="6" y="6" width="10" height="10" rx="1" fill="#fff"/>
+                        <rect x="8" y="8" width="6" height="6" fill="#222"/>
+                        <rect x="41" y="3" width="16" height="16" rx="2" fill="#222"/>
+                        <rect x="44" y="6" width="10" height="10" rx="1" fill="#fff"/>
+                        <rect x="46" y="8" width="6" height="6" fill="#222"/>
+                        <rect x="3" y="41" width="16" height="16" rx="2" fill="#222"/>
+                        <rect x="6" y="44" width="10" height="10" rx="1" fill="#fff"/>
+                        <rect x="8" y="46" width="6" height="6" fill="#222"/>
+                        <rect x="23" y="3" width="3" height="3" fill="#222"/><rect x="28" y="3" width="3" height="3" fill="#222"/>
+                        <rect x="33" y="3" width="3" height="3" fill="#222"/><rect x="23" y="8" width="3" height="3" fill="#222"/>
+                        <rect x="3" y="23" width="3" height="3" fill="#222"/><rect x="8" y="23" width="3" height="3" fill="#222"/>
+                        <rect x="23" y="23" width="3" height="3" fill="#222"/><rect x="28" y="23" width="3" height="3" fill="#222"/>
+                        <rect x="33" y="23" width="3" height="3" fill="#222"/><rect x="38" y="23" width="3" height="3" fill="#222"/>
+                        <rect x="23" y="28" width="3" height="3" fill="#222"/><rect x="33" y="33" width="3" height="3" fill="#222"/>
+                        <rect x="41" y="23" width="3" height="3" fill="#222"/><rect x="46" y="28" width="3" height="3" fill="#222"/>
+                        <rect x="51" y="23" width="3" height="3" fill="#222"/><rect x="56" y="28" width="3" height="3" fill="#222"/>
+                        <rect x="23" y="41" width="3" height="3" fill="#222"/><rect x="28" y="46" width="3" height="3" fill="#222"/>
+                        <rect x="33" y="41" width="3" height="3" fill="#222"/><rect x="41" y="41" width="3" height="3" fill="#222"/>
+                        <rect x="46" y="46" width="3" height="3" fill="#222"/><rect x="51" y="41" width="3" height="3" fill="#222"/>
+                        <rect x="56" y="51" width="3" height="3" fill="#222"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div style="background:#f8f8f8;padding:8px 12px;display:flex;align-items:center;gap:8px;border-top:1px solid #ebebeb">
+                    <div id="ec-wallet-logo" style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem">🎁</div>
+                    <div>
+                      <div id="ec-wallet-name" style="font-size:.58rem;color:#555;font-weight:600">Mi Tarjeta</div>
+                      <div style="font-size:.5rem;color:#999">Sukie Card</div>
+                    </div>
+                    <div style="margin-left:auto;font-size:.65rem;color:#bbb">⋮</div>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:.6rem;color:#888;text-align:center;line-height:1.5;max-width:180px">
+                Vista en Google Wallet
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Script modal editar tarjeta -->
+      <script>
+      let ecCurrentCardId = null;
+
+      function openEditCardModal(card) {
+        ecCurrentCardId = card.id;
+        // Fill fields
+        document.getElementById('ec-modal-title').textContent = card.name || 'Tarjeta';
+        document.getElementById('ec-emoji').value = card.emoji || '🎁';
+        document.getElementById('ec-emoji-btn').textContent = card.emoji || '🎁';
+        document.getElementById('ec-name').value = card.name || '';
+        document.getElementById('ec-stamps').value = card.stamps || 10;
+        document.getElementById('ec-reward').value = card.reward_name || '';
+        // Colors
+        const bg = card.bg_color || '#0a0a0a';
+        const ac = card.accent_color || '#00e676';
+        const tx = card.text_color || '#ffffff';
+        document.getElementById('ec-bg').value = bg;
+        document.getElementById('ec-bg-txt').value = bg;
+        document.getElementById('ec-accent').value = ac;
+        document.getElementById('ec-accent-txt').value = ac;
+        document.getElementById('ec-text').value = tx;
+        document.getElementById('ec-text-txt').value = tx;
+        // Reset messages
+        document.getElementById('ec-msg').textContent = '';
+        document.getElementById('ec-email-msg').textContent = '';
+        // Load email config
+        loadCardEmailConfig();
+        // Show card tab
+        ecShowTab('card');
+        ecUpdatePreview();
+        document.getElementById('modal-editar-tarjeta').style.display = 'flex';
+      }
+      function closeEditCardModal() {
+        document.getElementById('modal-editar-tarjeta').style.display = 'none';
+        ecCurrentCardId = null;
+      }
+
+      function ecShowTab(tab) {
+        const isCard = tab === 'card';
+        document.getElementById('ec-panel-card').style.display  = isCard ? '' : 'none';
+        document.getElementById('ec-panel-email').style.display = isCard ? 'none' : '';
+        document.getElementById('ec-right-preview').style.display = isCard ? '' : 'none';
+        document.getElementById('ec-tab-card').style.background   = isCard ? '#1a1a1a' : '#f5f5f5';
+        document.getElementById('ec-tab-card').style.color         = isCard ? '#fff'    : '#888';
+        document.getElementById('ec-tab-email').style.background  = isCard ? '#f5f5f5' : '#1a1a1a';
+        document.getElementById('ec-tab-email').style.color        = isCard ? '#888'    : '#fff';
+      }
+
+      // Emoji picker (reuse NC_EMOJIS list)
+      function ecToggleEmojiPicker(e) {
+        e.stopPropagation();
+        const picker = document.getElementById('ec-emoji-picker');
+        if (!picker) return;
+        if (!picker.children.length) {
+          picker.style.display = 'flex';
+          NC_EMOJIS.forEach(em => {
+            const btn = document.createElement('button');
+            btn.type = 'button'; btn.textContent = em;
+            btn.style.cssText = 'font-size:1.35rem;background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:background .1s';
+            btn.onmouseover = () => btn.style.background = '#f0f0f0';
+            btn.onmouseout  = () => btn.style.background = 'none';
+            btn.onclick = (ev) => {
+              ev.stopPropagation();
+              document.getElementById('ec-emoji').value = em;
+              document.getElementById('ec-emoji-btn').textContent = em;
+              picker.style.display = 'none';
+              ecUpdatePreview();
+            };
+            picker.appendChild(btn);
+          });
+        } else {
+          picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+        }
+      }
+      document.addEventListener('click', () => {
+        const p = document.getElementById('ec-emoji-picker');
+        if (p) p.style.display = 'none';
+      });
+
+      function ecSyncColor(id) {
+        const picker = document.getElementById(id), txt = document.getElementById(id+'-txt');
+        if (picker && txt) txt.value = picker.value;
+      }
+      function ecSyncText(id) {
+        const txt = document.getElementById(id+'-txt'), picker = document.getElementById(id);
+        if (txt && picker && /^#[0-9a-fA-F]{6}$/.test(txt.value)) picker.value = txt.value;
+      }
+
+      function ecUpdatePreview() {
+        const bg     = document.getElementById('ec-bg')?.value     || '#0a0a0a';
+        const accent = document.getElementById('ec-accent')?.value || '#00e676';
+        const name   = document.getElementById('ec-name')?.value   || 'MI TARJETA';
+        const stamps = parseInt(document.getElementById('ec-stamps')?.value) || 10;
+        const reward = document.getElementById('ec-reward')?.value || 'Premio';
+        const emoji  = document.getElementById('ec-emoji')?.value  || '🎁';
+
+        const phoneCard = document.getElementById('ec-phone-card');
+        if (phoneCard) phoneCard.style.background = bg;
+        const phoneLogo = document.getElementById('ec-phone-logo');
+        if (phoneLogo) phoneLogo.textContent = emoji;
+        const walletLogo = document.getElementById('ec-wallet-logo');
+        if (walletLogo) walletLogo.textContent = emoji;
+        const phoneName = document.getElementById('ec-phone-name');
+        if (phoneName) phoneName.textContent = (name || 'MI TARJETA').toUpperCase();
+        const walletName = document.getElementById('ec-wallet-name');
+        if (walletName) walletName.textContent = name || 'Mi Tarjeta';
+        const rewardLabel = document.getElementById('ec-phone-reward-label');
+        if (rewardLabel) rewardLabel.textContent = (reward || 'Premio').toUpperCase();
+
+        const stampsEl = document.getElementById('ec-phone-stamps');
+        if (stampsEl) {
+          stampsEl.innerHTML = '';
+          const max = Math.min(stamps, 15);
+          for (let i = 0; i < max; i++) {
+            const cell = document.createElement('div');
+            const isOn = i < 3;
+            cell.style.cssText = `aspect-ratio:1/1;border-radius:5px;background:${isOn ? accent : 'rgba(255,255,255,.12)'};border:1.5px solid ${isOn ? accent : 'rgba(255,255,255,.3)'};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:${isOn ? bg : 'transparent'}`;
+            cell.textContent = isOn ? '✓' : '';
+            stampsEl.appendChild(cell);
+          }
+        }
+      }
+
+      async function saveEditCard() {
+        if (!ecCurrentCardId) return;
+        const btn = document.getElementById('btn-ec-save');
+        btn.disabled = true; btn.textContent = 'Guardando…';
+        const msg = document.getElementById('ec-msg');
+        try {
+          const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${ecCurrentCardId}?pin=${PIN}`, {
+            method: 'PATCH',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              name:             document.getElementById('ec-name').value.trim(),
+              emoji:            document.getElementById('ec-emoji').value || '🎁',
+              stamps_per_reward:parseInt(document.getElementById('ec-stamps').value) || 10,
+              reward_name:      document.getElementById('ec-reward').value.trim(),
+              bg_color:         document.getElementById('ec-bg').value,
+              accent_color:     document.getElementById('ec-accent').value,
+              text_color:       document.getElementById('ec-text').value,
+            })
+          });
+          if (!res.ok) throw new Error((await res.json()).detail || 'Error');
+          msg.style.color = '#2e7d32';
+          msg.textContent = '✅ Cambios guardados';
+          document.getElementById('ec-modal-title').textContent = document.getElementById('ec-name').value.trim();
+          loadTarjetas(); // refresh grid
+        } catch(e) {
+          msg.style.color = '#cc2222';
+          msg.textContent = '❌ ' + e.message;
+        } finally {
+          btn.disabled = false; btn.textContent = '💾 Guardar cambios';
+        }
+      }
+
+      async function loadCardEmailConfig() {
+        try {
+          const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
+          const cfg = await res.json();
+          const ec = cfg.emails || {};
+          document.getElementById('ec-email-subject').value = ec.welcome_email_subject || '¡Bienvenido/a! 🎉';
+          document.getElementById('ec-email-body').value    = ec.welcome_email_body    ||
+            'Hola {nombre},\n\nYa eres parte de nuestro programa de fidelización.\n\nVer tu tarjeta: {link_tarjeta}\n\n¡Hasta pronto!';
+        } catch(e) { /* silently fail */ }
+      }
+
+      async function saveCardEmail() {
+        const msg = document.getElementById('ec-email-msg');
+        try {
+          const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
+          const cfg = await res.json();
+          cfg.emails = cfg.emails || {};
+          cfg.emails.welcome_email_subject = document.getElementById('ec-email-subject').value;
+          cfg.emails.welcome_email_body    = document.getElementById('ec-email-body').value;
+          const r2 = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`, {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
+          });
+          if (!r2.ok) throw new Error('Error al guardar');
+          msg.style.color = '#2e7d32'; msg.textContent = '✅ Email guardado';
+        } catch(e) {
+          msg.style.color = '#cc2222'; msg.textContent = '❌ ' + e.message;
+        }
+      }
+
+      async function previewCardEmail() {
+        const custs = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/customers?pin=${PIN}`).then(r=>r.json()).catch(()=>[]);
+        if (!custs.length) { alert('Necesitas al menos un cliente para ver el preview'); return; }
+        window.open(`${BASE}/email-preview/${custs[0].id}`, '_blank');
+      }
+      </script>
+
       <!-- ═══ CLIENTES ═══ -->
       <div class="section" id="section-clients">
         <div class="section-header">
@@ -1745,7 +2147,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <!-- ═══ FIDELIZACIÓN UNIFICADA ═══ -->
       <div class="section" id="section-fidelizacion">
         <div class="section-header" style="margin-bottom:20px">
-          <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem">🎯 Tarjeta de Fidelización</h1>
+          <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem">📧 Email & QR</h1>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <a href="/biz/{{ biz_slug }}/register" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">↗ Ver Landing</a>
             <a href="/biz/{{ biz_slug }}/scanner" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--brown);color:var(--cream);font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">📷 Escáner empleado</a>
@@ -1754,14 +2156,14 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
 
         <!-- TABS -->
         <div style="display:flex;gap:0;border-bottom:2px solid var(--cream-border);margin-bottom:24px;overflow-x:auto">
-          <button class="fid-tab active" onclick="showFidTab('programa')" id="fid-tab-programa">🎯 Programa</button>
-          <button class="fid-tab" onclick="showFidTab('diseno')" id="fid-tab-diseno">🎨 Diseño</button>
-          <button class="fid-tab" onclick="showFidTab('landing')" id="fid-tab-landing">🌐 Landing + QR</button>
+          <button class="fid-tab active" onclick="showFidTab('landing')" id="fid-tab-landing">🌐 Landing + QR</button>
           <button class="fid-tab" onclick="showFidTab('emails')" id="fid-tab-emails">✉️ Emails</button>
+          <button class="fid-tab" onclick="showFidTab('programa')" id="fid-tab-programa" style="display:none"></button>
+          <button class="fid-tab" onclick="showFidTab('diseno')" id="fid-tab-diseno" style="display:none"></button>
         </div>
 
-        <!-- ──────────── TAB: PROGRAMA ──────────── -->
-        <div id="fid-panel-programa">
+        <!-- ──────────── TAB: PROGRAMA (oculto, legacy) ──────────── -->
+        <div id="fid-panel-programa" style="display:none">
 
           <!-- Core program hero -->
           <div style="background:var(--brown);color:var(--cream);border-radius:var(--radius);padding:28px 24px;margin-bottom:20px">
@@ -1840,7 +2242,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
           </div>
         </div><!-- /fid-panel-programa -->
 
-        <!-- ──────────── TAB: DISEÑO ──────────── -->
+        <!-- ──────────── TAB: DISEÑO (oculto, legacy) ──────────── -->
         <div id="fid-panel-diseno" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
             <div></div>
@@ -1985,7 +2387,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         </div><!-- /fid-panel-diseno -->
 
         <!-- ──────────── TAB: LANDING + QR ──────────── -->
-        <div id="fid-panel-landing" style="display:none">
+        <div id="fid-panel-landing">
 
           <!-- QR Hero -->
           <div class="card-box" style="text-align:center;padding:32px 24px">
@@ -2339,7 +2741,7 @@ function showSection(name){
     if(arrow) arrow.classList.add('open');
   }
   if(name==='clients')   loadClients(1);
-  if(name==='fidelizacion'){ loadConfig(); loadDesign(); initFidLandingQR(); }
+  if(name==='fidelizacion'){ initFidLandingQR(); showFidTab('landing'); }
   if(name==='birthdays') loadBirthdays();
   if(name==='qrs')       initQRSection();
   if(name==='activity')  loadActivityLog();
@@ -4041,19 +4443,19 @@ function buildCardMockup(card){
       </div>
       <!-- Actions -->
       <div class="tarjeta-actions">
-        <button class="btn-sm btn-primary" style="font-size:.75rem;padding:8px 14px;display:flex;align-items:center;gap:6px" onclick="showSection('fidelizacion');closeTarjetaDropdowns()">
-          <span class="material-symbols-outlined" style="font-size:.9rem">tune</span> Gestionar
+        <button class="btn-sm btn-primary" style="font-size:.75rem;padding:8px 14px;display:flex;align-items:center;gap:6px" onclick="openEditCardModal(${JSON.stringify(card).replace(/"/g,'&quot;')});closeTarjetaDropdowns()">
+          <span class="material-symbols-outlined" style="font-size:.9rem">edit</span> Editar
         </button>
         <div style="position:relative">
           <button class="btn-sm btn-ghost" style="font-size:.75rem;padding:8px 12px;display:flex;align-items:center;gap:4px" onclick="toggleTarjetaDropdown('${ddId}', event)">
             <span class="material-symbols-outlined" style="font-size:1rem">more_horiz</span>
           </button>
           <div class="tarjeta-dropdown" id="${ddId}">
-            <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">
-              <span class="material-symbols-outlined" style="font-size:.9rem">stars</span> Programa
+            <a onclick="openEditCardModal(${JSON.stringify(card).replace(/"/g,'&quot;')});closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">edit</span> Editar tarjeta
             </a>
-            <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">
-              <span class="material-symbols-outlined" style="font-size:.9rem">palette</span> Editar diseño
+            <a onclick="openEditCardModal(${JSON.stringify(card).replace(/"/g,'&quot;')});setTimeout(()=>ecShowTab('email'),200);closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">mail</span> Email al cliente
             </a>
             <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">qr_code</span> QR / Compartir

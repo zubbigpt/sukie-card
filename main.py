@@ -3003,6 +3003,38 @@ async def create_card_program(slug: str, request: Request, db: Session = Depends
     db.commit()
     return {"id": str(row[0]), "status": "created"}
 
+@app.patch("/api/biz/{slug}/card-programs/{program_id}")
+async def update_card_program(slug: str, program_id: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    body = await request.json()
+    db.execute(text("""
+        UPDATE card_programs SET
+            name             = :name,
+            emoji            = :emoji,
+            stamps_per_reward= :stamps,
+            reward_name      = :reward,
+            bg_color         = :bg,
+            accent_color     = :accent,
+            text_color       = :text_color
+        WHERE id=:id AND business_id=:bid
+    """), {
+        "name":   body.get("name", ""),
+        "emoji":  body.get("emoji", "🎁"),
+        "stamps": int(body.get("stamps_per_reward", 10)),
+        "reward": body.get("reward_name", "Premio"),
+        "bg":     body.get("bg_color", "#0a0a0a"),
+        "accent": body.get("accent_color", "#00e676"),
+        "text_color": body.get("text_color", "#ffffff"),
+        "id":     program_id,
+        "bid":    str(biz.id),
+    })
+    db.commit()
+    return {"status": "updated"}
+
+
 @app.delete("/api/biz/{slug}/card-programs/{program_id}")
 def delete_card_program(slug: str, program_id: str, pin: str = "", db: Session = Depends(get_db)):
     verify_pin(pin, db)
