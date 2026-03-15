@@ -2681,11 +2681,13 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
         db.execute(text("DELETE FROM card_programs WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM custom_qrs WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM card_config WHERE business_id=:bid"), {"bid": bid})
-        # activity_log may not exist yet — skip gracefully
+        # activity_log may not exist — wrap in savepoint so failure doesn't rollback the whole tx
         try:
+            db.execute(text("SAVEPOINT sp_activity"))
             db.execute(text("DELETE FROM activity_log WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("RELEASE SAVEPOINT sp_activity"))
         except Exception:
-            db.rollback()
+            db.execute(text("ROLLBACK TO SAVEPOINT sp_activity"))
         # Finally delete the business itself
         db.execute(text("DELETE FROM businesses WHERE id=:bid"), {"bid": bid})
         db.commit()
