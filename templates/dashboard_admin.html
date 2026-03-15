@@ -952,20 +952,23 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
 
       <!-- ═══ MODAL NUEVA TARJETA ═══ -->
       <div id="modal-nueva-tarjeta" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:16px">
-        <div style="background:#fff;border-radius:16px;padding:0;width:740px;max-width:98vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.3);position:relative;display:grid;grid-template-columns:1fr 240px">
+        <div style="background:#fff;border-radius:16px;padding:0;width:980px;max-width:98vw;max-height:94vh;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.3);position:relative;display:grid;grid-template-columns:1fr 320px">
 
           <!-- LEFT: form -->
-          <div style="padding:32px 28px 28px">
+          <div style="padding:32px 28px 28px;overflow-y:auto;max-height:94vh">
             <button onclick="closeNewCardModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#aaa;z-index:2">×</button>
             <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:6px">NUEVA TARJETA</div>
             <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;margin-bottom:22px;color:#1a1a1a">Crear tarjeta de fidelización</h2>
 
             <!-- Nombre + emoji -->
             <div style="display:grid;grid-template-columns:60px 1fr;gap:10px;margin-bottom:14px;align-items:end">
-              <div>
+              <div style="position:relative">
                 <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">EMOJI</label>
-                <input id="nc-emoji" type="text" value="🎁" maxlength="2" oninput="ncUpdatePreview()"
-                  style="width:100%;text-align:center;font-size:1.6rem;padding:6px 4px;border:2px solid #e8e8e8;border-radius:8px;background:#fafafa;outline:none;cursor:text">
+                <button id="nc-emoji-btn" type="button" onclick="ncToggleEmojiPicker(event)"
+                  style="width:100%;text-align:center;font-size:1.6rem;padding:6px 4px;border:2px solid #e8e8e8;border-radius:8px;background:#fafafa;cursor:pointer;line-height:1.4;transition:border-color .15s"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">🎁</button>
+                <input id="nc-emoji" type="hidden" value="🎁">
+                <div id="nc-emoji-picker-modal" style="display:none;position:absolute;top:calc(100% + 4px);left:-8px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:700;padding:10px;width:248px;flex-wrap:wrap;gap:3px"></div>
               </div>
               <div>
                 <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DE LA TARJETA</label>
@@ -1052,30 +1055,97 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <div id="nc-error" style="color:#cc2222;font-size:.82rem;margin-top:8px;min-height:18px;text-align:center"></div>
           </div>
 
-          <!-- RIGHT: live preview -->
-          <div style="background:#f5f5f5;border-radius:0 16px 16px 0;padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:16px">
-            <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:4px">PREVIEW</div>
+          <!-- RIGHT: live phone preview -->
+          <div style="background:#e8e8e8;border-radius:0 16px 16px 0;padding:20px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow-y:auto;max-height:94vh">
+            <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:2px">PREVIEW</div>
 
-            <!-- Card visual preview -->
-            <div id="nc-card-preview" style="width:100%;aspect-ratio:1.7/1;border-radius:14px;padding:16px 18px;background:#0a0a0a;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.25);position:relative;overflow:hidden;transition:background .2s">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <div id="nc-prev-logo" style="font-size:1.4rem">🎁</div>
-                <div id="nc-prev-name" style="font-size:.75rem;font-weight:800;letter-spacing:.5px;text-align:right;opacity:.9">TARJETA</div>
-              </div>
-              <div id="nc-prev-stamps" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"></div>
-              <div style="display:flex;justify-content:space-between;align-items:flex-end">
-                <div style="font-size:.65rem;opacity:.6">0 / <span id="nc-prev-total">10</span> sellos</div>
-                <div id="nc-prev-reward" style="font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.15)">Premio</div>
+            <!-- Phone frame -->
+            <div style="background:#1c1c1e;border-radius:40px;padding:10px;box-shadow:0 24px 64px rgba(0,0,0,.45);position:relative;width:200px;flex-shrink:0">
+              <!-- Notch -->
+              <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:60px;height:10px;background:#1c1c1e;border-radius:6px;z-index:10"></div>
+              <!-- Screen -->
+              <div style="background:#f2f2f7;border-radius:32px;overflow:hidden;min-height:360px">
+
+                <!-- Card colored header -->
+                <div id="nc-phone-card" style="background:#0a0a0a;padding:18px 16px 16px;position:relative">
+                  <!-- Logo row -->
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <div id="nc-phone-logo" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;overflow:hidden">🎁</div>
+                    <div>
+                      <div id="nc-phone-name" style="color:#fff;font-size:.75rem;font-weight:800;letter-spacing:.3px;text-transform:uppercase;line-height:1.2">MI TARJETA</div>
+                      <div style="color:rgba(255,255,255,.5);font-size:.55rem">Sukie Card</div>
+                    </div>
+                  </div>
+                  <!-- Stamps grid -->
+                  <div id="nc-phone-stamps" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px"></div>
+                </div>
+
+                <!-- White info area -->
+                <div style="background:#fff;padding:12px 14px">
+                  <!-- Titular + reward row -->
+                  <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                    <div>
+                      <div style="font-size:.5rem;color:#aaa;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Titular</div>
+                      <div style="font-size:.65rem;font-weight:700;color:#222;margin-top:1px">NOMBRE CLIENTE</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div id="nc-phone-reward-label" style="font-size:.5rem;color:#aaa;text-transform:uppercase;font-weight:700;letter-spacing:.5px">PREMIOS DISP.</div>
+                      <div style="font-size:.65rem;font-weight:700;color:#222;margin-top:1px">0</div>
+                    </div>
+                  </div>
+                  <!-- QR code placeholder -->
+                  <div style="display:flex;justify-content:center;padding:6px 0 10px">
+                    <div style="width:72px;height:72px;position:relative">
+                      <!-- QR grid simulation -->
+                      <svg viewBox="0 0 72 72" width="72" height="72" style="border-radius:4px">
+                        <rect width="72" height="72" fill="#fff"/>
+                        <!-- top-left finder -->
+                        <rect x="4" y="4" width="20" height="20" rx="2" fill="#222"/>
+                        <rect x="7" y="7" width="14" height="14" rx="1" fill="#fff"/>
+                        <rect x="10" y="10" width="8" height="8" fill="#222"/>
+                        <!-- top-right finder -->
+                        <rect x="48" y="4" width="20" height="20" rx="2" fill="#222"/>
+                        <rect x="51" y="7" width="14" height="14" rx="1" fill="#fff"/>
+                        <rect x="54" y="10" width="8" height="8" fill="#222"/>
+                        <!-- bottom-left finder -->
+                        <rect x="4" y="48" width="20" height="20" rx="2" fill="#222"/>
+                        <rect x="7" y="51" width="14" height="14" rx="1" fill="#fff"/>
+                        <rect x="10" y="54" width="8" height="8" fill="#222"/>
+                        <!-- random data dots -->
+                        <rect x="28" y="4" width="4" height="4" fill="#222"/><rect x="34" y="4" width="4" height="4" fill="#222"/>
+                        <rect x="40" y="4" width="4" height="4" fill="#222"/><rect x="28" y="10" width="4" height="4" fill="#222"/>
+                        <rect x="34" y="10" width="4" height="4" fill="#222"/><rect x="40" y="16" width="4" height="4" fill="#222"/>
+                        <rect x="4" y="28" width="4" height="4" fill="#222"/><rect x="10" y="28" width="4" height="4" fill="#222"/>
+                        <rect x="16" y="34" width="4" height="4" fill="#222"/><rect x="4" y="40" width="4" height="4" fill="#222"/>
+                        <rect x="28" y="28" width="4" height="4" fill="#222"/><rect x="34" y="28" width="4" height="4" fill="#222"/>
+                        <rect x="40" y="28" width="4" height="4" fill="#222"/><rect x="46" y="28" width="4" height="4" fill="#222"/>
+                        <rect x="28" y="34" width="4" height="4" fill="#222"/><rect x="46" y="34" width="4" height="4" fill="#222"/>
+                        <rect x="34" y="40" width="4" height="4" fill="#222"/><rect x="52" y="40" width="4" height="4" fill="#222"/>
+                        <rect x="58" y="34" width="4" height="4" fill="#222"/><rect x="64" y="28" width="4" height="4" fill="#222"/>
+                        <rect x="28" y="46" width="4" height="4" fill="#222"/><rect x="34" y="52" width="4" height="4" fill="#222"/>
+                        <rect x="40" y="46" width="4" height="4" fill="#222"/><rect x="52" y="52" width="4" height="4" fill="#222"/>
+                        <rect x="58" y="46" width="4" height="4" fill="#222"/><rect x="64" y="58" width="4" height="4" fill="#222"/>
+                        <rect x="28" y="58" width="4" height="4" fill="#222"/><rect x="46" y="58" width="4" height="4" fill="#222"/>
+                        <rect x="64" y="46" width="4" height="4" fill="#222"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Wallet bar -->
+                <div style="background:#f8f8f8;padding:9px 14px;display:flex;align-items:center;gap:9px;border-top:1px solid #ebebeb">
+                  <div id="nc-wallet-logo" style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden">🎁</div>
+                  <div>
+                    <div id="nc-wallet-biz" style="font-size:.62rem;color:#555;font-weight:600;line-height:1.2">Mi Negocio</div>
+                    <div id="nc-wallet-card-name" style="font-size:.58rem;color:#999;line-height:1.2">Sukie Card</div>
+                  </div>
+                  <div style="margin-left:auto;font-size:.7rem;color:#bbb">⋮</div>
+                </div>
+
               </div>
             </div>
 
-            <!-- Stamp scale hint -->
-            <div style="width:100%;background:#fff;border-radius:10px;padding:14px;text-align:center">
-              <div style="font-size:.65rem;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Escala de sellos</div>
-              <div id="nc-stamp-scale" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center"></div>
-            </div>
-
-            <div style="font-size:.72rem;color:#aaa;text-align:center;line-height:1.4;padding:0 4px">
+            <div style="font-size:.62rem;color:#888;text-align:center;line-height:1.5;padding:0 6px;max-width:200px">
               Así verán los clientes su tarjeta en Google Wallet e iOS Wallet
             </div>
           </div>
@@ -1094,68 +1164,117 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         const picker = document.getElementById(id);
         if (txt && picker && /^#[0-9a-fA-F]{6}$/.test(txt.value)) picker.value = txt.value;
       }
+      // ── Emoji picker for new-card modal ──
+      const NC_EMOJIS = [
+        '☕','🍕','🍔','🌮','🍣','🍜','🍰','🎂','🍩','🍦',
+        '🥤','🧋','🍺','🍷','🧃','🥐','🍫','🍪','🥗','🍱',
+        '🎁','⭐','💎','🏆','🎉','❤️','🔥','💫','✨','🌟',
+        '🛍️','👑','🌈','🍀','🐾','🌸','🎵','💰','🎯','🚀'
+      ];
+      function ncToggleEmojiPicker(e) {
+        e.stopPropagation();
+        const picker = document.getElementById('nc-emoji-picker-modal');
+        if (!picker) return;
+        if (!picker.children.length) {
+          picker.style.display = 'flex';
+          NC_EMOJIS.forEach(em => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = em;
+            btn.style.cssText = 'font-size:1.35rem;background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:background .1s';
+            btn.onmouseover = () => btn.style.background = '#f0f0f0';
+            btn.onmouseout  = () => btn.style.background = 'none';
+            btn.onclick = (ev) => {
+              ev.stopPropagation();
+              document.getElementById('nc-emoji').value = em;
+              document.getElementById('nc-emoji-btn').textContent = em;
+              picker.style.display = 'none';
+              ncUpdatePreview();
+            };
+            picker.appendChild(btn);
+          });
+        } else {
+          picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+        }
+      }
+      document.addEventListener('click', () => {
+        const p = document.getElementById('nc-emoji-picker-modal');
+        if (p) p.style.display = 'none';
+      });
+
+      // ── Live preview update ──
       function ncUpdatePreview() {
-        const bg     = document.getElementById('nc-bg')?.value || '#0a0a0a';
+        const bg     = document.getElementById('nc-bg')?.value     || '#0a0a0a';
         const accent = document.getElementById('nc-accent')?.value || '#00e676';
-        const text   = document.getElementById('nc-text')?.value || '#ffffff';
-        const name   = document.getElementById('nc-name')?.value || 'MI TARJETA';
+        const textC  = document.getElementById('nc-text')?.value   || '#ffffff';
+        const name   = document.getElementById('nc-name')?.value   || 'MI TARJETA';
         const stamps = parseInt(document.getElementById('nc-stamps')?.value) || 10;
         const reward = document.getElementById('nc-reward')?.value || 'Premio';
-        const emoji  = document.getElementById('nc-emoji')?.value || '🎁';
+        const emoji  = document.getElementById('nc-emoji')?.value  || '🎁';
 
-        // Update card background + colors
-        const card = document.getElementById('nc-card-preview');
-        if (card) {
-          card.style.background = bg;
-          card.style.color = text;
+        // Phone card header color
+        const phoneCard = document.getElementById('nc-phone-card');
+        if (phoneCard) phoneCard.style.background = bg;
+
+        // Logo: if no image use emoji
+        const phoneLogo   = document.getElementById('nc-phone-logo');
+        const walletLogo  = document.getElementById('nc-wallet-logo');
+        const logoUrl = document.getElementById('nc-logo-url')?.value;
+        if (phoneLogo) {
+          if (logoUrl) {
+            phoneLogo.innerHTML = `<img src="${logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`;
+          } else {
+            phoneLogo.textContent = emoji;
+          }
         }
-        const prevName = document.getElementById('nc-prev-name');
-        if (prevName) prevName.textContent = name.toUpperCase();
-        const prevLogo = document.getElementById('nc-prev-logo');
-        if (prevLogo && !prevLogo.querySelector('img')) prevLogo.textContent = emoji;
-        const prevTotal = document.getElementById('nc-prev-total');
-        if (prevTotal) prevTotal.textContent = stamps;
-        const prevReward = document.getElementById('nc-prev-reward');
-        if (prevReward) { prevReward.textContent = reward; prevReward.style.color = accent; }
+        if (walletLogo) {
+          if (logoUrl) {
+            walletLogo.innerHTML = `<img src="${logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`;
+          } else {
+            walletLogo.textContent = emoji;
+          }
+        }
 
-        // Render stamp dots on preview
-        const stampsEl = document.getElementById('nc-prev-stamps');
+        // Card name
+        const phoneName = document.getElementById('nc-phone-name');
+        if (phoneName) phoneName.textContent = (name || 'MI TARJETA').toUpperCase();
+        const walletName = document.getElementById('nc-wallet-card-name');
+        if (walletName) walletName.textContent = name || 'Mi Tarjeta';
+
+        // Reward label
+        const rewardLabel = document.getElementById('nc-phone-reward-label');
+        if (rewardLabel) rewardLabel.textContent = (reward || 'Premio').toUpperCase();
+
+        // Stamps grid — show up to 15, 3 "stamped" as preview
+        const stampsEl = document.getElementById('nc-phone-stamps');
         if (stampsEl) {
           stampsEl.innerHTML = '';
-          const max = Math.min(stamps, 20);
+          const max = Math.min(stamps, 15);
+          const filled = Math.min(3, max);
           for (let i = 0; i < max; i++) {
-            const dot = document.createElement('div');
-            dot.style.cssText = `width:18px;height:18px;border-radius:50%;border:1.5px solid ${accent};background:${i < 3 ? accent : 'transparent'};opacity:${i < 3 ? '1' : '.45'}`;
-            stampsEl.appendChild(dot);
+            const cell = document.createElement('div');
+            const isOn = i < filled;
+            cell.style.cssText = `
+              aspect-ratio:1/1;border-radius:6px;
+              background:${isOn ? accent : 'rgba(255,255,255,.12)'};
+              border:1.5px solid ${isOn ? accent : 'rgba(255,255,255,.3)'};
+              display:flex;align-items:center;justify-content:center;
+              font-size:.75rem;transition:background .2s
+            `;
+            cell.textContent = isOn ? '✓' : '';
+            cell.style.color = isOn ? bg : 'transparent';
+            cell.style.fontWeight = '800';
+            stampsEl.appendChild(cell);
           }
-          if (stamps > 20) {
+          if (stamps > 15) {
             const more = document.createElement('div');
-            more.style.cssText = `font-size:.55rem;color:${accent};align-self:center;opacity:.7`;
-            more.textContent = `+${stamps - 20}`;
+            more.style.cssText = `font-size:.5rem;color:${accent};align-self:center;opacity:.8;grid-column:span 2`;
+            more.textContent = `+${stamps - 15}`;
             stampsEl.appendChild(more);
           }
         }
-
-        // Stamp scale
-        const scaleEl = document.getElementById('nc-stamp-scale');
-        if (scaleEl) {
-          scaleEl.innerHTML = '';
-          const max2 = Math.min(stamps, 15);
-          for (let i = 0; i < max2; i++) {
-            const dot = document.createElement('div');
-            const filled = i < Math.round(stamps / 3);
-            dot.style.cssText = `width:16px;height:16px;border-radius:50%;border:1.5px solid ${accent};background:${filled ? accent : 'transparent'};transition:background .2s`;
-            dot.title = `Sello ${i+1}`;
-            scaleEl.appendChild(dot);
-          }
-          if (stamps > 15) {
-            const el = document.createElement('span');
-            el.style.cssText = `font-size:.65rem;color:#aaa`;
-            el.textContent = `… ${stamps} total`;
-            scaleEl.appendChild(el);
-          }
-        }
       }
+
       function ncHandleLogo(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1163,19 +1282,15 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         const reader = new FileReader();
         reader.onload = (e) => {
           const src = e.target.result;
-          // Update drop area preview
           const prev = document.getElementById('nc-logo-preview');
           if (prev) prev.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`;
-          // Update card preview logo
-          const cardLogo = document.getElementById('nc-prev-logo');
-          if (cardLogo) cardLogo.innerHTML = `<img src="${src}" style="width:32px;height:32px;object-fit:contain;border-radius:4px">`;
-          // Store as data URL for upload later
           document.getElementById('nc-logo-url').value = src;
+          ncUpdatePreview();
         };
         reader.readAsDataURL(file);
       }
       // Init preview on page load
-      document.addEventListener('DOMContentLoaded', () => { if (document.getElementById('nc-card-preview')) ncUpdatePreview(); });
+      document.addEventListener('DOMContentLoaded', () => { ncUpdatePreview(); });
       </script>
 
       <!-- ═══ CLIENTES ═══ -->
@@ -3996,6 +4111,7 @@ function openNewCardModal(){
   document.getElementById('nc-name').value = '';
   document.getElementById('nc-reward').value = '';
   document.getElementById('nc-emoji').value = '🎁';
+  const emojiBtn = document.getElementById('nc-emoji-btn'); if(emojiBtn) emojiBtn.textContent = '🎁';
   document.getElementById('nc-stamps').value = '10';
   document.getElementById('nc-bg').value = '#0a0a0a';
   document.getElementById('nc-accent').value = '#00e676';
