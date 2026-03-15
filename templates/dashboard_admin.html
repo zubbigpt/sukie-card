@@ -1692,9 +1692,12 @@ async function doLogin(){
 document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // Auto-login from sessionStorage or URL params (Google OAuth / direct links)
-window.addEventListener('DOMContentLoaded', function() {
+// Run after a short delay to ensure all init code has executed
+setTimeout(function() {
   const slug = '{{ biz_slug }}' || document.querySelector('[data-slug]')?.getAttribute('data-slug');
   if (!slug) return;
+  // Already logged in? Skip
+  if (PIN) return;
   // Check URL params first (Google OAuth passes ?pin=...&google=1)
   const urlParams = new URLSearchParams(window.location.search);
   const urlPin = urlParams.get('pin');
@@ -1702,7 +1705,7 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('login-pin').value = urlPin;
     // Clean the URL so PIN isn't visible in address bar
     window.history.replaceState({}, document.title, window.location.pathname);
-    setTimeout(() => doLogin(), 100);
+    setTimeout(() => doLogin(), 200);
     return;
   }
   // Fallback: sessionStorage (regular login flow)
@@ -1710,9 +1713,9 @@ window.addEventListener('DOMContentLoaded', function() {
   if (savedPin) {
     sessionStorage.removeItem('zubcard_pin_' + slug);
     document.getElementById('login-pin').value = savedPin;
-    setTimeout(() => doLogin(), 100);
+    setTimeout(() => doLogin(), 200);
   }
-});
+}, 300);
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
 const sectionTitles = {
@@ -2173,7 +2176,8 @@ async function createClient(){
     notes:document.getElementById('nc-notes').value.trim(),
     opt_in_email:document.getElementById('nc-optin-email').checked,
     opt_in_sms:document.getElementById('nc-optin-sms').checked,
-    pin:PIN
+    pin:PIN,
+    slug:BIZ_SLUG
   };
   if(!payload.first_name||!payload.email){showMsg('nc-msg','Nombre y email son obligatorios','red');return;}
   const r=await fetch(`${BASE}/api/admin/customers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});

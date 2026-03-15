@@ -299,6 +299,7 @@ async function doRegister() {
       body: JSON.stringify({ first_name, last_name, email, phone, birth_date,
         opt_in_email, opt_in_sms, opt_in: opt_in_email,
         origin: 'Landing', channel: 'Landing',
+        slug: BIZ_SLUG || undefined,
         ref: REF_CODE || undefined })
     });
     const d = await r.json();

@@ -445,7 +445,16 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
     if not email:
         raise HTTPException(status_code=400, detail="Email requerido")
 
-    existing = db.query(models.Customer).filter(models.Customer.email == email).first()
+    # Resolve business for multi-tenant registration
+    slug = str(body.get("slug") or "").strip()
+    biz = get_business_by_slug(slug, db) if slug else None
+    biz_id = biz.id if biz else None
+
+    # Check if already registered within this business
+    existing_q = db.query(models.Customer).filter(models.Customer.email == email)
+    if biz_id:
+        existing_q = existing_q.filter(models.Customer.business_id == biz_id)
+    existing = existing_q.first()
     if existing:
         card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.customer_id == existing.id).first()
         return {"message": "Ya registrado", "card_id": str(card.id) if card else None,
@@ -467,6 +476,7 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
         origin       = "Web",
         channel      = body.get("channel", "Landing"),
         language     = body.get("language", "es"),
+        business_id  = biz_id,
     )
     db.add(customer)
     db.flush()
@@ -764,7 +774,17 @@ async def create_customer_admin(request: Request, db: Session = Depends(get_db))
     email = (body.get("email") or "").strip().lower()
     if not email:
         raise HTTPException(status_code=400, detail="Email requerido")
-    if db.query(models.Customer).filter(models.Customer.email == email).first():
+
+    # Resolve business for multi-tenant
+    slug = str(body.get("slug", "")).strip()
+    biz = get_business_by_slug(slug, db) if slug else None
+    biz_id = biz.id if biz else None
+
+    # Check uniqueness within this business (not globally)
+    existing_q = db.query(models.Customer).filter(models.Customer.email == email)
+    if biz_id:
+        existing_q = existing_q.filter(models.Customer.business_id == biz_id)
+    if existing_q.first():
         raise HTTPException(status_code=409, detail="Ya existe un cliente con ese email")
 
     name_parts = (body.get("name") or "").split()
@@ -782,8 +802,9 @@ async def create_customer_admin(request: Request, db: Session = Depends(get_db))
         opt_in_email= body.get("opt_in_email", True),
         opt_in_sms  = body.get("opt_in_sms", False),
         notes       = body.get("notes", ""),
-        origin      = "Admin",
+        origin      = body.get("origin", "Admin"),
         channel     = "Manual",
+        business_id = biz_id,
     )
     db.add(customer)
     db.flush()
