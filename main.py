@@ -209,6 +209,8 @@ def run_migrations():
         "CREATE TABLE IF NOT EXISTS custom_qrs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), canal VARCHAR NOT NULL, local_name VARCHAR DEFAULT '', created_at TIMESTAMPTZ DEFAULT NOW())",
         # ── Card Programs (multi-tarjeta) ────────────────────────────────────────
         "CREATE TABLE IF NOT EXISTS card_programs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, emoji VARCHAR DEFAULT '🃏', stamps_per_reward INTEGER DEFAULT 10, reward_name VARCHAR DEFAULT 'Premio', bg_color VARCHAR DEFAULT '#0a0a0a', accent_color VARCHAR DEFAULT '#00e676', text_color VARCHAR DEFAULT '#ffffff', status VARCHAR DEFAULT 'active', sort_order INTEGER DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW())",
+        # ── Birthday vouchers ─────────────────────────────────────────────────────
+        "CREATE TABLE IF NOT EXISTS birthday_vouchers (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), customer_id UUID REFERENCES customers(id), business_id UUID REFERENCES businesses(id), token VARCHAR UNIQUE NOT NULL, discount_pct INTEGER DEFAULT 20, used BOOLEAN DEFAULT FALSE, used_at TIMESTAMPTZ, expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW())",
         # ── Fix card_config.id to auto-increment (multi-tenant fix) ──────────────
         "CREATE SEQUENCE IF NOT EXISTS card_config_id_seq START WITH 100",
         "ALTER TABLE card_config ALTER COLUMN id SET DEFAULT nextval('card_config_id_seq')",
@@ -1236,6 +1238,196 @@ def admin_birthdays(pin: str = "", slug: str = "", db: Session = Depends(get_db)
                         "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
                         ][datetime.now().month - 1],
     }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BIRTHDAY VOUCHERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.post("/api/biz/{slug}/birthday-voucher/send")
+async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    """Generate and send a birthday voucher to one or all of today's birthday customers"""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    body = await request.json()
+    customer_id  = body.get("customer_id")   # single customer, or None = all today
+    discount_pct = int(body.get("discount_pct", 20))
+
+    today = datetime.now().strftime("%m-%d")
+    expires_at = datetime.now().replace(hour=23, minute=59, second=59)
+
+    # Get customers to send to
+    if customer_id:
+        customers = db.execute(text(
+            "SELECT id, first_name, last_name, email, birth_date FROM customers "
+            "WHERE id=:cid AND business_id=:bid"
+        ), {"cid": customer_id, "bid": str(biz.id)}).fetchall()
+    else:
+        customers = db.execute(text(
+            "SELECT id, first_name, last_name, email, birth_date FROM customers "
+            "WHERE business_id=:bid AND birth_date IS NOT NULL AND birth_date != ''"
+        ), {"bid": str(biz.id)}).fetchall()
+        customers = [c for c in customers if len(c.birth_date or "") >= 10 and c.birth_date[5:10] == today]
+
+    sent = 0
+    errors = []
+    for cust in customers:
+        if not cust.email:
+            continue
+        # Check if voucher already sent today
+        existing = db.execute(text(
+            "SELECT id FROM birthday_vouchers WHERE customer_id=:cid AND business_id=:bid "
+            "AND created_at >= CURRENT_DATE"
+        ), {"cid": str(cust.id), "bid": str(biz.id)}).fetchone()
+        if existing:
+            continue
+
+        # Create voucher token
+        token = str(uuid.uuid4()).replace("-", "")[:24]
+        db.execute(text(
+            "INSERT INTO birthday_vouchers (customer_id, business_id, token, discount_pct, expires_at) "
+            "VALUES (:cid, :bid, :token, :disc, :exp)"
+        ), {"cid": str(cust.id), "bid": str(biz.id), "token": token, "disc": discount_pct, "exp": expires_at})
+        db.commit()
+
+        # Build voucher URL (for scanner to scan)
+        voucher_url = f"{BASE_URL}/biz/{slug}/birthday/{token}"
+        # Generate QR as base64
+        import io, base64
+        qr_img = qrcode.make(voucher_url)
+        buf = io.BytesIO()
+        qr_img.save(buf, format="PNG")
+        qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+        name = (cust.first_name or "Cliente").strip()
+        subject = f"🎂 ¡Feliz Cumpleaños, {name}! Tu regalo te espera"
+        html = f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);padding:36px 28px;text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">🎂</div>
+    <h1 style="color:#fff;font-size:1.6rem;margin:0;font-weight:800">¡Feliz Cumpleaños, {name}!</h1>
+    <p style="color:rgba(255,255,255,.85);margin-top:8px;font-size:.95rem">Hoy te regalamos un descuento especial</p>
+  </div>
+  <div style="padding:32px 28px;text-align:center">
+    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
+      <div style="font-size:2.8rem;font-weight:900;color:#e65100">{discount_pct}%</div>
+      <div style="font-size:1rem;font-weight:700;color:#555;margin-top:4px">DE DESCUENTO</div>
+      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
+    </div>
+    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
+      Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>
+      El empleado lo escaneará y se aplicará tu descuento.
+    </p>
+    <img src="data:image/png;base64,{qr_b64}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
+    <p style="color:#aaa;font-size:.75rem;margin-top:16px">Este QR es de un solo uso y expira hoy a las 23:59</p>
+  </div>
+  <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
+    <p style="color:#999;font-size:.78rem;margin:0">Con cariño, el equipo de {biz.name}</p>
+  </div>
+</div>"""
+        try:
+            _send_email(to=cust.email, subject=subject, html=html)
+            sent += 1
+        except Exception as e:
+            errors.append(str(e))
+
+    return {"sent": sent, "errors": errors}
+
+
+@app.post("/api/biz/{slug}/birthday-voucher/redeem")
+async def redeem_birthday_voucher(slug: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    """Scanner redeems a birthday voucher token"""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    body = await request.json()
+    token = body.get("token", "").strip()
+
+    row = db.execute(text(
+        "SELECT bv.id, bv.discount_pct, bv.used, bv.expires_at, "
+        "c.first_name, c.last_name, c.email "
+        "FROM birthday_vouchers bv "
+        "JOIN customers c ON c.id = bv.customer_id "
+        "WHERE bv.token=:token AND bv.business_id=:bid"
+    ), {"token": token, "bid": str(biz.id)}).fetchone()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="QR no válido")
+    if row.used:
+        raise HTTPException(status_code=400, detail="Este regalo ya fue canjeado")
+    if row.expires_at < datetime.now():
+        raise HTTPException(status_code=400, detail="Este regalo ha expirado")
+
+    # Mark as used
+    db.execute(text(
+        "UPDATE birthday_vouchers SET used=TRUE, used_at=NOW() WHERE id=:id"
+    ), {"id": str(row.id)})
+    db.commit()
+
+    return {
+        "ok": True,
+        "customer_name": f"{row.first_name or ''} {row.last_name or ''}".strip(),
+        "discount_pct": row.discount_pct,
+        "message": f"🎂 {(row.first_name or 'Cliente')} tiene un {row.discount_pct}% de descuento hoy por su cumpleaños"
+    }
+
+
+@app.get("/biz/{slug}/birthday/{token}", response_class=HTMLResponse)
+def birthday_voucher_page(slug: str, token: str, db: Session = Depends(get_db)):
+    """Customer-facing birthday voucher page with QR"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        return HTMLResponse("<h2>Negocio no encontrado</h2>", status_code=404)
+
+    row = db.execute(text(
+        "SELECT bv.id, bv.discount_pct, bv.used, bv.expires_at, "
+        "c.first_name FROM birthday_vouchers bv "
+        "JOIN customers c ON c.id = bv.customer_id "
+        "WHERE bv.token=:token AND bv.business_id=:bid"
+    ), {"token": token, "bid": str(biz.id)}).fetchone()
+
+    if not row:
+        return HTMLResponse("<div style='text-align:center;padding:60px;font-family:sans-serif'><h2>QR no válido</h2></div>", status_code=404)
+
+    status_html = ""
+    if row.used:
+        status_html = "<div style='background:#ffebee;color:#c62828;padding:14px 20px;border-radius:8px;font-weight:700;text-align:center;margin-bottom:16px'>✗ Este regalo ya fue canjeado</div>"
+    elif row.expires_at < datetime.now():
+        status_html = "<div style='background:#ffebee;color:#c62828;padding:14px 20px;border-radius:8px;font-weight:700;text-align:center;margin-bottom:16px'>✗ Este regalo ha expirado</div>"
+    else:
+        status_html = f"<div style='background:#e8f5e9;color:#2e7d32;padding:14px 20px;border-radius:8px;font-weight:700;text-align:center;margin-bottom:16px'>✓ Válido · Expira hoy a las 23:59</div>"
+
+    import io, base64
+    voucher_url = f"{BASE_URL}/biz/{slug}/birthday/{token}"
+    qr_img = qrcode.make(voucher_url)
+    buf = io.BytesIO()
+    qr_img.save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎂 Regalo Cumpleaños · {biz.name}</title>
+<style>body{{margin:0;font-family:system-ui,sans-serif;background:#fff8f0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;box-sizing:border-box}}
+.card{{background:#fff;border-radius:20px;padding:32px 24px;max-width:380px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.12);text-align:center}}
+</style></head>
+<body><div class="card">
+  <div style="font-size:3rem">🎂</div>
+  <h1 style="font-size:1.4rem;color:#e65100;margin:8px 0">¡Feliz Cumpleaños, {row.first_name or 'Cliente'}!</h1>
+  <p style="color:#888;font-size:.85rem;margin-bottom:20px">Tu regalo de <strong>{biz.name}</strong></p>
+  {status_html}
+  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);border-radius:14px;padding:20px;margin-bottom:20px">
+    <div style="font-size:3.5rem;font-weight:900;color:#fff">{row.discount_pct}%</div>
+    <div style="color:rgba(255,255,255,.9);font-weight:700">DE DESCUENTO</div>
+  </div>
+  <p style="color:#555;font-size:.82rem;margin-bottom:16px">Muestra este QR al empleado para canjear tu regalo</p>
+  <img src="data:image/png;base64,{qr_b64}" style="width:200px;height:200px;border-radius:10px;border:2px solid #f0f0f0;padding:6px">
+  <p style="color:#bbb;font-size:.72rem;margin-top:16px">Un solo uso · Válido solo hoy</p>
+</div></body></html>""")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

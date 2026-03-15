@@ -634,10 +634,56 @@ function scanFrame() {
   const img = ctx.getImageData(0, 0, c.width, c.height);
   const code = jsQR(img.data, img.width, img.height, { inversionAttempts:'dontInvert' });
   if (code) {
+    // Birthday voucher QR? URL contains /birthday/{token}
+    const bdayMatch = code.data.match(/\/birthday\/([a-f0-9]{24})/i);
+    if (bdayMatch) { scanActive = false; stopCamera(); redeemBirthdayVoucher(bdayMatch[1]); return; }
+    // Regular loyalty card UUID
     const id = code.data.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
     if (id) { scanActive = false; stopCamera(); loadCustomer(id[0]); return; }
   }
   requestAnimationFrame(scanFrame);
+}
+
+// BIRTHDAY VOUCHER REDEEM
+async function redeemBirthdayVoucher(token) {
+  showScreen('stamp');
+  const st = document.getElementById('scan-status');
+  st.textContent = '🎂 Procesando regalo de cumpleaños…'; st.className = 'ok';
+  try {
+    const r = await fetch(`{{ base_url }}/api/biz/{{ biz_slug }}/birthday-voucher/redeem?pin={{ admin_pin }}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Error');
+
+    // Show big birthday success screen
+    document.getElementById('stamp-screen').innerHTML = `
+      <div style="text-align:center;padding:32px 20px;background:#fff;border-radius:16px;margin:16px">
+        <div style="font-size:3.5rem;margin-bottom:8px">🎂</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#e65100;margin-bottom:4px">${data.discount_pct}% DESCUENTO</div>
+        <div style="font-size:.95rem;font-weight:700;color:#555;margin-bottom:16px">${data.customer_name}</div>
+        <div style="background:#e8f5e9;color:#2e7d32;padding:12px 20px;border-radius:8px;font-size:.88rem;font-weight:700;margin-bottom:20px">
+          ✓ Aplicar ${data.discount_pct}% de descuento en esta compra
+        </div>
+        <div style="font-size:.75rem;color:#aaa;margin-bottom:20px">QR canjeado · Un solo uso</div>
+        <button onclick="showScreen('scan');scanActive=true;startCamera()"
+          style="background:#26170c;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;width:100%">
+          ← Siguiente cliente
+        </button>
+      </div>`;
+  } catch(e) {
+    st.textContent = '⚠ ' + e.message; st.className = 'err';
+    document.getElementById('stamp-screen').innerHTML = `
+      <div style="text-align:center;padding:32px 20px">
+        <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
+        <div style="font-weight:700;color:#cc2222;margin-bottom:16px">${e.message}</div>
+        <button onclick="showScreen('scan');scanActive=true;startCamera()"
+          style="background:#26170c;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer">
+          ← Intentar de nuevo
+        </button>
+      </div>`;
+  }
 }
 
 // LOAD CUSTOMER

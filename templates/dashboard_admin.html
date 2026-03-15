@@ -916,24 +916,56 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
 
       <!-- ═══ CUMPLEAÑOS ═══ -->
       <div class="section" id="section-birthdays">
-        <div class="section-header">
+        <div class="section-header" style="margin-bottom:20px">
           <div style="flex:1">
-            <h1 style="font-size:2.5rem;margin-bottom:4px">Cumpleaños</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona los cumpleaños de tus clientes</p>
+            <h1 style="font-size:2.5rem;margin-bottom:4px">🎂 Cumpleaños</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Envía regalos de cumpleaños automáticos con QR de descuento</p>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-          <div>
-            <div class="birthday-section">
-              <h3 style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:1.2rem">today</span> Hoy</h3>
-              <div id="bday-today" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+
+        <!-- Config card -->
+        <div class="card-box" style="margin-bottom:24px">
+          <div class="card-title" style="margin-bottom:14px">⚙️ Configuración del regalo</div>
+          <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:end">
+            <div>
+              <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">% DESCUENTO</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input id="bday-discount-pct" type="number" min="1" max="100" value="20"
+                  style="width:80px;padding:10px 12px;border:2px solid var(--cream-border);border-radius:6px;font-size:1.2rem;font-weight:700;text-align:center;outline:none"
+                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='var(--cream-border)'">
+                <span style="font-size:1.2rem;font-weight:700;color:#888">%</span>
+              </div>
+            </div>
+            <div>
+              <p style="font-size:.82rem;color:var(--brown-light);line-height:1.6;margin:0">
+                El cliente recibe un email con un <strong>QR único de un solo uso</strong>.<br>
+                El empleado lo escanea con el <a href="/biz/{{ biz_slug }}/scanner" target="_blank" style="color:var(--brown)">escáner</a> y se muestra el descuento a aplicar.
+                El QR expira a las 23:59 del día del cumpleaños.
+              </p>
             </div>
           </div>
-          <div>
-            <div class="birthday-section">
-              <h3 style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:1.2rem">calendar_month</span> Este mes</h3>
-              <div id="bday-month" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <!-- HOY -->
+          <div class="birthday-section card-box">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <h3 style="display:flex;align-items:center;gap:8px;margin:0;font-size:1rem">
+                <span class="material-symbols-outlined" style="font-size:1.1rem">today</span> Hoy
+              </h3>
+              <button id="bday-send-all-btn" onclick="bdaySendAll()"
+                style="background:var(--brown);color:var(--cream);border:none;padding:7px 14px;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;display:none">
+                🎁 Enviar a todos
+              </button>
             </div>
+            <div id="bday-today" class="birthday-list"><div class="empty-state">Cargando...</div></div>
+          </div>
+          <!-- ESTE MES -->
+          <div class="birthday-section card-box">
+            <h3 style="display:flex;align-items:center;gap:8px;margin:0 0 14px;font-size:1rem">
+              <span class="material-symbols-outlined" style="font-size:1.1rem">calendar_month</span> Este mes
+            </h3>
+            <div id="bday-month" class="birthday-list"><div class="empty-state">Cargando...</div></div>
           </div>
         </div>
       </div>
@@ -2888,13 +2920,86 @@ async function loadBirthdaysBadge(){
 async function loadBirthdays(){
   const r = await fetch(`${BASE}/api/admin/birthdays?pin=${PIN}&slug=${BIZ_SLUG}`);
   const d = await r.json();
-  const render=(list,empty)=>list.length===0?`<div class="empty-state">${empty}</div>`:list.map(c=>`
-    <div class="birthday-item today" onclick="openDrawer('${c.id||c.card_id}')">
-      <div class="birthday-info"><div class="name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="date">${c.email} · ${c.birthDate||c.birth_date||''}</div></div>
-      <span class="birthday-badge">🎂</span>
-    </div>`).join('');
-  document.getElementById('bday-today').innerHTML=render(d.today||[],'Nadie cumple años hoy');
-  document.getElementById('bday-month').innerHTML=render(d.this_month||[],'Sin cumpleaños este mes');
+
+  // TODAY: show send-gift button per customer
+  const todayList = d.today || [];
+  const sendAllBtn = document.getElementById('bday-send-all-btn');
+  if (sendAllBtn) sendAllBtn.style.display = todayList.length > 1 ? '' : 'none';
+
+  if (todayList.length === 0) {
+    document.getElementById('bday-today').innerHTML = '<div class="empty-state">Nadie cumple años hoy 🙂</div>';
+  } else {
+    document.getElementById('bday-today').innerHTML = todayList.map(c => {
+      const name = `${c.firstName||c.first_name||''} ${c.lastName||c.last_name||''}`.trim();
+      const cid = c.customer_id || c.id || c.card_id;
+      return `<div class="birthday-item today" style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #f5f5f5">
+        <div style="flex:1">
+          <div class="name" style="font-weight:700;font-size:.9rem">${name}</div>
+          <div style="font-size:.75rem;color:#aaa">${c.email||'Sin email'}</div>
+        </div>
+        <span class="birthday-badge" style="background:#fff3cd;color:#856404;padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:700">🎂 Hoy</span>
+        ${c.email ? `<button onclick="bdaySendOne('${cid}')" style="background:#26170c;color:#fff;border:none;padding:7px 12px;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap">🎁 Enviar QR</button>` : '<span style="font-size:.72rem;color:#ccc">Sin email</span>'}
+      </div>`;
+    }).join('');
+  }
+
+  // THIS MONTH
+  const monthList = d.this_month || [];
+  if (monthList.length === 0) {
+    document.getElementById('bday-month').innerHTML = '<div class="empty-state">Sin cumpleaños este mes</div>';
+  } else {
+    document.getElementById('bday-month').innerHTML = monthList.map(c => {
+      const name = `${c.firstName||c.first_name||''} ${c.lastName||c.last_name||''}`.trim();
+      const bd = c.birthDate || c.birth_date || '';
+      const isToday = (d.today||[]).some(t => (t.customer_id||t.id) === (c.customer_id||c.id));
+      return `<div class="birthday-item" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #f5f5f5">
+        <div style="flex:1">
+          <div class="name" style="font-weight:600;font-size:.88rem">${name}</div>
+          <div style="font-size:.72rem;color:#aaa">${bd ? bd.slice(5,10).replace('-','/') : '—'} · ${c.email||''}</div>
+        </div>
+        ${isToday ? '<span style="background:#fff3cd;color:#856404;padding:2px 7px;border-radius:4px;font-size:.68rem;font-weight:700">🎂 Hoy</span>' : ''}
+      </div>`;
+    }).join('');
+  }
+}
+
+async function bdaySendOne(customerId) {
+  const pct = parseInt(document.getElementById('bday-discount-pct')?.value) || 20;
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/birthday-voucher/send?pin=${PIN}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ customer_id: customerId, discount_pct: pct })
+    });
+    const data = await r.json();
+    if (data.sent > 0) {
+      btn.style.background = '#2e7d32'; btn.textContent = '✅ Enviado';
+    } else {
+      btn.style.background = '#e65100'; btn.textContent = 'Ya enviado hoy';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = '❌ Error'; btn.disabled = false;
+  }
+}
+
+async function bdaySendAll() {
+  const pct = parseInt(document.getElementById('bday-discount-pct')?.value) || 20;
+  const btn = document.getElementById('bday-send-all-btn');
+  if (!confirm(`¿Enviar regalo de ${pct}% a todos los que cumplen años hoy?`)) return;
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/birthday-voucher/send?pin=${PIN}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ discount_pct: pct })
+    });
+    const data = await r.json();
+    btn.textContent = `✅ ${data.sent} enviados`;
+    loadBirthdays();
+  } catch(e) {
+    btn.textContent = '❌ Error'; btn.disabled = false;
+  }
 }
 
 // ── BUSINESS INTELLIGENCE ──────────────────────────────────────────────────
