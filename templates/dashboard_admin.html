@@ -181,19 +181,18 @@ nav a .icon{font-size:1.05rem;width:22px;text-align:center;line-height:1}
 .btn-danger:hover{background:#b71c1c}
 
 /* SEARCH BAR */
-.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.search-bar input{flex:1;min-width:200px;padding:10px 14px;background:var(--cream);border:none;border-radius:var(--r-sm);font-size:.88rem;outline:none;color:var(--brown)}
-.search-bar input:focus{box-shadow:0 0 0 2.5px var(--honey)}
-.search-bar button{background:var(--brown);color:var(--on-primary);border:none;padding:10px 16px;border-radius:var(--r-sm);font-size:.82rem;font-weight:700;cursor:pointer}
+.search-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;background:var(--white);padding:12px 16px;border-radius:.75rem;box-shadow:0 4px 24px rgba(38,23,12,.05)}
+.search-bar input{flex:1;min-width:200px;padding:10px 14px;background:var(--surface-low);border:1px solid rgba(210,196,188,.25);border-radius:.5rem;font-size:.88rem;outline:none;color:var(--brown);font-family:inherit;transition:border-color .15s}
+.search-bar input:focus{border-color:var(--honey);box-shadow:0 0 0 3px rgba(255,202,72,.15)}
+.search-bar button{background:var(--brown);color:var(--on-primary);border:none;padding:10px 18px;border-radius:.5rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.search-bar button:hover{background:var(--brown-mid)}
 
 /* TABLE */
-#clients-table{width:100%;border-collapse:collapse;font-size:.855rem}
-#clients-table thead th{padding:12px 16px;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--brown-light);background:var(--cream)}
-#clients-table tbody tr{cursor:pointer;transition:background .12s}
-#clients-table tbody tr:nth-child(odd){background:var(--white)}
-#clients-table tbody tr:nth-child(even){background:var(--cream)}
-#clients-table tbody tr:hover{background:var(--honey-light)}
-#clients-table td{padding:12px 16px;vertical-align:middle}
+#clients-table{width:100%;border-collapse:collapse;font-size:.875rem}
+#clients-table thead th{padding:14px 20px;text-align:left;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);background:var(--surface-mid)}
+#clients-table tbody tr{cursor:pointer;transition:background .15s}
+#clients-table tbody tr:hover{background:var(--surface-low)}
+#clients-table td{padding:14px 20px;vertical-align:middle;border-top:1px solid rgba(210,196,188,.12)}
 
 /* PAGINATION */
 .pagination{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap}
@@ -294,9 +293,34 @@ textarea.field-input{resize:vertical;min-height:72px}
 
 /* WALLET PREVIEW */
 .wallet-card{border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22)}
+/* phone-frame kept for fidelizacion design preview only */
 .phone-frame{background:#1a1a1a;border-radius:36px;padding:10px;box-shadow:0 16px 48px rgba(0,0,0,.35)}
 .phone-screen{background:#1c1c1e;border-radius:28px;overflow:hidden;position:relative;min-height:340px}
 .phone-notch{width:80px;height:16px;background:#1a1a1a;border-radius:8px;margin:0 auto;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
+
+/* STITCH CARD GALLERY */
+.stitch-card-gallery{background:var(--white);border-radius:.75rem;overflow:hidden;transition:box-shadow .4s,transform .3s;box-shadow:0 4px 24px rgba(38,23,12,.06)}
+.stitch-card-gallery:hover{box-shadow:0 16px 48px rgba(38,23,12,.14);transform:translateY(-4px)}
+.stitch-card-preview{aspect-ratio:1.7/1;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:20px 22px 18px}
+.stitch-card-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.35))}
+.stitch-card-badges{position:absolute;bottom:14px;left:18px;z-index:2;display:flex;gap:6px}
+.stitch-card-info{padding:20px 22px 18px}
+.stitch-card-dots{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0}
+
+/* STITCH TABLE */
+table.stitch-table{width:100%;border-collapse:collapse}
+table.stitch-table thead tr{background:var(--surface-mid)}
+table.stitch-table thead th{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);padding:14px 20px;text-align:left}
+table.stitch-table tbody tr{transition:background .15s;cursor:pointer}
+table.stitch-table tbody tr:hover{background:var(--surface-low)}
+table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--primary);border-top:1px solid rgba(210,196,188,.15)}
+
+/* STITCH FORM INPUTS */
+.field-label,.form-group label{display:block;font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px}
+.field-input,.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;background:var(--surface-low);border:1px solid rgba(210,196,188,.25);border-radius:.5rem;font-size:.9rem;color:var(--brown);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none}
+.field-input:focus,.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--honey);box-shadow:0 0 0 3px rgba(255,202,72,.18)}
+.field-input:disabled,.form-group input:disabled{opacity:.6;cursor:not-allowed}
+
 .android-frame{background:#fff;border-radius:28px;padding:8px;box-shadow:0 16px 48px rgba(0,0,0,.25)}
 .android-screen{background:#121212;border-radius:22px;overflow:hidden;position:relative;min-height:340px}
 .android-punch{width:10px;height:10px;background:#121212;border-radius:50%;position:absolute;top:10px;left:50%;transform:translateX(-50%)}
@@ -309,14 +333,14 @@ textarea.field-input{resize:vertical;min-height:72px}
 .emoji-opt:hover{background:var(--cream)}
 
 /* TARJETA CARDS */
-.tarjeta-card-wrap{position:relative;width:280px}
-.tarjeta-label{font-family:'Epilogue',sans-serif;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.tarjeta-status{font-size:.68rem;padding:2px 8px;border-radius:var(--r-sm);font-weight:700;background:var(--green-bg);color:var(--green)}
-.tarjeta-actions{position:relative;z-index:10;margin-top:8px;display:flex;gap:6px;align-items:center}
-.tarjeta-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-lg);z-index:200}
+.tarjeta-card-wrap{position:relative}
+.tarjeta-label{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--primary);margin-bottom:2px}
+.tarjeta-status{font-size:.68rem;padding:3px 10px;border-radius:20px;font-weight:700;background:rgba(46,125,50,.1);color:var(--green);display:inline-flex;align-items:center;gap:4px}
+.tarjeta-actions{position:relative;z-index:10;margin-top:14px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.tarjeta-dropdown{display:none;position:absolute;top:calc(100% + 4px);right:0;min-width:200px;background:var(--white);border-radius:.75rem;box-shadow:0 8px 32px rgba(38,23,12,.15);z-index:200;overflow:hidden}
 .tarjeta-dropdown.open{display:block}
-.tarjeta-dropdown a{display:block;padding:10px 14px;font-size:.85rem;color:var(--primary);cursor:pointer;text-decoration:none}
-.tarjeta-dropdown a:hover{background:var(--cream)}
+.tarjeta-dropdown a{display:flex;align-items:center;gap:8px;padding:11px 16px;font-size:.85rem;color:var(--primary);cursor:pointer;text-decoration:none;transition:background .12s}
+.tarjeta-dropdown a:hover{background:var(--surface-low)}
 
 /* BTN-ACCION */
 .btn-accion{border:none;background:var(--cream);color:var(--brown);padding:6px 12px;border-radius:var(--r-sm);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
@@ -923,7 +947,7 @@ textarea.field-input{resize:vertical;min-height:72px}
           </div>
           <button class="btn-sm btn-primary" onclick="openNewCardModal()" style="padding:10px 18px;font-size:.88rem">+ Nueva tarjeta</button>
         </div>
-        <div id="tarjetas-grid" style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;padding-bottom:32px"></div>
+        <div id="tarjetas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;padding-bottom:32px"></div>
       </div>
 
       <!-- ═══ MODAL NUEVA TARJETA ═══ -->
@@ -1000,7 +1024,7 @@ textarea.field-input{resize:vertical;min-height:72px}
         </div>
         <div class="card" style="padding:0;overflow:hidden">
           <div style="overflow-x:auto">
-            <table id="clients-table">
+            <table id="clients-table" class="stitch-table">
               <thead><tr>
                 <th>Cliente</th><th>Email</th><th>Sellos</th><th>Premios</th><th>Estado</th><th>Registro</th><th></th>
               </tr></thead>
@@ -1172,51 +1196,49 @@ textarea.field-input{resize:vertical;min-height:72px}
             <span class="material-symbols-outlined" style="font-size:.95rem">refresh</span> Actualizar
           </button>
         </div>
-        <!-- KPI row -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
-          <div style="background:var(--brown);color:var(--cream);padding:20px;text-align:center;border-radius:4px">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem" id="act-total-clients">–</div>
-            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;opacity:.7">Clientes totales</div>
+        <!-- KPI bento row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:32px">
+          <div class="bento-card bento-dark" style="text-align:center;padding:24px 20px">
+            <span class="material-symbols-outlined" style="color:var(--honey);font-size:1.3rem;margin-bottom:8px;display:block;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">group</span>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:#fff;line-height:1" id="act-total-clients">–</div>
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,248,245,.5);margin-top:6px">Clientes totales</div>
           </div>
-          <div style="background:var(--cream);border:1.5px solid var(--cream-border);padding:20px;text-align:center;border-radius:4px">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#0a0a0a" id="act-total-stamps">–</div>
-            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light)">Sellos totales</div>
+          <div class="bento-card bento-sm" style="text-align:center;padding:24px 20px">
+            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.3rem;margin-bottom:8px;display:block">toll</span>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--primary);line-height:1" id="act-total-stamps">–</div>
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);margin-top:6px">Sellos totales</div>
           </div>
-          <div style="background:var(--cream);border:1.5px solid var(--cream-border);padding:20px;text-align:center;border-radius:4px">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--gold)" id="act-total-rewards">–</div>
-            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light)">Premios emitidos</div>
+          <div class="bento-card bento-sm" style="text-align:center;padding:24px 20px;border-bottom:3px solid var(--honey)">
+            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.3rem;margin-bottom:8px;display:block;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">card_giftcard</span>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--primary);line-height:1" id="act-total-rewards">–</div>
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);margin-top:6px">Premios emitidos</div>
           </div>
-          <div style="background:var(--cream);border:1.5px solid var(--cream-border);padding:20px;text-align:center;border-radius:4px">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--green)" id="act-total-redeemed">–</div>
-            <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light)">Premios canjeados</div>
+          <div class="bento-card bento-sm" style="text-align:center;padding:24px 20px">
+            <span class="material-symbols-outlined" style="color:#2e7d32;font-size:1.3rem;margin-bottom:8px;display:block">check_circle</span>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--primary);line-height:1" id="act-total-redeemed">–</div>
+            <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);margin-top:6px">Premios canjeados</div>
           </div>
         </div>
         <!-- Activity log -->
-        <div class="card-box">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-            <h3 style="color:#0a0a0a">Registro de actividad reciente</h3>
-            <div style="display:flex;gap:8px;align-items:center">
-              <select id="act-filter" onchange="loadActivity()" style="padding:6px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.82rem;background:var(--cream)">
-                <option value="all">Toda la actividad</option>
-                <option value="stamp">Solo sellos</option>
-                <option value="redeem">Solo canjes</option>
-                <option value="register">Solo altas</option>
-              </select>
-            </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid rgba(210,196,188,.2)">
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.05em;color:var(--primary)">Registro de actividad</h3>
+            <select id="act-filter" onchange="loadActivity()" style="padding:8px 12px;background:var(--surface-low);border:1px solid rgba(210,196,188,.25);border-radius:.5rem;font-size:.82rem;color:var(--brown);font-family:inherit;outline:none">
+              <option value="all">Toda la actividad</option>
+              <option value="stamp">Solo sellos</option>
+              <option value="redeem">Solo canjes</option>
+              <option value="register">Solo altas</option>
+            </select>
           </div>
           <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:.83rem">
-              <thead><tr style="background:var(--cream)">
-                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Fecha</th>
-                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Cliente</th>
-                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Actividad</th>
-                <th style="padding:8px 12px;text-align:center;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Cantidad</th>
-                <th style="padding:8px 12px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Nota</th>
+            <table class="stitch-table" style="font-size:.83rem">
+              <thead><tr>
+                <th>Fecha</th><th>Cliente</th><th>Actividad</th><th style="text-align:center">Cantidad</th><th>Nota</th>
               </tr></thead>
-              <tbody id="activity-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Cargando...</td></tr></tbody>
+              <tbody id="activity-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light)">Cargando...</td></tr></tbody>
             </table>
           </div>
-          <div style="margin-top:12px;text-align:center">
+          <div style="padding:16px 24px;text-align:center;border-top:1px solid rgba(210,196,188,.15)">
             <button class="btn-sm btn-ghost" onclick="loadMoreActivity()" id="act-load-more" style="display:none">Cargar más</button>
           </div>
         </div>
@@ -3682,54 +3704,92 @@ function fidCopyLink() {
 
 // ── TARJETAS ────────────────────────────────────────────────────────────────
 function buildCardMockup(card){
-  const dotSize = card.stamps <= 10 ? 34 : 26;
-  const dots = Array.from({length: card.stamps}, (_,i) => {
+  const dotSize = card.stamps <= 10 ? 20 : 14;
+  const maxDotsShow = Math.min(card.stamps, 10);
+  const dots = Array.from({length: maxDotsShow}, (_,i) => {
     const f = i < (card.filled || 0);
     return `<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;
-            background:${f ? card.accent_color : 'rgba(255,255,255,0.18)'};
-            display:flex;align-items:center;justify-content:center;font-size:${dotSize*.45}px">
+            background:${f ? card.accent_color : 'rgba(255,255,255,0.22)'};
+            display:flex;align-items:center;justify-content:center;font-size:${dotSize*.5}px">
             ${f ? `<span style="color:${card.bg_color}">✓</span>` : ''}</div>`;
   }).join('');
-
-  const cardHtml = `
-    <div style="width:100%;height:100%;background:${card.bg_color};display:flex;flex-direction:column;
-         justify-content:space-between;padding:20px 16px 16px;font-family:sans-serif;box-sizing:border-box">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:1.4rem">${card.emoji}</span>
-        <div style="font-size:.95rem;font-weight:900;color:${card.accent_color};line-height:1.1">${card.name}</div>
-      </div>
-      <div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px">${dots}</div>
-        <div style="display:flex;justify-content:space-between;font-size:.62rem;color:${card.text_color};opacity:.6;margin-bottom:4px">
-          <span>TITULAR</span><span>PREMIO</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:${card.text_color}">
-          <span>SUKIE COOKIE</span><span style="color:${card.accent_color}">${card.reward_name}</span>
-        </div>
-      </div>
-    </div>`;
+  const extraDots = card.stamps > 10 ? `<span style="font-size:.65rem;color:rgba(255,255,255,.55);align-self:center">+${card.stamps-10}</span>` : '';
 
   const ddId = `dd-${card.id}`;
   const wrap = document.createElement('div');
-  wrap.className = 'tarjeta-card-wrap';
+  wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
   wrap.innerHTML = `
-    <div class="phone-frame">
-      <div class="phone-notch"></div>
-      <div class="phone-screen">${cardHtml}</div>
+    <!-- Card visual preview -->
+    <div class="stitch-card-preview" style="background:${card.bg_color}">
+      <!-- Top row: emoji + name -->
+      <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:1">
+        <span style="font-size:1.5rem">${card.emoji}</span>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em;color:${card.accent_color};line-height:1">${card.name}</div>
+      </div>
+      <!-- Stamp dots -->
+      <div class="stitch-card-dots" style="position:relative;z-index:1;justify-content:flex-start">
+        ${dots}${extraDots}
+      </div>
+      <!-- Bottom row: business + reward -->
+      <div style="position:relative;z-index:1">
+        <div style="display:flex;justify-content:space-between;font-size:.55rem;color:${card.text_color};opacity:.55;margin-bottom:3px;letter-spacing:.12em;text-transform:uppercase">
+          <span>Titular</span><span>Premio</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:${card.text_color}">
+          <span>{{ biz_name|upper }}</span>
+          <span style="color:${card.accent_color}">${card.reward_name}</span>
+        </div>
+      </div>
+      <!-- Badges overlay -->
+      <div class="stitch-card-badges">
+        <span style="background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:${card.text_color};font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase">Activa</span>
+      </div>
     </div>
-    <div class="tarjeta-label">${card.name}</div>
-    <div class="tarjeta-status">● Activa</div>
-    <div class="tarjeta-actions">
-      <button class="btn-accion" onclick="toggleTarjetaDropdown('${ddId}', event)">
-        <span>⚙ Acción</span> <span style="font-size:.7rem">▾</span>
-      </button>
-      <div class="tarjeta-dropdown" id="${ddId}">
-        <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">🎯 Programa</a>
-        <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">🎨 Editar diseño</a>
-        <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">🔗 QR / Compartir</a>
-        <a onclick="showSection('activity');closeTarjetaDropdowns()">📋 Actividad</a>
-        <a onclick="showSection('clients');closeTarjetaDropdowns()">👥 Clientes</a>
-        <a onclick="deleteCardProgram('${card.id}');closeTarjetaDropdowns()" style="color:#cc2222">🗑 Eliminar</a>
+    <!-- Info below preview -->
+    <div class="stitch-card-info">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div class="tarjeta-label">${card.name}</div>
+          <div style="font-size:.78rem;color:var(--brown-light);margin-top:2px">${card.stamps} sellos · ${card.reward_name}</div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:.5rem;background:var(--surface-mid);display:flex;align-items:center;justify-content:center">
+          <span style="font-size:1.1rem">${card.emoji}</span>
+        </div>
+      </div>
+      <!-- Progress bar (decorative) -->
+      <div style="width:100%;height:3px;background:var(--surface-mid);border-radius:3px;margin-bottom:16px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(100, ((card.filled||0)/card.stamps)*100)}%;background:${card.accent_color};border-radius:3px;transition:width .6s"></div>
+      </div>
+      <!-- Actions -->
+      <div class="tarjeta-actions">
+        <button class="btn-sm btn-primary" style="font-size:.75rem;padding:8px 14px;display:flex;align-items:center;gap:6px" onclick="showSection('fidelizacion');closeTarjetaDropdowns()">
+          <span class="material-symbols-outlined" style="font-size:.9rem">tune</span> Gestionar
+        </button>
+        <div style="position:relative">
+          <button class="btn-sm btn-ghost" style="font-size:.75rem;padding:8px 12px;display:flex;align-items:center;gap:4px" onclick="toggleTarjetaDropdown('${ddId}', event)">
+            <span class="material-symbols-outlined" style="font-size:1rem">more_horiz</span>
+          </button>
+          <div class="tarjeta-dropdown" id="${ddId}">
+            <a onclick="showSection('fidelizacion');closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">stars</span> Programa
+            </a>
+            <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('diseno'),200);closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">palette</span> Editar diseño
+            </a>
+            <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">qr_code</span> QR / Compartir
+            </a>
+            <a onclick="showSection('activity');closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">receipt_long</span> Actividad
+            </a>
+            <a onclick="showSection('clients');closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">group</span> Clientes
+            </a>
+            <a onclick="deleteCardProgram('${card.id}');closeTarjetaDropdowns()" style="color:#cc2222">
+              <span class="material-symbols-outlined" style="font-size:.9rem;color:#cc2222">delete</span> Eliminar
+            </a>
+          </div>
+        </div>
       </div>
     </div>`;
   return wrap;
