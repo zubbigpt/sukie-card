@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{{ page_title }} – ZubCard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #26170c;
+      --honey: #ffca48;
+      --honey-dark: #785a00;
+      --surface: #fff8f5;
+      --outline: #a08d83;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--surface);
+      color: var(--primary);
+      min-height: 100vh;
+    }
+    header {
+      background: var(--primary);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Epilogue', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: .5px;
+    }
+    .logo span { color: var(--honey); }
+    header a.back {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 600;
+      transition: color .15s;
+    }
+    header a.back:hover { color: var(--honey); }
+    .container {
+      max-width: 760px;
+      margin: 48px auto;
+      padding: 0 24px 64px;
+    }
+    h1 {
+      font-family: 'Epilogue', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .updated {
+      color: var(--outline);
+      font-size: .82rem;
+      margin-bottom: 36px;
+    }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 28px 0 10px;
+    }
+    p, li {
+      font-size: .93rem;
+      line-height: 1.75;
+      color: #3d2b1f;
+    }
+    ul { padding-left: 20px; margin: 8px 0; }
+    li { margin-bottom: 4px; }
+    a { color: var(--honey-dark); text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #e2cfc8;
+      padding-bottom: 0;
+    }
+    .nav-tab {
+      padding: 10px 20px;
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--outline);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all .15s;
+    }
+    .nav-tab.active { color: var(--primary); border-bottom-color: var(--honey); }
+    .nav-tab:hover { color: var(--primary); }
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: .78rem;
+      color: var(--outline);
+      border-top: 1px solid #e2cfc8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="/">Zub<span>Card</span></a>
+    <a class="back" href="/">← Volver al inicio</a>
+  </header>
+
+  <div class="container">
+    <h1>{{ page_title }}</h1>
+    <p class="updated">Última actualización: marzo de 2026</p>
+
+    <div class="nav-tabs">
+      <a class="nav-tab {% if page_id == 'privacidad' %}active{% endif %}" href="/privacidad">Privacidad</a>
+      <a class="nav-tab {% if page_id == 'terminos' %}active{% endif %}" href="/terminos">Términos de uso</a>
+      <a class="nav-tab {% if page_id == 'cookies' %}active{% endif %}" href="/cookies">Cookies</a>
+    </div>
+
+    {{ content | safe }}
+  </div>
+
+  <footer>ZubCard © 2026 · <a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a> · <a href="/cookies">Cookies</a></footer>
+</body>
+</html>

@@ -406,6 +406,143 @@ def health():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# PÁGINAS LEGALES
+# ══════════════════════════════════════════════════════════════════════════════
+PRIVACY_CONTENT = """
+<h2>1. Responsable del tratamiento</h2>
+<p>ZubCard (en adelante, "la Plataforma") es responsable del tratamiento de los datos personales que se recogen a través de este sitio web y de las tarjetas de fidelización gestionadas por la misma.</p>
+
+<h2>2. Datos que recopilamos</h2>
+<p>Recopilamos los siguientes datos personales de los usuarios finales que se registran en los programas de fidelización:</p>
+<ul>
+  <li>Nombre y apellidos</li>
+  <li>Dirección de correo electrónico</li>
+  <li>Número de teléfono (opcional)</li>
+  <li>Fecha de nacimiento (opcional)</li>
+  <li>Historial de sellos y premios</li>
+</ul>
+
+<h2>3. Finalidad del tratamiento</h2>
+<p>Los datos se tratan con las siguientes finalidades:</p>
+<ul>
+  <li>Gestión del programa de fidelización del negocio correspondiente</li>
+  <li>Envío de comunicaciones relacionadas con el programa (bienvenida, cumpleaños, campañas)</li>
+  <li>Mejora del servicio y análisis estadístico agregado</li>
+</ul>
+
+<h2>4. Base legal</h2>
+<p>El tratamiento se basa en el consentimiento del interesado, prestado en el momento del registro, y en la ejecución del contrato de fidelización.</p>
+
+<h2>5. Conservación de datos</h2>
+<p>Los datos se conservan durante el tiempo en que el usuario mantenga su tarjeta activa, y hasta 3 años después de la última actividad, salvo obligación legal de conservación mayor.</p>
+
+<h2>6. Derechos del usuario</h2>
+<p>Puede ejercer sus derechos de acceso, rectificación, supresión, limitación, portabilidad y oposición contactando con el negocio emisor de su tarjeta, o con ZubCard a través de: <a href="mailto:hola@zubcard.com">hola@zubcard.com</a>.</p>
+
+<h2>7. Transferencias internacionales</h2>
+<p>Los datos son alojados en servidores dentro del Espacio Económico Europeo o en proveedores con garantías adecuadas conforme al RGPD.</p>
+
+<h2>8. Modificaciones</h2>
+<p>Esta política puede actualizarse. La versión vigente siempre estará disponible en esta página.</p>
+"""
+
+TERMS_CONTENT = """
+<h2>1. Objeto</h2>
+<p>Los presentes Términos de Uso regulan el acceso y uso de la plataforma ZubCard, tanto por parte de los negocios que contratan el servicio (en adelante, "Negocios") como por los usuarios finales de los programas de fidelización.</p>
+
+<h2>2. Registro y acceso</h2>
+<p>Para acceder como Negocio es necesario crear una cuenta con datos verídicos. El usuario es responsable de mantener la confidencialidad de su PIN de administración. ZubCard no será responsable de los accesos no autorizados derivados del incumplimiento de esta obligación.</p>
+
+<h2>3. Uso permitido</h2>
+<p>El servicio está destinado exclusivamente a la gestión de programas de fidelización legales y legítimos. Queda expresamente prohibido:</p>
+<ul>
+  <li>Utilizar la plataforma para actividades ilegales o fraudulentas</li>
+  <li>Intentar acceder a datos de otros negocios</li>
+  <li>Realizar ingeniería inversa o copiar el software</li>
+  <li>Enviar comunicaciones no solicitadas (spam)</li>
+</ul>
+
+<h2>4. Responsabilidad del Negocio</h2>
+<p>Cada Negocio es responsable del contenido que publica en su programa de fidelización, del cumplimiento de la normativa de protección de datos aplicable respecto a sus clientes, y del uso adecuado de las funcionalidades de comunicación.</p>
+
+<h2>5. Disponibilidad del servicio</h2>
+<p>ZubCard se compromete a mantener el servicio disponible con un objetivo de uptime del 99,5%, sin garantizar disponibilidad ininterrumpida. Se realizarán mantenimientos con previo aviso cuando sea posible.</p>
+
+<h2>6. Planes y facturación</h2>
+<p>Los precios y condiciones de cada plan están disponibles en la página de precios. La facturación es mensual y el Negocio puede cancelar en cualquier momento, sin permanencia.</p>
+
+<h2>7. Propiedad intelectual</h2>
+<p>El código, diseño y marca ZubCard son propiedad exclusiva de sus desarrolladores. Los contenidos creados por cada Negocio (nombre, logotipo, textos) son propiedad del Negocio correspondiente.</p>
+
+<h2>8. Ley aplicable</h2>
+<p>Estos términos se rigen por la legislación española. Cualquier controversia se someterá a los juzgados y tribunales de la ciudad de Madrid.</p>
+"""
+
+COOKIES_CONTENT = """
+<h2>¿Qué son las cookies?</h2>
+<p>Las cookies son pequeños archivos de texto que los sitios web almacenan en tu dispositivo para recordar información sobre tu visita.</p>
+
+<h2>Cookies que utilizamos</h2>
+
+<h2>Cookies estrictamente necesarias</h2>
+<p>Son imprescindibles para el funcionamiento básico del sitio. No pueden desactivarse.</p>
+<ul>
+  <li><strong>session</strong> – Mantiene tu sesión autenticada como administrador. Duración: sesión.</li>
+</ul>
+
+<h2>Cookies funcionales</h2>
+<p>Mejoran la experiencia pero no son estrictamente necesarias.</p>
+<ul>
+  <li><strong>zubcard_pin_*</strong> – Almacena temporalmente el PIN para el inicio de sesión automático tras el registro. Se elimina al usarse (sessionStorage, no persistente).</li>
+</ul>
+
+<h2>Cookies analíticas</h2>
+<p>Actualmente no utilizamos cookies de análisis o seguimiento de terceros.</p>
+
+<h2>Cookies de marketing</h2>
+<p>No utilizamos cookies de publicidad o retargeting.</p>
+
+<h2>¿Cómo gestionar las cookies?</h2>
+<p>Puedes configurar tu navegador para bloquear o eliminar las cookies. Ten en cuenta que desactivar las cookies necesarias puede afectar al funcionamiento del sitio.</p>
+<ul>
+  <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Google Chrome</a></li>
+  <li><a href="https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitios-web-rastrear-preferencias" target="_blank" rel="noopener">Mozilla Firefox</a></li>
+  <li><a href="https://support.apple.com/es-es/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a></li>
+</ul>
+
+<h2>Actualizaciones</h2>
+<p>Esta política de cookies puede actualizarse para reflejar cambios en el servicio. La fecha de última actualización aparece al inicio de esta página.</p>
+"""
+
+@app.get("/privacidad", response_class=HTMLResponse)
+def privacy_page(request: Request):
+    return templates.TemplateResponse("legal.html", {
+        "request": request,
+        "page_title": "Política de Privacidad",
+        "page_id": "privacidad",
+        "content": PRIVACY_CONTENT,
+    })
+
+@app.get("/terminos", response_class=HTMLResponse)
+def terms_page(request: Request):
+    return templates.TemplateResponse("legal.html", {
+        "request": request,
+        "page_title": "Términos de Uso",
+        "page_id": "terminos",
+        "content": TERMS_CONTENT,
+    })
+
+@app.get("/cookies", response_class=HTMLResponse)
+def cookies_page(request: Request):
+    return templates.TemplateResponse("legal.html", {
+        "request": request,
+        "page_title": "Política de Cookies",
+        "page_id": "cookies",
+        "content": COOKIES_CONTENT,
+    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # TARJETA PÚBLICA
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/card/{card_id}", response_class=HTMLResponse)
@@ -1231,9 +1368,9 @@ async def admin_legacy(request: Request, pin: str = "", db: Session = Depends(ge
 DEFAULT_CONFIG = {
     "general": {
         "card_name": "Sellos",
-        "card_title": "Sukie Card",
-        "issuer": "Sukie Cookie",
-        "description": "Tarjeta de sellos Sukie Cookie",
+        "card_title": "Tarjeta de Fidelización",
+        "issuer": "",
+        "description": "Tarjeta de sellos",
         "expiry_type": "never",  # never | date | days_from_register
         "expiry_date": "",
         "expiry_days": 365,
@@ -1242,7 +1379,7 @@ DEFAULT_CONFIG = {
     },
     "programa": {
         "stamps_per_reward": 10,
-        "reward_name": "Cookie Gratis",
+        "reward_name": "Premio",
         "msg_single": "{nombre} has conseguido 1 sello",
         "msg_multiple": "{nombre} has conseguido {#} sellos",
         "birthday_enabled": True,
@@ -1251,8 +1388,8 @@ DEFAULT_CONFIG = {
         "anniversary_enabled": True,
     },
     "landing": {
-        "form_title": "Únete a la Sukie Card",
-        "header_text": "Regístrate y acumula cookies gratis",
+        "form_title": "Únete a nuestro programa",
+        "header_text": "Regístrate y acumula puntos",
         "button_text": "Registrarse",
         "bg_color": "#FFF5B6",
         "text_color": "#280011",
@@ -1268,15 +1405,15 @@ DEFAULT_CONFIG = {
         "field_email_required": True,
         "field_phone_required": False,
         "field_birthdate_required": False,
-        "company_name": "Suculent grupo de hosteleria SL",
-        "company_email": "suculentcookie@gmail.com",
-        "company_phone": "683174396",
+        "company_name": "",
+        "company_email": "",
+        "company_phone": "",
         "terms_url": "",
         "register_limit_date": "",
         "access_type": "public",
     },
     "diseno": {
-        "commercial_name": "Sukie Cookie",
+        "commercial_name": "",
         "card_bg_color": "#FFFFC6",
         "label_color": "#220015",
         "text_color": "#220015",
@@ -1286,10 +1423,10 @@ DEFAULT_CONFIG = {
         "stamp_filled_color": "#FF6B9D",
         "front_field1_label": "Titular",
         "front_field1_value": "NOMBRE Y APELLIDOS",
-        "front_field2_label": "Cookies disponibles",
+        "front_field2_label": "Premios disponibles",
         "front_field2_value": "Premios/Vales Disponibles",
-        "link_instagram": "https://instagram.com/sukie.cookie",
-        "link_web": "https://sukiecookie.es",
+        "link_instagram": "",
+        "link_web": "",
         "back_title_updates": "Últimas actualizaciones",
         "back_title_holder": "Titular",
         "back_title_rewards_pending": "Premios para canjear",
@@ -1301,14 +1438,14 @@ DEFAULT_CONFIG = {
     },
     "comunicaciones": {
         "welcome_email_enabled": True,
-        "welcome_email_subject": "¡Bienvenido/a a la Sukie Card! 🍪",
-        "welcome_email_body": "Hola {nombre},\n\nYa eres parte de la familia Sukie Cookie.\nConsigue 10 sellos y llévate una cookie gratis.\n\nVer tu tarjeta: {link_tarjeta}\n\n¡Hasta pronto!\nSukie Cookie",
+        "welcome_email_subject": "¡Bienvenido/a! 🎉",
+        "welcome_email_body": "Hola {nombre},\n\nYa eres parte de nuestro programa de fidelización.\n\nVer tu tarjeta: {link_tarjeta}\n\n¡Hasta pronto!",
         "birthday_email_enabled": True,
-        "birthday_email_subject": "¡Feliz Cumpleaños de parte de Sukie Cookie! 🎂🍪",
-        "birthday_email_body": "Hola {nombre},\n\n¡Hoy es tu día especial!\nPasa a visitarnos y llévate un regalo.\n\nCon cariño,\nSukie Cookie",
+        "birthday_email_subject": "¡Feliz Cumpleaños! 🎂",
+        "birthday_email_body": "Hola {nombre},\n\n¡Hoy es tu día especial!\nPasa a visitarnos y llévate un regalo.\n\nCon cariño,\n{nombre_negocio}",
     },
     "club": {
-        "nombre": "Cookie VIP Club",
+        "nombre": "Club VIP",
         "descripcion": "Los mejores clientes merecen los mejores premios",
         "tagline": "Sé parte de algo especial",
         "activo": True
@@ -1407,6 +1544,28 @@ def get_config(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
             result[section] = {**result[section], **values}
         else:
             result[section] = values
+    # Fill in business-specific defaults from the actual business record
+    # so new tenants don't see placeholder or another tenant's name
+    if biz:
+        diseno = dict(result.get("diseno", {}))
+        if not diseno.get("commercial_name"):
+            diseno["commercial_name"] = biz.name
+        result["diseno"] = diseno
+
+        general = dict(result.get("general", {}))
+        if not general.get("issuer"):
+            general["issuer"] = biz.name
+        if not general.get("description") or general.get("description") == "Tarjeta de sellos":
+            general["description"] = f"Tarjeta de sellos {biz.name}"
+        result["general"] = general
+
+        landing = dict(result.get("landing", {}))
+        if not landing.get("company_email") and hasattr(biz, "email") and biz.email:
+            landing["company_email"] = biz.email
+        if landing.get("form_title") == "Únete a nuestro programa":
+            landing["form_title"] = f"Únete a {biz.name}"
+        result["landing"] = landing
+
     return result
 
 
