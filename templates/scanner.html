@@ -448,7 +448,7 @@
     <div id="mode-quick">
       <div class="card">
         <div class="card-body">
-          <label>¿Cuántas cookies compró?</label>
+          <label>¿Cuántos sellos añadir?</label>
           <div class="stepper">
             <button class="stepper-btn" onclick="stepQuick(-1)">−</button>
             <div id="quick-count">1</div>
@@ -510,10 +510,10 @@ let adminPin = "", currentCardId = "", currentCard = null;
 let scanActive = false, videoStream = null, quickCount = 1;
 
 const PRODUCTS = [
-  { id:"cookie",  name:"Cookie individual", sub:"1 sello por unidad", stamps:1 },
-  { id:"box6",    name:"Caja 6 galletas",   sub:"6 sellos",           stamps:6 },
-  { id:"box12",   name:"Caja 12 galletas",  sub:"12 sellos",          stamps:12 },
-  { id:"brownie", name:"Brownie",           sub:"1 sello por unidad", stamps:1 },
+  { id:"unit1",  name:"Unidad",       sub:"1 sello por unidad", stamps:1 },
+  { id:"pack6",  name:"Pack 6",       sub:"6 sellos",           stamps:6 },
+  { id:"pack12", name:"Pack 12",      sub:"12 sellos",          stamps:12 },
+  { id:"bonus",  name:"Extra / Bono", sub:"1 sello adicional",  stamps:1 },
 ];
 let productQty = {};
 
@@ -608,17 +608,21 @@ function renderCustomer() {
   const hasAward = (c.awardBalance || 0) > 0;
   document.getElementById('cust-name').textContent = c.name || ((c.firstName||'') + ' ' + (c.lastName||'')).trim();
   document.getElementById('cust-sub').textContent  = `${c.stamps} / ${spr} sellos · ${c.totalStamps} totales`;
-  document.getElementById('cust-avatar').textContent = hasAward ? '🎁' : '🍪';
-  const tier = c.tier || 'bronze';
-  const tierLabel = { bronze:'🥉 Bronce', silver:'🥈 Plata', gold:'🥇 Oro' };
-  document.getElementById('tier-badge-wrap').innerHTML = `<span class="tier-badge tier-${tier}">${tierLabel[tier]||tier}</span>`;
+  document.getElementById('cust-avatar').textContent = hasAward ? '🎁' : '⭐';
+  // tier may be a string or an object {name, color, emoji, next, next_at}
+  const tierObj = c.tier || {};
+  const tierName = (typeof tierObj === 'object') ? (tierObj.name || 'Bronce') : String(tierObj);
+  const tierEmoji = (typeof tierObj === 'object') ? (tierObj.emoji || '🥉') : '🥉';
+  const tierKey = tierName.toLowerCase();
+  const tierColor = (typeof tierObj === 'object' && tierObj.color) ? tierObj.color : '#CD7F32';
+  document.getElementById('tier-badge-wrap').innerHTML = `<span class="tier-badge tier-${tierKey}" style="background:${tierColor}20;color:${tierColor}">${tierEmoji} ${tierName}</span>`;
   const aw = document.getElementById('award-wrap');
   aw.innerHTML = hasAward ? `<div class="award-pill">🎉 ${c.awardBalance} premio${c.awardBalance>1?'s':''} disponible${c.awardBalance>1?'s':''}</div>` : '';
   const grid = document.getElementById('stamps-mini'); grid.innerHTML = '';
   for (let i = 0; i < spr; i++) {
     const d = document.createElement('div');
     d.className = 'sm-dot ' + (i < c.stamps ? 'filled' : 'empty');
-    d.textContent = i < c.stamps ? '🍪' : '○';
+    d.textContent = i < c.stamps ? '✦' : '○';
     grid.appendChild(d);
   }
   quickCount = 1; updateQuickDisplay(); resetProducts(); renderRedeemButtons();
@@ -680,7 +684,7 @@ async function redeemReward() {
 
 async function submitStamps(mode) {
   let stamps, note;
-  if (mode==='quick') { stamps=quickCount; note=`Venta: ${stamps} cookie${stamps>1?'s':''}`; }
+  if (mode==='quick') { stamps=quickCount; note=`Sello rápido: ${stamps} sello${stamps>1?'s':''}`; }
   else { stamps=getPTotal(); note=getPNote(); if(!stamps){const e=document.getElementById('purchase-error');e.textContent='Añade al menos un producto.';e.style.display='block';return;} }
   const btnId=mode==='quick'?'quick-add-btn':'purchase-add-btn';
   const btn=document.getElementById(btnId); btn.disabled=true; btn.textContent='Añadiendo…';
@@ -690,7 +694,7 @@ async function submitStamps(mode) {
     const d = await r.json();
     if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
     const spr=getSPR(), name=currentCard.name||(currentCard.firstName||'');
-    document.getElementById('success-icon').textContent='🍪';
+    document.getElementById('success-icon').textContent='✅';
     document.getElementById('success-title').textContent='¡Hecho!';
     document.getElementById('success-name').textContent=name;
     document.getElementById('success-detail').textContent=`+${stamps} sello${stamps>1?'s':''} añadido${stamps>1?'s':''}. Total: ${d.stamps} / ${spr}`;
