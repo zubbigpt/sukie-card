@@ -4690,9 +4690,21 @@ async function saveNewCard(){
 function toggleTarjetaDropdown(id, e){
   if(e) e.stopPropagation();
   const dd = document.getElementById(id);
+  if(!dd) return;
   const isOpen = dd.classList.contains('open');
   closeTarjetaDropdowns();
-  if(!isOpen) dd.classList.add('open');
+  if(!isOpen){
+    // Use fixed positioning to escape any overflow:hidden parent
+    const btn = e ? e.currentTarget : null;
+    if(btn){
+      const rect = btn.getBoundingClientRect();
+      dd.style.position = 'fixed';
+      dd.style.top = (rect.bottom + 4) + 'px';
+      dd.style.right = (window.innerWidth - rect.right) + 'px';
+      dd.style.left = 'auto';
+    }
+    dd.classList.add('open');
+  }
 }
 function closeTarjetaDropdowns(){
   document.querySelectorAll('.tarjeta-dropdown').forEach(d=>d.classList.remove('open'));
