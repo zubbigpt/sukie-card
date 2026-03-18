@@ -590,31 +590,31 @@ def register_page(request: Request):
 
 @app.post("/api/register")
 async def public_register(request: Request, db: Session = Depends(get_db)):
-    import traceback
+    import traceback as _tb
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email requerido")
+
+    # Resolve business for multi-tenant registration
+    slug = str(body.get("slug") or "").strip()
+    biz = get_business_by_slug(slug, db) if slug else None
+    biz_id = biz.id if biz else None
+
+    # Check if already registered within this business
+    existing_q = db.query(models.Customer).filter(models.Customer.email == email)
+    if biz_id:
+        existing_q = existing_q.filter(models.Customer.business_id == biz_id)
+    existing = existing_q.first()
+    if existing:
+        card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.customer_id == existing.id).first()
+        return {"message": "Ya registrado", "card_id": str(card.id) if card else None,
+                "card_url": f"{BASE_URL}/card/{card.id}" if card else None}
+
+    fn = (body.get("first_name") or "").strip() or "Cliente"
+    ln = (body.get("last_name") or "").strip()
+
     try:
-        body = await request.json()
-        email = (body.get("email") or "").strip().lower()
-        if not email:
-            raise HTTPException(status_code=400, detail="Email requerido")
-
-        # Resolve business for multi-tenant registration
-        slug = str(body.get("slug") or "").strip()
-        biz = get_business_by_slug(slug, db) if slug else None
-        biz_id = biz.id if biz else None
-
-        # Check if already registered within this business
-        existing_q = db.query(models.Customer).filter(models.Customer.email == email)
-        if biz_id:
-            existing_q = existing_q.filter(models.Customer.business_id == biz_id)
-        existing = existing_q.first()
-        if existing:
-            card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.customer_id == existing.id).first()
-            return {"message": "Ya registrado", "card_id": str(card.id) if card else None,
-                    "card_url": f"{BASE_URL}/card/{card.id}" if card else None}
-
-        fn = (body.get("first_name") or "").strip() or "Cliente"
-        ln = (body.get("last_name") or "").strip()
-
         customer = models.Customer(
             email        = email,
             first_name   = fn,
@@ -641,10 +641,15 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
         db.add(tx)
         db.commit()
         db.refresh(card)
+    except Exception as e:
+        db.rollback()
+        # Return error as 200 temporarily to see detail (debug only)
+        return {"debug_error": f"{type(e).__name__}: {str(e)}", "traceback": _tb.format_exc()[-1000:]}
 
-        # Handle referral
-        ref_code = body.get("ref", "").strip().upper()
-        if ref_code:
+    # Handle referral
+    ref_code = body.get("ref", "").strip().upper()
+    if ref_code:
+        try:
             ref = db.query(models.Referral).filter(
                 models.Referral.code == ref_code,
                 models.Referral.used == False
@@ -661,18 +666,15 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
                 card.stamps       = (card.stamps or 0) + ref.bonus_stamps
                 card.total_stamps = (card.total_stamps or 0) + ref.bonus_stamps
                 db.commit()
+        except Exception:
+            pass
 
-        return {
-            "message":  "Tarjeta creada",
-            "card_id":  str(card.id),
-            "card_url": f"{BASE_URL}/card/{card.id}",
-            "name":     fn,
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Register error: {type(e).__name__}: {str(e)}")
+    return {
+        "message":  "Tarjeta creada",
+        "card_id":  str(card.id),
+        "card_url": f"{BASE_URL}/card/{card.id}",
+        "name":     fn,
+    }
 
 
 # ══════════════════════════════════════════════════════════════════════════════
