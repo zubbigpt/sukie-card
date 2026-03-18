@@ -590,85 +590,89 @@ def register_page(request: Request):
 
 @app.post("/api/register")
 async def public_register(request: Request, db: Session = Depends(get_db)):
-    body = await request.json()
-    email = (body.get("email") or "").strip().lower()
-    if not email:
-        raise HTTPException(status_code=400, detail="Email requerido")
+    import traceback
+    try:
+        body = await request.json()
+        email = (body.get("email") or "").strip().lower()
+        if not email:
+            raise HTTPException(status_code=400, detail="Email requerido")
 
-    # Resolve business for multi-tenant registration
-    slug = str(body.get("slug") or "").strip()
-    biz = get_business_by_slug(slug, db) if slug else None
-    biz_id = biz.id if biz else None
+        # Resolve business for multi-tenant registration
+        slug = str(body.get("slug") or "").strip()
+        biz = get_business_by_slug(slug, db) if slug else None
+        biz_id = biz.id if biz else None
 
-    # Check if already registered within this business
-    existing_q = db.query(models.Customer).filter(models.Customer.email == email)
-    if biz_id:
-        existing_q = existing_q.filter(models.Customer.business_id == biz_id)
-    existing = existing_q.first()
-    if existing:
-        card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.customer_id == existing.id).first()
-        return {"message": "Ya registrado", "card_id": str(card.id) if card else None,
-                "card_url": f"{BASE_URL}/card/{card.id}" if card else None}
+        # Check if already registered within this business
+        existing_q = db.query(models.Customer).filter(models.Customer.email == email)
+        if biz_id:
+            existing_q = existing_q.filter(models.Customer.business_id == biz_id)
+        existing = existing_q.first()
+        if existing:
+            card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.customer_id == existing.id).first()
+            return {"message": "Ya registrado", "card_id": str(card.id) if card else None,
+                    "card_url": f"{BASE_URL}/card/{card.id}" if card else None}
 
-    fn = (body.get("first_name") or "").strip() or "Cliente"
-    ln = (body.get("last_name") or "").strip()
+        fn = (body.get("first_name") or "").strip() or "Cliente"
+        ln = (body.get("last_name") or "").strip()
 
-    customer = models.Customer(
-        email        = email,
-        first_name   = fn,
-        last_name    = ln,
-        phone        = body.get("phone", ""),
-        birth_date   = body.get("birth_date", ""),
-        card_active  = True,
-        opt_in       = body.get("opt_in", True),
-        opt_in_email = body.get("opt_in_email", True),
-        opt_in_sms   = body.get("opt_in_sms", False),
-        origin       = "Web",
-        channel      = body.get("channel", "Landing"),
-        language     = body.get("language", "es"),
-        business_id  = biz_id,
-    )
-    db.add(customer)
-    db.flush()
+        customer = models.Customer(
+            email        = email,
+            first_name   = fn,
+            last_name    = ln,
+            phone        = body.get("phone", ""),
+            birth_date   = body.get("birth_date", ""),
+            card_active  = True,
+            opt_in       = body.get("opt_in", True),
+            opt_in_email = body.get("opt_in_email", True),
+            opt_in_sms   = body.get("opt_in_sms", False),
+            origin       = "Web",
+            channel      = body.get("channel", "Landing"),
+            language     = body.get("language", "es"),
+            business_id  = biz_id,
+        )
+        db.add(customer)
+        db.flush()
 
-    card = models.LoyaltyCard(customer_id=customer.id)
-    db.add(card)
+        card = models.LoyaltyCard(customer_id=customer.id)
+        db.add(card)
 
-    tx = models.StampTransaction(card_id=card.id, stamps_added=0,
-                                  transaction_type="register", note="Alta Web")
-    db.add(tx)
-    db.commit()
-    db.refresh(card)
+        tx = models.StampTransaction(card_id=card.id, stamps_added=0,
+                                      transaction_type="register", note="Alta Web")
+        db.add(tx)
+        db.commit()
+        db.refresh(card)
 
-    # Handle referral
-    ref_code = body.get("ref", "").strip().upper()
-    if ref_code:
-        ref = db.query(models.Referral).filter(
-            models.Referral.code == ref_code,
-            models.Referral.used == False
-        ).first()
-        if ref and str(ref.referrer_card) != str(card.id):
-            ref.used = True
-            ref.referred_card = card.id
-            ref.used_at = datetime.now(timezone.utc)
-            # Give bonus stamps to referrer
-            referrer_card = db.query(models.LoyaltyCard).filter(
-                models.LoyaltyCard.id == ref.referrer_card).first()
-            if referrer_card:
-                referrer_card.stamps       = (referrer_card.stamps or 0) + ref.bonus_stamps
-                referrer_card.total_stamps = (referrer_card.total_stamps or 0) + ref.bonus_stamps
-            # Give bonus stamps to new user too
-            card.stamps       = (card.stamps or 0) + ref.bonus_stamps
-            card.total_stamps = (card.total_stamps or 0) + ref.bonus_stamps
-            db.commit()
+        # Handle referral
+        ref_code = body.get("ref", "").strip().upper()
+        if ref_code:
+            ref = db.query(models.Referral).filter(
+                models.Referral.code == ref_code,
+                models.Referral.used == False
+            ).first()
+            if ref and str(ref.referrer_card) != str(card.id):
+                ref.used = True
+                ref.referred_card = card.id
+                ref.used_at = datetime.now(timezone.utc)
+                referrer_card = db.query(models.LoyaltyCard).filter(
+                    models.LoyaltyCard.id == ref.referrer_card).first()
+                if referrer_card:
+                    referrer_card.stamps       = (referrer_card.stamps or 0) + ref.bonus_stamps
+                    referrer_card.total_stamps = (referrer_card.total_stamps or 0) + ref.bonus_stamps
+                card.stamps       = (card.stamps or 0) + ref.bonus_stamps
+                card.total_stamps = (card.total_stamps or 0) + ref.bonus_stamps
+                db.commit()
 
-
-    return {
-        "message":  "Tarjeta creada",
-        "card_id":  str(card.id),
-        "card_url": f"{BASE_URL}/card/{card.id}",
-        "name":     fn,
-    }
+        return {
+            "message":  "Tarjeta creada",
+            "card_id":  str(card.id),
+            "card_url": f"{BASE_URL}/card/{card.id}",
+            "name":     fn,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Register error: {type(e).__name__}: {str(e)}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
