@@ -669,6 +669,55 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
         except Exception:
             pass
 
+    # Send welcome email (non-blocking — never break registration if email fails)
+    try:
+        card_url = f"{BASE_URL}/card/{card.id}"
+        referral_code = ""
+        referral_url  = ""
+        try:
+            ref_obj = db.query(models.Referral).filter(
+                models.Referral.referrer_card == card.id
+            ).first()
+            if ref_obj:
+                referral_code = ref_obj.code
+                referral_url  = f"{BASE_URL}/biz/{slug}/register?ref={ref_obj.code}" if slug else ""
+        except Exception:
+            pass
+
+        # Use card program's custom subject/body if configured
+        email_subject = "¡Bienvenido/a! 🎉"
+        email_html    = None
+        if biz_id:
+            try:
+                prog = db.query(models.CardProgram).filter(
+                    models.CardProgram.business_id == biz_id
+                ).first()
+                if prog and prog.welcome_email_subject:
+                    email_subject = prog.welcome_email_subject
+                if prog and prog.welcome_email_body:
+                    # Simple variable substitution for custom body
+                    biz_name = biz.name if biz else ""
+                    custom_body = prog.welcome_email_body
+                    custom_body = custom_body.replace("{nombre}", fn)
+                    custom_body = custom_body.replace("{link_tarjeta}", card_url)
+                    custom_body = custom_body.replace("{negocio}", biz_name)
+                    email_html = f"<html><body style='font-family:sans-serif'>{custom_body}</body></html>"
+            except Exception:
+                pass
+
+        if email_html is None:
+            email_html = render_welcome_email(
+                name=fn,
+                card_url=card_url,
+                stamps=card.stamps or 0,
+                referral_code=referral_code,
+                referral_url=referral_url,
+            )
+
+        send_email(email, email_subject, email_html)
+    except Exception as _email_err:
+        print(f"Welcome email failed (non-fatal): {_email_err}")
+
     return {
         "message":  "Tarjeta creada",
         "card_id":  str(card.id),
