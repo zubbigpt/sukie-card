@@ -341,7 +341,7 @@ def send_email(to_email: str, subject: str, html_body: str) -> bool:
         return False
 
 
-def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_code: str = "", referral_url: str = "") -> str:
+def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_code: str = "", referral_url: str = "", wallet_url: str = "") -> str:
     """Render welcome email HTML"""
     template = templates.get_template("email_welcome.html")
     return template.render(
@@ -350,6 +350,7 @@ def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_cod
         stamps=stamps,
         referral_code=referral_code,
         referral_url=referral_url,
+        wallet_url=wallet_url,
         subject="¡Bienvenido/a! 🎉",
     )
 
@@ -542,6 +543,56 @@ def cookies_page(request: Request):
 # ══════════════════════════════════════════════════════════════════════════════
 # TARJETA PÚBLICA
 # ══════════════════════════════════════════════════════════════════════════════
+@app.get("/card/{card_id}/wallet.pkpass")
+def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
+    """Generate and return an Apple Wallet .pkpass for this loyalty card."""
+    from fastapi.responses import Response as FResponse
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+
+    # Get business-specific card program settings
+    stamps_per_reward = STAMPS_PER_REWARD
+    reward_name = "Premio"
+    biz_name = "Zubie Card"
+    primary_color = "#26170c"
+    accent_color = "#ffca48"
+    if customer and customer.business_id:
+        biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+        if biz:
+            biz_name = biz.name or biz_name
+            stamps_per_reward = biz.stamps_per_reward or stamps_per_reward
+            primary_color = biz.primary_color or primary_color
+            accent_color = biz.accent_color or accent_color
+        prog = db.query(models.CardProgram).filter(
+            models.CardProgram.business_id == customer.business_id
+        ).first()
+        if prog:
+            reward_name = prog.reward_name or reward_name
+
+    try:
+        from wallet_pass import generate_pkpass
+        pkpass_bytes = generate_pkpass(
+            card_id=str(card.id),
+            first_name=customer.first_name if customer else "Cliente",
+            last_name=customer.last_name if customer else "",
+            stamps=card.stamps or 0,
+            stamps_per_reward=stamps_per_reward,
+            reward_name=reward_name,
+            biz_name=biz_name,
+            primary_color=primary_color,
+            accent_color=accent_color,
+        )
+        return FResponse(
+            content=pkpass_bytes,
+            media_type="application/vnd.apple.pkpass",
+            headers={"Content-Disposition": f'attachment; filename="tarjeta-{str(card.id)[:8]}.pkpass"'},
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=503, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generando wallet pass: {str(e)}")
+
+
 @app.get("/card/{card_id}", response_class=HTMLResponse)
 def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     card = get_card_or_404(card_id, db)
@@ -705,6 +756,9 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
             except Exception:
                 pass
 
+        # Wallet URL — always include; if Apple certs not configured it just 404s gracefully
+        wallet_url = f"{BASE_URL}/card/{card.id}/wallet.pkpass"
+
         if email_html is None:
             email_html = render_welcome_email(
                 name=fn,
@@ -712,6 +766,7 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
                 stamps=card.stamps or 0,
                 referral_code=referral_code,
                 referral_url=referral_url,
+                wallet_url=wallet_url if os.environ.get("APPLE_P12_B64") else "",
             )
 
         send_email(email, email_subject, email_html)
