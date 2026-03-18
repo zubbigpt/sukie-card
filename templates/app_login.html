@@ -338,11 +338,13 @@
         const d = await r.json();
 
         if (r.ok) {
-          // Store internal PIN in sessionStorage so dashboard API calls work
+          // Store internal PIN in sessionStorage so dashboard auto-login works
           if (d.pin && d.slug) {
             sessionStorage.setItem('zubcard_pin_' + d.slug, d.pin);
           }
-          window.location.href = d.dashboard_url || '/app/login';
+          // Respect ?next= param (used when dashboard redirects here)
+          const nextUrl = new URLSearchParams(window.location.search).get('next');
+          window.location.href = nextUrl || d.dashboard_url || '/app/login';
         } else {
           show('err', d.detail || 'Email o contraseña incorrectos');
           btn.textContent = 'Iniciar sesión →';

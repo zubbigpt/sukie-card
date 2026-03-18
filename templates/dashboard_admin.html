@@ -349,14 +349,16 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
+<!-- LOGIN (solo visible si no hay PIN en URL/session — redirige al login principal) -->
+<div id="login-screen" style="display:none">
   <div class="login-box">
     <div style="width:90px;height:90px;margin:0 auto 16px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;color:var(--brown)">{{ biz_name[0].upper() }}</div>
-    <h1>{{ biz_name }} Admin</h1>
-    <p>Introduce el PIN de administrador</p>
-    <input type="password" id="login-pin" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')doLogin()">
-    <button onclick="doLogin()">Entrar →</button>
+    <h1>{{ biz_name }}</h1>
+    <p style="font-size:.88rem;color:#888;margin-bottom:20px">Inicia sesión para acceder al panel</p>
+    <a href="/app/login" style="display:block;width:100%;padding:13px;background:#26170c;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem;text-align:center;box-sizing:border-box">
+      Iniciar sesión →
+    </a>
+    <input type="password" id="login-pin" style="display:none">
     <div class="login-error" id="login-err"></div>
   </div>
 </div>
@@ -1546,7 +1548,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         document.getElementById('ec-emoji').value = card.emoji || '🎁';
         document.getElementById('ec-emoji-btn').textContent = card.emoji || '🎁';
         document.getElementById('ec-name').value = card.name || '';
-        document.getElementById('ec-stamps').value = card.stamps || 10;
+        document.getElementById('ec-stamps').value = card.stamps_per_reward || card.stamps || 10;
         document.getElementById('ec-reward').value = card.reward_name || '';
         // Colors
         const bg = card.bg_color || '#0a0a0a';
@@ -2708,30 +2710,32 @@ async function doLogin(){
 }
 document.getElementById('login-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// Auto-login from sessionStorage or URL params (Google OAuth / direct links)
-// Run after a short delay to ensure all init code has executed
+// Auto-login from URL params (Google OAuth / app login passes ?pin=...)
+// If no PIN found, redirect to the main app login page
 setTimeout(function() {
-  const slug = '{{ biz_slug }}' || document.querySelector('[data-slug]')?.getAttribute('data-slug');
+  const slug = '{{ biz_slug }}';
   if (!slug) return;
-  // Already logged in? Skip
-  if (PIN) return;
-  // Check URL params first (Google OAuth passes ?pin=...&google=1)
+  if (PIN) return; // already authenticated
+
+  // Check URL params first (login system passes ?pin=...)
   const urlParams = new URLSearchParams(window.location.search);
   const urlPin = urlParams.get('pin');
   if (urlPin) {
     document.getElementById('login-pin').value = urlPin;
-    // Clean the URL so PIN isn't visible in address bar
     window.history.replaceState({}, document.title, window.location.pathname);
-    setTimeout(() => doLogin(), 200);
+    setTimeout(() => doLogin(), 100);
     return;
   }
-  // Fallback: sessionStorage (regular login flow)
+  // Check sessionStorage (short-lived token from login page)
   const savedPin = sessionStorage.getItem('zubcard_pin_' + slug);
   if (savedPin) {
     sessionStorage.removeItem('zubcard_pin_' + slug);
     document.getElementById('login-pin').value = savedPin;
-    setTimeout(() => doLogin(), 200);
+    setTimeout(() => doLogin(), 100);
+    return;
   }
+  // No PIN found — redirect to login page
+  window.location.href = '/app/login?next=' + encodeURIComponent(window.location.pathname);
 }, 300);
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
@@ -4489,9 +4493,19 @@ function fidCopyLink() {
 }
 
 // ── TARJETAS ────────────────────────────────────────────────────────────────
+// Card registry: avoid JSON-in-onclick (breaks with special chars)
+window._cardRegistry = {};
+
 function buildCardMockup(card){
-  const dotSize = card.stamps <= 10 ? 20 : 14;
-  const maxDotsShow = Math.min(card.stamps, 10);
+  // Normalize field names (API returns stamps_per_reward)
+  const spr = card.stamps_per_reward || card.stamps || 10;
+  card.stamps_per_reward = spr;  // ensure consistent
+
+  // Store in registry for safe onclick access
+  window._cardRegistry[card.id] = card;
+
+  const dotSize = spr <= 10 ? 20 : 14;
+  const maxDotsShow = Math.min(spr, 10);
   const dots = Array.from({length: maxDotsShow}, (_,i) => {
     const f = i < (card.filled || 0);
     return `<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;
@@ -4499,24 +4513,22 @@ function buildCardMockup(card){
             display:flex;align-items:center;justify-content:center;font-size:${dotSize*.5}px">
             ${f ? `<span style="color:${card.bg_color}">✓</span>` : ''}</div>`;
   }).join('');
-  const extraDots = card.stamps > 10 ? `<span style="font-size:.65rem;color:rgba(255,255,255,.55);align-self:center">+${card.stamps-10}</span>` : '';
+  const extraDots = spr > 10 ? `<span style="font-size:.65rem;color:rgba(255,255,255,.55);align-self:center">+${spr-10}</span>` : '';
 
   const ddId = `dd-${card.id}`;
+  const cid  = card.id;
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
   wrap.innerHTML = `
     <!-- Card visual preview -->
     <div class="stitch-card-preview" style="background:${card.bg_color}">
-      <!-- Top row: emoji + name -->
       <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:1">
         <span style="font-size:1.5rem">${card.emoji}</span>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em;color:${card.accent_color};line-height:1">${card.name}</div>
       </div>
-      <!-- Stamp dots -->
       <div class="stitch-card-dots" style="position:relative;z-index:1;justify-content:flex-start">
         ${dots}${extraDots}
       </div>
-      <!-- Bottom row: business + reward -->
       <div style="position:relative;z-index:1">
         <div style="display:flex;justify-content:space-between;font-size:.55rem;color:${card.text_color};opacity:.55;margin-bottom:3px;letter-spacing:.12em;text-transform:uppercase">
           <span>Titular</span><span>Premio</span>
@@ -4526,7 +4538,6 @@ function buildCardMockup(card){
           <span style="color:${card.accent_color}">${card.reward_name}</span>
         </div>
       </div>
-      <!-- Badges overlay -->
       <div class="stitch-card-badges">
         <span style="background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:${card.text_color};font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase">Activa</span>
       </div>
@@ -4536,30 +4547,31 @@ function buildCardMockup(card){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
           <div class="tarjeta-label">${card.name}</div>
-          <div style="font-size:.78rem;color:var(--brown-light);margin-top:2px">${card.stamps} sellos · ${card.reward_name}</div>
+          <div style="font-size:.78rem;color:var(--brown-light);margin-top:2px">${spr} sellos · ${card.reward_name}</div>
         </div>
         <div style="width:36px;height:36px;border-radius:.5rem;background:var(--surface-mid);display:flex;align-items:center;justify-content:center">
           <span style="font-size:1.1rem">${card.emoji}</span>
         </div>
       </div>
-      <!-- Progress bar (decorative) -->
       <div style="width:100%;height:3px;background:var(--surface-mid);border-radius:3px;margin-bottom:16px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100, ((card.filled||0)/card.stamps)*100)}%;background:${card.accent_color};border-radius:3px;transition:width .6s"></div>
+        <div style="height:100%;width:${Math.min(100, ((card.filled||0)/spr)*100)}%;background:${card.accent_color};border-radius:3px;transition:width .6s"></div>
       </div>
       <!-- Actions -->
       <div class="tarjeta-actions">
-        <button class="btn-sm btn-primary" style="font-size:.75rem;padding:8px 14px;display:flex;align-items:center;gap:6px" onclick="openEditCardModal(${JSON.stringify(card).replace(/"/g,'&quot;')});closeTarjetaDropdowns()">
+        <button class="btn-sm btn-primary" style="font-size:.75rem;padding:8px 14px;display:flex;align-items:center;gap:6px"
+          onclick="openEditCardModal(window._cardRegistry['${cid}']);closeTarjetaDropdowns()">
           <span class="material-symbols-outlined" style="font-size:.9rem">edit</span> Editar
         </button>
         <div style="position:relative">
-          <button class="btn-sm btn-ghost" style="font-size:.75rem;padding:8px 12px;display:flex;align-items:center;gap:4px" onclick="toggleTarjetaDropdown('${ddId}', event)">
+          <button class="btn-sm btn-ghost" style="font-size:.75rem;padding:8px 12px;display:flex;align-items:center;gap:4px"
+            onclick="toggleTarjetaDropdown('${ddId}', event)">
             <span class="material-symbols-outlined" style="font-size:1rem">more_horiz</span>
           </button>
           <div class="tarjeta-dropdown" id="${ddId}">
-            <a onclick="openEditCardModal(${JSON.stringify(card).replace(/"/g,'&quot;')});closeTarjetaDropdowns()">
+            <a onclick="openEditCardModal(window._cardRegistry['${cid}']);closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">edit</span> Editar tarjeta
             </a>
-            <a onclick="openEditCardModal(${JSON.stringify(card).replace(/"/g,'&quot;')});setTimeout(()=>ecShowTab('email'),200);closeTarjetaDropdowns()">
+            <a onclick="openEditCardModal(window._cardRegistry['${cid}']);setTimeout(()=>ecShowTab('email'),200);closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">mail</span> Email al cliente
             </a>
             <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">
@@ -4571,7 +4583,7 @@ function buildCardMockup(card){
             <a onclick="showSection('clients');closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">group</span> Clientes
             </a>
-            <a onclick="deleteCardProgram('${card.id}');closeTarjetaDropdowns()" style="color:#cc2222">
+            <a onclick="deleteCardProgram('${cid}');closeTarjetaDropdowns()" style="color:#cc2222">
               <span class="material-symbols-outlined" style="font-size:.9rem;color:#cc2222">delete</span> Eliminar
             </a>
           </div>
