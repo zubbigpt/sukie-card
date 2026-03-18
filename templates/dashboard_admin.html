@@ -4608,6 +4608,11 @@ async function loadTarjetas(){
     }
     programs.forEach(p => grid.appendChild(buildCardMockup(p)));
 
+    // Portal: move all dropdowns to <body> so they escape overflow:hidden + transform containers
+    document.querySelectorAll('.tarjeta-dropdown').forEach(dd => {
+      document.body.appendChild(dd);
+    });
+
     document.addEventListener('click', function(e){
       if(!e.target.closest('.tarjeta-actions')) closeTarjetaDropdowns();
     });
@@ -4707,7 +4712,12 @@ function toggleTarjetaDropdown(id, e){
   }
 }
 function closeTarjetaDropdowns(){
-  document.querySelectorAll('.tarjeta-dropdown').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.tarjeta-dropdown').forEach(d=>{
+    d.classList.remove('open');
+    d.style.top = '';
+    d.style.right = '';
+    d.style.position = '';
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
