@@ -635,6 +635,7 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
 
         card = models.LoyaltyCard(customer_id=customer.id)
         db.add(card)
+        db.flush()  # generate card.id before using it in StampTransaction
 
         tx = models.StampTransaction(card_id=card.id, stamps_added=0,
                                       transaction_type="register", note="Alta Web")
@@ -643,8 +644,7 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
         db.refresh(card)
     except Exception as e:
         db.rollback()
-        # Return error as 200 temporarily to see detail (debug only)
-        return {"debug_error": f"{type(e).__name__}: {str(e)}", "traceback": _tb.format_exc()[-1000:]}
+        raise HTTPException(status_code=400, detail=f"Error al registrar: {str(e)}")
 
     # Handle referral
     ref_code = body.get("ref", "").strip().upper()
