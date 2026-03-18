@@ -2763,6 +2763,16 @@ def cleanup_test_data(pin: str = "", db: Session = Depends(get_db)):
 
 # ════════════════════════════════════════════════════════════════════════════════
 # RESET OWNER — borra TODOS los datos de un email dado (para pruebas desde 0)
+# ── TEMP: get biz pin (delete after testing) ─────────────────────────────────
+@app.get("/api/admin/biz-pin")
+def get_biz_pin(slug: str = "", db: Session = Depends(get_db)):
+    if not slug:
+        raise HTTPException(status_code=400, detail="slug required")
+    row = db.execute(text("SELECT admin_pin FROM businesses WHERE slug=:s"), {"s": slug}).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="not found")
+    return {"pin": row[0]}
+
 # POST /api/admin/reset-owner?email=zubbigpt@gmail.com&master_pin=XXXX
 # ══════════════════════════════════════════════════════════════════════════════
 @app.post("/api/admin/reset-owner")
