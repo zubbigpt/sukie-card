@@ -4529,17 +4529,18 @@ function buildCardMockup(card){
       <div class="stitch-card-dots" style="position:relative;z-index:1;justify-content:flex-start">
         ${dots}${extraDots}
       </div>
-      <div style="position:relative;z-index:1">
-        <div style="display:flex;justify-content:space-between;font-size:.55rem;color:${card.text_color};opacity:.55;margin-bottom:3px;letter-spacing:.12em;text-transform:uppercase">
-          <span>Titular</span><span>Premio</span>
+      <div style="position:relative;z-index:2">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:.55rem;color:${card.text_color};opacity:.55;letter-spacing:.12em;text-transform:uppercase">Titular</span>
+            <span style="background:rgba(255,255,255,.2);backdrop-filter:blur(8px);color:${card.text_color};font-size:.5rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase">Activa</span>
+          </div>
+          <span style="font-size:.55rem;color:${card.text_color};opacity:.55;letter-spacing:.12em;text-transform:uppercase">Premio</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:${card.text_color}">
           <span>{{ biz_name|upper }}</span>
           <span style="color:${card.accent_color}">${card.reward_name}</span>
         </div>
-      </div>
-      <div class="stitch-card-badges">
-        <span style="background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:${card.text_color};font-size:.6rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase">Activa</span>
       </div>
     </div>
     <!-- Info below preview -->
