@@ -1350,22 +1350,18 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <h2 id="ec-modal-title" style="font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:#1a1a1a;margin-bottom:0">Tarjeta</h2>
             <!-- Tabs -->
             <div style="display:flex;gap:0;margin-top:14px">
-              <button id="ec-tab-card" onclick="ecShowTab('card')"
-                style="padding:9px 20px;background:#1a1a1a;color:#fff;border:none;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:700;cursor:pointer;letter-spacing:.3px">
-                🎨 Tarjeta
-              </button>
-              <button id="ec-tab-email" onclick="ecShowTab('email')"
-                style="padding:9px 20px;background:#f5f5f5;color:#888;border:none;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:700;cursor:pointer;letter-spacing:.3px;margin-left:4px">
-                ✉️ Email al cliente
+              <button id="ec-tab-card"
+                style="padding:9px 20px;background:#1a1a1a;color:#fff;border:none;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:700;cursor:default;letter-spacing:.3px">
+                🎨 Diseño de tarjeta
               </button>
             </div>
           </div>
 
           <!-- Body -->
-          <div style="overflow-y:auto;flex:1;display:grid;grid-template-columns:1fr 280px">
+          <div style="flex:1;display:grid;grid-template-columns:1fr 280px;overflow:hidden;min-height:0">
 
             <!-- LEFT: tabs content -->
-            <div style="padding:24px 28px;border-right:1px solid #f0f0f0">
+            <div style="padding:24px 28px;border-right:1px solid #f0f0f0;overflow-y:auto">
 
               <!-- TAB: TARJETA -->
               <div id="ec-panel-card">
@@ -1443,41 +1439,11 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
                 <div id="ec-msg" style="min-height:18px;margin-top:8px;font-size:.82rem;text-align:center"></div>
               </div>
 
-              <!-- TAB: EMAIL -->
-              <div id="ec-panel-email" style="display:none">
-                <p style="font-size:.85rem;color:#888;margin-bottom:18px;line-height:1.6">
-                  Este email se envía automáticamente cuando un cliente se une a tu programa de fidelización.
-                </p>
-                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">ASUNTO</label>
-                <input id="ec-email-subject" type="text" placeholder="¡Bienvenido/a! 🎉"
-                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.88rem;outline:none;margin-bottom:14px"
-                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
-                <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">MENSAJE</label>
-                <textarea id="ec-email-body" rows="7" placeholder="Hola {nombre},..."
-                  style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.86rem;outline:none;resize:vertical;font-family:inherit;line-height:1.6;margin-bottom:6px"
-                  onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'"></textarea>
-                <div style="font-size:.72rem;color:#aaa;margin-bottom:16px">
-                  Variables: <code style="background:#f5f5f5;padding:2px 5px;border-radius:3px">{nombre}</code>
-                  <code style="background:#f5f5f5;padding:2px 5px;border-radius:3px">{link_tarjeta}</code>
-                  <code style="background:#f5f5f5;padding:2px 5px;border-radius:3px">{negocio}</code>
-                </div>
-                <div style="display:flex;gap:10px">
-                  <button onclick="saveCardEmail()"
-                    style="flex:1;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:800;cursor:pointer">
-                    💾 Guardar email
-                  </button>
-                  <button onclick="previewCardEmail()"
-                    style="padding:12px 18px;background:#f5f5f5;color:#555;border:2px solid #e8e8e8;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer">
-                    👁️ Preview
-                  </button>
-                </div>
-                <div id="ec-email-msg" style="min-height:18px;margin-top:8px;font-size:.82rem;text-align:center"></div>
-              </div>
 
             </div>
 
             <!-- RIGHT: phone preview (only in card tab) -->
-            <div id="ec-right-preview" style="background:#e8e8e8;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">
+            <div id="ec-right-preview" style="background:#e8e8e8;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;overflow-y:auto">
               <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:2px">PREVIEW</div>
               <!-- Phone frame (same structure as create modal) -->
               <div style="background:#1c1c1e;border-radius:40px;padding:10px;box-shadow:0 20px 48px rgba(0,0,0,.4);width:180px;flex-shrink:0">
@@ -1588,14 +1554,9 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
       }
 
       function ecShowTab(tab) {
-        const isCard = tab === 'card';
-        document.getElementById('ec-panel-card').style.display  = isCard ? '' : 'none';
-        document.getElementById('ec-panel-email').style.display = isCard ? 'none' : '';
-        document.getElementById('ec-right-preview').style.display = isCard ? '' : 'none';
-        document.getElementById('ec-tab-card').style.background   = isCard ? '#1a1a1a' : '#f5f5f5';
-        document.getElementById('ec-tab-card').style.color         = isCard ? '#fff'    : '#888';
-        document.getElementById('ec-tab-email').style.background  = isCard ? '#f5f5f5' : '#1a1a1a';
-        document.getElementById('ec-tab-email').style.color        = isCard ? '#888'    : '#fff';
+        // Single tab — always show card panel
+        const panel = document.getElementById('ec-panel-card');
+        if (panel) panel.style.display = '';
       }
 
       // Emoji picker (reuse NC_EMOJIS list)
@@ -1705,40 +1666,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         }
       }
 
-      async function loadCardEmailConfig() {
-        try {
-          const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
-          const cfg = await res.json();
-          const ec = cfg.emails || {};
-          document.getElementById('ec-email-subject').value = ec.welcome_email_subject || '¡Bienvenido/a! 🎉';
-          document.getElementById('ec-email-body').value    = ec.welcome_email_body    ||
-            'Hola {nombre},\n\nYa eres parte de nuestro programa de fidelización.\n\nVer tu tarjeta: {link_tarjeta}\n\n¡Hasta pronto!';
-        } catch(e) { /* silently fail */ }
-      }
-
-      async function saveCardEmail() {
-        const msg = document.getElementById('ec-email-msg');
-        try {
-          const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`);
-          const cfg = await res.json();
-          cfg.emails = cfg.emails || {};
-          cfg.emails.welcome_email_subject = document.getElementById('ec-email-subject').value;
-          cfg.emails.welcome_email_body    = document.getElementById('ec-email-body').value;
-          const r2 = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/config?pin=${PIN}`, {
-            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
-          });
-          if (!r2.ok) throw new Error('Error al guardar');
-          msg.style.color = '#2e7d32'; msg.textContent = '✅ Email guardado';
-        } catch(e) {
-          msg.style.color = '#cc2222'; msg.textContent = '❌ ' + e.message;
-        }
-      }
-
-      async function previewCardEmail() {
-        const custs = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/customers?pin=${PIN}`).then(r=>r.json()).catch(()=>[]);
-        if (!custs.length) { alert('Necesitas al menos un cliente para ver el preview'); return; }
-        window.open(`${BASE}/email-preview/${custs[0].id}`, '_blank');
-      }
+      function loadCardEmailConfig() { /* email config moved to Email & QR → Emails */ }
       </script>
 
       <!-- ═══ CLIENTES ═══ -->
@@ -2111,44 +2039,6 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
           </div>
         </div>
 
-        <!-- ── GEO-NOTIFICACIONES ── -->
-        <div class="card-box" style="margin-top:24px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
-            <div>
-              <h3 style="margin-bottom:4px;color:#0a0a0a">📍 Notificaciones de Proximidad</h3>
-              <p style="font-size:.8rem;color:var(--brown-light);line-height:1.6">Cuando un cliente con la app instalada se acerque a tu local, recibirá una notificación automática.</p>
-            </div>
-            <button class="btn-sm btn-ghost" onclick="sendGeoPush()" id="geo-push-btn" style="font-size:.76rem;white-space:nowrap">📤 Enviar notificación ahora</button>
-          </div>
-          <hr style="border:none;border-top:1.5px solid var(--cream-border);margin:14px 0">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="form-group" style="grid-column:1/-1">
-              <label>Dirección del local</label>
-              <input id="geo-address" type="text" placeholder="Calle Mayor 1, Madrid" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
-            </div>
-            <div class="form-group">
-              <label>Latitud</label>
-              <input id="geo-lat" type="number" step="any" placeholder="40.4168" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
-            </div>
-            <div class="form-group">
-              <label>Longitud</label>
-              <input id="geo-lng" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
-            </div>
-            <div class="form-group">
-              <label>Radio de activación (metros)</label>
-              <input id="geo-radius" type="number" value="300" min="50" max="5000" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
-            </div>
-            <div class="form-group">
-              <label>Mensaje de la notificación</label>
-              <input id="geo-msg" type="text" placeholder="¡Estás cerca! Visítanos y acumula sellos 🎉" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.9rem;background:var(--cream)">
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-            <button class="btn-sm btn-primary" onclick="saveGeoConfig()" style="padding:10px 24px">💾 Guardar configuración geo</button>
-            <button class="btn-sm btn-ghost" onclick="detectLocation()" style="font-size:.76rem">📡 Usar mi ubicación actual</button>
-            <span id="geo-msg-status" style="font-size:.8rem;color:var(--brown-light);min-height:16px"></span>
-          </div>
-        </div>
       </div>
 
       <!-- ═══ EMAIL ═══ -->
@@ -2236,7 +2126,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <h1 style="font-size:2.5rem;margin-bottom:4px">📍 Geo &amp; Notificaciones</h1>
             <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Configura tu ubicación y el mensaje que reciben tus clientes cuando están cerca</p>
           </div>
-          <button class="btn-sm btn-ghost" onclick="sendGeoPush()" id="geo-push-btn2" style="font-size:.76rem;white-space:nowrap">📤 Enviar notificación ahora</button>
+          <button class="btn-sm btn-ghost" onclick="sendGeoPush2()" id="geo-push-btn2" style="font-size:.76rem;white-space:nowrap">📤 Enviar notificación ahora</button>
         </div>
 
         <!-- Info banner -->
@@ -4427,74 +4317,8 @@ async function loadPassCodes(){
     const data=await r.json();
     renderPassCodes(data.codes||[]);
   }catch(e){ renderPassCodes([]); }
-  loadGeoConfig();
 }
 
-async function loadGeoConfig(){
-  try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`);
-    if(!r.ok) return;
-    const d=await r.json();
-    if(document.getElementById('geo-address')) document.getElementById('geo-address').value=d.address||'';
-    if(document.getElementById('geo-lat'))     document.getElementById('geo-lat').value=d.latitude||'';
-    if(document.getElementById('geo-lng'))     document.getElementById('geo-lng').value=d.longitude||'';
-    if(document.getElementById('geo-radius'))  document.getElementById('geo-radius').value=d.geo_radius_m||300;
-    if(document.getElementById('geo-msg'))     document.getElementById('geo-msg').value=d.geo_push_msg||'';
-  }catch(e){}
-}
-
-async function saveGeoConfig(){
-  const status=document.getElementById('geo-msg-status');
-  if(status) status.textContent='Guardando…';
-  const body={
-    address:   document.getElementById('geo-address').value.trim(),
-    latitude:  parseFloat(document.getElementById('geo-lat').value)||null,
-    longitude: parseFloat(document.getElementById('geo-lng').value)||null,
-    geo_radius_m: parseInt(document.getElementById('geo-radius').value)||300,
-    geo_push_msg: document.getElementById('geo-msg').value.trim()
-  };
-  try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`,{
-      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
-    });
-    if(!r.ok) throw new Error((await r.json()).detail||'Error');
-    if(status){status.textContent='✅ Guardado';setTimeout(()=>{status.textContent='';},3000);}
-    showToast('Configuración geo guardada','success');
-  }catch(e){
-    if(status) status.textContent='❌ '+e.message;
-    showToast('Error al guardar: '+e.message,'error');
-  }
-}
-
-async function sendGeoPush(){
-  const btn=document.getElementById('geo-push-btn');
-  if(btn){btn.disabled=true;btn.textContent='📤 Enviando…';}
-  try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo/push-nearby?pin=${PIN}`,{method:'POST'});
-    const d=await r.json();
-    showToast(d.message||`Notificación enviada a ${d.sent||0} cliente(s)`,'success');
-  }catch(e){
-    showToast('Error al enviar notificación','error');
-  }finally{
-    if(btn){btn.disabled=false;btn.textContent='📤 Enviar notificación ahora';}
-  }
-}
-
-function detectLocation(){
-  const status=document.getElementById('geo-msg-status');
-  if(!navigator.geolocation){
-    if(status) status.textContent='⚠️ Geolocalización no disponible en este navegador';
-    return;
-  }
-  if(status) status.textContent='📡 Detectando ubicación…';
-  navigator.geolocation.getCurrentPosition(pos=>{
-    document.getElementById('geo-lat').value=pos.coords.latitude.toFixed(6);
-    document.getElementById('geo-lng').value=pos.coords.longitude.toFixed(6);
-    if(status){status.textContent='✅ Ubicación detectada';setTimeout(()=>{status.textContent='';},3000);}
-  },err=>{
-    if(status) status.textContent='❌ '+err.message;
-  });
-}
 
 // ── Geo section (dedicated nav panel) ──────────────────────────────────────
 let _geoMap = null;
@@ -4885,8 +4709,8 @@ function buildCardMockup(card){
             <a onclick="openEditCardModal(window._cardRegistry['${cid}']);closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">edit</span> Editar tarjeta
             </a>
-            <a onclick="openEditCardModal(window._cardRegistry['${cid}']);setTimeout(()=>ecShowTab('email'),200);closeTarjetaDropdowns()">
-              <span class="material-symbols-outlined" style="font-size:.9rem">mail</span> Email al cliente
+            <a onclick="showSection('sellos-email');closeTarjetaDropdowns()">
+              <span class="material-symbols-outlined" style="font-size:.9rem">mail</span> Configurar email
             </a>
             <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">qr_code</span> QR / Compartir
