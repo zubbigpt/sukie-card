@@ -440,6 +440,19 @@ def health():
     return {"status": "ok", "service": "ZubCard"}
 
 
+@app.get("/api/smtp-status")
+def smtp_status():
+    """Non-sensitive SMTP config check — shows whether vars are set (not their values)."""
+    return {
+        "SMTP_HOST_set":  bool(SMTP_HOST),
+        "SMTP_USER_set":  bool(SMTP_USER),
+        "SMTP_PASS_set":  bool(SMTP_PASS),
+        "SMTP_FROM":      SMTP_FROM,
+        "SMTP_HOST_hint": SMTP_HOST[:6] + "…" if SMTP_HOST else "",
+        "SMTP_USER_hint": SMTP_USER.split("@")[0][:3] + "…@" + SMTP_USER.split("@")[1] if SMTP_USER and "@" in SMTP_USER else "",
+    }
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # PÁGINAS LEGALES
 # ══════════════════════════════════════════════════════════════════════════════
