@@ -650,7 +650,7 @@ async function redeemBirthdayVoucher(token) {
   const st = document.getElementById('scan-status');
   st.textContent = '🎂 Procesando regalo de cumpleaños…'; st.className = 'ok';
   try {
-    const r = await fetch(`{{ base_url }}/api/biz/{{ biz_slug }}/birthday-voucher/redeem?pin={{ admin_pin }}`, {
+    const r = await fetch(`{{ base_url }}/api/biz/${SLUG}/birthday-voucher/redeem?pin=${encodeURIComponent(adminPin)}`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ token })
     });
