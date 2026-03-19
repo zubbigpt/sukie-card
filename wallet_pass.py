@@ -111,6 +111,10 @@ def build_pass_json(
     primary_color: str = "#26170c",
     accent_color: str = "#ffca48",
     auth_token: str = "",
+    latitude: float | None = None,
+    longitude: float | None = None,
+    geo_push_msg: str = "",
+    geo_radius_m: int = 300,
 ) -> dict:
     """Build the pass.json dict for a loyalty card."""
     pass_type_id = os.environ.get("APPLE_PASS_TYPE_ID", "pass.com.zubiecard.loyalty")
@@ -200,6 +204,23 @@ def build_pass_json(
         pass_dict["webServiceURL"] = f"{BASE_URL}/api/wallet/"
         pass_dict["authenticationToken"] = auth_token
 
+    # ── iOS native proximity notification ────────────────────────────────────
+    # When the pass holder comes within ~100m (or geo_radius_m, max 1000m per
+    # Apple spec) of these coordinates, iOS shows a lock-screen notification
+    # with the relevantText — no server, no push certificate needed.
+    if latitude is not None and longitude is not None:
+        relevant_text = geo_push_msg.strip() if geo_push_msg else f"¡Estás cerca de {biz_name}! Visítanos y acumula sellos 🎉"
+        # Apple Wallet maxDistance max is ~1000m; clamp to that
+        max_dist = min(int(geo_radius_m) if geo_radius_m else 300, 1000)
+        pass_dict["locations"] = [
+            {
+                "latitude":     float(latitude),
+                "longitude":    float(longitude),
+                "relevantText": relevant_text,
+                "maxDistance":  max_dist,
+            }
+        ]
+
     return pass_dict
 
 
@@ -213,6 +234,10 @@ def generate_pkpass(
     biz_name: str = "Zubie Card",
     primary_color: str = "#26170c",
     accent_color: str = "#ffca48",
+    latitude: float | None = None,
+    longitude: float | None = None,
+    geo_push_msg: str = "",
+    geo_radius_m: int = 300,
 ) -> bytes:
     """
     Generate a signed .pkpass file and return it as bytes.
@@ -231,6 +256,10 @@ def generate_pkpass(
         biz_name=biz_name,
         primary_color=primary_color,
         accent_color=accent_color,
+        latitude=latitude,
+        longitude=longitude,
+        geo_push_msg=geo_push_msg,
+        geo_radius_m=geo_radius_m,
     )
     pass_json_bytes = json.dumps(pass_data, ensure_ascii=False, indent=2).encode("utf-8")
 

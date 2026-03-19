@@ -106,6 +106,7 @@ class Business(Base):
     primary_color       = Column(String, default="#3A3426")
     accent_color        = Column(String, default="#FFF5B6")
     industry            = Column(String, nullable=True)        # café | retail | beauty | other
+    description         = Column(String, nullable=True)        # free-text "qué vendemos / qué somos"
     # Geo-location for proximity push notifications
     address         = Column(String, nullable=True)
     latitude        = Column(Float, nullable=True)

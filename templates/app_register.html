@@ -321,6 +321,7 @@
     <div class="step-indicator" id="stepDots">
       <div class="step active" id="s1"></div>
       <div class="step" id="s2"></div>
+      <div class="step" id="s3"></div>
     </div>
 
     <!-- ─── Step 1: account info ─── -->
@@ -377,7 +378,39 @@
         <button class="ind-btn" onclick="selectIndustry('other',this)" type="button">📦 Otro</button>
       </div>
       <div class="error-box" id="err2"></div>
+      <button class="btn-primary" onclick="goStep3()" type="button">Siguiente →</button>
+    </div>
+
+    <!-- ─── Step 3: description + location ─── -->
+    <div id="step3" class="step-container">
+      <p class="industry-label">Cuéntanos un poco más sobre tu negocio <span style="font-size:.78rem;opacity:.6">(opcional)</span></p>
+
+      <label>¿Qué vendes o qué ofreces?</label>
+      <textarea id="biz-desc" placeholder="Ej: Hacemos croissants de mantequilla y cafés de especialidad. También tenemos menú de almuerzo…" rows="3"
+        style="width:100%;padding:11px 14px;border:none;border-radius:var(--r-sm);font-size:.9rem;outline:none;background:var(--surface);color:var(--primary);font-family:'Manrope',sans-serif;resize:vertical;transition:box-shadow .18s"
+        onfocus="this.style.boxShadow='0 0 0 2.5px var(--honey)'" onblur="this.style.boxShadow=''"></textarea>
+
+      <label>Dirección del local</label>
+      <input type="text" id="biz-address" placeholder="Ej: Calle Mayor 12, Madrid" autocomplete="street-address">
+
+      <label>Ubicación (para notificaciones de proximidad)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px">
+        <div>
+          <input type="number" id="biz-lat" placeholder="Latitud" step="any" style="font-size:.83rem">
+        </div>
+        <div>
+          <input type="number" id="biz-lng" placeholder="Longitud" step="any" style="font-size:.83rem">
+        </div>
+      </div>
+      <button type="button" onclick="detectLocationReg()" style="margin-top:8px;background:none;border:1.5px solid var(--outline-var);border-radius:var(--r-sm);padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--primary);font-family:'Manrope',sans-serif;width:100%;transition:border-color .18s"
+        onmouseover="this.style.borderColor='var(--honey)'" onmouseout="this.style.borderColor='var(--outline-var)'">
+        📡 Detectar mi ubicación automáticamente
+      </button>
+      <div class="hint" id="geo-reg-hint" style="margin-top:4px"></div>
+
+      <div class="error-box" id="err3"></div>
       <button class="btn-primary" id="btnRegister" onclick="doRegister()" type="button">Crear mi cuenta →</button>
+      <p style="text-align:center;margin-top:12px;font-size:.8rem"><a href="#" onclick="doRegister();return false;" style="color:var(--outline);text-decoration:none">Saltar y crear cuenta sin ubicación</a></p>
     </div>
 
     <!-- ─── Success: check email ─── -->
@@ -479,9 +512,31 @@
       el.classList.add('selected');
     }
 
+    // ── Step 2 → Step 3 ──
+    function goStep3() {
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step3').classList.add('active');
+      document.getElementById('s3').classList.add('active');
+    }
+
+    // ── Auto-detect location on registration ──
+    function detectLocationReg() {
+      const hint = document.getElementById('geo-reg-hint');
+      if (!navigator.geolocation) { hint.textContent = '⚠️ Geolocalización no disponible en este navegador'; return; }
+      hint.textContent = '📡 Detectando ubicación…';
+      navigator.geolocation.getCurrentPosition(pos => {
+        document.getElementById('biz-lat').value = pos.coords.latitude.toFixed(6);
+        document.getElementById('biz-lng').value = pos.coords.longitude.toFixed(6);
+        hint.textContent = '✅ Ubicación detectada';
+        setTimeout(() => { hint.textContent = ''; }, 3000);
+      }, err => {
+        hint.textContent = '❌ ' + err.message;
+      });
+    }
+
     // ── Register ──
     async function doRegister() {
-      hideErr('err2');
+      hideErr('err3');
       const btn = document.getElementById('btnRegister');
       btn.textContent = 'Creando cuenta…';
       btn.disabled = true;
@@ -489,18 +544,27 @@
       const name  = document.getElementById('biz-name').value.trim();
       const email = document.getElementById('biz-email').value.trim();
       const pw    = document.getElementById('biz-pw').value;
+      const description = (document.getElementById('biz-desc')?.value || '').trim();
+      const address     = (document.getElementById('biz-address')?.value || '').trim();
+      const latVal      = document.getElementById('biz-lat')?.value;
+      const lngVal      = document.getElementById('biz-lng')?.value;
+      const latitude    = latVal  ? parseFloat(latVal)  : null;
+      const longitude   = lngVal  ? parseFloat(lngVal)  : null;
 
       try {
         const r = await fetch('/api/app/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password: pw, industry: selectedIndustry })
+          body: JSON.stringify({ name, email, password: pw, industry: selectedIndustry,
+            description: description || null,
+            address: address || null,
+            latitude, longitude })
         });
         const d = await r.json();
 
         if (r.ok) {
           // Show success screen — user must confirm email
-          document.getElementById('step2').classList.remove('active');
+          document.getElementById('step3').classList.remove('active');
           document.getElementById('stepDots').style.display = 'none';
           document.getElementById('successPanel').style.display = 'block';
           document.getElementById('loginLink').style.display = 'none';
@@ -508,12 +572,12 @@
           // Store email for resend
           window._regEmail = email;
         } else {
-          showErr('err2', d.detail || 'Error al crear cuenta');
+          showErr('err3', d.detail || 'Error al crear cuenta');
           btn.textContent = 'Crear mi cuenta →';
           btn.disabled = false;
         }
       } catch (e) {
-        showErr('err2', 'Error de conexión: ' + e.message);
+        showErr('err3', 'Error de conexión: ' + e.message);
         btn.textContent = 'Crear mi cuenta →';
         btn.disabled = false;
       }

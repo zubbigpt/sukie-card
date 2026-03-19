@@ -436,6 +436,9 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
       <a onclick="showSection('email')" id="nav-email">
         <span class="material-symbols-outlined icon">mail</span> Email
       </a>
+      <a onclick="showSection('geo')" id="nav-geo">
+        <span class="material-symbols-outlined icon">location_on</span> Geo &amp; Notificaciones
+      </a>
 
       <!-- Mi Cuenta (collapsible) -->
       <a onclick="toggleNav('nav-cuenta-sub')" id="nav-cuenta" class="nav-parent">
@@ -776,6 +779,10 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
                 <option value="retail">🛍️ Tienda</option>
                 <option value="other">📦 Otro</option>
               </select>
+            </div>
+            <div style="grid-column:1/-1">
+              <label style="display:block;font-size:.7rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px">¿A qué te dedicas? ¿Qué vendes?</label>
+              <textarea id="perfil-description" rows="2" style="width:100%;padding:10px 12px;border:none;background:var(--cream);border-radius:6px;font-size:.93rem;color:var(--brown);font-family:inherit;outline:none;resize:vertical" placeholder="Ej: Cafetería especializada en café de especialidad, desayunos y brunch. También vendemos repostería artesanal."></textarea>
             </div>
           </div>
           <button class="btn-sm btn-primary" onclick="savePerfil()" id="btn-save-perfil">Guardar cambios</button>
@@ -2220,6 +2227,65 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         </div>
       </div>
 
+      <!-- ═══ GEO & NOTIFICACIONES ═══ -->
+      <div class="section" id="section-geo">
+        <div class="section-header">
+          <div style="flex:1">
+            <h1 style="font-size:2.5rem;margin-bottom:4px">📍 Geo &amp; Notificaciones</h1>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Configura tu ubicación y el mensaje que reciben tus clientes cuando están cerca</p>
+          </div>
+          <button class="btn-sm btn-ghost" onclick="sendGeoPush()" id="geo-push-btn2" style="font-size:.76rem;white-space:nowrap">📤 Enviar notificación ahora</button>
+        </div>
+
+        <!-- Info banner -->
+        <div class="card-box" style="background:var(--honey-light);border:1.5px solid var(--honey);margin-bottom:20px;padding:16px 20px">
+          <p style="font-size:.88rem;color:var(--brown);line-height:1.7;margin:0">
+            <strong>¿Cómo funciona?</strong><br>
+            🍎 <strong>iPhone (Apple Wallet)</strong>: cuando el cliente añade la tarjeta al Wallet, iOS muestra una notificación en la pantalla de bloqueo automáticamente al acercarse a tu local — sin app, sin configuración extra.<br>
+            🤖 <strong>Android (web push)</strong>: cuando el cliente acepta notificaciones en la tarjeta web, recibe un push al acercarse. Requiere configurar las claves VAPID en Railway.
+          </p>
+        </div>
+
+        <div class="card-box">
+          <h3 style="margin-bottom:16px;color:#0a0a0a">Ubicación del local</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label>Dirección completa</label>
+              <input id="geo-address2" type="text" placeholder="Calle Mayor 1, 28013 Madrid" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Latitud</label>
+              <input id="geo-lat2" type="number" step="any" placeholder="40.4168" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Longitud</label>
+              <input id="geo-lng2" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+            </div>
+            <div class="form-group">
+              <label>Radio de activación (metros)</label>
+              <input id="geo-radius2" type="number" value="300" min="50" max="1000" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+              <p style="font-size:.75rem;color:var(--brown-light);margin-top:4px">Máx. 1000m. El cliente recibirá la notificación al entrar en este radio.</p>
+            </div>
+            <div class="form-group">
+              <label>Mensaje de la notificación</label>
+              <input id="geo-msg2" type="text" placeholder="¡Estás cerca! Visítanos y acumula sellos 🎉" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn-sm btn-primary" onclick="saveGeoConfig2()" style="padding:10px 24px">💾 Guardar ubicación</button>
+            <button class="btn-sm btn-ghost" onclick="detectLocation2()" style="font-size:.76rem">📡 Usar mi ubicación actual</button>
+            <span id="geo-status2" style="font-size:.8rem;color:var(--brown-light)"></span>
+          </div>
+        </div>
+
+        <div class="card-box" style="margin-top:20px">
+          <h3 style="margin-bottom:8px;color:#0a0a0a">Enviar notificación manual</h3>
+          <p style="font-size:.83rem;color:var(--brown-light);margin-bottom:14px;line-height:1.6">Envía ahora el mensaje push a todos los clientes suscritos (Android). En iPhone se dispara automáticamente por proximidad.</p>
+          <button class="btn-sm btn-primary" onclick="sendGeoPush2()" style="padding:10px 24px">📤 Enviar notificación a todos</button>
+          <span id="geo-push-status2" style="display:block;font-size:.8rem;color:var(--brown-light);margin-top:8px"></span>
+        </div>
+      </div>
+
       <!-- ═══ TIENDAS / LOCALES ═══ -->
       <div class="section" id="section-stores">
         <div class="section-header">
@@ -2831,7 +2897,8 @@ const sectionTitles = {
     cartas:'Cartas Digitales',
     'cuenta-perfil':'Mi Cuenta — Perfil',
     'cuenta-plan':'Mi Cuenta — Plan & Billing',
-    apps:'Apps'
+    apps:'Apps',
+    geo:'Geo &amp; Notificaciones'
   };
 
 function toggleNav(subId){
@@ -2867,6 +2934,7 @@ function showSection(name){
   if(name==='stores')        loadStores();
   if(name==='email')         loadEmailSettings();
   if(name==='cuenta-perfil') loadPerfil();
+  if(name==='geo')           loadGeoSection();
 
   // Keep Tarjetas parent highlighted when inside a card sub-section
   const cardSubSections = ['fidelizacion','activity','birthdays','clients','new-client','import'];
@@ -4411,6 +4479,70 @@ function detectLocation(){
   });
 }
 
+// ── Geo section (dedicated nav panel) ──────────────────────────────────────
+async function loadGeoSection(){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`);
+    if(!r.ok) return;
+    const d=await r.json();
+    if(document.getElementById('geo-address2')) document.getElementById('geo-address2').value=d.address||'';
+    if(document.getElementById('geo-lat2'))     document.getElementById('geo-lat2').value=d.latitude||'';
+    if(document.getElementById('geo-lng2'))     document.getElementById('geo-lng2').value=d.longitude||'';
+    if(document.getElementById('geo-radius2'))  document.getElementById('geo-radius2').value=d.geo_radius_m||300;
+    if(document.getElementById('geo-msg2'))     document.getElementById('geo-msg2').value=d.geo_push_msg||'';
+  }catch(e){}
+}
+
+async function saveGeoConfig2(){
+  const status=document.getElementById('geo-status2');
+  if(status) status.textContent='Guardando…';
+  const body={
+    pin: PIN,
+    address:      (document.getElementById('geo-address2')?.value||'').trim(),
+    latitude:     parseFloat(document.getElementById('geo-lat2')?.value)||null,
+    longitude:    parseFloat(document.getElementById('geo-lng2')?.value)||null,
+    geo_radius_m: parseInt(document.getElementById('geo-radius2')?.value)||300,
+    geo_push_msg: (document.getElementById('geo-msg2')?.value||'').trim()
+  };
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error((await r.json()).detail||'Error');
+    if(status){status.textContent='✅ Ubicación guardada';setTimeout(()=>{status.textContent='';},3000);}
+    showToast('Ubicación guardada — el próximo .pkpass incluirá la notificación de proximidad','success');
+  }catch(e){
+    if(status) status.textContent='❌ '+e.message;
+    showToast('Error al guardar: '+e.message,'error');
+  }
+}
+
+function detectLocation2(){
+  const status=document.getElementById('geo-status2');
+  if(!navigator.geolocation){ if(status) status.textContent='⚠️ Geolocalización no disponible'; return; }
+  if(status) status.textContent='📡 Detectando ubicación…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    if(document.getElementById('geo-lat2'))  document.getElementById('geo-lat2').value=pos.coords.latitude.toFixed(6);
+    if(document.getElementById('geo-lng2'))  document.getElementById('geo-lng2').value=pos.coords.longitude.toFixed(6);
+    if(status){status.textContent='✅ Ubicación detectada — recuerda guardar';setTimeout(()=>{status.textContent='';},4000);}
+  },err=>{ if(status) status.textContent='❌ '+err.message; });
+}
+
+async function sendGeoPush2(){
+  const status=document.getElementById('geo-push-status2');
+  if(status) status.textContent='📤 Enviando…';
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo/push-nearby?pin=${PIN}`,{method:'POST'});
+    const d=await r.json();
+    if(status) status.textContent=d.message||`✅ Enviado a ${d.sent||0} suscriptor(es)`;
+    showToast(d.message||'Notificación enviada','success');
+  }catch(e){
+    if(status) status.textContent='❌ Error al enviar';
+    showToast('Error al enviar notificación','error');
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 function renderPassCodes(codes){
   const tbody=document.getElementById('passcodes-tbody');
   if(!tbody) return;
@@ -4816,6 +4948,7 @@ async function loadPerfil() {
     document.getElementById('perfil-slug').value    = d.slug || BIZ_SLUG;
     const sel = document.getElementById('perfil-industry');
     if (d.industry) sel.value = d.industry;
+    if (document.getElementById('perfil-description')) document.getElementById('perfil-description').value = d.description || '';
   } catch(e) {
     // Fallback: load from config
     try {
@@ -4833,7 +4966,8 @@ async function savePerfil() {
   const payload = {
     pin: PIN,
     name: document.getElementById('perfil-name').value.trim(),
-    industry: document.getElementById('perfil-industry').value
+    industry: document.getElementById('perfil-industry').value,
+    description: (document.getElementById('perfil-description')?.value || '').trim()
   };
   try {
     const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/profile`, {

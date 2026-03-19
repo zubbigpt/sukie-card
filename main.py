@@ -182,6 +182,7 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS geo_radius_m INTEGER DEFAULT 300",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS geo_push_msg VARCHAR DEFAULT '¡Estás cerca! Visítanos y acumula sellos 🎉'",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS description VARCHAR",
         # Auth security upgrade
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS hashed_password VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_confirmed BOOLEAN DEFAULT FALSE",
@@ -655,6 +656,17 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
         if prog:
             reward_name = prog.reward_name or reward_name
 
+    # Pull geo config from the business record for iOS lock-screen notifications
+    biz_lat = biz_lng = biz_geo_msg = None
+    biz_geo_radius = 300
+    if customer and customer.business_id:
+        _geo_biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+        if _geo_biz:
+            biz_lat        = getattr(_geo_biz, "latitude", None)
+            biz_lng        = getattr(_geo_biz, "longitude", None)
+            biz_geo_msg    = getattr(_geo_biz, "geo_push_msg", None) or ""
+            biz_geo_radius = getattr(_geo_biz, "geo_radius_m", 300) or 300
+
     try:
         from wallet_pass import generate_pkpass
         pkpass_bytes = generate_pkpass(
@@ -667,6 +679,10 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             biz_name=biz_name,
             primary_color=primary_color,
             accent_color=accent_color,
+            latitude=biz_lat,
+            longitude=biz_lng,
+            geo_push_msg=biz_geo_msg or "",
+            geo_radius_m=biz_geo_radius,
         )
         return FResponse(
             content=pkpass_bytes,
@@ -2263,10 +2279,14 @@ async def app_register_page(request: Request):
 async def register_business(request: Request, db: Session = Depends(get_db)):
     """Register a new business on ZubCard with email + password (no PIN required from user)."""
     body     = await request.json()
-    name     = (body.get("name") or "").strip()
-    email    = (body.get("email") or "").strip().lower()
-    password = str(body.get("password") or "").strip()
-    industry = body.get("industry", "other")
+    name        = (body.get("name") or "").strip()
+    email       = (body.get("email") or "").strip().lower()
+    password    = str(body.get("password") or "").strip()
+    industry    = body.get("industry", "other")
+    description = (body.get("description") or "").strip()
+    address     = (body.get("address") or "").strip()
+    latitude    = body.get("latitude")
+    longitude   = body.get("longitude")
 
     if not name:
         raise HTTPException(status_code=400, detail="El nombre del negocio es obligatorio")
@@ -2305,6 +2325,10 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
         admin_pin           = random_pin,
         api_key             = generate_api_key(),
         industry            = industry,
+        description         = description or None,
+        address             = address or None,
+        latitude            = float(latitude) if latitude else None,
+        longitude           = float(longitude) if longitude else None,
         plan                = "free",
     )
     db.add(business)
@@ -2658,6 +2682,7 @@ def get_biz_profile(slug: str, pin: str = "", db: Session = Depends(get_db)):
         "email":         biz.email,
         "slug":          biz.slug,
         "industry":      getattr(biz, "industry", "other"),
+        "description":   getattr(biz, "description", None) or "",
         "plan":          getattr(biz, "plan", "pro"),
         "created_at":    str(biz.created_at) if hasattr(biz, "created_at") else None,
         # Geo-location fields
@@ -2793,11 +2818,14 @@ async def update_biz_profile(slug: str, request: Request, db: Session = Depends(
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     if pin != str(biz.admin_pin):
         raise HTTPException(status_code=403, detail="PIN incorrecto")
-    name     = (body.get("name") or "").strip()
-    industry = (body.get("industry") or "other").strip()
+    name        = (body.get("name") or "").strip()
+    industry    = (body.get("industry") or "other").strip()
+    description = body.get("description")  # None = no change; "" = clear it
     if name:
         db.execute(text("UPDATE businesses SET name=:name WHERE slug=:slug"), {"name": name, "slug": slug})
     db.execute(text("UPDATE businesses SET industry=:ind WHERE slug=:slug"), {"ind": industry, "slug": slug})
+    if description is not None:
+        db.execute(text("UPDATE businesses SET description=:desc WHERE slug=:slug"), {"desc": description.strip() or None, "slug": slug})
     db.commit()
     return {"status": "updated", "name": name or biz.name, "industry": industry}
 
