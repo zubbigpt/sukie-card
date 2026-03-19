@@ -217,6 +217,13 @@ def run_migrations():
         "ALTER TABLE card_config ADD COLUMN IF NOT EXISTS id_fixed BOOLEAN DEFAULT FALSE",
         # ── Unique index on card_config.business_id for safe upserts ─────────────
         "CREATE UNIQUE INDEX IF NOT EXISTS uidx_card_config_business ON card_config(business_id) WHERE business_id IS NOT NULL",
+        # ── Per-business email branding & custom SMTP ─────────────────────────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_from_name VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_reply_to VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_host VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_port INTEGER",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_user VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_pass VARCHAR",
 
     ]
     from database import SessionLocal
@@ -318,23 +325,53 @@ def generate_slug(name: str) -> str:
 
 
 
-def send_email(to_email: str, subject: str, html_body: str) -> bool:
-    """Send email via SMTP. Returns True if sent, False if config missing."""
-    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+def send_email(
+    to_email: str,
+    subject: str,
+    html_body: str,
+    from_name: str = "",
+    reply_to: str = "",
+    smtp_host: str = "",
+    smtp_port: int = 0,
+    smtp_user: str = "",
+    smtp_pass: str = "",
+) -> bool:
+    """
+    Send email via SMTP. Returns True if sent, False if config missing.
+
+    Per-business overrides: pass smtp_host/user/pass for custom SMTP.
+    Pass from_name to customise the display name (e.g. "Zubbi Cafetería").
+    Falls back to global SMTP_* env vars if per-business values not provided.
+    """
+    _host  = smtp_host or SMTP_HOST
+    _port  = smtp_port or SMTP_PORT
+    _user  = smtp_user or SMTP_USER
+    _pass  = smtp_pass or SMTP_PASS
+    _from_addr = _user or SMTP_FROM   # sender address (the authenticated account)
+    _from_name = from_name.strip() if from_name else ""
+
+    if not _host or not _user or not _pass:
         print(f"Email NOT sent (SMTP not configured): to={to_email}, subject={subject}")
         return False
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"]    = SMTP_FROM
-        msg["To"]      = to_email
+        # "Zubbi Cafetería <noreply@mail.zubcard.com>" or plain address
+        if _from_name:
+            from email.utils import formataddr
+            msg["From"] = formataddr((_from_name, _from_addr))
+        else:
+            msg["From"] = _from_addr
+        msg["To"] = to_email
+        if reply_to:
+            msg["Reply-To"] = reply_to
         msg.attach(MIMEText(html_body, "html", "utf-8"))
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        with smtplib.SMTP(_host, _port) as server:
             server.ehlo()
             server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_FROM, [to_email], msg.as_string())
-        print(f"✅ Email sent: to={to_email}")
+            server.login(_user, _pass)
+            server.sendmail(_from_addr, [to_email], msg.as_string())
+        print(f"✅ Email sent: to={to_email}, from_name={_from_name or _from_addr}")
         return True
     except Exception as e:
         print(f"❌ Email error: {e}")
@@ -769,7 +806,32 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
                 wallet_url=wallet_url if os.environ.get("APPLE_P12_B64") else "",
             )
 
-        send_email(email, email_subject, email_html)
+        # Per-business email branding
+        biz_from_name = ""
+        biz_reply_to  = ""
+        biz_smtp_host = ""
+        biz_smtp_port = 0
+        biz_smtp_user = ""
+        biz_smtp_pass = ""
+        if biz:
+            biz_from_name = biz.email_from_name or biz.name or ""
+            biz_reply_to  = biz.email_reply_to  or ""
+            biz_smtp_host = biz.email_smtp_host  or ""
+            biz_smtp_port = biz.email_smtp_port  or 0
+            biz_smtp_user = biz.email_smtp_user  or ""
+            biz_smtp_pass = biz.email_smtp_pass  or ""
+
+        send_email(
+            to_email   = email,
+            subject    = email_subject,
+            html_body  = email_html,
+            from_name  = biz_from_name,
+            reply_to   = biz_reply_to,
+            smtp_host  = biz_smtp_host,
+            smtp_port  = biz_smtp_port,
+            smtp_user  = biz_smtp_user,
+            smtp_pass  = biz_smtp_pass,
+        )
     except Exception as _email_err:
         print(f"Welcome email failed (non-fatal): {_email_err}")
 
@@ -2721,6 +2783,7 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         "biz_id":     str(biz.id),
         "biz_pin":    "",  # don't expose - let JS handle login
         "biz_api_key": biz.api_key,
+        "biz_email":  biz.email,
         "stamps_per_reward": biz.stamps_per_reward,
         "card_title": biz.card_title,
     })
@@ -3347,6 +3410,87 @@ def delete_card_program(slug: str, program_id: str, pin: str = "", db: Session =
                {"id": program_id, "bid": str(biz.id)})
     db.commit()
     return {"status": "deleted"}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# EMAIL SETTINGS PER-BUSINESS
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/email-settings")
+def get_email_settings(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return {
+        "email_from_name": biz.email_from_name or "",
+        "email_reply_to":  biz.email_reply_to  or "",
+        "email_smtp_host": biz.email_smtp_host  or "",
+        "email_smtp_port": biz.email_smtp_port  or 587,
+        "email_smtp_user": biz.email_smtp_user  or "",
+        "email_smtp_pass": "••••••••" if biz.email_smtp_pass else "",  # never expose
+        "has_custom_smtp": bool(biz.email_smtp_host and biz.email_smtp_user and biz.email_smtp_pass),
+    }
+
+
+@app.post("/api/biz/{slug}/email-settings")
+async def save_email_settings(slug: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    body = await request.json()
+
+    biz.email_from_name = body.get("email_from_name", biz.email_from_name or "").strip() or None
+    biz.email_reply_to  = body.get("email_reply_to",  biz.email_reply_to  or "").strip() or None
+    biz.email_smtp_host = body.get("email_smtp_host", biz.email_smtp_host or "").strip() or None
+    smtp_port = body.get("email_smtp_port")
+    biz.email_smtp_port = int(smtp_port) if smtp_port else None
+    biz.email_smtp_user = body.get("email_smtp_user", biz.email_smtp_user or "").strip() or None
+    # Only update password if a real value is sent (not the placeholder dots)
+    new_pass = body.get("email_smtp_pass", "").strip()
+    if new_pass and not new_pass.startswith("•"):
+        biz.email_smtp_pass = new_pass
+
+    db.commit()
+    db.refresh(biz)
+    return {"status": "ok", "email_from_name": biz.email_from_name, "email_reply_to": biz.email_reply_to}
+
+
+@app.post("/api/biz/{slug}/email-settings/test")
+async def test_email_settings(slug: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    """Send a test email using the business email config to verify it works."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    body = await request.json()
+    to_email = body.get("to_email", biz.email).strip()
+
+    html = f"""
+    <div style='font-family:sans-serif;max-width:400px;margin:40px auto;padding:24px;background:#fff8f5;border-radius:12px'>
+      <h2 style='color:#26170c'>✅ Email configurado correctamente</h2>
+      <p style='color:#555'>Este es un email de prueba enviado desde <strong>{biz.name}</strong>.</p>
+      <p style='color:#555'>Tu configuración de email funciona. Los clientes recibirán sus correos de bienvenida desde este remitente.</p>
+      <hr style='border:none;border-top:1px solid #eee;margin:16px 0'>
+      <p style='color:#aaa;font-size:12px'>Powered by ZubCard</p>
+    </div>
+    """
+    sent = send_email(
+        to_email  = to_email,
+        subject   = f"✅ Test de email — {biz.name}",
+        html_body = html,
+        from_name = biz.email_from_name or biz.name or "",
+        reply_to  = biz.email_reply_to  or "",
+        smtp_host = biz.email_smtp_host or "",
+        smtp_port = biz.email_smtp_port or 0,
+        smtp_user = biz.email_smtp_user or "",
+        smtp_pass = biz.email_smtp_pass or "",
+    )
+    if sent:
+        return {"status": "sent", "to": to_email}
+    else:
+        raise HTTPException(status_code=503, detail="No se pudo enviar el email. Revisa la configuración SMTP.")
 
 
 # ════════════════════════════════════════════════════════════════════════════════

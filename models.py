@@ -112,5 +112,15 @@ class Business(Base):
     longitude       = Column(Float, nullable=True)
     geo_radius_m    = Column(Integer, default=300)
     geo_push_msg    = Column(String, default="¡Estás cerca! Visítanos y acumula sellos 🎉")
+    # ── Email branding (per-business) ─────────────────────────────────────────
+    # Emails to customers go FROM: "{email_from_name}" <noreply@mail.zubcard.com>
+    # with Reply-To: email_reply_to (optional)
+    # If the business sets up their own SMTP, those override the global config.
+    email_from_name  = Column(String, nullable=True)   # e.g. "Zubbi Cafetería"
+    email_reply_to   = Column(String, nullable=True)   # e.g. "hola@zubbi.com"
+    email_smtp_host  = Column(String, nullable=True)   # custom SMTP host (optional)
+    email_smtp_port  = Column(Integer, nullable=True)  # custom SMTP port
+    email_smtp_user  = Column(String, nullable=True)   # custom SMTP user
+    email_smtp_pass  = Column(String, nullable=True)   # custom SMTP password
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
