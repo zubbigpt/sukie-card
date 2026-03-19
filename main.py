@@ -5,7 +5,7 @@ import bcrypt
 import io
 import json
 import time
-from fastapi import FastAPI, Depends, HTTPException, Request, Query, File, UploadFile, Body
+from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Request, Query, File, UploadFile, Body
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, RedirectResponse
 from urllib.parse import urlencode
 import httpx
@@ -366,7 +366,7 @@ def send_email(
         if reply_to:
             msg["Reply-To"] = reply_to
         msg.attach(MIMEText(html_body, "html", "utf-8"))
-        with smtplib.SMTP(_host, _port) as server:
+        with smtplib.SMTP(_host, _port, timeout=10) as server:
             server.ehlo()
             server.starttls()
             server.login(_user, _pass)
@@ -690,7 +690,7 @@ def register_page(request: Request):
 
 
 @app.post("/api/register")
-async def public_register(request: Request, db: Session = Depends(get_db)):
+async def public_register(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     import traceback as _tb
     body = await request.json()
     email = (body.get("email") or "").strip().lower()
@@ -834,7 +834,8 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
             biz_smtp_user = biz.email_smtp_user  or ""
             biz_smtp_pass = biz.email_smtp_pass  or ""
 
-        send_email(
+        background_tasks.add_task(
+            send_email,
             to_email   = email,
             subject    = email_subject,
             html_body  = email_html,
@@ -846,7 +847,7 @@ async def public_register(request: Request, db: Session = Depends(get_db)):
             smtp_pass  = biz_smtp_pass,
         )
     except Exception as _email_err:
-        print(f"Welcome email failed (non-fatal): {_email_err}")
+        print(f"Welcome email setup failed (non-fatal): {_email_err}")
 
     return {
         "message":  "Tarjeta creada",
