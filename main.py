@@ -337,26 +337,62 @@ def send_email(
     smtp_pass: str = "",
 ) -> bool:
     """
-    Send email via SMTP. Returns True if sent, False if config missing.
+    Send email. Returns True if sent, False otherwise.
 
-    Per-business overrides: pass smtp_host/user/pass for custom SMTP.
-    Pass from_name to customise the display name (e.g. "Zubbi Cafetería").
-    Falls back to global SMTP_* env vars if per-business values not provided.
+    When SMTP_USER == "resend", uses Resend's HTTP API (avoids SMTP port blocking).
+    Otherwise falls back to SMTP with starttls.
+    Per-business overrides take precedence over global SMTP_* env vars.
     """
+    import urllib.request as _urlreq
     _host  = smtp_host or SMTP_HOST
     _port  = smtp_port or SMTP_PORT
     _user  = smtp_user or SMTP_USER
     _pass  = smtp_pass or SMTP_PASS
-    _from_addr = _user or SMTP_FROM   # sender address (the authenticated account)
+    _from_addr = SMTP_FROM or _user   # actual sender address
     _from_name = from_name.strip() if from_name else ""
 
-    if not _host or not _user or not _pass:
-        print(f"Email NOT sent (SMTP not configured): to={to_email}, subject={subject}")
+    if not _user or not _pass:
+        print(f"Email NOT sent (not configured): to={to_email}, subject={subject}")
+        return False
+
+    # ── Resend HTTP API (bypasses SMTP port 587 which may be blocked) ──────────
+    if _user.lower() == "resend":
+        try:
+            from email.utils import formataddr as _fmtaddr
+            _from_field = _fmtaddr((_from_name, _from_addr)) if _from_name else _from_addr
+            payload = {
+                "from": _from_field,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_body,
+            }
+            if reply_to:
+                payload["reply_to"] = reply_to
+            data = json.dumps(payload).encode("utf-8")
+            req = _urlreq.Request(
+                "https://api.resend.com/emails",
+                data=data,
+                headers={
+                    "Authorization": f"Bearer {_pass}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with _urlreq.urlopen(req, timeout=15) as resp:
+                body = resp.read().decode()
+            print(f"✅ Email sent via Resend API: to={to_email}, from={_from_field}, resp={body[:80]}")
+            return True
+        except Exception as e:
+            print(f"❌ Resend API error: {e}")
+            return False
+
+    # ── Standard SMTP ───────────────────────────────────────────────────────────
+    if not _host:
+        print(f"Email NOT sent (SMTP_HOST not set): to={to_email}")
         return False
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        # "Zubbi Cafetería <noreply@mail.zubcard.com>" or plain address
         if _from_name:
             from email.utils import formataddr
             msg["From"] = formataddr((_from_name, _from_addr))
@@ -371,10 +407,10 @@ def send_email(
             server.starttls()
             server.login(_user, _pass)
             server.sendmail(_from_addr, [to_email], msg.as_string())
-        print(f"✅ Email sent: to={to_email}, from_name={_from_name or _from_addr}")
+        print(f"✅ Email sent via SMTP: to={to_email}, from_name={_from_name or _from_addr}")
         return True
     except Exception as e:
-        print(f"❌ Email error: {e}")
+        print(f"❌ SMTP error: {e}")
         return False
 
 
