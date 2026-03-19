@@ -7,6 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <style>
     :root {
       --surface: #fff8f5;
@@ -390,23 +392,27 @@
         style="width:100%;padding:11px 14px;border:none;border-radius:var(--r-sm);font-size:.9rem;outline:none;background:var(--surface);color:var(--primary);font-family:'Manrope',sans-serif;resize:vertical;transition:box-shadow .18s"
         onfocus="this.style.boxShadow='0 0 0 2.5px var(--honey)'" onblur="this.style.boxShadow=''"></textarea>
 
-      <label>Dirección del local</label>
-      <input type="text" id="biz-address" placeholder="Ej: Calle Mayor 12, Madrid" autocomplete="street-address">
-
-      <label>Ubicación (para notificaciones de proximidad)</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px">
-        <div>
-          <input type="number" id="biz-lat" placeholder="Latitud" step="any" style="font-size:.83rem">
-        </div>
-        <div>
-          <input type="number" id="biz-lng" placeholder="Longitud" step="any" style="font-size:.83rem">
-        </div>
+      <label>Buscar tu local en el mapa</label>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <input type="text" id="reg-geo-search" placeholder="Ej: Café Miramar, Calle Mayor 12 Madrid…"
+          style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();searchGeoReg();}">
+        <button type="button" onclick="searchGeoReg()"
+          style="background:var(--primary);color:#fff;border:none;border-radius:var(--r-sm);padding:0 14px;font-size:1rem;cursor:pointer">🔍</button>
+        <button type="button" onclick="detectLocationReg()" title="Usar mi ubicación"
+          style="background:none;border:1.5px solid var(--outline-var);border-radius:var(--r-sm);padding:0 12px;font-size:1rem;cursor:pointer">📡</button>
       </div>
-      <button type="button" onclick="detectLocationReg()" style="margin-top:8px;background:none;border:1.5px solid var(--outline-var);border-radius:var(--r-sm);padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--primary);font-family:'Manrope',sans-serif;width:100%;transition:border-color .18s"
-        onmouseover="this.style.borderColor='var(--honey)'" onmouseout="this.style.borderColor='var(--outline-var)'">
-        📡 Detectar mi ubicación automáticamente
-      </button>
-      <div class="hint" id="geo-reg-hint" style="margin-top:4px"></div>
+      <div class="hint" id="geo-reg-hint" style="margin-top:4px;margin-bottom:6px"></div>
+
+      <!-- Map -->
+      <div id="reg-geo-map" style="height:220px;border-radius:var(--r-sm);overflow:hidden;border:1.5px solid var(--outline-var);margin-bottom:8px"></div>
+      <p style="font-size:.72rem;color:var(--outline);margin-bottom:10px">Haz clic en el mapa o arrastra el pin para ajustar la posición exacta.</p>
+
+      <label>Dirección del local</label>
+      <input type="text" id="biz-address" placeholder="Se rellena automáticamente al buscar" autocomplete="street-address">
+
+      <!-- Hidden lat/lng (auto-filled) -->
+      <input type="hidden" id="biz-lat">
+      <input type="hidden" id="biz-lng">
 
       <div class="error-box" id="err3"></div>
       <button class="btn-primary" id="btnRegister" onclick="doRegister()" type="button">Crear mi cuenta →</button>
@@ -517,16 +523,85 @@
       document.getElementById('step2').classList.remove('active');
       document.getElementById('step3').classList.add('active');
       document.getElementById('s3').classList.add('active');
+      // Init map after element is visible (Leaflet needs rendered div)
+      setTimeout(() => { initRegMap(null, null); }, 80);
     }
 
-    // ── Auto-detect location on registration ──
+    // ── Registration map ──
+    let _regMap = null;
+    let _regMarker = null;
+
+    function initRegMap(lat, lng) {
+      if (_regMap) { _regMap.remove(); _regMap = null; _regMarker = null; }
+      const center = (lat && lng) ? [parseFloat(lat), parseFloat(lng)] : [40.4168, -3.7038];
+      const zoom   = (lat && lng) ? 15 : 6;
+      _regMap = L.map('reg-geo-map', {scrollWheelZoom: false}).setView(center, zoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(_regMap);
+      _regMarker = L.marker(center, {draggable: true}).addTo(_regMap);
+      _regMarker.on('dragend', function(e) {
+        const p = e.target.getLatLng();
+        document.getElementById('biz-lat').value = p.lat.toFixed(6);
+        document.getElementById('biz-lng').value = p.lng.toFixed(6);
+        reverseGeocodeReg(p.lat, p.lng);
+      });
+      _regMap.on('click', function(e) {
+        _regMarker.setLatLng(e.latlng);
+        document.getElementById('biz-lat').value = e.latlng.lat.toFixed(6);
+        document.getElementById('biz-lng').value = e.latlng.lng.toFixed(6);
+        reverseGeocodeReg(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    async function reverseGeocodeReg(lat, lng) {
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {headers:{'Accept-Language':'es'}});
+        const d = await r.json();
+        if (d.display_name) {
+          const parts = d.display_name.split(',').slice(0,4).join(',');
+          const addrEl = document.getElementById('biz-address');
+          if (addrEl) addrEl.value = parts;
+        }
+      } catch(e) {}
+    }
+
+    async function searchGeoReg() {
+      const q = (document.getElementById('reg-geo-search')?.value || '').trim();
+      const hint = document.getElementById('geo-reg-hint');
+      if (!q) return;
+      hint.textContent = '🔍 Buscando…';
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, {headers:{'Accept-Language':'es'}});
+        const data = await r.json();
+        if (!data.length) { hint.textContent = '❌ Dirección no encontrada'; return; }
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        document.getElementById('biz-lat').value = lat.toFixed(6);
+        document.getElementById('biz-lng').value = lng.toFixed(6);
+        const addrParts = data[0].display_name.split(',').slice(0,4).join(',');
+        if (document.getElementById('biz-address')) document.getElementById('biz-address').value = addrParts;
+        if (_regMap && _regMarker) { _regMap.setView([lat, lng], 16); _regMarker.setLatLng([lat, lng]); }
+        else { initRegMap(lat, lng); }
+        hint.textContent = '✅ Ubicación encontrada';
+        setTimeout(() => { hint.textContent = ''; }, 3000);
+      } catch(e) {
+        hint.textContent = '❌ Error: ' + e.message;
+      }
+    }
+
     function detectLocationReg() {
       const hint = document.getElementById('geo-reg-hint');
       if (!navigator.geolocation) { hint.textContent = '⚠️ Geolocalización no disponible en este navegador'; return; }
       hint.textContent = '📡 Detectando ubicación…';
       navigator.geolocation.getCurrentPosition(pos => {
-        document.getElementById('biz-lat').value = pos.coords.latitude.toFixed(6);
-        document.getElementById('biz-lng').value = pos.coords.longitude.toFixed(6);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        document.getElementById('biz-lat').value = lat.toFixed(6);
+        document.getElementById('biz-lng').value = lng.toFixed(6);
+        if (_regMap && _regMarker) { _regMap.setView([lat, lng], 16); _regMarker.setLatLng([lat, lng]); }
+        else { initRegMap(lat, lng); }
+        reverseGeocodeReg(lat, lng);
         hint.textContent = '✅ Ubicación detectada';
         setTimeout(() => { hint.textContent = ''; }, 3000);
       }, err => {

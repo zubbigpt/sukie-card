@@ -11,6 +11,8 @@
 <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
   /* Crème et Or token mapping — preserves all inline var() references */
@@ -2248,18 +2250,34 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
 
         <div class="card-box">
           <h3 style="margin-bottom:16px;color:#0a0a0a">Ubicación del local</h3>
+
+          <!-- Map search bar -->
+          <label style="font-size:.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--brown-light)">Buscar una dirección en el mapa</label>
+          <div style="display:flex;gap:8px;margin-top:4px;margin-bottom:12px">
+            <input id="geo-search2" type="text" placeholder="Ej: Café Miramar, Calle Mayor 12 Madrid…"
+              style="flex:1;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();searchGeoAddress();}">
+            <button onclick="searchGeoAddress()" class="btn-sm btn-primary" style="padding:9px 16px;font-size:.85rem">🔍</button>
+            <button onclick="detectLocation2()" class="btn-sm btn-ghost" style="padding:9px 14px;font-size:.8rem;white-space:nowrap" title="Usar mi ubicación actual">📡</button>
+          </div>
+
+          <!-- Map -->
+          <div id="geo-map2" style="height:300px;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1.5px solid var(--cream-border)"></div>
+          <p style="font-size:.76rem;color:var(--brown-light);margin-top:-10px;margin-bottom:12px">Haz clic en el mapa o arrastra el pin para ajustar la ubicación exacta.</p>
+
+          <!-- Lat / Lng read-only display + other fields -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="form-group" style="grid-column:1/-1">
-              <label>Dirección completa</label>
-              <input id="geo-address2" type="text" placeholder="Calle Mayor 1, 28013 Madrid" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
-            </div>
             <div class="form-group">
               <label>Latitud</label>
-              <input id="geo-lat2" type="number" step="any" placeholder="40.4168" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+              <input id="geo-lat2" type="number" step="any" placeholder="40.4168" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)" onchange="syncMapFromInputs()">
             </div>
             <div class="form-group">
               <label>Longitud</label>
-              <input id="geo-lng2" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+              <input id="geo-lng2" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)" onchange="syncMapFromInputs()">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label>Dirección completa (referencia)</label>
+              <input id="geo-address2" type="text" placeholder="Calle Mayor 1, 28013 Madrid" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
             </div>
             <div class="form-group">
               <label>Radio de activación (metros)</label>
@@ -2271,9 +2289,8 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
               <input id="geo-msg2" type="text" placeholder="¡Estás cerca! Visítanos y acumula sellos 🎉" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap">
             <button class="btn-sm btn-primary" onclick="saveGeoConfig2()" style="padding:10px 24px">💾 Guardar ubicación</button>
-            <button class="btn-sm btn-ghost" onclick="detectLocation2()" style="font-size:.76rem">📡 Usar mi ubicación actual</button>
             <span id="geo-status2" style="font-size:.8rem;color:var(--brown-light)"></span>
           </div>
         </div>
@@ -4480,6 +4497,81 @@ function detectLocation(){
 }
 
 // ── Geo section (dedicated nav panel) ──────────────────────────────────────
+let _geoMap = null;
+let _geoMarker = null;
+
+function initGeoMap(lat, lng){
+  // Destroy previous instance if any
+  if(_geoMap){ _geoMap.remove(); _geoMap=null; _geoMarker=null; }
+  const center = (lat && lng) ? [parseFloat(lat), parseFloat(lng)] : [40.4168, -3.7038];
+  const zoom   = (lat && lng) ? 15 : 6;
+  _geoMap = L.map('geo-map2', {scrollWheelZoom: false}).setView(center, zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(_geoMap);
+  _geoMarker = L.marker(center, {draggable: true}).addTo(_geoMap);
+  // Drag pin → update fields
+  _geoMarker.on('dragend', function(e){
+    const p = e.target.getLatLng();
+    document.getElementById('geo-lat2').value = p.lat.toFixed(6);
+    document.getElementById('geo-lng2').value = p.lng.toFixed(6);
+    reverseGeocodeGeo(p.lat, p.lng);
+  });
+  // Click map → move pin + update fields
+  _geoMap.on('click', function(e){
+    _geoMarker.setLatLng(e.latlng);
+    document.getElementById('geo-lat2').value = e.latlng.lat.toFixed(6);
+    document.getElementById('geo-lng2').value = e.latlng.lng.toFixed(6);
+    reverseGeocodeGeo(e.latlng.lat, e.latlng.lng);
+  });
+}
+
+async function reverseGeocodeGeo(lat, lng){
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {headers:{'Accept-Language':'es'}});
+    const d = await r.json();
+    if(d.display_name){
+      const parts = d.display_name.split(',').slice(0,4).join(',');
+      const addrEl = document.getElementById('geo-address2');
+      if(addrEl && !addrEl.value) addrEl.value = parts;
+    }
+  }catch(e){}
+}
+
+async function searchGeoAddress(){
+  const q = (document.getElementById('geo-search2')?.value||'').trim();
+  if(!q) return;
+  const status = document.getElementById('geo-status2');
+  if(status) status.textContent = '🔍 Buscando…';
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, {headers:{'Accept-Language':'es'}});
+    const data = await r.json();
+    if(!data.length){ if(status) status.textContent='❌ Dirección no encontrada'; return; }
+    const lat = parseFloat(data[0].lat);
+    const lng = parseFloat(data[0].lon);
+    document.getElementById('geo-lat2').value = lat.toFixed(6);
+    document.getElementById('geo-lng2').value = lng.toFixed(6);
+    const addrParts = data[0].display_name.split(',').slice(0,4).join(',');
+    if(document.getElementById('geo-address2')) document.getElementById('geo-address2').value = addrParts;
+    if(_geoMap && _geoMarker){
+      _geoMap.setView([lat, lng], 16);
+      _geoMarker.setLatLng([lat, lng]);
+    }
+    if(status){ status.textContent='✅ Ubicación encontrada'; setTimeout(()=>{ status.textContent=''; },3000); }
+  }catch(e){
+    if(status) status.textContent='❌ Error al buscar: '+e.message;
+  }
+}
+
+function syncMapFromInputs(){
+  const lat = parseFloat(document.getElementById('geo-lat2')?.value);
+  const lng = parseFloat(document.getElementById('geo-lng2')?.value);
+  if(_geoMap && _geoMarker && !isNaN(lat) && !isNaN(lng)){
+    _geoMap.setView([lat, lng], 15);
+    _geoMarker.setLatLng([lat, lng]);
+  }
+}
+
 async function loadGeoSection(){
   try{
     const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`);
@@ -4490,6 +4582,8 @@ async function loadGeoSection(){
     if(document.getElementById('geo-lng2'))     document.getElementById('geo-lng2').value=d.longitude||'';
     if(document.getElementById('geo-radius2'))  document.getElementById('geo-radius2').value=d.geo_radius_m||300;
     if(document.getElementById('geo-msg2'))     document.getElementById('geo-msg2').value=d.geo_push_msg||'';
+    // Init map after populating fields
+    setTimeout(()=>{ initGeoMap(d.latitude, d.longitude); }, 50);
   }catch(e){}
 }
 
@@ -4522,8 +4616,13 @@ function detectLocation2(){
   if(!navigator.geolocation){ if(status) status.textContent='⚠️ Geolocalización no disponible'; return; }
   if(status) status.textContent='📡 Detectando ubicación…';
   navigator.geolocation.getCurrentPosition(pos=>{
-    if(document.getElementById('geo-lat2'))  document.getElementById('geo-lat2').value=pos.coords.latitude.toFixed(6);
-    if(document.getElementById('geo-lng2'))  document.getElementById('geo-lng2').value=pos.coords.longitude.toFixed(6);
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    if(document.getElementById('geo-lat2'))  document.getElementById('geo-lat2').value=lat.toFixed(6);
+    if(document.getElementById('geo-lng2'))  document.getElementById('geo-lng2').value=lng.toFixed(6);
+    if(_geoMap && _geoMarker){ _geoMap.setView([lat,lng],16); _geoMarker.setLatLng([lat,lng]); }
+    else { initGeoMap(lat, lng); }
+    reverseGeocodeGeo(lat, lng);
     if(status){status.textContent='✅ Ubicación detectada — recuerda guardar';setTimeout(()=>{status.textContent='';},4000);}
   },err=>{ if(status) status.textContent='❌ '+err.message; });
 }
