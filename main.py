@@ -1879,6 +1879,7 @@ DEFAULT_CONFIG = {
 @app.get("/api/admin/config")
 def get_config(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
     verify_pin(pin, db)
+    biz = None  # ensure biz is always defined regardless of slug path
     # Try to find config by business slug first, fall back to id=1
     if slug:
         biz = get_business_by_slug(slug, db)
