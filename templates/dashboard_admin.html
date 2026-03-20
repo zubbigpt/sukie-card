@@ -2895,7 +2895,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
           <div style="display:flex;gap:12px;align-items:center;margin-top:20px">
             <button onclick="saveConfig()" class="btn-sm btn-primary" style="padding:12px 28px">Guardar landing</button>
-            <span id="lp-save-msg" style="font-size:.78rem;color:var(--green);display:none">Guardado</span>
+            <span id="lp-save-msg" style="font-size:.78rem;font-weight:600;display:none"></span>
           </div>
         </div><!-- /LEFT config -->
         <!-- RIGHT: live preview -->
@@ -4160,19 +4160,34 @@ async function saveConfig() {
     }
   };
   
+  // helper: show feedback in whichever element exists
+  function _showSaveResult(ok, errDetail) {
+    // lp-save-msg (next to "Guardar landing" button)
+    const lpMsg = document.getElementById('lp-save-msg');
+    if (lpMsg) {
+      lpMsg.textContent = ok ? '✅ Guardado' : ('❌ ' + (errDetail || 'Error al guardar'));
+      lpMsg.style.color = ok ? 'var(--green)' : 'var(--red,#c62828)';
+      lpMsg.style.display = '';
+      if (ok) setTimeout(() => { lpMsg.style.display = 'none'; }, 3000);
+    }
+    // cfg-save-msg / cfg-err-msg (next to "Guardar Programa" button)
+    const saveEl = document.getElementById('cfg-save-msg');
+    const errEl  = document.getElementById('cfg-err-msg');
+    if (saveEl) saveEl.style.display = ok ? '' : 'none';
+    if (errEl)  errEl.style.display  = ok ? 'none' : '';
+    if (ok && saveEl) setTimeout(() => { saveEl.style.display = 'none'; }, 3000);
+  }
   try {
     const r = await fetch(`${BASE}/api/admin/config`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const ok = r.ok;
-    document.getElementById('cfg-save-msg').style.display = ok ? '' : 'none';
-    document.getElementById('cfg-err-msg').style.display  = ok ? 'none' : '';
-    if (ok) setTimeout(() => { document.getElementById('cfg-save-msg').style.display = 'none'; }, 3000);
+    let errDetail = '';
+    if (!r.ok) { try { const d = await r.json(); errDetail = d.detail || ''; } catch(_){} }
+    _showSaveResult(r.ok, errDetail);
   } catch(e) {
-    document.getElementById('cfg-err-msg').style.display = '';
-    document.getElementById('cfg-save-msg').style.display = 'none';
+    _showSaveResult(false, e.message);
   }
 }
 
@@ -5753,7 +5768,11 @@ function lpUpdatePreview(){
 // Attach listeners when section loads
 function attachLPListeners(){
   const ids=[
-    'cfg-form_title','cfg-header_text','cfg-button_text','cfg-button_color',
+    'cfg-form_title','cfg-header_text','cfg-button_text',
+    'cfg-bg_color','cfg-bg_color_text',
+    'cfg-text_color','cfg-text_color_text',
+    'cfg-button_color','cfg-button_color_text',
+    'cfg-link_color','cfg-link_color_text',
     'cfg-card_name','cfg-commercial_name','cfg-stamps_per_reward',
     'cfg-field_phone','cfg-field_birthdate','cfg-field_lastname'
   ];
