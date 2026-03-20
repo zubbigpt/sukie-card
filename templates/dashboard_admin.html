@@ -2455,6 +2455,75 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           <button class="btn-sm btn-primary" onclick="sendGeoPush2()" style="padding:10px 24px">Enviar notificación a todos</button>
           <span id="geo-push-status2" style="display:block;font-size:.8rem;color:var(--brown-light);margin-top:8px"></span>
         </div>
+
+        <!-- VAPID setup card -->
+        <div class="card-box" style="margin-top:20px;border:1.5px solid var(--cream-border)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span class="material-symbols-outlined" style="font-size:1.3rem;color:var(--brown);font-variation-settings:'FILL' 1">phone_android</span>
+            <h3 style="margin:0;color:#0a0a0a">Android PUSH — Configuración VAPID</h3>
+            <span id="vapid-badge" style="margin-left:auto;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--cream-dark);color:var(--brown-light)">Verificando…</span>
+          </div>
+
+          <!-- Status row -->
+          <div id="vapid-status-row" style="margin-bottom:18px">
+            <div id="vapid-ok-msg" style="display:none;background:#e6f4ea;border:1.5px solid #a8d5b5;border-radius:6px;padding:12px 16px;font-size:.85rem;color:#1a4f2a;line-height:1.6">
+              <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;font-variation-settings:'FILL' 1">check_circle</span>
+              <strong>VAPID configurado.</strong> Los clientes Android que han aceptado notificaciones recibirán push geo-localizados.
+              <br><span style="font-size:.78rem;opacity:.8">Suscripciones activas: <strong id="vapid-sub-count">—</strong></span>
+            </div>
+            <div id="vapid-err-msg" style="display:none;background:var(--honey-light);border:1.5px solid var(--honey);border-radius:6px;padding:12px 16px;font-size:.85rem;color:var(--brown);line-height:1.6">
+              <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;font-variation-settings:'FILL' 1">warning</span>
+              <strong>VAPID no configurado.</strong> Sigue los pasos de abajo para activar push en Android.
+            </div>
+          </div>
+
+          <!-- Setup steps (always visible) -->
+          <details id="vapid-steps-details" style="cursor:pointer">
+            <summary style="font-size:.82rem;font-weight:700;color:var(--brown);list-style:none;display:flex;align-items:center;gap:6px;user-select:none">
+              <span class="material-symbols-outlined" style="font-size:.95rem">settings</span> Cómo configurar VAPID en Railway
+              <span class="material-symbols-outlined" style="font-size:.95rem;margin-left:auto" id="vapid-chevron">expand_more</span>
+            </summary>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:14px">
+
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="min-width:26px;height:26px;border-radius:50%;background:var(--brown);color:#fff;font-size:.75rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+                <div>
+                  <p style="font-size:.84rem;font-weight:700;color:var(--brown);margin:0 0 4px">Genera las claves VAPID</p>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin:0 0 6px;line-height:1.5">En tu terminal local, ejecuta:</p>
+                  <div style="background:var(--cream);border:1px solid var(--cream-border);border-radius:4px;padding:8px 12px;font-family:monospace;font-size:.78rem;color:var(--brown);position:relative">
+                    npx web-push generate-vapid-keys
+                    <button onclick="navigator.clipboard.writeText('npx web-push generate-vapid-keys');showToast('Copiado')" style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;color:var(--brown-light)"><span class="material-symbols-outlined" style="font-size:.85rem">content_copy</span></button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="min-width:26px;height:26px;border-radius:50%;background:var(--brown);color:#fff;font-size:.75rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+                <div>
+                  <p style="font-size:.84rem;font-weight:700;color:var(--brown);margin:0 0 4px">Añade las variables en Railway</p>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin:0 0 6px;line-height:1.5">Ve a <strong>Railway → tu proyecto → Variables</strong> y añade:</p>
+                  <div style="background:var(--cream);border:1px solid var(--cream-border);border-radius:4px;padding:10px 12px;font-family:monospace;font-size:.78rem;color:var(--brown);line-height:1.8">
+                    VAPID_PUBLIC_KEY=&lt;tu clave pública&gt;<br>
+                    VAPID_PRIVATE_KEY=&lt;tu clave privada&gt;<br>
+                    VAPID_EMAIL=mailto:hola@zubcard.com
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="min-width:26px;height:26px;border-radius:50%;background:var(--brown);color:#fff;font-size:.75rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+                <div>
+                  <p style="font-size:.84rem;font-weight:700;color:var(--brown);margin:0 0 4px">Redeploy en Railway</p>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin:0;line-height:1.5">Railway aplica las variables en el siguiente deploy. Después vuelve aquí y haz clic en <strong>Verificar</strong>.</p>
+                </div>
+              </div>
+
+              <button onclick="checkVapidStatus()" class="btn-sm btn-primary" style="align-self:flex-start;margin-top:4px">
+                <span class="material-symbols-outlined" style="font-size:.85rem;vertical-align:middle">refresh</span> Verificar ahora
+              </button>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- ═══ TIENDAS / LOCALES ═══ -->
@@ -3029,6 +3098,32 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 </div>
 </div><!-- /app -->
 
+<!-- ══════════════════════════════════════════════════════════
+     ONBOARDING MODAL — primer login
+══════════════════════════════════════════════════════════ -->
+<div id="onboarding-overlay" style="display:none;position:fixed;inset:0;background:rgba(38,23,12,.65);z-index:900;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px">
+  <div style="width:100%;max-width:520px;background:var(--white);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+
+    <!-- Header -->
+    <div style="background:var(--brown);padding:28px 32px 20px;color:#fff;position:relative">
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:18px" id="ob-dots"></div>
+      <h2 style="font-size:1.55rem;font-weight:800;margin:0 0 4px;line-height:1.2" id="ob-title">¡Bienvenido a ZubCard!</h2>
+      <p style="font-size:.88rem;opacity:.75;margin:0" id="ob-subtitle">En 3 pasos tu tarjeta de fidelización estará lista</p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:28px 32px" id="ob-body"><!-- filled by JS --></div>
+
+    <!-- Footer -->
+    <div style="padding:0 32px 24px;display:flex;align-items:center;justify-content:space-between">
+      <button id="ob-btn-back" onclick="obStep(-1)" style="background:none;border:none;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--brown-light);display:none">← Atrás</button>
+      <span style="flex:1"></span>
+      <button id="ob-btn-skip" onclick="obClose()" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--brown-light);margin-right:12px;text-decoration:underline">Saltar</button>
+      <button id="ob-btn-next" onclick="obStep(1)" class="btn-sm btn-primary" style="padding:10px 24px">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
 <!-- DRAWER (ficha cliente) -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="if(event.target===this)closeDrawer()">
   <div class="drawer" style="position:relative">
@@ -3257,7 +3352,7 @@ function showSection(name){
   if(name==='stores')        loadStores();
   if(name==='email')         loadEmailSettings();
   if(name==='cuenta-perfil') loadPerfil();
-  if(name==='geo')           loadGeoSection();
+  if(name==='geo'){          loadGeoSection(); setTimeout(checkVapidStatus,400); }
 
   // Keep Tarjetas parent highlighted when inside a card sub-section
   const cardSubSections = ['fidelizacion','activity','birthdays','clients','new-client','import'];
@@ -5691,6 +5786,123 @@ function setPCCardUrl(){
   const el=document.getElementById('pc-card-url');
   if(el) el.textContent=`${window.location.origin}/biz/${BIZ_SLUG}/card/[TOKEN_CLIENTE]`;
 }
+
+/* ── ANDROID VAPID STATUS CHECK ──────────────────────────── */
+async function checkVapidStatus(){
+  const badge=document.getElementById('vapid-badge');
+  const okMsg=document.getElementById('vapid-ok-msg');
+  const errMsg=document.getElementById('vapid-err-msg');
+  if(badge) badge.textContent='Verificando…';
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/vapid-public-key?pin=${PIN}`);
+    if(r.ok){
+      const d=await r.json();
+      if(d.public_key){
+        badge.textContent='✓ Activo';
+        badge.style.background='#e6f4ea';
+        badge.style.color='#1a4f2a';
+        if(okMsg) okMsg.style.display='block';
+        if(errMsg) errMsg.style.display='none';
+        // Try to get subscription count
+        try{
+          const r2=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/push-subscriptions/count?pin=${PIN}`);
+          if(r2.ok){ const d2=await r2.json(); const el=document.getElementById('vapid-sub-count'); if(el) el.textContent=d2.count??'—'; }
+        }catch(e){}
+        return;
+      }
+    }
+  }catch(e){}
+  // Not configured
+  if(badge){ badge.textContent='No configurado'; badge.style.background='#fff3cd'; badge.style.color='#856404'; }
+  if(okMsg) okMsg.style.display='none';
+  if(errMsg) errMsg.style.display='block';
+  // Auto-open steps
+  const det=document.getElementById('vapid-steps-details');
+  if(det && !det.open) det.open=true;
+}
+
+/* ── ONBOARDING FLOW ─────────────────────────────────────── */
+const _obSteps=[
+  {
+    title:'¡Bienvenido a ZubCard!',
+    sub:'En 3 pasos tu tarjeta de fidelización estará lista',
+    html:`<div style="text-align:center;padding:8px 0">
+      <span class="material-symbols-outlined" style="font-size:4rem;color:var(--honey);font-variation-settings:'FILL' 1">loyalty</span>
+      <p style="font-size:.95rem;color:var(--brown);line-height:1.7;margin:16px 0 0">Hola <strong id="ob-biz-name">${(typeof BIZ_NAME!=='undefined'?BIZ_NAME:'')}</strong>, tu cuenta está lista.</p>
+      <p style="font-size:.88rem;color:var(--brown-light);line-height:1.7;margin:8px 0 0">Este asistente te guiará para configurar tu primera tarjeta de sellos, personalizar el diseño y compartir el QR con tus clientes.</p>
+    </div>`
+  },
+  {
+    title:'Personaliza tu tarjeta',
+    sub:'Añade tu logo, colores y número de sellos',
+    html:`<div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:var(--cream);border:1.5px solid var(--cream-border);border-radius:6px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <span class="material-symbols-outlined" style="color:var(--honey);font-size:1.3rem;flex-shrink:0;font-variation-settings:'FILL' 1">palette</span>
+        <div><p style="font-size:.88rem;font-weight:700;color:var(--brown);margin:0 0 3px">Diseño y colores</p><p style="font-size:.8rem;color:var(--brown-light);margin:0;line-height:1.5">Desde <strong>Tarjetas → Diseño</strong> puedes subir tu logo, elegir el color de la tarjeta y el emoji del sello.</p></div>
+      </div>
+      <div style="background:var(--cream);border:1.5px solid var(--cream-border);border-radius:6px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <span class="material-symbols-outlined" style="color:var(--honey);font-size:1.3rem;flex-shrink:0;font-variation-settings:'FILL' 1">settings</span>
+        <div><p style="font-size:.88rem;font-weight:700;color:var(--brown);margin:0 0 3px">Reglas del programa</p><p style="font-size:.8rem;color:var(--brown-light);margin:0;line-height:1.5">Define cuántos sellos se necesitan para el premio y qué recibirán tus clientes.</p></div>
+      </div>
+      <div style="background:var(--cream);border:1.5px solid var(--cream-border);border-radius:6px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <span class="material-symbols-outlined" style="color:var(--honey);font-size:1.3rem;flex-shrink:0;font-variation-settings:'FILL' 1">qr_code_2</span>
+        <div><p style="font-size:.88rem;font-weight:700;color:var(--brown);margin:0 0 3px">QR de registro</p><p style="font-size:.8rem;color:var(--brown-light);margin:0;line-height:1.5">Desde <strong>Email &amp; QR → QR</strong> descarga o imprime el QR para que tus clientes se registren.</p></div>
+      </div>
+    </div>`
+  },
+  {
+    title:'¡Todo listo para compartir!',
+    sub:'Comparte el QR y empieza a fidelizar',
+    html:`<div style="text-align:center;padding:8px 0">
+      <span class="material-symbols-outlined" style="font-size:4rem;color:var(--green,#2d7a4f);font-variation-settings:'FILL' 1">check_circle</span>
+      <p style="font-size:.95rem;color:var(--brown);line-height:1.7;margin:16px 0 8px">¡Tu tarjeta ya está activa!</p>
+      <p style="font-size:.85rem;color:var(--brown-light);line-height:1.7;margin:0 0 20px">Imprime el QR en tu mostrador, ponlo en tu web o compártelo en redes sociales. Cada escaneo registra un nuevo cliente.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-sm btn-primary" onclick="obClose();showSection('fidelizacion');setTimeout(()=>showFidTab('qr'),200)" style="padding:10px 20px">
+          <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle">qr_code</span> Ver mi QR
+        </button>
+        <button class="btn-sm btn-ghost" onclick="obClose();showSection('tarjetas')" style="padding:10px 20px">
+          <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle">edit</span> Personalizar tarjeta
+        </button>
+      </div>
+    </div>`
+  }
+];
+
+let _obCurrent=0;
+function obRender(){
+  const s=_obSteps[_obCurrent];
+  document.getElementById('ob-title').textContent=s.title;
+  document.getElementById('ob-subtitle').textContent=s.sub;
+  document.getElementById('ob-body').innerHTML=s.html;
+  // dots
+  const dotsEl=document.getElementById('ob-dots');
+  dotsEl.innerHTML=_obSteps.map((_,i)=>`<span style="width:8px;height:8px;border-radius:50%;background:${i===_obCurrent?'#fff':'rgba(255,255,255,.35)'}"></span>`).join('');
+  // buttons
+  document.getElementById('ob-btn-back').style.display=_obCurrent>0?'block':'none';
+  const nextBtn=document.getElementById('ob-btn-next');
+  if(_obCurrent===_obSteps.length-1){ nextBtn.textContent='Empezar →'; nextBtn.onclick=obClose; }
+  else{ nextBtn.textContent='Siguiente →'; nextBtn.onclick=()=>obStep(1); }
+}
+function obStep(dir){
+  _obCurrent=Math.max(0,Math.min(_obSteps.length-1,_obCurrent+dir));
+  obRender();
+}
+function obClose(){
+  document.getElementById('onboarding-overlay').style.display='none';
+  try{ localStorage.setItem('zub_onboarded_'+BIZ_SLUG,'1'); }catch(e){}
+}
+function obOpen(){
+  _obCurrent=0;
+  document.getElementById('onboarding-overlay').style.display='flex';
+  obRender();
+}
+// Auto-trigger on first visit
+(function(){
+  try{
+    if(!localStorage.getItem('zub_onboarded_'+BIZ_SLUG)) setTimeout(obOpen,900);
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
