@@ -686,7 +686,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <h1 style="font-size:2.5rem;margin-bottom:4px">Cartas Digitales</h1>
             <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Crea y comparte menús digitales con QR</p>
           </div>
-          <button class="btn-sm btn-primary" onclick="alert('Nueva carta — próximamente')" style="padding:10px 18px">+ Nueva carta</button>
+          <button class="btn-sm btn-primary" onclick="showToast('Cartas digitales — próximamente 🚀')" style="padding:10px 18px">+ Nueva carta</button>
         </div>
 
         <!-- Stats Row -->
@@ -716,33 +716,9 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         <!-- Gallery Grid -->
         <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Tus cartas</h3>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
-          <div class="card" style="text-align:center;padding:28px 20px;border:2px dashed var(--outline-var);background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:200px;cursor:pointer;transition:all .2s;border-radius:.75rem">
+          <div class="card" onclick="showToast('Cartas digitales — próximamente 🚀')" style="text-align:center;padding:28px 20px;border:2px dashed var(--outline-var);background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:200px;cursor:pointer;transition:all .2s;border-radius:.75rem">
             <span class="material-symbols-outlined" style="font-size:2.4rem;color:var(--brown-light);margin-bottom:12px">add</span>
             <p style="font-size:.9rem;font-weight:600;color:var(--primary)">Crear nueva carta</p>
-          </div>
-          <div class="card" style="display:flex;flex-direction:column;padding:0;overflow:hidden;opacity:.5">
-            <div style="background:var(--surface-mid);height:120px;display:flex;align-items:center;justify-content:center">
-              <span class="material-symbols-outlined" style="font-size:2.2rem;color:var(--brown-light)">restaurant_menu</span>
-            </div>
-            <div style="padding:16px;flex:1;display:flex;flex-direction:column">
-              <h4 style="font-weight:700;margin-bottom:4px;font-size:.9rem">Carta de ejemplo</h4>
-              <p style="font-size:.75rem;color:var(--brown-light);flex:1">Menú de prueba</p>
-              <div style="display:flex;gap:6px;margin-top:8px">
-                <button class="btn-sm btn-ghost" style="flex:1;font-size:.72rem;padding:6px">Ver</button>
-              </div>
-            </div>
-          </div>
-          <div class="card" style="display:flex;flex-direction:column;padding:0;overflow:hidden;opacity:.5">
-            <div style="background:var(--surface-mid);height:120px;display:flex;align-items:center;justify-content:center">
-              <span class="material-symbols-outlined" style="font-size:2.2rem;color:var(--brown-light)">restaurant_menu</span>
-            </div>
-            <div style="padding:16px;flex:1;display:flex;flex-direction:column">
-              <h4 style="font-weight:700;margin-bottom:4px;font-size:.9rem">Bebidas</h4>
-              <p style="font-size:.75rem;color:var(--brown-light);flex:1">Carta de ejemplo</p>
-              <div style="display:flex;gap:6px;margin-top:8px">
-                <button class="btn-sm btn-ghost" style="flex:1;font-size:.72rem;padding:6px">Ver</button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -890,7 +866,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             <div style="flex:1">
               <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;margin-bottom:6px;color:white">WhatsApp Business</h3>
               <p style="font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:12px;line-height:1.5">Envía notificaciones automáticas, confirmaciones de sellos y campañas a través de WhatsApp directamente a tus clientes.</p>
-              <button class="btn-sm" style="background:#25D366;color:white;border:none;padding:10px 18px;border-radius:var(--r-sm);font-weight:700;cursor:pointer">Conectar →</button>
+              <button class="btn-sm" onclick="showToast('Integración WhatsApp — próximamente 🚀')" style="background:#25D366;color:white;border:none;padding:10px 18px;border-radius:var(--r-sm);font-weight:700;cursor:pointer">Conectar →</button>
             </div>
           </div>
         </div>
@@ -905,7 +881,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             </div>
             <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">Zapier</h4>
             <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Automatiza flujos de trabajo entre ZubCard y miles de apps.</p>
-            <button class="btn-sm btn-ghost" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
+            <button class="btn-sm btn-ghost" onclick="showToast('Integración Zapier — próximamente 🚀')" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
           </div>
           <!-- Shopify -->
           <div class="card">
@@ -914,7 +890,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             </div>
             <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">Shopify</h4>
             <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Sincroniza clientes y órdenes desde tu tienda Shopify.</p>
-            <button class="btn-sm btn-ghost" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
+            <button class="btn-sm btn-ghost" onclick="showToast('Integración Shopify — próximamente 🚀')" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
           </div>
           <!-- Custom API -->
           <div class="card">
@@ -923,7 +899,7 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
             </div>
             <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">API Personalizada</h4>
             <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Integra ZubCard con tu sistema personalizado vía REST API.</p>
-            <button class="btn-sm btn-ghost" style="width:100%;padding:8px;font-size:.8rem">Ver docs</button>
+            <button class="btn-sm btn-ghost" onclick="showToast('Documentación API — próximamente 🚀')" style="width:100%;padding:8px;font-size:.8rem">Ver docs</button>
           </div>
         </div>
       </div>
@@ -1540,7 +1516,6 @@ table.stitch-table tbody td{padding:14px 20px;font-size:.88rem;color:var(--prima
         document.getElementById('ec-text-txt').value = tx;
         // Reset messages
         document.getElementById('ec-msg').textContent = '';
-        document.getElementById('ec-email-msg').textContent = '';
         // Load email config
         loadCardEmailConfig();
         // Show card tab
@@ -4718,7 +4693,7 @@ function buildCardMockup(card){
             <a onclick="openEditCardModal(window._cardRegistry['${cid}']);closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">edit</span> Editar tarjeta
             </a>
-            <a onclick="showSection('sellos-email');closeTarjetaDropdowns()">
+            <a onclick="showSection('email');closeTarjetaDropdowns()">
               <span class="material-symbols-outlined" style="font-size:.9rem">mail</span> Configurar email
             </a>
             <a onclick="showSection('fidelizacion');setTimeout(()=>showFidTab('landing'),200);closeTarjetaDropdowns()">
