@@ -85,6 +85,31 @@ class Referral(Base):
     used_at       = Column(DateTime(timezone=True), nullable=True)
 
 
+class CardProgram(Base):
+    """Multi-card / loyalty program configuration for a business."""
+    __tablename__ = "card_programs"
+
+    id                    = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    business_id           = Column(UUID(as_uuid=True), ForeignKey("businesses.id"), nullable=True)
+    name                  = Column(String, nullable=False)
+    emoji                 = Column(String, default="🃏")
+    stamps_per_reward     = Column(Integer, default=10)
+    reward_name           = Column(String, default="Premio")
+    bg_color              = Column(String, default="#0a0a0a")
+    accent_color          = Column(String, default="#00e676")
+    text_color            = Column(String, default="#ffffff")
+    status                = Column(String, default="active")
+    sort_order            = Column(Integer, default=0)
+    # Email customisation
+    welcome_email_subject = Column(String, nullable=True)
+    welcome_email_body    = Column(Text, nullable=True)
+    # Expiry / visit rules
+    expiry_days           = Column(Integer, nullable=True)    # stamps expire after N days (null = never)
+    max_stamps_per_visit  = Column(Integer, nullable=True)    # cap per visit (null = unlimited)
+    created_at            = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at            = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
 class Business(Base):
     __tablename__ = "businesses"
 

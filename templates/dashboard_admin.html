@@ -2771,7 +2771,16 @@ setTimeout(function() {
   if (!slug) return;
   if (PIN) return; // already authenticated
 
-  // Check URL params first (login system passes ?pin=...)
+  // 1. Check _zc_boot cookie (set by email confirmation redirect — PIN never in URL)
+  const bootCookie = document.cookie.match(/(?:^|;\s*)_zc_boot=([^;]+)/);
+  if (bootCookie) {
+    // Clear the cookie immediately so it can't be reused
+    document.cookie = '_zc_boot=; max-age=0; path=/biz/' + slug + '/dashboard; samesite=strict';
+    document.getElementById('login-pin').value = decodeURIComponent(bootCookie[1]);
+    setTimeout(() => doLogin(), 100);
+    return;
+  }
+  // 2. Check URL params (legacy / login page passes ?pin= — still stripped from bar)
   const urlParams = new URLSearchParams(window.location.search);
   const urlPin = urlParams.get('pin');
   if (urlPin) {
@@ -2780,7 +2789,7 @@ setTimeout(function() {
     setTimeout(() => doLogin(), 100);
     return;
   }
-  // Check sessionStorage (short-lived token from login page)
+  // 3. Check sessionStorage (short-lived token from login page)
   const savedPin = sessionStorage.getItem('zubcard_pin_' + slug);
   if (savedPin) {
     sessionStorage.removeItem('zubcard_pin_' + slug);

@@ -19,10 +19,25 @@ import smtplib
 import secrets
 import hashlib
 import string
+from collections import defaultdict
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import models
 from database import engine, get_db
+
+# ── SIMPLE IN-MEMORY RATE LIMITER ─────────────────────────────────────────────
+# Sliding window. Uses IP or card_id as key. Fine for single-replica deploys.
+_rate_store: dict[str, list[float]] = defaultdict(list)
+
+def check_rate_limit(key: str, max_requests: int = 5, window_seconds: int = 300) -> None:
+    """Raise 429 if key has exceeded max_requests within window_seconds."""
+    now = time.time()
+    bucket = _rate_store[key]
+    # Evict expired timestamps
+    _rate_store[key] = [t for t in bucket if now - t < window_seconds]
+    if len(_rate_store[key]) >= max_requests:
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Espera un momento.")
+    _rate_store[key].append(now)
 
 # ── CREAR TABLAS ──────────────────────────────────────────────────────────────
 models.Base.metadata.create_all(bind=engine)
@@ -57,9 +72,9 @@ VAPID_PUBLIC  = os.environ.get("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE = os.environ.get("VAPID_PRIVATE_KEY", "")
 
 # GOOGLE OAUTH CONFIG
-GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "800026879544-rj3j2cces61cardtspp0oomhr58ssm8i.apps.googleusercontent.com")
+GOOGLE_CLIENT_ID     = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
-GOOGLE_REDIRECT_URI  = os.environ.get("GOOGLE_REDIRECT_URI", "https://web-production-cdaf7.up.railway.app/auth/google/callback")
+GOOGLE_REDIRECT_URI  = os.environ.get("GOOGLE_REDIRECT_URI", f"{os.environ.get('BASE_URL', 'https://zubcard.com')}/auth/google/callback")
 
 # GOOGLE WALLET CONFIG
 GOOGLE_WALLET_ISSUER_ID   = os.environ.get("GOOGLE_WALLET_ISSUER_ID", "")
@@ -225,6 +240,12 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_port INTEGER",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_user VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS email_smtp_pass VARCHAR",
+        # ── card_programs: missing columns ────────────────────────────────────────
+        "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS welcome_email_subject VARCHAR",
+        "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS welcome_email_body TEXT",
+        "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS expiry_days INTEGER",
+        "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS max_stamps_per_visit INTEGER",
+        "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
 
     ]
     from database import SessionLocal
@@ -773,6 +794,9 @@ def register_page(request: Request):
 @app.post("/api/register")
 async def public_register(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     import traceback as _tb
+    # Rate limit: 5 registrations per IP per 5 minutes
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(f"register:{client_ip}", max_requests=5, window_seconds=300)
     body = await request.json()
     email = (body.get("email") or "").strip().lower()
     if not email:
@@ -1002,6 +1026,8 @@ def get_card(card_id: str, db: Session = Depends(get_db)):
 async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
+    # Rate limit: max 20 stamp operations per card per minute (prevents double-tap spam)
+    check_rate_limit(f"stamp:{card_id}", max_requests=20, window_seconds=60)
     card = get_card_or_404(card_id, db)
 
     # Resolve per-business stamps_per_reward
@@ -2020,8 +2046,9 @@ async def save_config(request: Request, db: Session = Depends(get_db)):
 # EMAIL PREVIEW & SEND
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/email-preview/{card_id}", response_class=HTMLResponse)
-def email_preview(card_id: str, db: Session = Depends(get_db)):
-    """Preview the welcome email in browser"""
+def email_preview(card_id: str, pin: str = Query(""), db: Session = Depends(get_db)):
+    """Preview the welcome email in browser — requires admin PIN."""
+    verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     name = customer.first_name if customer else "Cliente"
@@ -2033,7 +2060,9 @@ def email_preview(card_id: str, db: Session = Depends(get_db)):
 
 
 @app.get("/email-preview-birthday/{card_id}", response_class=HTMLResponse)
-def email_preview_birthday(card_id: str, db: Session = Depends(get_db)):
+def email_preview_birthday(card_id: str, pin: str = Query(""), db: Session = Depends(get_db)):
+    """Preview the birthday email in browser — requires admin PIN."""
+    verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     name = customer.first_name if customer else "Cliente"
@@ -2425,8 +2454,19 @@ async def confirm_email(token: str = "", db: Session = Depends(get_db)):
         "UPDATE businesses SET email_confirmed=TRUE, email_confirm_token=NULL WHERE id=:bid"
     ), {"bid": str(biz.id)})
     db.commit()
-    # Redirect to dashboard — PIN bootstraps sessionStorage; notify about confirmation
-    return RedirectResponse(f"/biz/{biz.slug}/dashboard?pin={biz.admin_pin}&confirmed=1")
+    # Redirect to dashboard without putting the PIN in the URL.
+    # We pass the PIN via a short-lived HttpOnly=False cookie (JS needs to read it)
+    # so it never appears in server logs, browser history, or referrer headers.
+    response = RedirectResponse(f"/biz/{biz.slug}/dashboard?confirmed=1", status_code=302)
+    response.set_cookie(
+        "_zc_boot",
+        biz.admin_pin,
+        max_age=90,          # expires in 90 s — enough for page load
+        httponly=False,      # JS must read it to auto-login
+        samesite="strict",
+        path=f"/biz/{biz.slug}/dashboard",
+    )
+    return response
 
 
 @app.post("/api/app/resend-confirm")
