@@ -559,7 +559,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 .lp-preview-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--brown-light);text-align:center;margin-bottom:8px}
 .lp-phone-wrap{background:#1a1a1a;border-radius:30px;padding:8px;box-shadow:0 16px 48px rgba(0,0,0,.3);max-width:240px;margin:0 auto}
 .lp-phone-notch{width:70px;height:14px;background:#1a1a1a;border-radius:8px;margin:0 auto 8px}
-.lp-phone-screen{background:#fff;border-radius:22px;overflow:hidden;min-height:360px;padding:14px 12px 16px}
+.lp-phone-screen{background:#fff8f5;border-radius:22px;overflow-y:auto;min-height:360px;max-height:480px;padding:10px 9px 12px}
 .lp-pv-logo{width:36px;height:36px;background:var(--honey);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--honey-dark);margin-bottom:10px}
 .lp-pv-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;line-height:1;margin-bottom:4px;color:var(--primary)}
 .lp-pv-sub{font-size:.62rem;color:#888;margin-bottom:10px;line-height:1.5}
@@ -2903,16 +2903,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           <p class="lp-preview-label">Vista previa en vivo</p>
           <div class="lp-phone-wrap">
             <div class="lp-phone-notch"></div>
-            <div class="lp-phone-screen" id="lp-phone-screen">
-              <div class="lp-pv-logo" id="lp-pv-logo">Z</div>
-              <div class="lp-pv-title" id="lp-pv-title">Únete a nuestra tarjeta</div>
-              <div class="lp-pv-sub" id="lp-pv-sub">Regístrate y empieza a acumular</div>
-              <!-- Fields -->
-              <div class="lp-pv-field" id="lp-pv-f-name" style="display:block"></div>
-              <div class="lp-pv-field" style="background:#f0f0f0"></div><!-- email always -->
-              <div class="lp-pv-field" id="lp-pv-f-phone" style="display:none"></div>
-              <div class="lp-pv-field" id="lp-pv-f-birth" style="display:none"></div>
-              <div class="lp-pv-btn" id="lp-pv-btn" style="background:var(--primary)">Registrarse</div>
+            <div class="lp-phone-screen" id="lp-phone-screen" style="padding:10px 9px 12px;overflow-y:auto">
+              <!-- filled by lpUpdatePreview() -->
             </div>
           </div>
           <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--brown-light);text-align:center;margin-top:10px">Actualiza en tiempo real</p>
@@ -3345,7 +3337,7 @@ function showSection(name){
   if(name==='qrs')       initQRSection();
   if(name==='activity')  loadActivityLog();
   if(name==='campaigns')     loadCampaigns();
-  if(name==='fidelizacion'){ setTimeout(()=>{attachLPListeners();lpUpdatePreview();},100); }
+  if(name==='fidelizacion'){ setTimeout(async()=>{attachLPListeners();await loadConfig();lpUpdatePreview();},200); }
   if(name==='cartas')       loadMenus();
   if(name==='passcodes')    setPCCardUrl();
   if(name==='passcodes')     loadPassCodes();
@@ -5656,32 +5648,115 @@ async function sendTestEmail(){
 
 /* ── LANDING LIVE PREVIEW ─────────────────────────────────── */
 function lpUpdatePreview(){
-  const title=document.getElementById('cfg-form_title')?.value||'Únete a nuestra tarjeta';
-  const sub=document.getElementById('cfg-header_text')?.value||'Regístrate y acumula';
-  const btnText=document.getElementById('cfg-button_text')?.value||'Registrarse';
-  const bg=document.getElementById('cfg-bg_color')?.value||'#26170c';
-  const btnColor=document.getElementById('cfg-button_color')?.value||'#26170c';
-  const showPhone=document.getElementById('cfg-field_phone')?.checked;
-  const showBirth=document.getElementById('cfg-field_birthdate')?.checked;
-  const showLast=document.getElementById('cfg-field_lastname')?.checked;
-  const t=document.getElementById('lp-pv-title');
-  const s=document.getElementById('lp-pv-sub');
-  const b=document.getElementById('lp-pv-btn');
-  const logo=document.getElementById('lp-pv-logo');
-  const fp=document.getElementById('lp-pv-f-phone');
-  const fb=document.getElementById('lp-pv-f-birth');
-  const screen=document.getElementById('lp-phone-screen');
-  if(t) t.textContent=title;
-  if(s) s.textContent=sub;
-  if(b){b.textContent=btnText;b.style.background=btnColor;}
-  if(logo) logo.style.background=bg;
-  if(screen) screen.style.background=document.getElementById('cfg-bg_color')?.value||'#fff';
-  if(fp) fp.style.display=showPhone?'block':'none';
-  if(fb) fb.style.display=showBirth?'block':'none';
+  const screen = document.getElementById('lp-phone-screen');
+  if(!screen) return;
+
+  const formTitle   = document.getElementById('cfg-form_title')?.value || '';
+  const headerText  = document.getElementById('cfg-header_text')?.value || 'Acumula sellos con cada compra y consigue tu premio. Gratis, sin app.';
+  const btnText     = document.getElementById('cfg-button_text')?.value || 'CREAR MI TARJETA GRATIS →';
+  const btnColor    = document.getElementById('cfg-button_color')?.value || '#26170c';
+  const cardName    = document.getElementById('cfg-card_name')?.value || 'Fidelity Card';
+  const bizName     = document.getElementById('cfg-commercial_name')?.value || (typeof BIZ_SLUG !== 'undefined' ? BIZ_SLUG : 'Tu Negocio');
+  const stampsRaw   = parseInt(document.getElementById('cfg-stamps_per_reward')?.value) || 8;
+  const stampsN     = Math.min(Math.max(stampsRaw, 1), 15);
+  const showPhone   = document.getElementById('cfg-field_phone')?.checked;
+  const showBirth   = document.getElementById('cfg-field_birthdate')?.checked;
+  const showLast    = document.getElementById('cfg-field_lastname')?.checked;
+
+  // Stamps row (max 5 cols, max 2 rows)
+  const stampCols   = stampsN <= 5 ? stampsN : 5;
+  const stampsHTML  = Array.from({length: stampsN}, (_,i) =>
+    `<div style="aspect-ratio:1;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:.55rem;background:${i<3?'#ffca48':'rgba(255,255,255,.1)'};">${i<3?'☕':''}</div>`
+  ).join('');
+
+  // Hero title (multi-line)
+  const heroRaw    = formTitle || 'ÚNETE.\nSELLA.\nGANA.';
+  const heroLines  = heroRaw.split('\n');
+  const heroHTML   = heroLines.map((l,i) =>
+    i === heroLines.length-1
+      ? `<span style="color:#785a00">${l}</span>`
+      : l
+  ).join('<br>');
+
+  const subShort   = headerText.length > 65 ? headerText.substring(0,65)+'…' : headerText;
+  const btnShort   = btnText.length > 32    ? btnText.substring(0,32)+'…'    : btnText;
+
+  // Extra form fields
+  const extraFields = [
+    showLast  ? `<div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>` : '',
+    showPhone ? `<div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>` : '',
+    showBirth ? `<div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>` : '',
+  ].join('');
+
+  screen.style.background = '#fff8f5';
+  screen.innerHTML = `
+    <!-- HEADER -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #f0e8e2">
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="width:24px;height:24px;border-radius:2px;background:#ffca48;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:#785a00;flex-shrink:0">${(bizName[0]||'Z').toUpperCase()}</div>
+        <div>
+          <div style="font-size:.42rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#26170c;line-height:1.2">${bizName.length>20?bizName.substring(0,20)+'…':bizName}</div>
+          <div style="font-size:.38rem;color:#a08d83;letter-spacing:.3px">Programa de fidelización</div>
+        </div>
+      </div>
+      <div style="background:#ffca48;color:#785a00;font-size:.35rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:2px 5px;border-radius:2px">ACTIVO</div>
+    </div>
+    <!-- HERO -->
+    <div style="margin-bottom:9px">
+      <div style="font-size:.36rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#a08d83;margin-bottom:3px;display:flex;align-items:center;gap:3px">
+        <span style="display:inline-block;width:9px;height:1.5px;background:#ffca48;flex-shrink:0"></span>Tarjeta de sellos
+      </div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.25rem;line-height:.9;color:#26170c;margin-bottom:3px">${heroHTML}</div>
+      <div style="font-size:.44rem;color:#a08d83;line-height:1.5">${subShort}</div>
+    </div>
+    <!-- CARD MOCK -->
+    <div style="background:#26170c;border-radius:6px;padding:9px 8px;margin-bottom:7px;color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12)">
+        <div>
+          <div style="font-size:.32rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px">Loyalty Card</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.5px;color:#fff">${cardName.length>18?cardName.substring(0,18)+'…':cardName}</div>
+        </div>
+        <div style="width:16px;height:11px;border-radius:2px;background:#ffca48;flex-shrink:0"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(${stampCols},1fr);gap:3px;margin-bottom:6px">${stampsHTML}</div>
+      <div style="display:flex;justify-content:space-between">
+        <div><div style="color:rgba(255,255,255,.45);font-size:.3rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px">Titular</div><div style="font-weight:800;font-size:.44rem;color:#fff">TU NOMBRE</div></div>
+        <div><div style="color:rgba(255,255,255,.45);font-size:.3rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px">Premios</div><div style="font-weight:800;font-size:.44rem;color:#fff">0 disponibles</div></div>
+      </div>
+    </div>
+    <!-- BENEFITS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:7px">
+      <div style="background:#fff;border-radius:3px;padding:5px 3px;text-align:center;box-shadow:0 1px 4px rgba(38,23,12,.07)">
+        <div style="font-size:.65rem">⚡</div>
+        <div style="font-size:.34rem;color:#a08d83;line-height:1.4;font-weight:600">1 sello<br>por compra</div>
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:5px 3px;text-align:center;box-shadow:0 1px 4px rgba(38,23,12,.07)">
+        <div style="font-size:.65rem">🎁</div>
+        <div style="font-size:.34rem;color:#a08d83;line-height:1.4;font-weight:600">Premio cada<br>${stampsN} sellos</div>
+      </div>
+      <div style="background:#fff;border-radius:3px;padding:5px 3px;text-align:center;box-shadow:0 1px 4px rgba(38,23,12,.07)">
+        <div style="font-size:.65rem">🎂</div>
+        <div style="font-size:.34rem;color:#a08d83;line-height:1.4;font-weight:600">Sorpresa en<br>tu cumple</div>
+      </div>
+    </div>
+    <!-- FORM -->
+    <div style="background:#fff;border-radius:5px;padding:7px 6px;box-shadow:0 2px 8px rgba(38,23,12,.08)">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:-.3px;color:#26170c;margin-bottom:1px">CREA TU TARJETA.</div>
+      <div style="font-size:.36rem;color:#a08d83;margin-bottom:5px">30 segundos · completamente gratis</div>
+      <div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>
+      <div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>
+      ${extraFields}
+      <div style="height:18px;border-radius:2px;background:${btnColor};display:flex;align-items:center;justify-content:center;font-size:.34rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-top:3px">${btnShort}</div>
+    </div>
+  `;
 }
 // Attach listeners when section loads
 function attachLPListeners(){
-  const ids=['cfg-form_title','cfg-header_text','cfg-button_text','cfg-bg_color','cfg-button_color','cfg-field_phone','cfg-field_birthdate','cfg-field_lastname'];
+  const ids=[
+    'cfg-form_title','cfg-header_text','cfg-button_text','cfg-button_color',
+    'cfg-card_name','cfg-commercial_name','cfg-stamps_per_reward',
+    'cfg-field_phone','cfg-field_birthdate','cfg-field_lastname'
+  ];
   ids.forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.addEventListener('input',lpUpdatePreview);
