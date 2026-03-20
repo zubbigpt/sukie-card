@@ -518,6 +518,69 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
   background:linear-gradient(to right,var(--honey) 60px,var(--cream-border) 60px);
   margin:20px 0;
 }
+
+/* ── CAMPAIGN MODAL ───────────────────────────────────────── */
+.camp-modal-overlay{display:none;position:fixed;inset:0;background:rgba(38,23,12,.55);z-index:700;backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:16px}
+.camp-modal-overlay.open{display:flex}
+.camp-modal{width:100%;max-width:1140px;background:var(--white);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:92vh;overflow:hidden;border:1px solid var(--cream-border);box-shadow:0 24px 80px rgba(38,23,12,.25)}
+.camp-modal-header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--cream-border);flex-shrink:0;background:var(--surface-low)}
+.camp-name-input{flex:1;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.04em;background:transparent;border:none;outline:none;color:var(--primary)}
+.camp-name-input::placeholder{color:var(--outline)}
+.camp-modal-body{display:flex;flex:1;overflow:hidden;min-height:0}
+.camp-editor-pane{flex:0 0 56%;overflow-y:auto;padding:18px 20px;border-right:1px solid var(--cream-border);display:flex;flex-direction:column;gap:14px}
+.camp-preview-pane{flex:1;overflow-y:auto;padding:20px;background:#e8e4df}
+.camp-toolbar{display:flex;flex-wrap:wrap;gap:2px;padding:6px 8px;background:var(--cream);border:1px solid var(--cream-border);border-radius:var(--r-sm);align-items:center}
+.camp-toolbar button{border:none;background:transparent;padding:4px 8px;cursor:pointer;border-radius:var(--r-sm);font-size:.8rem;color:var(--brown);transition:background .12s;min-width:28px;height:26px;display:flex;align-items:center;justify-content:center}
+.camp-toolbar button:hover{background:var(--surface-mid)}
+.camp-toolbar select{border:none;background:transparent;font-size:.75rem;color:var(--brown);padding:2px 4px;cursor:pointer;outline:none}
+.camp-toolbar .tsep{width:1px;height:18px;background:var(--cream-border);margin:0 4px;flex-shrink:0}
+.camp-editor-body{min-height:220px;border:1px solid var(--cream-border);border-radius:var(--r-sm);padding:14px 16px;background:var(--white);outline:none;font-size:.9rem;line-height:1.8;color:var(--primary);font-family:'Manrope',sans-serif}
+.camp-editor-body:focus{border-color:var(--honey);box-shadow:0 0 0 3px rgba(255,202,72,.12)}
+.camp-tpl-row{display:flex;gap:6px;overflow-x:auto;padding:2px 0}
+.camp-tpl-btn{flex-shrink:0;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);padding:8px 14px;cursor:pointer;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:var(--white);color:var(--brown);transition:all .12s}
+.camp-tpl-btn:hover,.camp-tpl-btn.active{border-color:var(--honey);background:var(--honey-light);color:var(--honey-dark)}
+/* Segment chips */
+.seg-chip-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.seg-chip{border:1.5px solid var(--cream-border);border-radius:var(--r-sm);padding:5px 12px;cursor:pointer;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;background:var(--white);color:var(--brown);transition:all .12s;display:flex;align-items:center;gap:6px}
+.seg-chip.active{border-color:var(--primary);background:var(--primary);color:var(--cream)}
+/* Email preview */
+.ep-wrap{max-width:430px;margin:0 auto;font-family:'Manrope',sans-serif}
+.ep-meta{font-size:.68rem;color:#888;margin-bottom:8px;padding:0 4px}
+.ep-chrome{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.ep-header-bar{background:var(--primary);padding:22px 24px;color:#fff}
+.ep-header-bar h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;margin:0}
+.ep-body-content{padding:24px;font-size:.85rem;line-height:1.8;color:#1a1a1a}
+.ep-cta{display:block;margin:18px auto 0;padding:12px 28px;background:var(--honey);color:var(--honey-dark);border:none;border-radius:4px;font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;cursor:default;text-align:center;text-decoration:none}
+.ep-footer-bar{padding:14px 24px;font-size:.65rem;color:#999;text-align:center;border-top:1px solid #eee}
+.camp-modal-footer{padding:12px 20px;border-top:1px solid var(--cream-border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;background:var(--surface-low)}
+/* ── LANDING LIVE PREVIEW ─────────────────────────────────── */
+.lp-two-col{display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start}
+.lp-preview-sticky{position:sticky;top:20px}
+.lp-preview-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:var(--brown-light);text-align:center;margin-bottom:8px}
+.lp-phone-wrap{background:#1a1a1a;border-radius:30px;padding:8px;box-shadow:0 16px 48px rgba(0,0,0,.3);max-width:240px;margin:0 auto}
+.lp-phone-notch{width:70px;height:14px;background:#1a1a1a;border-radius:8px;margin:0 auto 8px}
+.lp-phone-screen{background:#fff;border-radius:22px;overflow:hidden;min-height:360px;padding:14px 12px 16px}
+.lp-pv-logo{width:36px;height:36px;background:var(--honey);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--honey-dark);margin-bottom:10px}
+.lp-pv-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;line-height:1;margin-bottom:4px;color:var(--primary)}
+.lp-pv-sub{font-size:.62rem;color:#888;margin-bottom:10px;line-height:1.5}
+.lp-pv-field{height:26px;border-radius:4px;margin-bottom:5px;background:#f0f0f0}
+.lp-pv-btn{height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#fff;margin-top:8px}
+/* ── CARTAS DIGITALES ─────────────────────────────────────── */
+.carta-card{background:var(--white);border:1px solid var(--cream-border);border-radius:var(--r-lg);overflow:hidden;transition:border-color .2s,transform .2s;cursor:pointer}
+.carta-card:hover{border-color:var(--honey-dark);transform:translateY(-2px)}
+.carta-thumb{height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.carta-info{padding:14px 16px}
+.carta-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.08em;color:var(--primary);margin-bottom:2px}
+.carta-meta{font-size:.68rem;color:var(--brown-light);font-weight:600}
+.carta-actions{display:flex;gap:6px;margin-top:10px}
+/* Menu editor modal */
+.menu-modal-overlay{display:none;position:fixed;inset:0;background:rgba(38,23,12,.55);z-index:750;backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:16px}
+.menu-modal-overlay.open{display:flex}
+.menu-modal{width:100%;max-width:700px;background:var(--white);border-radius:var(--r-lg);overflow:hidden;max-height:88vh;display:flex;flex-direction:column;border:1px solid var(--cream-border);box-shadow:0 24px 80px rgba(38,23,12,.25)}
+.menu-section-item{background:var(--surface-low);border:1px solid var(--cream-border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px}
+.menu-section-hdr{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:.9rem;cursor:pointer}
+.menu-prod-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(210,196,188,.2)}
+.menu-prod-item:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -821,6 +884,20 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
         </div>
 
+        <!-- Daily activity chart (30 days) -->
+        <div class="chart-card" style="margin-bottom:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Actividad diaria — últimos 30 días</h3>
+            <div style="display:flex;gap:14px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em">
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:3px;background:var(--primary);display:inline-block;border-radius:2px"></span>Sellos</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:3px;background:var(--honey-dark);display:inline-block;border-radius:2px"></span>Nuevos clientes</span>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:180px">
+            <canvas id="daily-activity-chart"></canvas>
+          </div>
+        </div>
+
         <div class="charts-row" style="margin-bottom:24px">
           <div class="chart-card">
             <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Evolución Mensual de Sellos</h3>
@@ -884,12 +961,43 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
         </div>
 
-        <!-- Gallery Grid -->
-        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Tus cartas</h3>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
-          <div class="card" onclick="showToast('Cartas digitales — próximamente 🚀')" style="text-align:center;padding:28px 20px;border:2px dashed var(--outline-var);background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:200px;cursor:pointer;transition:all .2s;border-radius:.75rem">
-            <span class="material-symbols-outlined" style="font-size:2.4rem;color:var(--brown-light);margin-bottom:12px">add</span>
-            <p style="font-size:.9rem;font-weight:600;color:var(--primary)">Crear nueva carta</p>
+        <!-- Info banner -->
+        <div class="card-box" style="background:var(--honey-light);border:1px solid var(--honey);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px">
+          <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;flex-shrink:0">info</span>
+          <div style="font-size:.8rem;color:var(--brown)"><strong>Cartas digitales MVP</strong> — Los datos se guardan localmente en tu navegador. La sincronización con el servidor estará disponible próximamente.</div>
+        </div>
+        <!-- Gallery -->
+        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Tus cartas</h3>
+        <div id="cartas-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:16px">
+          <!-- Populated by JS -->
+        </div>
+        <!-- New carta card (always shown last) -->
+        <div style="margin-top:4px">
+          <div class="carta-card" onclick="openMenuEditor(null)" style="text-align:center;padding:28px 20px;border:2px dashed var(--outline-var);background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:160px">
+            <span class="material-symbols-outlined" style="font-size:2.4rem;color:var(--brown-light);margin-bottom:10px">add_circle</span>
+            <p style="font-size:.88rem;font-weight:600;color:var(--primary)">Crear nueva carta</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU EDITOR MODAL -->
+      <div id="menu-editor-overlay" class="menu-modal-overlay">
+        <div class="menu-modal">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;gap:12px;background:var(--surface-low);flex-shrink:0">
+            <span class="material-symbols-outlined" style="color:var(--brown-light)">restaurant_menu</span>
+            <input id="menu-name-input" class="field-input" placeholder="Nombre de la carta (ej. Menú Primavera)" style="flex:1;font-weight:700">
+            <button class="drawer-close" style="position:static" onclick="closeMenuEditor()">✕</button>
+          </div>
+          <div style="overflow-y:auto;flex:1;padding:16px 20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--brown-light)">Secciones</span>
+              <button class="btn-sm btn-ghost" onclick="addMenuSection()" style="font-size:.72rem">+ Añadir sección</button>
+            </div>
+            <div id="menu-sections-list"></div>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--cream-border);display:flex;gap:8px;background:var(--surface-low);flex-shrink:0">
+            <button class="btn-sm btn-ghost" onclick="closeMenuEditor()">Cancelar</button>
+            <button class="btn-sm btn-primary" style="margin-left:auto" onclick="saveMenu()">Guardar carta</button>
           </div>
         </div>
       </div>
@@ -2110,29 +2218,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </table>
           </div>
         </div>
-        <!-- new campaign form -->
-        <div id="new-campaign-form" style="display:none;max-width:560px;margin-top:20px" class="card-box">
-          <h3 style="margin-bottom:16px;color:#0a0a0a">Nueva campaña de email</h3>
-          <div class="form-group" style="margin-bottom:12px"><label>Nombre de la campaña *</label><input id="nc-name" placeholder="ej. Oferta especial mayo"></div>
-          <div class="form-group" style="margin-bottom:12px"><label>Asunto del email *</label><input id="nc-subject" placeholder="ej. ¡Tu regalo te espera, {nombre}!"></div>
-          <div class="form-group" style="margin-bottom:12px"><label>Mensaje <small style="color:var(--brown-light)">(usa {nombre} para personalizar)</small></label>
-            <textarea id="nc-body" rows="4" placeholder="Hola {nombre}, tenemos una oferta especial para ti..."></textarea>
-          </div>
-          <div class="form-group" style="margin-bottom:16px"><label>Destinatarios</label>
-            <select id="nc-segment" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:3px;font-size:.85rem;background:var(--cream)">
-              <option value="all">Todos los clientes</option>
-              <option value="active">Clientes con sellos</option>
-              <option value="inactive">Sin actividad 30+ días</option>
-              <option value="near_reward">A 1-2 sellos del premio</option>
-            </select>
-          </div>
-          <div id="nc-msg" style="font-size:.82rem;margin-bottom:10px;min-height:18px"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn-sm btn-primary" onclick="saveCampaign('draft')" style="flex:1">Guardar borrador</button>
-            <button class="btn-sm" style="flex:1;background:var(--green);color:white;border:none;padding:10px;border-radius:3px;font-size:.8rem;font-weight:700;cursor:pointer" onclick="saveCampaign('send')">Enviar ahora</button>
-            <button class="btn-sm btn-ghost" onclick="document.getElementById('new-campaign-form').style.display='none'">Cancelar</button>
-          </div>
-        </div>
+        <!-- campaign editor now uses #camp-editor-overlay modal -->
       </div>
 
       <!-- ═══ PASSCODES ═══ -->
@@ -2144,6 +2230,38 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
           <button class="btn-sm btn-primary" onclick="showGenCodes()">+ Generar códigos</button>
         </div>
+        <!-- How it works banner -->
+        <div style="background:var(--surface-low);border:1px solid var(--cream-border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:24px">
+          <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);margin-bottom:12px">Cómo funcionan los PassCodes</div>
+          <div style="display:flex;gap:0;align-items:stretch;flex-wrap:wrap">
+            <div style="flex:1;min-width:160px;padding:0 16px 0 0;border-right:1px solid var(--cream-border)">
+              <div style="width:28px;height:28px;background:var(--primary);border-radius:2px;display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+                <span class="material-symbols-outlined" style="color:#fff;font-size:.9rem">add</span>
+              </div>
+              <div style="font-size:.78rem;font-weight:700;color:var(--primary);margin-bottom:3px">1. Genera códigos</div>
+              <div style="font-size:.72rem;color:var(--brown-light);line-height:1.5">Elige cuántos códigos crear y cuántos sellos vale cada uno</div>
+            </div>
+            <div style="flex:1;min-width:160px;padding:0 16px;border-right:1px solid var(--cream-border)">
+              <div style="width:28px;height:28px;background:var(--honey);border-radius:2px;display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+                <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:.9rem">share</span>
+              </div>
+              <div style="font-size:.78rem;font-weight:700;color:var(--primary);margin-bottom:3px">2. Comparte el código</div>
+              <div style="font-size:.72rem;color:var(--brown-light);line-height:1.5">Envíalo por WhatsApp, imprime o muéstralo en pantalla al cliente</div>
+            </div>
+            <div style="flex:1;min-width:160px;padding:0 0 0 16px">
+              <div style="width:28px;height:28px;background:var(--green);border-radius:2px;display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+                <span class="material-symbols-outlined" style="color:#fff;font-size:.9rem">check_circle</span>
+              </div>
+              <div style="font-size:.78rem;font-weight:700;color:var(--primary);margin-bottom:3px">3. Cliente canjea</div>
+              <div style="font-size:.72rem;color:var(--brown-light);line-height:1.5">El cliente va a su tarjeta → sección Canjear código → introduce el código → ¡sellos añadidos!</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:10px 14px;background:var(--white);border-radius:var(--r-sm);border:1px solid var(--cream-border);font-size:.75rem;color:var(--brown)">
+            <span class="material-symbols-outlined" style="font-size:.85rem;vertical-align:middle;color:var(--honey-dark)">link</span>
+            URL de la tarjeta del cliente: <code id="pc-card-url" style="background:var(--cream);padding:2px 6px;border-radius:2px"></code>
+          </div>
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px">
           <!-- Generator -->
           <div id="gen-codes-panel" class="card-box">
@@ -2622,6 +2740,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
         <!-- ──────────── TAB: LANDING + QR ──────────── -->
         <div id="fid-panel-landing">
+        <div class="lp-two-col" id="lp-two-col-wrap">
+        <div><!-- LEFT: config -->
 
           <!-- QR Hero -->
           <div class="card-box" style="text-align:center;padding:32px 24px">
@@ -2705,8 +2825,30 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </details>
 
           <div style="display:flex;gap:12px;align-items:center;margin-top:20px">
-            <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px">💾 GUARDAR LANDING</button>
+            <button onclick="saveConfig()" class="btn-sm btn-primary" style="padding:12px 28px">Guardar landing</button>
+            <span id="lp-save-msg" style="font-size:.78rem;color:var(--green);display:none">Guardado</span>
           </div>
+        </div><!-- /LEFT config -->
+        <!-- RIGHT: live preview -->
+        <div class="lp-preview-sticky">
+          <p class="lp-preview-label">Vista previa en vivo</p>
+          <div class="lp-phone-wrap">
+            <div class="lp-phone-notch"></div>
+            <div class="lp-phone-screen" id="lp-phone-screen">
+              <div class="lp-pv-logo" id="lp-pv-logo">Z</div>
+              <div class="lp-pv-title" id="lp-pv-title">Únete a nuestra tarjeta</div>
+              <div class="lp-pv-sub" id="lp-pv-sub">Regístrate y empieza a acumular</div>
+              <!-- Fields -->
+              <div class="lp-pv-field" id="lp-pv-f-name" style="display:block"></div>
+              <div class="lp-pv-field" style="background:#f0f0f0"></div><!-- email always -->
+              <div class="lp-pv-field" id="lp-pv-f-phone" style="display:none"></div>
+              <div class="lp-pv-field" id="lp-pv-f-birth" style="display:none"></div>
+              <div class="lp-pv-btn" id="lp-pv-btn" style="background:var(--primary)">Registrarse</div>
+            </div>
+          </div>
+          <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--brown-light);text-align:center;margin-top:10px">Actualiza en tiempo real</p>
+        </div>
+        </div><!-- /lp-two-col -->
         </div><!-- /fid-panel-landing -->
 
         <!-- ──────────── TAB: EMAILS ──────────── -->
@@ -2769,6 +2911,122 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
     </div><!-- /content -->
   </div><!-- /main -->
+
+<!-- CAMPAIGN EDITOR MODAL ─────────────────────────────────── -->
+<div id="camp-editor-overlay" class="camp-modal-overlay">
+  <div class="camp-modal">
+    <!-- Header -->
+    <div class="camp-modal-header">
+      <span class="material-symbols-outlined" style="color:var(--brown-light);font-size:1.1rem">campaign</span>
+      <input id="cmp-name" class="camp-name-input" placeholder="Nombre de la campaña…" oninput="campUpdatePreview()">
+      <div id="cmp-msg" style="font-size:.75rem;color:var(--brown-light);flex:1;text-align:right"></div>
+      <button class="drawer-close" style="position:static;flex-shrink:0" onclick="closeCampModal()">✕</button>
+    </div>
+    <!-- Body -->
+    <div class="camp-modal-body">
+      <!-- ── EDITOR PANE ── -->
+      <div class="camp-editor-pane">
+        <!-- Subject -->
+        <div>
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Asunto del email</label>
+          <input id="cmp-subject" class="field-input" placeholder="ej: ¡Una oferta especial para ti, {nombre}!" oninput="campUpdatePreview()">
+          <small style="font-size:.65rem;color:var(--brown-light)">Variables: {nombre}</small>
+        </div>
+        <!-- Segments -->
+        <div>
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:8px">Destinatarios</label>
+          <div class="seg-chip-row">
+            <button class="seg-chip active" data-seg="all" onclick="selectSeg(this)">Todos</button>
+            <button class="seg-chip" data-seg="recent" onclick="selectSeg(this)">Últimos 30 días</button>
+            <button class="seg-chip" data-seg="near_reward" onclick="selectSeg(this)">Cerca del premio</button>
+            <button class="seg-chip" data-seg="inactive" onclick="selectSeg(this)">Sin actividad 30d</button>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+              <button class="seg-chip" id="seg-stamps-chip" data-seg="stamps_gte" onclick="selectSeg(this)">Con</button>
+              <input type="number" id="cmp-stamps-min" value="5" min="1" max="100" style="width:52px;padding:4px 8px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);font-size:.78rem;background:var(--white);font-weight:700;outline:none" onchange="campUpdatePreview()">
+              <span style="font-size:.68rem;color:var(--brown-light);font-weight:700">+ sellos</span>
+            </div>
+          </div>
+        </div>
+        <!-- Template picker -->
+        <div>
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:8px">Plantilla</label>
+          <div class="camp-tpl-row">
+            <button class="camp-tpl-btn active" onclick="loadCampTemplate('minimal',this)">Minimal</button>
+            <button class="camp-tpl-btn" onclick="loadCampTemplate('branded',this)">Branded</button>
+            <button class="camp-tpl-btn" onclick="loadCampTemplate('promo',this)">Promo</button>
+            <button class="camp-tpl-btn" onclick="loadCampTemplate('birthday',this)">Cumpleaños</button>
+          </div>
+        </div>
+        <!-- Toolbar -->
+        <div>
+          <div class="camp-toolbar">
+            <button title="Negrita" onclick="campExec('bold')"><b>B</b></button>
+            <button title="Cursiva" onclick="campExec('italic')"><i>I</i></button>
+            <button title="Subrayar" onclick="campExec('underline')"><u>U</u></button>
+            <div class="tsep"></div>
+            <select onchange="campExec('fontSize',this.value)" title="Tamaño">
+              <option value="2">Pequeño</option>
+              <option value="3" selected>Normal</option>
+              <option value="4">Grande</option>
+              <option value="5">Muy grande</option>
+            </select>
+            <div class="tsep"></div>
+            <button title="Alinear izquierda" onclick="campExec('justifyLeft')">
+              <span class="material-symbols-outlined" style="font-size:.85rem">format_align_left</span>
+            </button>
+            <button title="Centrar" onclick="campExec('justifyCenter')">
+              <span class="material-symbols-outlined" style="font-size:.85rem">format_align_center</span>
+            </button>
+            <div class="tsep"></div>
+            <button title="Insertar enlace" onclick="campInsertLink()">
+              <span class="material-symbols-outlined" style="font-size:.85rem">link</span>
+            </button>
+            <button title="Color texto" onclick="document.getElementById('cmp-color-pick').click()">
+              <span class="material-symbols-outlined" style="font-size:.85rem">format_color_text</span>
+            </button>
+            <input type="color" id="cmp-color-pick" style="display:none;width:0;height:0" onchange="campExec('foreColor',this.value)">
+          </div>
+          <div id="cmp-editor" class="camp-editor-body" contenteditable="true" oninput="campUpdatePreview()" onkeydown="campHandleKey(event)">
+            <p>Hola <strong>{nombre}</strong>,</p><p>Tenemos una oferta especial para ti. ¡Visítanos pronto!</p>
+          </div>
+        </div>
+        <!-- Image URL -->
+        <div>
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Imagen de cabecera (URL)</label>
+          <div style="display:flex;gap:8px">
+            <input id="cmp-img-url" class="field-input" placeholder="https://…imagen.jpg" oninput="campUpdatePreview()">
+            <button class="btn-sm btn-ghost" onclick="document.getElementById('cmp-img-url').value='';campUpdatePreview()">✕</button>
+          </div>
+        </div>
+        <!-- CTA Button text -->
+        <div>
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Texto del botón CTA</label>
+          <input id="cmp-cta" class="field-input" placeholder="Ver mi tarjeta →" oninput="campUpdatePreview()">
+        </div>
+      </div>
+      <!-- ── PREVIEW PANE ── -->
+      <div class="camp-preview-pane">
+        <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:rgba(38,23,12,.4);text-align:center;margin-bottom:12px">Vista previa del email</p>
+        <div class="ep-wrap" id="cmp-preview"></div>
+      </div>
+    </div>
+    <!-- Footer: hidden compat fields + action buttons -->
+    <input type="hidden" id="nc-name"><input type="hidden" id="nc-subject"><input type="hidden" id="nc-body"><input type="hidden" id="nc-segment" value="all"><div id="nc-msg" style="display:none"></div>
+    <div class="camp-modal-footer">
+      <div style="font-size:.75rem;color:var(--brown-light)">
+        <span class="material-symbols-outlined" style="font-size:.85rem;vertical-align:middle">info</span>
+        Variables disponibles: <code style="background:var(--cream);padding:1px 5px;border-radius:2px">{nombre}</code>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-sm btn-ghost" onclick="closeCampModal()">Cancelar</button>
+        <button class="btn-sm btn-ghost" onclick="campSave('draft')">Guardar borrador</button>
+        <button class="btn-sm btn-primary" style="background:var(--green);border-color:var(--green)" onclick="campSave('send')">
+          <span class="material-symbols-outlined" style="font-size:.85rem">send</span> Enviar ahora
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <!-- DRAWER (ficha cliente) -->
@@ -2992,6 +3250,9 @@ function showSection(name){
   if(name==='qrs')       initQRSection();
   if(name==='activity')  loadActivityLog();
   if(name==='campaigns')     loadCampaigns();
+  if(name==='fidelizacion'){ setTimeout(()=>{attachLPListeners();lpUpdatePreview();},100); }
+  if(name==='cartas')       loadMenus();
+  if(name==='passcodes')    setPCCardUrl();
   if(name==='passcodes')     loadPassCodes();
   if(name==='stores')        loadStores();
   if(name==='email')         loadEmailSettings();
@@ -3250,6 +3511,18 @@ async function loadBI(){
   });
   const months=Object.keys(monthlyMap).sort().slice(-6);
   const monthLabels=months.map(m=>{const[y,mo]=m.split('-');return['En','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][parseInt(mo)-1]+' '+y.slice(2);});
+
+  // Daily activity chart — last 30 days
+  const last30=activity.slice(-30);
+  const dayLabels=last30.map(d=>{const[,m,day]=d.date.split('-');return`${parseInt(day)}/${parseInt(m)}`;});
+  const ctxD=document.getElementById('daily-activity-chart')?.getContext('2d');
+  if(ctxD){
+    if(window._dailyChart) window._dailyChart.destroy();
+    window._dailyChart=new Chart(ctxD,{type:'line',data:{labels:dayLabels,datasets:[
+      {label:'Sellos',data:last30.map(d=>d.stamps||0),borderColor:'#26170c',backgroundColor:'rgba(38,23,12,.08)',tension:.35,fill:true,pointRadius:2,pointHoverRadius:5,borderWidth:2},
+      {label:'Nuevos',data:last30.map(d=>d.new_clients||0),borderColor:'#785a00',backgroundColor:'rgba(120,90,0,.06)',tension:.35,fill:true,pointRadius:2,pointHoverRadius:5,borderWidth:1.5,borderDash:[4,3]}
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{title:([i])=>`Día: ${i.label}`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:10}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{stepSize:1}}}}});
+  }
 
   const ctx2=document.getElementById('monthly-chart').getContext('2d');
   if(monthlyChart) monthlyChart.destroy();
@@ -4391,8 +4664,90 @@ function switchCampTab(tab){
 }
 
 function showNewCampaign(){
-  const f=document.getElementById('new-campaign-form');
-  if(f) f.style.display=f.style.display==='none'?'block':'none';
+  openCampModal();
+}
+function openCampModal(){
+  const overlay=document.getElementById('camp-editor-overlay');
+  if(overlay){ overlay.classList.add('open'); campUpdatePreview(); }
+}
+function closeCampModal(){
+  const overlay=document.getElementById('camp-editor-overlay');
+  if(overlay) overlay.classList.remove('open');
+}
+function selectSeg(el){
+  document.querySelectorAll('.seg-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('nc-segment').value=el.dataset.seg||'all';
+  campUpdatePreview();
+}
+function campExec(cmd,val){
+  document.getElementById('cmp-editor').focus();
+  document.execCommand(cmd,false,val||null);
+  campUpdatePreview();
+}
+function campInsertLink(){
+  const url=prompt('URL del enlace:','https://');
+  if(url) campExec('createLink',url);
+}
+function campHandleKey(e){ if(e.key==='Tab'){e.preventDefault();campExec('insertHTML','&nbsp;&nbsp;&nbsp;&nbsp;');} }
+const _campTemplates={
+  minimal:`<p>Hola <strong>{nombre}</strong>,</p><p>Queremos compartir contigo una oferta exclusiva. ¡Gracias por ser parte de nuestra comunidad!</p><p>Visítanos pronto,<br><strong>${'{{ biz_name }}'}</strong></p>`,
+  branded:`<p style="text-align:center;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:8px">UN MENSAJE ESPECIAL PARA TI</p><h2 style="text-align:center;font-family:serif;font-size:1.6rem;margin-bottom:16px">Hola, {nombre}</h2><p>Tenemos algo especial preparado para ti. Visítanos y recuerda usar tu tarjeta de fidelización para acumular más sellos.</p><p style="margin-top:16px">¡Te esperamos!</p>`,
+  promo:`<div style="background:#fffbe8;border-left:4px solid #ffca48;padding:12px 16px;margin-bottom:16px;border-radius:4px"><strong>OFERTA EXCLUSIVA</strong> — Solo por tiempo limitado</div><p>Hola <strong>{nombre}</strong>, tenemos una oferta que no te puedes perder:</p><ul style="margin:12px 0 12px 20px;line-height:2"><li>Descuento especial en tu próxima visita</li><li>Doble de sellos esta semana</li></ul><p>¡No dejes pasar esta oportunidad!</p>`,
+  birthday:`<p style="text-align:center;font-size:2rem;margin-bottom:8px">🎂</p><h2 style="text-align:center;font-family:serif">¡Feliz Cumpleaños, {nombre}!</h2><p style="text-align:center;margin:12px 0">En tu día especial te queremos regalar algo muy especial. Ven a vernos y celebramos juntos.</p><p style="text-align:center;font-size:0.82rem;color:#888;margin-top:16px">Con cariño, el equipo de ${'{{ biz_name }}'}</p>`
+};
+function loadCampTemplate(key,btn){
+  document.querySelectorAll('.camp-tpl-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const ed=document.getElementById('cmp-editor');
+  if(ed) ed.innerHTML=_campTemplates[key]||_campTemplates.minimal;
+  campUpdatePreview();
+}
+function campUpdatePreview(){
+  const subj=document.getElementById('cmp-subject')?.value||'(sin asunto)';
+  const bodyEl=document.getElementById('cmp-editor');
+  const body=bodyEl?bodyEl.innerHTML:'';
+  const imgUrl=document.getElementById('cmp-img-url')?.value||'';
+  const cta=document.getElementById('cmp-cta')?.value||'Ver mi tarjeta →';
+  const pv=document.getElementById('cmp-preview');
+  if(!pv) return;
+  const imgHtml=imgUrl?`<img src="${imgUrl}" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.style.display='none'">`:'';
+  pv.innerHTML=`
+    <div class="ep-meta">Para: cliente@email.com &nbsp;·&nbsp; Asunto: <strong>${subj.replace(/{nombre}/g,'Ana')}</strong></div>
+    <div class="ep-chrome">
+      ${imgHtml}
+      <div class="ep-header-bar"><h2>${'{{ biz_name }}'}</h2></div>
+      <div class="ep-body-content">${body.replace(/{nombre}/g,'<strong>Ana</strong>')}</div>
+      ${cta?`<div style="padding:0 24px 24px;text-align:center"><span class="ep-cta">${cta}</span></div>`:''}
+      <div class="ep-footer-bar">Has recibido este email porque eres parte de nuestro programa de fidelización.<br>© 2026 ${'{{ biz_name }}'}</div>
+    </div>`;
+}
+async function campSave(action){
+  const name=document.getElementById('cmp-name')?.value.trim();
+  const subject=document.getElementById('cmp-subject')?.value.trim()||'';
+  const bodyEl=document.getElementById('cmp-editor');
+  const body=bodyEl?bodyEl.innerText:'';
+  const segment=document.getElementById('nc-segment')?.value||'all';
+  const msgEl=document.getElementById('cmp-msg');
+  if(!name){if(msgEl){msgEl.textContent='⚠ Introduce un nombre';msgEl.style.color='var(--red)';}return;}
+  // sync hidden fields for backward compat
+  const hn=document.getElementById('nc-name'); if(hn) hn.value=name;
+  const hs=document.getElementById('nc-subject'); if(hs) hs.value=subject;
+  const hb=document.getElementById('nc-body'); if(hb) hb.value=body;
+  const status=action==='send'?'sending':'draft';
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns?pin=${PIN}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,subject,body,segment,type:'email',status})
+    });
+    const data=await r.json();
+    if(!r.ok){if(msgEl){msgEl.textContent='Error al guardar';msgEl.style.color='var(--red)';}return;}
+    if(msgEl){msgEl.textContent=action==='send'?'Enviando...':'Borrador guardado';msgEl.style.color='var(--green)';}
+    if(action==='send'&&data.id) await sendCampaign(data.id);
+    await loadCampaigns();
+    setTimeout(()=>{closeCampModal();if(msgEl)msgEl.textContent='';},1400);
+    showToast(action==='send'?'Campaña enviada':'Borrador guardado');
+  }catch(e){if(msgEl){msgEl.textContent='Error de conexión';msgEl.style.color='var(--red)';}}
 }
 
 async function saveCampaign(action){
@@ -5203,6 +5558,139 @@ async function sendTestEmail(){
   }
 }
 
+
+/* ── LANDING LIVE PREVIEW ─────────────────────────────────── */
+function lpUpdatePreview(){
+  const title=document.getElementById('cfg-form_title')?.value||'Únete a nuestra tarjeta';
+  const sub=document.getElementById('cfg-header_text')?.value||'Regístrate y acumula';
+  const btnText=document.getElementById('cfg-button_text')?.value||'Registrarse';
+  const bg=document.getElementById('cfg-bg_color')?.value||'#26170c';
+  const btnColor=document.getElementById('cfg-button_color')?.value||'#26170c';
+  const showPhone=document.getElementById('cfg-field_phone')?.checked;
+  const showBirth=document.getElementById('cfg-field_birthdate')?.checked;
+  const showLast=document.getElementById('cfg-field_lastname')?.checked;
+  const t=document.getElementById('lp-pv-title');
+  const s=document.getElementById('lp-pv-sub');
+  const b=document.getElementById('lp-pv-btn');
+  const logo=document.getElementById('lp-pv-logo');
+  const fp=document.getElementById('lp-pv-f-phone');
+  const fb=document.getElementById('lp-pv-f-birth');
+  const screen=document.getElementById('lp-phone-screen');
+  if(t) t.textContent=title;
+  if(s) s.textContent=sub;
+  if(b){b.textContent=btnText;b.style.background=btnColor;}
+  if(logo) logo.style.background=bg;
+  if(screen) screen.style.background=document.getElementById('cfg-bg_color')?.value||'#fff';
+  if(fp) fp.style.display=showPhone?'block':'none';
+  if(fb) fb.style.display=showBirth?'block':'none';
+}
+// Attach listeners when section loads
+function attachLPListeners(){
+  const ids=['cfg-form_title','cfg-header_text','cfg-button_text','cfg-bg_color','cfg-button_color','cfg-field_phone','cfg-field_birthdate','cfg-field_lastname'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input',lpUpdatePreview);
+    if(el) el.addEventListener('change',lpUpdatePreview);
+  });
+}
+
+/* ── CARTAS DIGITALES (localStorage MVP) ─────────────────── */
+let _menus=[];
+let _editingMenuId=null;
+function loadMenus(){
+  try{ _menus=JSON.parse(localStorage.getItem('zub_menus_'+BIZ_SLUG)||'[]'); }catch(e){_menus=[];}
+  renderMenus();
+}
+function renderMenus(){
+  const grid=document.getElementById('cartas-grid');
+  if(!grid) return;
+  const colors=['#26170c','#1a472a','#2c3e50','#7b2d8b','#c0392b','#e67e22'];
+  grid.innerHTML=_menus.map((m,i)=>{
+    const c=colors[i%colors.length];
+    return `<div class="carta-card">
+      <div class="carta-thumb" style="background:${c}">
+        <span class="material-symbols-outlined" style="font-size:3rem;color:rgba(255,255,255,.3)">restaurant_menu</span>
+        <span style="position:absolute;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#fff;letter-spacing:.08em;padding:0 12px;text-align:center">${m.name}</span>
+      </div>
+      <div class="carta-info">
+        <div class="carta-name">${m.name}</div>
+        <div class="carta-meta">${(m.sections||[]).length} secciones · ${(m.sections||[]).reduce((a,s)=>a+(s.items||[]).length,0)} platos</div>
+        <div class="carta-actions">
+          <button class="btn-sm btn-ghost" style="font-size:.7rem" onclick="openMenuEditor('${m.id}')">Editar</button>
+          <button class="btn-sm btn-ghost" style="font-size:.7rem" onclick="deleteMenu('${m.id}')">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openMenuEditor(id){
+  _editingMenuId=id;
+  const menu=id?_menus.find(m=>m.id===id):null;
+  document.getElementById('menu-name-input').value=menu?menu.name:'';
+  renderMenuSections(menu?menu.sections:[]);
+  document.getElementById('menu-editor-overlay').classList.add('open');
+}
+function closeMenuEditor(){ document.getElementById('menu-editor-overlay').classList.remove('open'); }
+function deleteMenu(id){
+  if(!confirm('¿Eliminar esta carta?')) return;
+  _menus=_menus.filter(m=>m.id!==id);
+  localStorage.setItem('zub_menus_'+BIZ_SLUG,JSON.stringify(_menus));
+  renderMenus();
+  showToast('Carta eliminada');
+}
+let _editingSections=[];
+function renderMenuSections(sections){
+  _editingSections=JSON.parse(JSON.stringify(sections||[]));
+  const list=document.getElementById('menu-sections-list');
+  if(!list) return;
+  list.innerHTML=_editingSections.map((sec,si)=>`
+    <div class="menu-section-item">
+      <div class="menu-section-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <input type="text" value="${sec.name}" placeholder="Nombre de sección" style="background:transparent;border:none;outline:none;font-weight:700;font-size:.88rem;flex:1" oninput="_editingSections[${si}].name=this.value">
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-ghost" style="font-size:.7rem;padding:3px 8px" onclick="addMenuItem(${si})">+ Plato</button>
+          <button class="btn-sm btn-ghost" style="font-size:.7rem;padding:3px 8px;color:var(--red)" onclick="deleteSection(${si})">✕</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">${(sec.items||[]).map((item,ii)=>`
+        <div class="menu-prod-item">
+          <div style="flex:1">
+            <input type="text" value="${item.name}" placeholder="Nombre del plato" style="background:transparent;border:none;outline:none;font-weight:600;font-size:.85rem;width:100%" oninput="_editingSections[${si}].items[${ii}].name=this.value">
+            <input type="text" value="${item.desc||''}" placeholder="Descripción (opcional)" style="background:transparent;border:none;outline:none;font-size:.75rem;color:var(--brown-light);width:100%;" oninput="_editingSections[${si}].items[${ii}].desc=this.value">
+          </div>
+          <input type="text" value="${item.price||''}" placeholder="€" style="width:60px;text-align:right;background:transparent;border:none;outline:none;font-weight:700;font-size:.85rem;color:var(--honey-dark)" oninput="_editingSections[${si}].items[${ii}].price=this.value">
+          <button onclick="deleteMenuItem(${si},${ii})" style="border:none;background:transparent;cursor:pointer;color:var(--brown-light);font-size:.85rem;padding:0 4px">✕</button>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function addMenuSection(){
+  _editingSections.push({id:'sec_'+Date.now(),name:'Nueva sección',items:[]});
+  renderMenuSections(_editingSections);
+}
+function deleteSection(si){ _editingSections.splice(si,1); renderMenuSections(_editingSections); }
+function addMenuItem(si){ _editingSections[si].items=_editingSections[si].items||[]; _editingSections[si].items.push({name:'',desc:'',price:''}); renderMenuSections(_editingSections); }
+function deleteMenuItem(si,ii){ _editingSections[si].items.splice(ii,1); renderMenuSections(_editingSections); }
+function saveMenu(){
+  const name=document.getElementById('menu-name-input')?.value.trim();
+  if(!name){showToast('Introduce un nombre para la carta');return;}
+  if(_editingMenuId){
+    const idx=_menus.findIndex(m=>m.id===_editingMenuId);
+    if(idx>-1){ _menus[idx].name=name; _menus[idx].sections=_editingSections; }
+  } else {
+    _menus.push({id:'menu_'+Date.now(),name,sections:_editingSections,created:new Date().toISOString()});
+  }
+  localStorage.setItem('zub_menus_'+BIZ_SLUG,JSON.stringify(_menus));
+  renderMenus();
+  closeMenuEditor();
+  showToast('Carta guardada');
+}
+
+/* ── PASSCODES CARD URL ────────────────────────────────────── */
+function setPCCardUrl(){
+  const el=document.getElementById('pc-card-url');
+  if(el) el.textContent=`${window.location.origin}/biz/${BIZ_SLUG}/card/[TOKEN_CLIENTE]`;
+}
 </script>
 </body>
 </html>

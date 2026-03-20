@@ -359,14 +359,104 @@
      PRICING
 ═══════════════════════════════════════════════════════════ -->
 <section class="py-32 px-6 bg-surface" id="pricing">
-  <div class="max-w-4xl mx-auto">
-    <div class="text-center mb-16 reveal">
-      <h2 class="font-headline text-4xl md:text-6xl font-bold text-primary mb-4">Un solo plan.<br/>Todo incluido.</h2>
-      <p class="text-on-surface-variant text-lg">Sin límites. Sin sorpresas. Sin letra pequeña.</p>
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-6 reveal">
+      <span class="inline-block bg-secondary-container text-on-secondary-container text-[10px] font-black px-4 py-1.5 uppercase tracking-widest mb-6">Precios transparentes</span>
+      <h2 class="font-headline text-4xl md:text-6xl font-bold text-primary mb-4">Empieza gratis.<br/>Escala sin límites.</h2>
+      <p class="text-on-surface-variant text-lg max-w-xl mx-auto">Sin contratos. Sin sorpresas. Sin letra pequeña. Cancela cuando quieras.</p>
     </div>
 
-    <!-- Single plan card -->
-    <div class="reveal rd1">
+    <!-- Billing toggle -->
+    <div class="flex items-center justify-center gap-4 mb-14 reveal rd1">
+      <span id="toggle-monthly-label" class="text-sm font-bold text-primary">Mensual</span>
+      <button id="billing-toggle" onclick="toggleBilling()" class="relative w-14 h-7 rounded-full transition-all duration-300" style="background:#26170c">
+        <span id="billing-knob" class="absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300"></span>
+      </button>
+      <span id="toggle-annual-label" class="text-sm font-bold text-on-surface-variant">Anual <span class="bg-secondary-container text-on-secondary-container text-[9px] font-black px-2 py-0.5 rounded uppercase ml-1">-17%</span></span>
+    </div>
+
+    <!-- 3 plan cards -->
+    <div class="grid md:grid-cols-3 gap-6 mb-12 reveal rd2">
+
+      <!-- Starter -->
+      <div class="rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-8 flex flex-col">
+        <p class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-4">Starter</p>
+        <div class="flex items-baseline gap-1 mb-1">
+          <span class="text-5xl font-headline font-bold text-primary">€0</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mb-6">14 días de prueba, sin tarjeta</p>
+        <a href="/app/register" class="block text-center py-3 px-6 rounded-lg border-2 border-primary text-primary text-xs font-bold tracking-widest uppercase hover:bg-primary hover:text-surface transition-all mb-8">Empezar gratis</a>
+        <ul class="space-y-3 text-sm text-on-surface-variant flex-1">
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>1 tarjeta digital</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>Hasta 100 clientes</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>QR de registro</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>Panel de gestión</li>
+          <li class="flex gap-2 opacity-40"><span class="material-symbols-outlined text-base">cancel</span>Campañas de email</li>
+          <li class="flex gap-2 opacity-40"><span class="material-symbols-outlined text-base">cancel</span>Notificaciones PUSH</li>
+          <li class="flex gap-2 opacity-40"><span class="material-symbols-outlined text-base">cancel</span>Business intelligence</li>
+        </ul>
+      </div>
+
+      <!-- Pro (highlighted) -->
+      <div class="relative rounded-2xl bg-primary text-surface overflow-hidden shadow-2xl flex flex-col" style="transform:scale(1.04)">
+        <div class="absolute top-5 right-5">
+          <span class="bg-secondary-container text-on-secondary-container text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tight">Popular</span>
+        </div>
+        <div class="p-8 flex flex-col flex-1">
+          <p class="text-[10px] font-black uppercase tracking-widest opacity-50 mb-4">Professional</p>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="text-5xl font-headline font-bold" id="pro-price">€39</span>
+            <span class="opacity-50 text-lg" id="pro-period">/mes</span>
+          </div>
+          <p class="text-xs opacity-50 mb-6" id="pro-sub">facturado mensualmente</p>
+          <a href="/app/register" class="block text-center py-3 px-6 rounded-lg bg-secondary-container text-on-secondary-container text-xs font-bold tracking-widest uppercase hover:bg-secondary-fixed transition-all mb-8">Empezar 14 días gratis →</a>
+          <ul class="space-y-3 text-sm flex-1">
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span><strong>Tarjetas ilimitadas</strong></li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span><strong>Clientes ilimitados</strong></li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Campañas email + SMS + PUSH</li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Hasta 5.000 emails/mes</li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Notificaciones geo-localizadas</li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Business intelligence completo</li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Programa cumpleaños/aniversario</li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Apple Wallet + Google Wallet</li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-base text-secondary-container" style="font-variation-settings:'FILL' 1;">check_circle</span>Soporte prioritario</li>
+          </ul>
+        </div>
+        <div class="bg-white/10 px-8 py-4 text-xs opacity-60 text-center">Sin permanencia · Cancela cuando quieras</div>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="rounded-2xl border-2 border-outline-variant bg-surface-container-lowest p-8 flex flex-col">
+        <p class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-4">Enterprise</p>
+        <div class="flex items-baseline gap-1 mb-1">
+          <span class="text-5xl font-headline font-bold text-primary">Custom</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mb-6">Precio a medida para tu empresa</p>
+        <a href="mailto:hola@zubcard.com" class="block text-center py-3 px-6 rounded-lg bg-primary text-surface text-xs font-bold tracking-widest uppercase hover:bg-primary-container transition-all mb-8">Hablar con ventas</a>
+        <ul class="space-y-3 text-sm text-on-surface-variant flex-1">
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>Todo lo del plan Pro</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>Multi-sede ilimitada</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>White-label / dominio propio</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>API completa + webhooks</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>SLA garantizado</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>Account manager dedicado</li>
+          <li class="flex gap-2"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;color:#26170c">check_circle</span>Onboarding personalizado</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Trust strip -->
+    <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest px-8 py-5 flex flex-wrap items-center justify-center gap-8 text-xs text-on-surface-variant reveal rd3">
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">verified</span> Sin permanencia</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">credit_card_off</span> Sin tarjeta en el trial</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">cancel</span> Cancela en 1 clic</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">lock</span> Datos encriptados</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">support_agent</span> Soporte en español</span>
+    </div>
+
+    <!-- Keep old hidden div for JS compat, remove old card -->
+    <div style="display:none">
       <div class="relative rounded-3xl bg-primary text-surface overflow-hidden shadow-2xl">
 
         <!-- Top badge -->
@@ -644,6 +734,33 @@ faqs.forEach(({ q, a }) => {
     <p class="mt-4 text-on-surface-variant leading-relaxed text-sm">${a}</p>`;
   faqList.appendChild(el);
 });
+
+// ── Billing toggle ────────────────────────────────────────────
+let billingAnnual = false;
+function toggleBilling() {
+  billingAnnual = !billingAnnual;
+  const knob = document.getElementById('billing-knob');
+  const monthLabel = document.getElementById('toggle-monthly-label');
+  const annualLabel = document.getElementById('toggle-annual-label');
+  const proPrice = document.getElementById('pro-price');
+  const proPeriod = document.getElementById('pro-period');
+  const proSub = document.getElementById('pro-sub');
+  if (billingAnnual) {
+    knob.style.transform = 'translateX(28px)';
+    monthLabel.classList.replace('text-primary','text-on-surface-variant');
+    annualLabel.classList.replace('text-on-surface-variant','text-primary');
+    proPrice.textContent = '€33';
+    proPeriod.textContent = '/mes';
+    proSub.textContent = 'facturado €390/año — 2 meses gratis';
+  } else {
+    knob.style.transform = 'translateX(0)';
+    monthLabel.classList.replace('text-on-surface-variant','text-primary');
+    annualLabel.classList.replace('text-primary','text-on-surface-variant');
+    proPrice.textContent = '€39';
+    proPeriod.textContent = '/mes';
+    proSub.textContent = 'facturado mensualmente';
+  }
+}
 
 // ── Scroll reveal ─────────────────────────────────────────────
 const revealObserver = new IntersectionObserver(entries => {
