@@ -246,6 +246,8 @@ def run_migrations():
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS expiry_days INTEGER",
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS max_stamps_per_visit INTEGER",
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
+        # Campaigns: scheduled sending support
+        "ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ",
 
     ]
     from database import SessionLocal
@@ -260,6 +262,64 @@ def run_migrations():
         print("✅ Migrations OK")
     finally:
         db.close()
+
+
+# ── SCHEDULED CAMPAIGNS RUNNER ────────────────────────────────────────────────
+def _run_scheduled_campaigns():
+    """Called by APScheduler every minute: send any campaign where scheduled_at <= NOW()."""
+    from database import SessionLocal as _SL
+    _db = _SL()
+    try:
+        rows = _db.execute(text(
+            "SELECT c.id, c.business_id, c.name, c.subject, c.body, c.segment, "
+            "       b.slug, b.email "
+            "FROM campaigns c JOIN businesses b ON b.id=c.business_id "
+            "WHERE c.status='draft' AND c.scheduled_at IS NOT NULL AND c.scheduled_at <= NOW()"
+        )).fetchall()
+        for row in rows:
+            camp_id, bid, _name, subject, body_txt, segment, slug, biz_email = row
+            try:
+                q_base = (
+                    "SELECT cu.email, cu.first_name FROM customers cu "
+                    "JOIN loyalty_cards lc ON lc.customer_id=cu.id "
+                    "WHERE cu.business_id=:bid AND cu.opt_in_email=TRUE "
+                    "AND cu.email NOT LIKE '%placeholder%'"
+                )
+                if segment == "active":
+                    q_base += " AND lc.stamps > 0"
+                customers = _db.execute(text(q_base), {"bid": str(bid)}).fetchall()
+                sent = 0
+                for cust in customers:
+                    try:
+                        body_html = f"<p>{(body_txt or '').replace('{nombre}', cust[1] or '')}</p>"
+                        sub_text = (subject or "").replace("{nombre}", cust[1] or "")
+                        if send_email(cust[0], sub_text, body_html):
+                            sent += 1
+                    except Exception:
+                        pass
+                _db.execute(text(
+                    "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
+                ), {"id": str(camp_id)})
+                _db.commit()
+                print(f"✅ Scheduled campaign {camp_id} sent to {sent} customers")
+            except Exception as e:
+                print(f"❌ Error sending scheduled campaign {camp_id}: {e}")
+                _db.rollback()
+    finally:
+        _db.close()
+
+
+@app.on_event("startup")
+def start_campaign_scheduler():
+    try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+        _scheduler = BackgroundScheduler()
+        _scheduler.add_job(_run_scheduled_campaigns, "interval", minutes=1,
+                           id="campaign_runner", replace_existing=True)
+        _scheduler.start()
+        print("✅ Campaign scheduler started")
+    except Exception as e:
+        print(f"⚠️ Campaign scheduler not started: {e}")
 
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -2174,20 +2234,53 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
     return {"message": "Suscripción creada"}
 
 
+def _send_push_to_subscriptions(subs_rows, title: str, message: str, url: str = "/") -> dict:
+    """Send a web push notification to a list of (endpoint, p256dh, auth) rows."""
+    if not VAPID_PUBLIC or not VAPID_PRIVATE:
+        return {"sent": 0, "failed": 0, "dry_run": True,
+                "note": "Configura VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY en Railway para activar push."}
+    try:
+        from pywebpush import webpush, WebPushException  # type: ignore
+    except ImportError:
+        return {"sent": 0, "failed": 0, "dry_run": True,
+                "note": "pywebpush no instalado — despliega de nuevo para activar."}
+    import json as _json
+    payload = _json.dumps({"title": title, "body": message, "icon": "/static/icon-192.png", "url": url})
+    vapid_claims = {"sub": "mailto:hola@zubcard.com"}
+    sent = failed = 0
+    for row in subs_rows:
+        endpoint, p256dh, auth_key = row[0], row[1], row[2]
+        try:
+            webpush(
+                subscription_info={"endpoint": endpoint, "keys": {"p256dh": p256dh, "auth": auth_key}},
+                data=payload,
+                vapid_private_key=VAPID_PRIVATE,
+                vapid_claims=vapid_claims,
+            )
+            sent += 1
+        except WebPushException as e:
+            failed += 1
+            print(f"Push failed for {endpoint[:40]}…: {e}")
+        except Exception as e:
+            failed += 1
+            print(f"Push error: {e}")
+    return {"sent": sent, "failed": failed, "dry_run": False}
+
+
 @app.post("/api/admin/push/send")
 async def admin_push_send(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
     title   = body.get("title", "ZubCard")
     message = body.get("message", "")
-    # Log intent - actual sending requires pywebpush + VAPID keys
-    subs = db.query(models.PushSubscription).count()
-    return {
-        "message": f"Push programado: '{title}' → '{message}'",
-        "subscribers": subs,
-        "note": "Para envíos reales, configura VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY en Railway y instala pywebpush",
-        "vapid_public": VAPID_PUBLIC or "NO CONFIGURADO"
-    }
+    url     = body.get("url", "/")
+    rows = db.execute(text(
+        "SELECT endpoint, p256dh, auth FROM push_subscriptions"
+    )).fetchall()
+    result = _send_push_to_subscriptions(rows, title, message, url)
+    result["total_subscribers"] = len(rows)
+    result["message"] = f"Push '{title}' → {result['sent']} enviados, {result['failed']} fallidos"
+    return result
 
 
 @app.get("/api/admin/push/stats")
@@ -3408,13 +3501,14 @@ def list_campaigns(slug: str, pin: str = "", db: Session = Depends(get_db)):
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     rows = db.execute(text(
-        "SELECT id, name, subject, type, status, segment, created_at, sent_at "
+        "SELECT id, name, subject, type, status, segment, created_at, sent_at, scheduled_at "
         "FROM campaigns WHERE business_id=:bid ORDER BY created_at DESC"
     ), {"bid": str(biz.id)}).fetchall()
     return {"campaigns": [
         {"id": str(r[0]), "name": r[1], "subject": r[2] or "", "type": r[3] or "email",
          "status": r[4] or "draft", "segment": r[5] or "all",
-         "created_at": str(r[6]), "sent_at": str(r[7]) if r[7] else None}
+         "created_at": str(r[6]), "sent_at": str(r[7]) if r[7] else None,
+         "scheduled_at": str(r[8]) if r[8] else None}
         for r in rows
     ]}
 
@@ -3426,15 +3520,16 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     camp_id = str(uuid.uuid4())
+    scheduled_at = payload.get("scheduled_at")  # ISO string or None
     db.execute(text(
-        "INSERT INTO campaigns (id, business_id, name, subject, body, type, status, segment) "
-        "VALUES (:id, :bid, :name, :subject, :body, :type, :status, :segment)"
+        "INSERT INTO campaigns (id, business_id, name, subject, body, type, status, segment, scheduled_at) "
+        "VALUES (:id, :bid, :name, :subject, :body, :type, :status, :segment, :scheduled_at)"
     ), {"id": camp_id, "bid": str(biz.id), "name": payload.get("name", ""),
         "subject": payload.get("subject", ""), "body": payload.get("body", ""),
         "type": payload.get("type", "email"), "status": payload.get("status", "draft"),
-        "segment": payload.get("segment", "all")})
+        "segment": payload.get("segment", "all"), "scheduled_at": scheduled_at})
     db.commit()
-    return {"id": camp_id, "status": "created"}
+    return {"id": camp_id, "status": "created", "scheduled_at": scheduled_at}
 
 
 @app.post("/api/biz/{slug}/campaigns/{campaign_id}/send")

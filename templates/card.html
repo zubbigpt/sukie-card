@@ -629,10 +629,13 @@ body {
 
     <!-- Referral -->
     <div class="referral-section" id="referral-section" style="display:none">
-      <div class="referral-title">🔗 Invita a tus amigos</div>
+      <div class="referral-title">🎁 Invita a tus amigos</div>
       <div class="referral-code" id="referral-code">XXXX</div>
-      <div class="referral-sub">Comparte tu código y gana 2 sellos extra</div>
-      <button class="referral-copy-btn" onclick="copyReferral()">Copiar código</button>
+      <div class="referral-sub">Comparte tu link y los dos ganáis 2 sellos extra</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="referral-copy-btn" onclick="copyReferral()">📋 Copiar link</button>
+        <button class="referral-copy-btn" onclick="shareReferral()">📤 Compartir</button>
+      </div>
     </div>
   </div>
 </div>
@@ -797,20 +800,36 @@ function renderCardBasic(card) {
   });
 }
 
+let _referralUrl = '';
+
 async function loadReferral() {
   try {
     const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/referral');
     const data = await res.json();
-    if (data.code) {
-      document.getElementById('referral-code').textContent = data.code;
+    if (data.referral_code) {
+      document.getElementById('referral-code').textContent = data.referral_code;
+      _referralUrl = data.referral_url || '';
       document.getElementById('referral-section').style.display = 'block';
     }
   } catch(e) {}
 }
 
 function copyReferral() {
-  const code = document.getElementById('referral-code').textContent;
-  navigator.clipboard.writeText(code).then(() => showToast('✅ Código copiado'));
+  const text = _referralUrl || document.getElementById('referral-code').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('✅ Link copiado'));
+}
+
+function shareReferral() {
+  const text = _referralUrl || document.getElementById('referral-code').textContent;
+  if (navigator.share) {
+    navigator.share({
+      title: '¡Únete y gana sellos!',
+      text: '¡Regístrate con mi link y los dos ganamos sellos extra! 🎁',
+      url: text
+    });
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('🔗 Link copiado'));
+  }
 }
 
 function shareCard() {
@@ -826,18 +845,54 @@ function shareCard() {
   }
 }
 
-function activateNotifications() {
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function activateNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     showToast('Tu navegador no soporta notificaciones push');
     return;
   }
-  Notification.requestPermission().then(perm => {
-    if (perm === 'granted') {
-      showToast('🔔 ¡Notificaciones activadas!');
-      document.getElementById('notif-btn').textContent = '✅ Notificaciones activas';
-      document.getElementById('notif-btn').disabled = true;
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') {
+    showToast('Notificaciones bloqueadas');
+    return;
+  }
+  try {
+    // Fetch VAPID public key from server
+    const keyRes = await fetch(API_BASE + '/api/push/vapid-public');
+    const keyData = await keyRes.json();
+    if (!keyData.key) {
+      showToast('🔔 Permiso concedido (notificaciones no configuradas en servidor)');
+      return;
     }
-  });
+    const swReg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    const subscription = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(keyData.key)
+    });
+    const subJson = subscription.toJSON();
+    await fetch(API_BASE + '/api/push/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        card_id: CARD_ID,
+        endpoint: subJson.endpoint,
+        keys: subJson.keys
+      })
+    });
+    showToast('🔔 ¡Notificaciones activadas!');
+    const btn = document.getElementById('notif-btn');
+    if (btn) { btn.textContent = '✅ Notificaciones activas'; btn.disabled = true; }
+  } catch(e) {
+    console.error('Push subscription error:', e);
+    showToast('Error activando notificaciones');
+  }
 }
 
 loadData();
