@@ -701,8 +701,19 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     first_name = customer.first_name if customer else "Cliente"
 
+    # Load business info for card styling and wallet
+    biz = None
+    if customer and customer.business_id:
+        biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+
+    primary_color        = (biz.primary_color      if biz else None) or "#3A3426"
+    accent_color         = (biz.accent_color       if biz else None) or "#a8f0d0"
+    biz_name             = (biz.name               if biz else None) or ""
+    biz_slug             = (biz.slug               if biz else None) or ""
+    stamps_per_reward_val = (biz.stamps_per_reward if biz else None) or STAMPS_PER_REWARD
+
     # Load business-scoped card_title for the page header
-    card_title = CARD_TITLE  # global fallback
+    card_title = (biz.card_title if biz else None) or biz_name or CARD_TITLE
     if customer and customer.business_id:
         row = db.execute(
             text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
@@ -713,6 +724,19 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
             card_title = cfg.get("general", {}).get("card_title") or \
                          cfg.get("general", {}).get("card_name") or card_title
 
+    # Generate Google Wallet URL
+    card_url = f"{BASE_URL}/card/{card_id}"
+    google_wallet_url = generate_google_wallet_url(
+        card_id=card_id,
+        biz_slug=biz_slug,
+        biz_name=biz_name,
+        customer_name=first_name,
+        stamps=card.stamps or 0,
+        stamps_per_reward=stamps_per_reward_val,
+        card_url=card_url,
+        primary_color=primary_color,
+    ) if biz_slug else None
+
     return templates.TemplateResponse("card.html", {
         "request":           request,
         "card_id":           card_id,
@@ -721,10 +745,15 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
         "card_title":        card_title,
         "api_base":          BASE_URL,
         "stamps":            card.stamps or 0,
-        "stamps_per_reward": STAMPS_PER_REWARD,
+        "stamps_per_reward": stamps_per_reward_val,
         "rewards_redeemed":  card.rewards_redeemed or 0,
         "award_balance":     card.award_balance or 0,
         "total_stamps":      card.total_stamps or 0,
+        "biz_name":          biz_name,
+        "biz_slug":          biz_slug,
+        "primary_color":     primary_color,
+        "accent_color":      accent_color,
+        "google_wallet_url": google_wallet_url or "",
     })
 
 
