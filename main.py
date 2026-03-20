@@ -3147,7 +3147,7 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_rich(request: Request):
-    return templates.TemplateResponse("dashboard_admin.html", {"request": request})
+    return templates.TemplateResponse("dashboard_admin.html", {"request": request, "biz_name": ""})
 
 
 # ════════════════════════════════════════════════════════════════════════════════
