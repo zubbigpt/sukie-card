@@ -626,27 +626,44 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/api/admin/resend-dns")
-def resend_dns(pin: str, db: Session = Depends(get_db)):
-    """Fetch Resend domain DNS records so we can add them to the registrar."""
+def resend_dns(pin: str, domain_id: str = "", db: Session = Depends(get_db)):
+    """Fetch Resend domain details and trigger verification."""
     verify_pin(pin, db)
     import urllib.request as _urlreq, json as _json
     if not SMTP_PASS:
         return {"error": "SMTP_PASS not set"}
     try:
-        # List domains
-        req = _urlreq.Request("https://api.resend.com/domains",
-            headers={"Authorization": f"Bearer {SMTP_PASS}"})
-        with _urlreq.urlopen(req, timeout=15) as r:
-            domains = _json.loads(r.read().decode())
-        # Find zubcard.com
-        for d in domains.get("data", []):
-            if "zubcard" in d.get("name", "").lower():
-                domain_id = d["id"]
-                req2 = _urlreq.Request(f"https://api.resend.com/domains/{domain_id}",
+        results = {}
+        # Try to get domain details if domain_id provided
+        if domain_id:
+            try:
+                req = _urlreq.Request(f"https://api.resend.com/domains/{domain_id}",
                     headers={"Authorization": f"Bearer {SMTP_PASS}"})
+                with _urlreq.urlopen(req, timeout=15) as r:
+                    results["domain"] = _json.loads(r.read().decode())
+            except Exception as e:
+                results["domain_error"] = str(e)
+
+            # Trigger verification
+            try:
+                req2 = _urlreq.Request(
+                    f"https://api.resend.com/domains/{domain_id}/verify",
+                    data=b"{}",
+                    headers={"Authorization": f"Bearer {SMTP_PASS}", "Content-Type": "application/json"},
+                    method="POST"
+                )
                 with _urlreq.urlopen(req2, timeout=15) as r2:
-                    return _json.loads(r2.read().decode())
-        return {"domains": domains, "error": "zubcard.com not found"}
+                    results["verify"] = _json.loads(r2.read().decode())
+            except Exception as e:
+                results["verify_error"] = str(e)
+
+            return results
+
+        # List all domains
+        req3 = _urlreq.Request("https://api.resend.com/domains",
+            headers={"Authorization": f"Bearer {SMTP_PASS}"})
+        with _urlreq.urlopen(req3, timeout=15) as r3:
+            return _json.loads(r3.read().decode())
     except Exception as e:
         return {"error": str(e)}
 
