@@ -118,6 +118,17 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 
 @keyframes fade-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
+{% if lp_bg_color or lp_button_color or lp_text_color or lp_link_color %}
+<style>
+  :root {
+    {% if lp_bg_color %}--surface: {{ lp_bg_color }};--surface-low: {{ lp_bg_color }};{% endif %}
+    {% if lp_text_color %}--primary: {{ lp_text_color }};--primary-mid: {{ lp_text_color }};{% endif %}
+    {% if lp_link_color %}--honey-dark: {{ lp_link_color }};{% endif %}
+  }
+  {% if lp_button_color %}.btn-cta { background: {{ lp_button_color }} !important; }
+  .btn-cta:hover { background: {{ lp_button_color }} !important; filter: brightness(.88); }{% endif %}
+</style>
+{% endif %}
 </head>
 <body>
 <div class="page">

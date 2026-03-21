@@ -3064,6 +3064,10 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
         "form_title":        landing_cfg.get("form_title", ""),
         "header_text":       landing_cfg.get("header_text", ""),
         "button_text":       landing_cfg.get("button_text", ""),
+        "lp_bg_color":       landing_cfg.get("bg_color", ""),
+        "lp_text_color":     landing_cfg.get("text_color", ""),
+        "lp_button_color":   landing_cfg.get("button_color", ""),
+        "lp_link_color":     landing_cfg.get("link_color", ""),
     })
 
 

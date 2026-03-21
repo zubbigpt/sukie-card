@@ -5703,7 +5703,9 @@ function lpUpdatePreview(){
     showBirth ? `<div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>` : '',
   ].join('');
 
-  screen.style.background = '#fff8f5';
+  const bgColor = document.getElementById('cfg-bg_color_text')?.value ||
+                  document.getElementById('cfg-bg_color')?.value || '#fff8f5';
+  screen.style.background = bgColor;
   screen.innerHTML = `
     <!-- HEADER -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #f0e8e2">
