@@ -85,7 +85,9 @@ def generate_strip_image(
     accent_color: str = "#ffca48",
     scale: int = 2,
 ) -> bytes:
-    """Generate a dark loyalty-card strip image for Apple Wallet.
+    """Generate a loyalty-card strip image for Apple Wallet.
+    Clean tile-style design: solid bg, square stamp tiles with checkmark,
+    chip top-right, TITULAR/PREMIOS footer.
     Returns PNG bytes. Falls back to the static file if PIL is unavailable."""
     if not _PIL_OK:
         path = ASSETS_DIR / ("strip@2x.png" if scale == 2 else "strip.png")
@@ -93,80 +95,135 @@ def generate_strip_image(
             return path.read_bytes()
         raise RuntimeError("Pillow not available and static strip not found")
 
+    import math as _math
+
     def _hex(h: str):
         h = h.lstrip("#")
         if len(h) == 3:
             h = "".join(c * 2 for c in h)
         return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
 
+    def _darken(c, amount=0.18):
+        return tuple(max(0, int(v * (1 - amount))) for v in c)
+
+    def _lighten(c, amount=0.25):
+        return tuple(min(255, int(v + (255 - v) * amount)) for v in c)
+
     BG     = _hex(bg_color)
-    HONEY  = _hex(accent_color)
-    HONEY_D = tuple(max(0, int(c * 0.55)) for c in HONEY)
+    ACCENT = _hex(accent_color)
     WHITE  = (255, 255, 255)
 
+    EMPTY_FILL  = _darken(BG, 0.15)
+    FILLED_FILL = ACCENT
+    FILLED_ICON = _darken(ACCENT, 0.45)
+    TEXT_MAIN   = _lighten(BG, 0.85)
+    TEXT_SUB    = _lighten(BG, 0.45)
+
     sw, sh = 320 * scale, 123 * scale
-    img  = Image.new("RGBA", (sw, sh), (*BG, 255))
+    s = scale
+
+    img  = Image.new("RGB", (sw, sh), BG)
     draw = ImageDraw.Draw(img, "RGBA")
-    s    = scale
 
-    # Subtle diagonal texture
-    for i in range(0, sw + sh, 18 * s):
-        draw.line([(i, 0), (0, i)], fill=(255, 255, 255, 7), width=1)
-
-    # Fonts (graceful fallback to default)
     def _fnt(path, size):
         try:
             return ImageFont.truetype(path, size)
         except Exception:
             return ImageFont.load_default()
 
-    fnt_label  = _fnt(_FONT_REG,  10 * s)
-    fnt_name   = _fnt(_FONT_BOLD, 18 * s)
-    fnt_small  = _fnt(_FONT_REG,   9 * s)
-    fnt_holder = _fnt(_FONT_BOLD, 10 * s)
+    fnt_label  = _fnt(_FONT_REG,  8 * s)
+    fnt_name   = _fnt(_FONT_BOLD, 16 * s)
+    fnt_small  = _fnt(_FONT_REG,  8 * s)
+    fnt_bold_s = _fnt(_FONT_BOLD, 9 * s)
 
-    # ── Top-left: label + card name ────────────────────────────
-    draw.text((14*s, 10*s), "LOYALTY CARD", font=fnt_label, fill=(*HONEY, 170))
-    draw.text((14*s, 22*s), card_name.upper()[:22], font=fnt_name, fill=WHITE)
+    PAD   = 14 * s
+    PAD_T = 10 * s
 
-    # ── Top-right: chip ────────────────────────────────────────
-    cx, cy = sw - 36*s, 10*s
-    draw.rounded_rectangle([cx, cy, cx+22*s, cy+16*s], radius=3*s, fill=HONEY)
-    draw.line([(cx+7*s, cy+2*s), (cx+7*s,  cy+14*s)], fill=HONEY_D, width=1)
-    draw.line([(cx+15*s, cy+2*s), (cx+15*s, cy+14*s)], fill=HONEY_D, width=1)
-    draw.line([(cx+2*s, cy+8*s), (cx+20*s, cy+8*s)],  fill=HONEY_D, width=1)
+    # ── LOYALTY CARD label ──────────────────────────────────────
+    draw.text((PAD, PAD_T), "LOYALTY CARD",
+              font=fnt_label, fill=(*TEXT_SUB, 255))
 
-    # ── Stamp grid ─────────────────────────────────────────────
+    # ── Card name ───────────────────────────────────────────────
+    draw.text((PAD, PAD_T + 10 * s), card_name.upper()[:20],
+              font=fnt_name, fill=(*TEXT_MAIN, 255))
+
+    # ── Chip (top-right, simple rounded rect with lines) ────────
+    cw, ch_c = 22 * s, 16 * s
+    chip_x = sw - PAD - cw
+    chip_y = PAD_T
+    draw.rounded_rectangle(
+        [chip_x, chip_y, chip_x + cw, chip_y + ch_c],
+        radius=3 * s, fill=(*ACCENT, 255)
+    )
+    line_col = (*_darken(ACCENT, 0.4), 200)
+    draw.line([(chip_x + 7*s, chip_y + 2), (chip_x + 7*s,  chip_y + ch_c - 2)],
+              fill=line_col, width=max(1, s))
+    draw.line([(chip_x + 15*s, chip_y + 2), (chip_x + 15*s, chip_y + ch_c - 2)],
+              fill=line_col, width=max(1, s))
+    draw.line([(chip_x + 2, chip_y + 8*s), (chip_x + cw - 2, chip_y + 8*s)],
+              fill=line_col, width=max(1, s))
+
+    # ── Stamp grid ──────────────────────────────────────────────
+    FOOTER_H     = 28 * s
+    grid_top     = PAD_T + 10 * s + 18 * s + 4 * s
+    grid_bottom  = sh - FOOTER_H - 6 * s
+    grid_h_avail = grid_bottom - grid_top
+    grid_w_avail = sw - 2 * PAD
+
     COLS = min(stamps_total, 5)
-    dot  = 14 * s
-    gap  = 5  * s
-    sx0  = 14 * s
-    sy0  = 50 * s
+    ROWS = _math.ceil(stamps_total / COLS)
+
+    GAP          = 5 * s
+    tile_from_w  = (grid_w_avail - GAP * (COLS - 1)) // COLS
+    tile_from_h  = (grid_h_avail - GAP * (ROWS - 1)) // ROWS
+    tile         = min(tile_from_w, tile_from_h, 22 * s)
+    tile         = max(tile, 12 * s)
+
+    grid_w = COLS * tile + GAP * (COLS - 1)
+    grid_h = ROWS * tile + GAP * (ROWS - 1)
+    gx0    = PAD + (grid_w_avail - grid_w) // 2
+    gy0    = grid_top + (grid_h_avail - grid_h) // 2
+
+    radius = max(3 * s, tile // 5)
+
+    def _draw_check(cx, cy, size, color):
+        lw = max(2, size // 7)
+        x1 = cx - int(size * 0.28); y1 = cy + int(size * 0.02)
+        x2 = cx - int(size * 0.04); y2 = cy + int(size * 0.24)
+        x3 = cx + int(size * 0.32); y3 = cy - int(size * 0.24)
+        draw.line([(x1, y1), (x2, y2)], fill=(*color, 230), width=lw)
+        draw.line([(x2, y2), (x3, y3)], fill=(*color, 230), width=lw)
+
     for i in range(stamps_total):
         col = i % COLS
         row = i // COLS
-        x = sx0 + col * (dot + gap)
-        y = sy0 + row * (dot + gap)
-        if i < stamps:
-            draw.ellipse([x, y, x+dot, y+dot], fill=HONEY)
-            m = 4 * s
-            draw.ellipse([x+m, y+m, x+dot-m, y+dot-m], fill=HONEY_D)
-        else:
-            draw.ellipse([x, y, x+dot, y+dot], fill=(255, 255, 255, 28))
-            draw.ellipse([x+1, y+1, x+dot-1, y+dot-1],
-                         outline=(255, 255, 255, 55), width=1)
+        x   = gx0 + col * (tile + GAP)
+        y   = gy0 + row * (tile + GAP)
+        cx2 = x + tile // 2
+        cy2 = y + tile // 2
 
-    # ── Bottom strip ───────────────────────────────────────────
-    sep_y = sh - 30 * s
-    draw.line([(14*s, sep_y), (sw-14*s, sep_y)], fill=(255, 255, 255, 25), width=1)
-    draw.text((14*s, sep_y + 4*s),  "TITULAR",
-              font=fnt_small, fill=(255, 255, 255, 100))
-    draw.text((14*s, sep_y + 13*s), biz_name.upper()[:20],
-              font=fnt_holder, fill=WHITE)
-    draw.text((sw-14*s, sep_y + 4*s),  "PREMIOS",
-              font=fnt_small, fill=(255, 255, 255, 100), anchor="ra")
-    draw.text((sw-14*s, sep_y + 13*s), reward_name[:18],
-              font=fnt_small, fill=(*HONEY, 220), anchor="ra")
+        if i < stamps:
+            draw.rounded_rectangle([x, y, x + tile, y + tile],
+                                   radius=radius, fill=(*FILLED_FILL, 255))
+            _draw_check(cx2, cy2, tile, FILLED_ICON)
+        else:
+            draw.rounded_rectangle([x, y, x + tile, y + tile],
+                                   radius=radius, fill=(*EMPTY_FILL, 255))
+
+    # ── Footer ──────────────────────────────────────────────────
+    footer_y = sh - FOOTER_H
+    draw.line([(PAD, footer_y), (sw - PAD, footer_y)],
+              fill=(*TEXT_SUB, 80), width=max(1, s))
+    lbl_y = footer_y + 4 * s
+    val_y = footer_y + 13 * s
+    draw.text((PAD, lbl_y), "TITULAR",
+              font=fnt_small, fill=(*TEXT_SUB, 200))
+    draw.text((PAD, val_y), biz_name.upper()[:22],
+              font=fnt_bold_s, fill=(*TEXT_MAIN, 255))
+    draw.text((sw - PAD, lbl_y), "PREMIOS",
+              font=fnt_small, fill=(*TEXT_SUB, 200), anchor="ra")
+    draw.text((sw - PAD, val_y), reward_name[:20],
+              font=fnt_bold_s, fill=(*ACCENT, 230), anchor="ra")
 
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="PNG")
