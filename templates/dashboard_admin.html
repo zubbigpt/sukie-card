@@ -2935,10 +2935,50 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               <input type="checkbox" id="cfg-welcome_email_enabled"> <span style="font-size:.88rem;font-weight:500">Activar email de bienvenida</span>
             </label>
             <label class="field-label">Asunto<input type="text" id="cfg-welcome_email_subject" class="field-input" placeholder="¡Bienvenido/a a nuestra familia!"></label>
-            <label class="field-label" style="margin-top:12px">Cuerpo del email
-              <textarea id="cfg-welcome_email_body" class="field-input" rows="6" style="resize:vertical;font-family:monospace;font-size:.82em" placeholder="Hola {nombre}, bienvenido/a. Tu tarjeta: {link_tarjeta}"></textarea>
-              <small style="color:var(--brown-light)">Variables: {nombre}, {link_tarjeta}</small>
-            </label>
+            <!-- hidden textarea keeps save/load compatibility -->
+            <textarea id="cfg-welcome_email_body" style="display:none"></textarea>
+            <div class="field-label" style="margin-top:12px">
+              Cuerpo del email
+              <div class="camp-toolbar" style="margin-top:6px;border-radius:var(--r-sm) var(--r-sm) 0 0">
+                <button title="Negrita" onclick="emailExec('wel','bold')"><b>B</b></button>
+                <button title="Cursiva" onclick="emailExec('wel','italic')"><i>I</i></button>
+                <button title="Subrayar" onclick="emailExec('wel','underline')"><u>U</u></button>
+                <div class="tsep"></div>
+                <select onchange="emailExec('wel','fontSize',this.value)" title="Tamaño de fuente">
+                  <option value="1">Mini</option>
+                  <option value="2">Pequeño</option>
+                  <option value="3" selected>Normal</option>
+                  <option value="4">Grande</option>
+                  <option value="5">Muy grande</option>
+                </select>
+                <select onchange="emailExecFont('wel',this.value)" title="Fuente">
+                  <option value="Manrope">Manrope</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="'Times New Roman'">Times New Roman</option>
+                  <option value="Arial">Arial</option>
+                  <option value="'Courier New'">Courier New</option>
+                </select>
+                <div class="tsep"></div>
+                <button title="Alinear izquierda" onclick="emailExec('wel','justifyLeft')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_left</span></button>
+                <button title="Centrar" onclick="emailExec('wel','justifyCenter')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_center</span></button>
+                <button title="Alinear derecha" onclick="emailExec('wel','justifyRight')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_right</span></button>
+                <div class="tsep"></div>
+                <button title="Insertar enlace" onclick="emailExecLink('wel')"><span class="material-symbols-outlined" style="font-size:1rem">link</span></button>
+                <button title="Insertar imagen (URL)" onclick="emailExecImg('wel')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
+                <button title="Color de texto" onclick="document.getElementById('wel-color-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_text</span></button>
+                <input type="color" id="wel-color-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('wel','foreColor',this.value)">
+                <button title="Color de fondo del texto" onclick="document.getElementById('wel-bg-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_fill</span></button>
+                <input type="color" id="wel-bg-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('wel','hiliteColor',this.value)">
+                <div class="tsep"></div>
+                <button title="Lista" onclick="emailExec('wel','insertUnorderedList')"><span class="material-symbols-outlined" style="font-size:1rem">format_list_bulleted</span></button>
+              </div>
+              <div id="cfg-welcome_email_body_editor" class="camp-editor-body" contenteditable="true"
+                   oninput="emailSyncToHidden('wel')" onkeydown="emailHandleKey(event,'wel')"
+                   style="min-height:180px;border-radius:0 0 var(--r-sm) var(--r-sm);border-top:none">
+                <p>Hola <strong>{nombre}</strong>, bienvenido/a a nuestra familia. 🎉</p><p>Aquí tienes el link a tu tarjeta de fidelización: <a href="{link_tarjeta}">{link_tarjeta}</a></p>
+              </div>
+              <small style="color:var(--brown-light);margin-top:4px;display:block">Variables: <code>{nombre}</code>, <code>{link_tarjeta}</code></small>
+            </div>
           </div>
 
           <div class="card-box">
@@ -2947,10 +2987,50 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               <input type="checkbox" id="cfg-birthday_email_enabled"> <span style="font-size:.88rem;font-weight:500">Activar email de cumpleaños</span>
             </label>
             <label class="field-label">Asunto<input type="text" id="cfg-birthday_email_subject" class="field-input" placeholder="¡Feliz Cumpleaños! 🎂"></label>
-            <label class="field-label" style="margin-top:12px">Cuerpo del email
-              <textarea id="cfg-birthday_email_body" class="field-input" rows="5" style="resize:vertical;font-family:monospace;font-size:.82em" placeholder="¡Hola {nombre}! Hoy es tu día especial..."></textarea>
-              <small style="color:var(--brown-light)">Variables: {nombre}</small>
-            </label>
+            <!-- hidden textarea keeps save/load compatibility -->
+            <textarea id="cfg-birthday_email_body" style="display:none"></textarea>
+            <div class="field-label" style="margin-top:12px">
+              Cuerpo del email
+              <div class="camp-toolbar" style="margin-top:6px;border-radius:var(--r-sm) var(--r-sm) 0 0">
+                <button title="Negrita" onclick="emailExec('bday','bold')"><b>B</b></button>
+                <button title="Cursiva" onclick="emailExec('bday','italic')"><i>I</i></button>
+                <button title="Subrayar" onclick="emailExec('bday','underline')"><u>U</u></button>
+                <div class="tsep"></div>
+                <select onchange="emailExec('bday','fontSize',this.value)" title="Tamaño de fuente">
+                  <option value="1">Mini</option>
+                  <option value="2">Pequeño</option>
+                  <option value="3" selected>Normal</option>
+                  <option value="4">Grande</option>
+                  <option value="5">Muy grande</option>
+                </select>
+                <select onchange="emailExecFont('bday',this.value)" title="Fuente">
+                  <option value="Manrope">Manrope</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="'Times New Roman'">Times New Roman</option>
+                  <option value="Arial">Arial</option>
+                  <option value="'Courier New'">Courier New</option>
+                </select>
+                <div class="tsep"></div>
+                <button title="Alinear izquierda" onclick="emailExec('bday','justifyLeft')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_left</span></button>
+                <button title="Centrar" onclick="emailExec('bday','justifyCenter')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_center</span></button>
+                <button title="Alinear derecha" onclick="emailExec('bday','justifyRight')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_right</span></button>
+                <div class="tsep"></div>
+                <button title="Insertar enlace" onclick="emailExecLink('bday')"><span class="material-symbols-outlined" style="font-size:1rem">link</span></button>
+                <button title="Insertar imagen (URL)" onclick="emailExecImg('bday')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
+                <button title="Color de texto" onclick="document.getElementById('bday-color-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_text</span></button>
+                <input type="color" id="bday-color-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('bday','foreColor',this.value)">
+                <button title="Color de fondo del texto" onclick="document.getElementById('bday-bg-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_fill</span></button>
+                <input type="color" id="bday-bg-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('bday','hiliteColor',this.value)">
+                <div class="tsep"></div>
+                <button title="Lista" onclick="emailExec('bday','insertUnorderedList')"><span class="material-symbols-outlined" style="font-size:1rem">format_list_bulleted</span></button>
+              </div>
+              <div id="cfg-birthday_email_body_editor" class="camp-editor-body" contenteditable="true"
+                   oninput="emailSyncToHidden('bday')" onkeydown="emailHandleKey(event,'bday')"
+                   style="min-height:180px;border-radius:0 0 var(--r-sm) var(--r-sm);border-top:none">
+                <p>¡Hola <strong>{nombre}</strong>! 🎂 Hoy es tu día especial.</p><p>Queremos celebrarlo contigo. ¡Ven a visitarnos y recibe tu regalo de cumpleaños!</p>
+              </div>
+              <small style="color:var(--brown-light);margin-top:4px;display:block">Variables: <code>{nombre}</code></small>
+            </div>
           </div>
 
           <div class="card-box">
@@ -4046,9 +4126,18 @@ async function loadConfig() {
     setCheck('cfg-welcome_email_enabled', c.welcome_email_enabled);
     setVal('cfg-welcome_email_subject', c.welcome_email_subject);
     setVal('cfg-welcome_email_body', c.welcome_email_body);
+    // Also populate rich editor divs
+    if (c.welcome_email_body) {
+      const welEd = document.getElementById('cfg-welcome_email_body_editor');
+      if (welEd) welEd.innerHTML = c.welcome_email_body;
+    }
     setCheck('cfg-birthday_email_enabled', c.birthday_email_enabled);
     setVal('cfg-birthday_email_subject', c.birthday_email_subject);
     setVal('cfg-birthday_email_body', c.birthday_email_body);
+    if (c.birthday_email_body) {
+      const bdayEd = document.getElementById('cfg-birthday_email_body_editor');
+      if (bdayEd) bdayEd.innerHTML = c.birthday_email_body;
+    }
   } catch(e) { console.error('loadConfig error', e); }
 }
 
@@ -4089,6 +4178,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+/* ── Rich email editor helpers (bienvenida & cumpleaños) ──────────────── */
+const _emailEditorIds = {
+  wel:  { editor: 'cfg-welcome_email_body_editor',  hidden: 'cfg-welcome_email_body'  },
+  bday: { editor: 'cfg-birthday_email_body_editor', hidden: 'cfg-birthday_email_body' },
+};
+function emailExec(prefix, cmd, val) {
+  const ed = document.getElementById(_emailEditorIds[prefix].editor);
+  if (ed) ed.focus();
+  document.execCommand(cmd, false, val || null);
+  emailSyncToHidden(prefix);
+}
+function emailExecFont(prefix, font) {
+  const ed = document.getElementById(_emailEditorIds[prefix].editor);
+  if (ed) ed.focus();
+  document.execCommand('fontName', false, font);
+  emailSyncToHidden(prefix);
+}
+function emailExecLink(prefix) {
+  const url = prompt('URL del enlace:', 'https://');
+  if (url) emailExec(prefix, 'createLink', url);
+}
+function emailExecImg(prefix) {
+  const url = prompt('URL de la imagen:', 'https://');
+  if (!url) return;
+  const ed = document.getElementById(_emailEditorIds[prefix].editor);
+  if (ed) {
+    ed.focus();
+    document.execCommand('insertHTML', false,
+      `<img src="${url}" style="max-width:100%;height:auto;border-radius:6px;margin:8px 0;display:block">`);
+    emailSyncToHidden(prefix);
+  }
+}
+function emailSyncToHidden(prefix) {
+  const ids = _emailEditorIds[prefix];
+  const ed = document.getElementById(ids.editor);
+  const hid = document.getElementById(ids.hidden);
+  if (ed && hid) hid.value = ed.innerHTML;
+}
+function emailHandleKey(e, prefix) {
+  if (e.key === 'Tab') { e.preventDefault(); emailExec(prefix, 'insertHTML', '&nbsp;&nbsp;&nbsp;&nbsp;'); }
+}
+/* ──────────────────────────────────────────────────────────────────────── */
 
 async function saveConfig() {
   const expiryRadio = document.querySelector('input[name="cfg-expiry"]:checked');
