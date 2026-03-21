@@ -3062,6 +3062,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
           <div style="display:flex;gap:12px;align-items:center;margin-top:20px">
             <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px">💾 GUARDAR EMAILS</button>
+            <span id="email-save-msg" style="font-size:.78rem;font-weight:600;display:none"></span>
           </div>
         </div><!-- /fid-panel-emails -->
 
@@ -4342,6 +4343,14 @@ async function saveConfig() {
     if (saveEl) saveEl.style.display = ok ? '' : 'none';
     if (errEl)  errEl.style.display  = ok ? 'none' : '';
     if (ok && saveEl) setTimeout(() => { saveEl.style.display = 'none'; }, 3000);
+    // email-save-msg (next to "Guardar Emails" button)
+    const emailMsg = document.getElementById('email-save-msg');
+    if (emailMsg) {
+      emailMsg.textContent = ok ? '✅ Guardado' : ('❌ ' + (errDetail || 'Error al guardar'));
+      emailMsg.style.color = ok ? 'var(--green,#2e7d32)' : 'var(--red,#c62828)';
+      emailMsg.style.display = '';
+      if (ok) setTimeout(() => { emailMsg.style.display = 'none'; }, 3000);
+    }
   }
   try {
     const r = await fetch(`${BASE}/api/admin/config`, {
