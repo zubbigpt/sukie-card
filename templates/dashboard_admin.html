@@ -5269,15 +5269,8 @@ function buildCardMockup(card){
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
   wrap.innerHTML = `
-    <!-- Card visual preview — dark FIDELITY CARD design -->
+    <!-- Card visual preview — clean tile-style design -->
     <div class="stitch-card-preview" style="background:${card.bg_color};position:relative;overflow:hidden">
-      <!-- Diagonal texture -->
-      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.06;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
-        <pattern id="diag-${card.id}" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="18" stroke="white" stroke-width="1"/>
-        </pattern>
-        <rect width="100%" height="100%" fill="url(#diag-${card.id})"/>
-      </svg>
       <!-- Top row: LOYALTY CARD label + chip -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1">
         <div>
@@ -5286,11 +5279,14 @@ function buildCardMockup(card){
         </div>
         <div style="width:22px;height:16px;border-radius:3px;background:${card.accent_color};flex-shrink:0;margin-top:2px"></div>
       </div>
-      <!-- Stamp grid -->
+      <!-- Stamp grid: square tiles with checkmark -->
       <div style="display:flex;flex-wrap:wrap;gap:4px;position:relative;z-index:1;margin-top:6px">
-        ${Array.from({length:spr},(_, i)=>`<div style="width:14px;height:14px;border-radius:50%;background:${i<(card.filled||0)?card.accent_color:'rgba(255,255,255,.18)'};display:flex;align-items:center;justify-content:center">
-          ${i<(card.filled||0)?`<div style="width:6px;height:6px;border-radius:50%;background:${card.bg_color}80"></div>`:''}
-        </div>`).join('')}
+        ${Array.from({length:Math.min(spr,10)},(_, i)=>{
+          const filled = i<(card.filled||0);
+          const tileBg = filled ? card.accent_color : 'rgba(0,0,0,0.18)';
+          const check  = filled ? `<span style="color:${card.bg_color};font-size:8px;font-weight:900;line-height:1">✓</span>` : '';
+          return `<div style="width:14px;height:14px;border-radius:3px;background:${tileBg};display:flex;align-items:center;justify-content:center">${check}</div>`;
+        }).join('')}
         ${spr>10?`<span style="font-size:.5rem;color:rgba(255,255,255,.5);align-self:center">+${spr-10}</span>`:''}
       </div>
       <!-- Bottom: titular + premio -->
