@@ -22,6 +22,12 @@ import os
 import zipfile
 from pathlib import Path
 
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    _PIL_OK = True
+except ImportError:
+    _PIL_OK = False
+
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
@@ -63,6 +69,108 @@ pU8RBWk6z/Kf
 
 ASSETS_DIR = Path(__file__).parent / "wallet_assets"
 BASE_URL = os.environ.get("BASE_URL", "https://app.zubcard.com")
+
+# Font paths (bundled with the server; fall back to default if missing)
+_FONT_BOLD = "/usr/share/fonts/truetype/google-fonts/Poppins-Bold.ttf"
+_FONT_REG  = "/usr/share/fonts/truetype/google-fonts/Poppins-Regular.ttf"
+
+
+def generate_strip_image(
+    card_name: str = "FIDELITY CARD",
+    biz_name: str = "Sukie Card",
+    stamps: int = 0,
+    stamps_total: int = 8,
+    reward_name: str = "Premio",
+    bg_color: str = "#26170c",
+    accent_color: str = "#ffca48",
+    scale: int = 2,
+) -> bytes:
+    """Generate a dark loyalty-card strip image for Apple Wallet.
+    Returns PNG bytes. Falls back to the static file if PIL is unavailable."""
+    if not _PIL_OK:
+        path = ASSETS_DIR / ("strip@2x.png" if scale == 2 else "strip.png")
+        if path.exists():
+            return path.read_bytes()
+        raise RuntimeError("Pillow not available and static strip not found")
+
+    def _hex(h: str):
+        h = h.lstrip("#")
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+    BG     = _hex(bg_color)
+    HONEY  = _hex(accent_color)
+    HONEY_D = tuple(max(0, int(c * 0.55)) for c in HONEY)
+    WHITE  = (255, 255, 255)
+
+    sw, sh = 320 * scale, 123 * scale
+    img  = Image.new("RGBA", (sw, sh), (*BG, 255))
+    draw = ImageDraw.Draw(img, "RGBA")
+    s    = scale
+
+    # Subtle diagonal texture
+    for i in range(0, sw + sh, 18 * s):
+        draw.line([(i, 0), (0, i)], fill=(255, 255, 255, 7), width=1)
+
+    # Fonts (graceful fallback to default)
+    def _fnt(path, size):
+        try:
+            return ImageFont.truetype(path, size)
+        except Exception:
+            return ImageFont.load_default()
+
+    fnt_label  = _fnt(_FONT_REG,  10 * s)
+    fnt_name   = _fnt(_FONT_BOLD, 18 * s)
+    fnt_small  = _fnt(_FONT_REG,   9 * s)
+    fnt_holder = _fnt(_FONT_BOLD, 10 * s)
+
+    # ── Top-left: label + card name ────────────────────────────
+    draw.text((14*s, 10*s), "LOYALTY CARD", font=fnt_label, fill=(*HONEY, 170))
+    draw.text((14*s, 22*s), card_name.upper()[:22], font=fnt_name, fill=WHITE)
+
+    # ── Top-right: chip ────────────────────────────────────────
+    cx, cy = sw - 36*s, 10*s
+    draw.rounded_rectangle([cx, cy, cx+22*s, cy+16*s], radius=3*s, fill=HONEY)
+    draw.line([(cx+7*s, cy+2*s), (cx+7*s,  cy+14*s)], fill=HONEY_D, width=1)
+    draw.line([(cx+15*s, cy+2*s), (cx+15*s, cy+14*s)], fill=HONEY_D, width=1)
+    draw.line([(cx+2*s, cy+8*s), (cx+20*s, cy+8*s)],  fill=HONEY_D, width=1)
+
+    # ── Stamp grid ─────────────────────────────────────────────
+    COLS = min(stamps_total, 5)
+    dot  = 14 * s
+    gap  = 5  * s
+    sx0  = 14 * s
+    sy0  = 50 * s
+    for i in range(stamps_total):
+        col = i % COLS
+        row = i // COLS
+        x = sx0 + col * (dot + gap)
+        y = sy0 + row * (dot + gap)
+        if i < stamps:
+            draw.ellipse([x, y, x+dot, y+dot], fill=HONEY)
+            m = 4 * s
+            draw.ellipse([x+m, y+m, x+dot-m, y+dot-m], fill=HONEY_D)
+        else:
+            draw.ellipse([x, y, x+dot, y+dot], fill=(255, 255, 255, 28))
+            draw.ellipse([x+1, y+1, x+dot-1, y+dot-1],
+                         outline=(255, 255, 255, 55), width=1)
+
+    # ── Bottom strip ───────────────────────────────────────────
+    sep_y = sh - 30 * s
+    draw.line([(14*s, sep_y), (sw-14*s, sep_y)], fill=(255, 255, 255, 25), width=1)
+    draw.text((14*s, sep_y + 4*s),  "TITULAR",
+              font=fnt_small, fill=(255, 255, 255, 100))
+    draw.text((14*s, sep_y + 13*s), biz_name.upper()[:20],
+              font=fnt_holder, fill=WHITE)
+    draw.text((sw-14*s, sep_y + 4*s),  "PREMIOS",
+              font=fnt_small, fill=(255, 255, 255, 100), anchor="ra")
+    draw.text((sw-14*s, sep_y + 13*s), reward_name[:18],
+              font=fnt_small, fill=(*HONEY, 220), anchor="ra")
+
+    buf = io.BytesIO()
+    img.convert("RGB").save(buf, format="PNG")
+    return buf.getvalue()
 
 
 def _sha1_file(data: bytes) -> str:
@@ -263,13 +371,31 @@ def generate_pkpass(
     )
     pass_json_bytes = json.dumps(pass_data, ensure_ascii=False, indent=2).encode("utf-8")
 
-    # 2. Load image assets
+    # 2. Load image assets (strip is generated dynamically)
     assets: dict[str, bytes] = {}
-    for fname in ["icon.png", "icon@2x.png", "icon@3x.png", "logo.png", "logo@2x.png",
-                  "strip.png", "strip@2x.png"]:
+    for fname in ["icon.png", "icon@2x.png", "icon@3x.png", "logo.png", "logo@2x.png"]:
         asset_path = ASSETS_DIR / fname
         if asset_path.exists():
             assets[fname] = asset_path.read_bytes()
+
+    # Dynamic strip: dark FIDELITY CARD design with stamp grid
+    try:
+        assets["strip.png"]   = generate_strip_image(
+            card_name="FIDELITY CARD", biz_name=biz_name,
+            stamps=stamps, stamps_total=stamps_per_reward,
+            reward_name=reward_name, bg_color=primary_color,
+            accent_color=accent_color, scale=1)
+        assets["strip@2x.png"] = generate_strip_image(
+            card_name="FIDELITY CARD", biz_name=biz_name,
+            stamps=stamps, stamps_total=stamps_per_reward,
+            reward_name=reward_name, bg_color=primary_color,
+            accent_color=accent_color, scale=2)
+    except Exception as _e:
+        # Fall back to static strip if generation fails
+        for fname in ["strip.png", "strip@2x.png"]:
+            asset_path = ASSETS_DIR / fname
+            if asset_path.exists():
+                assets[fname] = asset_path.read_bytes()
 
     # 3. Build manifest.json (sha1 of every file in the pass)
     all_files: dict[str, bytes] = {"pass.json": pass_json_bytes, **assets}

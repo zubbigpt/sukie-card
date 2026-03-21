@@ -477,8 +477,8 @@ textarea.field-input{resize:vertical;min-height:72px}
   border:1px solid var(--cream-border);
 }
 .stitch-card-gallery:hover{border-color:var(--outline);transform:translateY(-2px)}
-.stitch-card-preview{aspect-ratio:1.7/1;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:20px 22px 18px}
-.stitch-card-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.35))}
+.stitch-card-preview{aspect-ratio:1.7/1;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:4px;padding:14px 16px 12px;border-radius:var(--r-lg)}
+.stitch-card-preview::after{content:'';position:absolute;inset:0;pointer-events:none}
 .stitch-card-badges{position:absolute;bottom:14px;left:18px;z-index:2;display:flex;gap:6px}
 .stitch-card-info{padding:18px 20px 16px}
 .stitch-card-dots{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
@@ -5269,26 +5269,39 @@ function buildCardMockup(card){
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
   wrap.innerHTML = `
-    <!-- Card visual preview -->
-    <div class="stitch-card-preview" style="background:${card.bg_color}">
-      <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:1">
-        <span style="font-size:1.5rem">${card.emoji}</span>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em;color:${card.accent_color};line-height:1">${card.name}</div>
-      </div>
-      <div class="stitch-card-dots" style="position:relative;z-index:1;justify-content:flex-start">
-        ${dots}${extraDots}
-      </div>
-      <div style="position:relative;z-index:2">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:.55rem;color:${card.text_color};opacity:.55;letter-spacing:.12em;text-transform:uppercase">Titular</span>
-            <span style="background:rgba(255,255,255,.2);backdrop-filter:blur(8px);color:${card.text_color};font-size:.5rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase">Activa</span>
-          </div>
-          <span style="font-size:.55rem;color:${card.text_color};opacity:.55;letter-spacing:.12em;text-transform:uppercase">Premio</span>
+    <!-- Card visual preview — dark FIDELITY CARD design -->
+    <div class="stitch-card-preview" style="background:${card.bg_color};position:relative;overflow:hidden">
+      <!-- Diagonal texture -->
+      <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.06;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+        <pattern id="diag-${card.id}" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="18" stroke="white" stroke-width="1"/>
+        </pattern>
+        <rect width="100%" height="100%" fill="url(#diag-${card.id})"/>
+      </svg>
+      <!-- Top row: LOYALTY CARD label + chip -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1">
+        <div>
+          <div style="font-size:.42rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${card.accent_color};opacity:.85;margin-bottom:2px">LOYALTY CARD</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;color:#fff;line-height:1">${(card.name||'FIDELITY CARD').toUpperCase().substring(0,22)}</div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:${card.text_color}">
-          <span>{{ biz_name|upper }}</span>
-          <span style="color:${card.accent_color}">${card.reward_name}</span>
+        <div style="width:22px;height:16px;border-radius:3px;background:${card.accent_color};flex-shrink:0;margin-top:2px"></div>
+      </div>
+      <!-- Stamp grid -->
+      <div style="display:flex;flex-wrap:wrap;gap:4px;position:relative;z-index:1;margin-top:6px">
+        ${Array.from({length:spr},(_, i)=>`<div style="width:14px;height:14px;border-radius:50%;background:${i<(card.filled||0)?card.accent_color:'rgba(255,255,255,.18)'};display:flex;align-items:center;justify-content:center">
+          ${i<(card.filled||0)?`<div style="width:6px;height:6px;border-radius:50%;background:${card.bg_color}80"></div>`:''}
+        </div>`).join('')}
+        ${spr>10?`<span style="font-size:.5rem;color:rgba(255,255,255,.5);align-self:center">+${spr-10}</span>`:''}
+      </div>
+      <!-- Bottom: titular + premio -->
+      <div style="position:relative;z-index:2;border-top:1px solid rgba(255,255,255,.15);padding-top:5px;margin-top:auto">
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+          <span style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase">TITULAR</span>
+          <span style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase">PREMIOS</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.6rem;font-weight:800;color:#fff">{{ biz_name|upper }}</span>
+          <span style="font-size:.55rem;font-weight:700;color:${card.accent_color}">${card.reward_name}</span>
         </div>
       </div>
     </div>
