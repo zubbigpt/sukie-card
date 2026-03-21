@@ -437,8 +437,10 @@ def send_email(
         print(f"Email NOT sent (not configured): to={to_email}, subject={subject}")
         return False
 
-    # ── Resend HTTP API (bypasses SMTP port 587 which may be blocked) ──────────
-    if _user.lower() == "resend":
+    # ── Resend HTTP API — only when no SMTP host is configured ─────────────────
+    # (When smtp.resend.com is configured as SMTP_HOST, prefer SMTP protocol
+    #  to avoid Cloudflare WAF blocks on api.resend.com outbound HTTP requests)
+    if _user.lower() == "resend" and not _host:
         try:
             from email.utils import formataddr as _fmtaddr
             _from_field = _fmtaddr((_from_name, _from_addr)) if _from_name else _from_addr
@@ -468,7 +470,7 @@ def send_email(
             print(f"❌ Resend API error: {e}")
             return False
 
-    # ── Standard SMTP ───────────────────────────────────────────────────────────
+    # ── Standard SMTP (used for Resend SMTP relay and other providers) ──────────
     if not _host:
         print(f"Email NOT sent (SMTP_HOST not set): to={to_email}")
         return False
@@ -590,7 +592,9 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
     sent = False
 
     try:
-        if _user.lower() == "resend":
+        # Use SMTP when SMTP_HOST is configured (avoids Cloudflare block on api.resend.com)
+        # Use HTTP API only when no SMTP host is set
+        if _user.lower() == "resend" and not _host:
             import json as _json
             payload = {"from": _from, "to": [to_email], "subject": "Test email - SukieCard", "html": "<p>Test OK ✅</p>"}
             data = _json.dumps(payload).encode("utf-8")
@@ -599,7 +603,7 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
             with _urlreq.urlopen(req, timeout=15) as resp:
                 resp_body = resp.read().decode()
             sent = True
-            error_detail = f"Resend OK: {resp_body[:120]}"
+            error_detail = f"Resend API OK: {resp_body[:120]}"
         else:
             import smtplib
             from email.mime.text import MIMEText
@@ -607,11 +611,11 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
             msg["Subject"] = "Test email - SukieCard"
             msg["From"] = _from
             msg["To"] = to_email
-            with smtplib.SMTP(_host, _port=SMTP_PORT, timeout=10) as server:
+            with smtplib.SMTP(_host, SMTP_PORT, timeout=10) as server:
                 server.ehlo(); server.starttls(); server.login(_user, _pass)
                 server.sendmail(_from, [to_email], msg.as_string())
             sent = True
-            error_detail = "SMTP OK"
+            error_detail = f"SMTP OK via {_host}:{SMTP_PORT}"
     except Exception as e:
         import urllib.error as _urlerr
         if isinstance(e, _urlerr.HTTPError):
