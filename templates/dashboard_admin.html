@@ -1378,7 +1378,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                     </div>
                   </div>
                   <!-- Stamps grid -->
-                  <div id="nc-phone-stamps" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px"></div>
+                  <div id="nc-phone-stamps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:4px"></div>
                 </div>
 
                 <!-- White info area -->
@@ -1504,6 +1504,54 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       });
 
       // ── Live preview update ──
+      /* ── Shared stamp-grid renderer ──────────────────────────────────────
+         Renders into `el` a 4-column grid matching the reference card design.
+         total   = stamps_per_reward
+         filled  = how many are stamped (use 3 for previews)
+         bg      = card background hex
+         accent  = card accent hex
+         icon    = emoji shown on filled stamps
+      ──────────────────────────────────────────────────────────────────── */
+      function _emptyTileColor(bgHex) {
+        const r = parseInt(bgHex.slice(1,3)||'0a',16);
+        const g = parseInt(bgHex.slice(3,5)||'0a',16);
+        const b = parseInt(bgHex.slice(5,7)||'0a',16);
+        const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+        if (lum < 0.45) {
+          // Dark bg → lighter empty tile
+          return `rgba(255,255,255,0.20)`;
+        } else {
+          // Light/mid bg → slightly darker tile
+          return `rgb(${Math.round(r*0.82)},${Math.round(g*0.82)},${Math.round(b*0.82)})`;
+        }
+      }
+
+      function _renderStamps(el, total, filled, bg, accent, icon) {
+        el.innerHTML = '';
+        const max    = Math.min(total, 20);
+        const cols   = max <= 5 ? max : (max <= 8 ? 4 : 5);
+        el.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+        const emptyBg = _emptyTileColor(bg);
+        for (let i = 0; i < max; i++) {
+          const isOn = i < filled;
+          const cell = document.createElement('div');
+          cell.style.cssText = `
+            aspect-ratio:1/1;border-radius:6px;
+            background:${isOn ? accent : emptyBg};
+            display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;line-height:1;
+          `;
+          cell.textContent = isOn ? (icon || '✓') : '';
+          el.appendChild(cell);
+        }
+        if (total > 20) {
+          const more = document.createElement('div');
+          more.style.cssText = `font-size:.5rem;color:${accent};align-self:center;opacity:.8;grid-column:span 2`;
+          more.textContent = `+${total - 20}`;
+          el.appendChild(more);
+        }
+      }
+
       function ncUpdatePreview() {
         const bg     = document.getElementById('nc-bg')?.value     || '#0a0a0a';
         const accent = document.getElementById('nc-accent')?.value || '#00e676';
@@ -1546,34 +1594,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         const rewardLabel = document.getElementById('nc-phone-reward-label');
         if (rewardLabel) rewardLabel.textContent = (reward || 'Premio').toUpperCase();
 
-        // Stamps grid — show up to 15, 3 "stamped" as preview
+        // Stamps grid
         const stampsEl = document.getElementById('nc-phone-stamps');
-        if (stampsEl) {
-          stampsEl.innerHTML = '';
-          const max = Math.min(stamps, 15);
-          const filled = Math.min(3, max);
-          for (let i = 0; i < max; i++) {
-            const cell = document.createElement('div');
-            const isOn = i < filled;
-            cell.style.cssText = `
-              aspect-ratio:1/1;border-radius:6px;
-              background:${isOn ? accent : 'rgba(255,255,255,.12)'};
-              border:1.5px solid ${isOn ? accent : 'rgba(255,255,255,.3)'};
-              display:flex;align-items:center;justify-content:center;
-              font-size:.75rem;transition:background .2s
-            `;
-            cell.textContent = isOn ? '✓' : '';
-            cell.style.color = isOn ? bg : 'transparent';
-            cell.style.fontWeight = '800';
-            stampsEl.appendChild(cell);
-          }
-          if (stamps > 15) {
-            const more = document.createElement('div');
-            more.style.cssText = `font-size:.5rem;color:${accent};align-self:center;opacity:.8;grid-column:span 2`;
-            more.textContent = `+${stamps - 15}`;
-            stampsEl.appendChild(more);
-          }
-        }
+        if (stampsEl) _renderStamps(stampsEl, stamps, 3, bg, accent, emoji);
       }
 
       function ncHandleLogo(input) {
@@ -1711,7 +1734,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                         <div style="color:rgba(255,255,255,.45);font-size:.5rem">Sukie Card</div>
                       </div>
                     </div>
-                    <div id="ec-phone-stamps" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px"></div>
+                    <div id="ec-phone-stamps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px"></div>
                   </div>
                   <div style="background:#fff;padding:10px 12px">
                     <div style="display:flex;justify-content:space-between;margin-bottom:8px">
@@ -1875,17 +1898,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         if (rewardLabel) rewardLabel.textContent = (reward || 'Premio').toUpperCase();
 
         const stampsEl = document.getElementById('ec-phone-stamps');
-        if (stampsEl) {
-          stampsEl.innerHTML = '';
-          const max = Math.min(stamps, 15);
-          for (let i = 0; i < max; i++) {
-            const cell = document.createElement('div');
-            const isOn = i < 3;
-            cell.style.cssText = `aspect-ratio:1/1;border-radius:5px;background:${isOn ? accent : 'rgba(255,255,255,.12)'};border:1.5px solid ${isOn ? accent : 'rgba(255,255,255,.3)'};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:${isOn ? bg : 'transparent'}`;
-            cell.textContent = isOn ? '✓' : '';
-            stampsEl.appendChild(cell);
-          }
-        }
+        if (stampsEl) _renderStamps(stampsEl, stamps, 3, bg, accent, emoji);
       }
 
       async function saveEditCard() {
@@ -5279,16 +5292,34 @@ function buildCardMockup(card){
         </div>
         <div style="width:22px;height:16px;border-radius:3px;background:${card.accent_color};flex-shrink:0;margin-top:2px"></div>
       </div>
-      <!-- Stamp grid: square tiles with checkmark -->
-      <div style="display:flex;flex-wrap:wrap;gap:4px;position:relative;z-index:1;margin-top:6px">
-        ${Array.from({length:Math.min(spr,10)},(_, i)=>{
-          const filled = i<(card.filled||0);
-          const tileBg = filled ? card.accent_color : 'rgba(255,255,255,0.18)';
-          const check  = filled ? `<span style="color:${card.bg_color};font-size:8px;font-weight:900;line-height:1">✓</span>` : '';
-          return `<div style="width:14px;height:14px;border-radius:3px;background:${tileBg};display:flex;align-items:center;justify-content:center">${check}</div>`;
-        }).join('')}
-        ${spr>10?`<span style="font-size:.5rem;color:rgba(255,255,255,.5);align-self:center">+${spr-10}</span>`:''}
-      </div>
+      <!-- Stamp grid: square tiles matching card design -->
+      <div id="sg-${card.id}" style="display:grid;gap:3px;position:relative;z-index:1;margin-top:6px"></div>
+      <script>
+      (function(){
+        const el = document.getElementById('sg-${card.id}');
+        if (!el) return;
+        const spr2 = ${spr}, filled2 = ${card.filled||0};
+        const accent2 = '${card.accent_color}', bg2 = '${card.bg_color}';
+        const icon2 = '${card.emoji||"✓"}';
+        const max = Math.min(spr2, 20);
+        const cols = max <= 5 ? max : (max <= 8 ? 4 : 5);
+        el.style.gridTemplateColumns = 'repeat('+cols+',1fr)';
+        const emptyBg = _emptyTileColor(bg2);
+        for (let i = 0; i < max; i++) {
+          const isOn = i < filled2;
+          const cell = document.createElement('div');
+          cell.style.cssText = 'aspect-ratio:1/1;border-radius:4px;background:'+(isOn?accent2:emptyBg)+';display:flex;align-items:center;justify-content:center;font-size:.7rem;line-height:1';
+          cell.textContent = isOn ? icon2 : '';
+          el.appendChild(cell);
+        }
+        if (spr2 > 20) {
+          const more = document.createElement('span');
+          more.style.cssText = 'font-size:.45rem;color:rgba(255,255,255,.5);align-self:center';
+          more.textContent = '+' + (spr2 - 20);
+          el.appendChild(more);
+        }
+      })();
+      </script>
       <!-- Bottom: titular + premio -->
       <div style="position:relative;z-index:2;border-top:1px solid rgba(255,255,255,.15);padding-top:5px;margin-top:auto">
         <div style="display:flex;justify-content:space-between;margin-bottom:2px">
