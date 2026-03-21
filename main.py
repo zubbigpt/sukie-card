@@ -625,6 +625,32 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
     }
 
 
+@app.get("/api/admin/resend-dns")
+def resend_dns(pin: str, db: Session = Depends(get_db)):
+    """Fetch Resend domain DNS records so we can add them to the registrar."""
+    verify_pin(pin, db)
+    import urllib.request as _urlreq, json as _json
+    if not SMTP_PASS:
+        return {"error": "SMTP_PASS not set"}
+    try:
+        # List domains
+        req = _urlreq.Request("https://api.resend.com/domains",
+            headers={"Authorization": f"Bearer {SMTP_PASS}"})
+        with _urlreq.urlopen(req, timeout=15) as r:
+            domains = _json.loads(r.read().decode())
+        # Find zubcard.com
+        for d in domains.get("data", []):
+            if "zubcard" in d.get("name", "").lower():
+                domain_id = d["id"]
+                req2 = _urlreq.Request(f"https://api.resend.com/domains/{domain_id}",
+                    headers={"Authorization": f"Bearer {SMTP_PASS}"})
+                with _urlreq.urlopen(req2, timeout=15) as r2:
+                    return _json.loads(r2.read().decode())
+        return {"domains": domains, "error": "zubcard.com not found"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # PÁGINAS LEGALES
 # ══════════════════════════════════════════════════════════════════════════════
