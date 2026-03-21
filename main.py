@@ -568,6 +568,60 @@ def smtp_status():
         "SMTP_FROM":      SMTP_FROM,
         "SMTP_HOST_hint": SMTP_HOST[:6] + "…" if SMTP_HOST else "",
         "SMTP_USER_hint": SMTP_USER.split("@")[0][:3] + "…@" + SMTP_USER.split("@")[1] if SMTP_USER and "@" in SMTP_USER else "",
+        "SMTP_USER_is_resend": SMTP_USER.lower() == "resend" if SMTP_USER else False,
+    }
+
+
+@app.post("/api/admin/smtp-test")
+async def smtp_test(request: Request, db: Session = Depends(get_db)):
+    """Send a real test email and return detailed result (admin only)."""
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")), db)
+    to_email = body.get("to", "")
+    if not to_email:
+        raise HTTPException(status_code=400, detail="Falta 'to' email")
+
+    import urllib.request as _urlreq
+    _user = SMTP_USER
+    _pass = SMTP_PASS
+    _host = SMTP_HOST
+    _from = SMTP_FROM or _user
+    error_detail = ""
+    sent = False
+
+    try:
+        if _user.lower() == "resend":
+            import json as _json
+            payload = {"from": _from, "to": [to_email], "subject": "Test email - SukieCard", "html": "<p>Test OK ✅</p>"}
+            data = _json.dumps(payload).encode("utf-8")
+            req = _urlreq.Request("https://api.resend.com/emails", data=data,
+                headers={"Authorization": f"Bearer {_pass}", "Content-Type": "application/json"}, method="POST")
+            with _urlreq.urlopen(req, timeout=15) as resp:
+                resp_body = resp.read().decode()
+            sent = True
+            error_detail = f"Resend OK: {resp_body[:120]}"
+        else:
+            import smtplib
+            from email.mime.text import MIMEText
+            msg = MIMEText("<p>Test OK ✅</p>", "html", "utf-8")
+            msg["Subject"] = "Test email - SukieCard"
+            msg["From"] = _from
+            msg["To"] = to_email
+            with smtplib.SMTP(_host, _port=SMTP_PORT, timeout=10) as server:
+                server.ehlo(); server.starttls(); server.login(_user, _pass)
+                server.sendmail(_from, [to_email], msg.as_string())
+            sent = True
+            error_detail = "SMTP OK"
+    except Exception as e:
+        error_detail = str(e)
+
+    return {
+        "sent": sent,
+        "to": to_email,
+        "from": _from,
+        "method": "resend_api" if (_user or "").lower() == "resend" else "smtp",
+        "error": error_detail if not sent else None,
+        "detail": error_detail,
     }
 
 
