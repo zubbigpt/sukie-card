@@ -613,7 +613,15 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
             sent = True
             error_detail = "SMTP OK"
     except Exception as e:
-        error_detail = str(e)
+        import urllib.error as _urlerr
+        if isinstance(e, _urlerr.HTTPError):
+            try:
+                error_body = e.read().decode("utf-8", errors="replace")
+                error_detail = f"HTTP {e.code}: {error_body[:800]}"
+            except Exception:
+                error_detail = str(e)
+        else:
+            error_detail = str(e)
 
     return {
         "sent": sent,
