@@ -5259,76 +5259,50 @@ function fidCopyLink() {
 window._cardRegistry = {};
 
 function buildCardMockup(card){
-  // Normalize field names (API returns stamps_per_reward)
   const spr = card.stamps_per_reward || card.stamps || 10;
-  card.stamps_per_reward = spr;  // ensure consistent
-
-  // Store in registry for safe onclick access
+  card.stamps_per_reward = spr;
   window._cardRegistry[card.id] = card;
 
-  const dotSize = spr <= 10 ? 20 : 14;
-  const maxDotsShow = Math.min(spr, 10);
-  const dots = Array.from({length: maxDotsShow}, (_,i) => {
-    const f = i < (card.filled || 0);
-    return `<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;
-            background:${f ? card.accent_color : 'rgba(255,255,255,0.22)'};
-            display:flex;align-items:center;justify-content:center;font-size:${dotSize*.5}px">
-            ${f ? `<span style="color:${card.bg_color}">✓</span>` : ''}</div>`;
-  }).join('');
-  const extraDots = spr > 10 ? `<span style="font-size:.65rem;color:rgba(255,255,255,.55);align-self:center">+${spr-10}</span>` : '';
+  // Pre-compute values (no inline <script> — those don't run in innerHTML)
+  const max      = Math.min(spr, 20);
+  const cols     = max <= 5 ? max : (max <= 8 ? 4 : 5);
+  const filled   = card.filled || 0;
+  const emptyBg  = _emptyTileColor(card.bg_color);
+  const icon     = (card.emoji || '').replace(/'/g,"&#39;") || '✓';
+
+  const tilesHtml = Array.from({length: max}, (_, i) => {
+    const on = i < filled;
+    return `<div style="aspect-ratio:1/1;border-radius:6px;background:${on ? card.accent_color : emptyBg};display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1">${on ? icon : ''}</div>`;
+  }).join('') + (spr > 20 ? `<div style="font-size:.5rem;color:rgba(255,255,255,.5);align-self:center;grid-column:span 2">+${spr-20}</div>` : '');
 
   const ddId = `dd-${card.id}`;
   const cid  = card.id;
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
   wrap.innerHTML = `
-    <!-- Card visual preview — clean tile-style design -->
-    <div class="stitch-card-preview" style="background:${card.bg_color};position:relative;overflow:hidden">
-      <!-- Top row: LOYALTY CARD label + chip -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1">
+    <!-- Card preview — matches customer card design exactly -->
+    <div style="aspect-ratio:1.45/1;background:${card.bg_color};border-radius:var(--r-lg);padding:14px 14px 12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.15)">
+      <!-- Header: label + name + chip -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
           <div style="font-size:.42rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${card.accent_color};opacity:.85;margin-bottom:2px">LOYALTY CARD</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;color:#fff;line-height:1">${(card.name||'FIDELITY CARD').toUpperCase().substring(0,22)}</div>
+          <div style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:.02em;line-height:1.1">${(card.name||'TARJETA').toUpperCase().substring(0,18)}</div>
         </div>
-        <div style="width:22px;height:16px;border-radius:3px;background:${card.accent_color};flex-shrink:0;margin-top:2px"></div>
+        <div style="width:20px;height:14px;border-radius:2px;background:${card.accent_color};flex-shrink:0;margin-top:3px"></div>
       </div>
-      <!-- Stamp grid: square tiles matching card design -->
-      <div id="sg-${card.id}" style="display:grid;gap:3px;position:relative;z-index:1;margin-top:6px"></div>
-      <script>
-      (function(){
-        const el = document.getElementById('sg-${card.id}');
-        if (!el) return;
-        const spr2 = ${spr}, filled2 = ${card.filled||0};
-        const accent2 = '${card.accent_color}', bg2 = '${card.bg_color}';
-        const icon2 = '${card.emoji||"✓"}';
-        const max = Math.min(spr2, 20);
-        const cols = max <= 5 ? max : (max <= 8 ? 4 : 5);
-        el.style.gridTemplateColumns = 'repeat('+cols+',1fr)';
-        const emptyBg = _emptyTileColor(bg2);
-        for (let i = 0; i < max; i++) {
-          const isOn = i < filled2;
-          const cell = document.createElement('div');
-          cell.style.cssText = 'aspect-ratio:1/1;border-radius:4px;background:'+(isOn?accent2:emptyBg)+';display:flex;align-items:center;justify-content:center;font-size:.7rem;line-height:1';
-          cell.textContent = isOn ? icon2 : '';
-          el.appendChild(cell);
-        }
-        if (spr2 > 20) {
-          const more = document.createElement('span');
-          more.style.cssText = 'font-size:.45rem;color:rgba(255,255,255,.5);align-self:center';
-          more.textContent = '+' + (spr2 - 20);
-          el.appendChild(more);
-        }
-      })();
-      </script>
-      <!-- Bottom: titular + premio -->
-      <div style="position:relative;z-index:2;border-top:1px solid rgba(255,255,255,.15);padding-top:5px;margin-top:auto">
-        <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-          <span style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase">TITULAR</span>
-          <span style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase">PREMIOS</span>
+      <!-- Stamp grid -->
+      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:5px;flex:1;align-content:start;padding:2px 0">
+        ${tilesHtml}
+      </div>
+      <!-- Footer -->
+      <div style="border-top:1px solid rgba(255,255,255,.18);padding-top:6px;margin-top:6px;display:flex;justify-content:space-between;align-items:flex-end">
+        <div>
+          <div style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px">TITULAR</div>
+          <div style="font-size:.6rem;font-weight:800;color:#fff">{{ biz_name|upper }}</div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:.6rem;font-weight:800;color:#fff">{{ biz_name|upper }}</span>
-          <span style="font-size:.55rem;font-weight:700;color:${card.accent_color}">${card.reward_name}</span>
+        <div style="text-align:right">
+          <div style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px">PREMIOS</div>
+          <div style="font-size:.55rem;font-weight:700;color:${card.accent_color}">${card.reward_name}</div>
         </div>
       </div>
     </div>
