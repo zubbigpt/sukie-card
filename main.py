@@ -437,10 +437,8 @@ def send_email(
         print(f"Email NOT sent (not configured): to={to_email}, subject={subject}")
         return False
 
-    # ── Resend HTTP API — only when no SMTP host is configured ─────────────────
-    # (When smtp.resend.com is configured as SMTP_HOST, prefer SMTP protocol
-    #  to avoid Cloudflare WAF blocks on api.resend.com outbound HTTP requests)
-    if _user.lower() == "resend" and not _host:
+    # ── Resend HTTP API via httpx (bypasses Cloudflare TLS fingerprint block) ────
+    if _user.lower() == "resend":
         try:
             from email.utils import formataddr as _fmtaddr
             _from_field = _fmtaddr((_from_name, _from_addr)) if _from_name else _from_addr
@@ -452,22 +450,20 @@ def send_email(
             }
             if reply_to:
                 payload["reply_to"] = reply_to
-            data = json.dumps(payload).encode("utf-8")
-            req = _urlreq.Request(
-                "https://api.resend.com/emails",
-                data=data,
-                headers={
-                    "Authorization": f"Bearer {_pass}",
-                    "Content-Type": "application/json",
-                },
-                method="POST",
-            )
-            with _urlreq.urlopen(req, timeout=15) as resp:
-                body = resp.read().decode()
-            print(f"✅ Email sent via Resend API: to={to_email}, from={_from_field}, resp={body[:80]}")
-            return True
+            with httpx.Client(timeout=15) as client:
+                response = client.post(
+                    "https://api.resend.com/emails",
+                    json=payload,
+                    headers={"Authorization": f"Bearer {_pass}"},
+                )
+            if response.status_code in (200, 201):
+                print(f"✅ Email sent via Resend API (httpx): to={to_email}, from={_from_field}")
+                return True
+            else:
+                print(f"❌ Resend API error {response.status_code}: {response.text[:200]}")
+                return False
         except Exception as e:
-            print(f"❌ Resend API error: {e}")
+            print(f"❌ Resend API (httpx) error: {e}")
             return False
 
     # ── Standard SMTP (used for Resend SMTP relay and other providers) ──────────
@@ -591,20 +587,25 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
     error_detail = ""
     sent = False
 
+    method_used = "unknown"
     try:
-        # Use SMTP when SMTP_HOST is configured (avoids Cloudflare block on api.resend.com)
-        # Use HTTP API only when no SMTP host is set
-        if _user.lower() == "resend" and not _host:
-            import json as _json
+        # Use httpx for Resend API — bypasses Cloudflare TLS fingerprint block on urllib
+        if (_user or "").lower() == "resend":
+            method_used = "resend_api_httpx"
             payload = {"from": _from, "to": [to_email], "subject": "Test email - SukieCard", "html": "<p>Test OK ✅</p>"}
-            data = _json.dumps(payload).encode("utf-8")
-            req = _urlreq.Request("https://api.resend.com/emails", data=data,
-                headers={"Authorization": f"Bearer {_pass}", "Content-Type": "application/json"}, method="POST")
-            with _urlreq.urlopen(req, timeout=15) as resp:
-                resp_body = resp.read().decode()
-            sent = True
-            error_detail = f"Resend API OK: {resp_body[:120]}"
+            with httpx.Client(timeout=15) as client:
+                response = client.post(
+                    "https://api.resend.com/emails",
+                    json=payload,
+                    headers={"Authorization": f"Bearer {_pass}"},
+                )
+            if response.status_code in (200, 201):
+                sent = True
+                error_detail = f"Resend API OK: {response.text[:120]}"
+            else:
+                error_detail = f"Resend API {response.status_code}: {response.text[:400]}"
         else:
+            method_used = "smtp"
             import smtplib
             from email.mime.text import MIMEText
             msg = MIMEText("<p>Test OK ✅</p>", "html", "utf-8")
@@ -617,21 +618,13 @@ async def smtp_test(request: Request, db: Session = Depends(get_db)):
             sent = True
             error_detail = f"SMTP OK via {_host}:{SMTP_PORT}"
     except Exception as e:
-        import urllib.error as _urlerr
-        if isinstance(e, _urlerr.HTTPError):
-            try:
-                error_body = e.read().decode("utf-8", errors="replace")
-                error_detail = f"HTTP {e.code}: {error_body[:800]}"
-            except Exception:
-                error_detail = str(e)
-        else:
-            error_detail = str(e)
+        error_detail = str(e)
 
     return {
         "sent": sent,
         "to": to_email,
         "from": _from,
-        "method": "resend_api" if (_user or "").lower() == "resend" else "smtp",
+        "method": method_used,
         "error": error_detail if not sent else None,
         "detail": error_detail,
     }
