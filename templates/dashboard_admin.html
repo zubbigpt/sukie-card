@@ -2964,7 +2964,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <button title="Alinear derecha" onclick="emailExec('wel','justifyRight')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_right</span></button>
                 <div class="tsep"></div>
                 <button title="Insertar enlace" onclick="emailExecLink('wel')"><span class="material-symbols-outlined" style="font-size:1rem">link</span></button>
-                <button title="Insertar imagen (URL)" onclick="emailExecImg('wel')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
+                <button title="Subir imagen desde dispositivo" onclick="document.getElementById('wel-img-upload').click()"><span class="material-symbols-outlined" style="font-size:1rem">upload</span></button>
+                <input type="file" id="wel-img-upload" accept="image/*" style="display:none" onchange="emailExecImgFile('wel',this)">
+                <button title="Insertar imagen por URL" onclick="emailExecImg('wel')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
                 <button title="Color de texto" onclick="document.getElementById('wel-color-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_text</span></button>
                 <input type="color" id="wel-color-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('wel','foreColor',this.value)">
                 <button title="Color de fondo del texto" onclick="document.getElementById('wel-bg-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_fill</span></button>
@@ -3016,7 +3018,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <button title="Alinear derecha" onclick="emailExec('bday','justifyRight')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_right</span></button>
                 <div class="tsep"></div>
                 <button title="Insertar enlace" onclick="emailExecLink('bday')"><span class="material-symbols-outlined" style="font-size:1rem">link</span></button>
-                <button title="Insertar imagen (URL)" onclick="emailExecImg('bday')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
+                <button title="Subir imagen desde dispositivo" onclick="document.getElementById('bday-img-upload').click()"><span class="material-symbols-outlined" style="font-size:1rem">upload</span></button>
+                <input type="file" id="bday-img-upload" accept="image/*" style="display:none" onchange="emailExecImgFile('bday',this)">
+                <button title="Insertar imagen por URL" onclick="emailExecImg('bday')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
                 <button title="Color de texto" onclick="document.getElementById('bday-color-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_text</span></button>
                 <input type="color" id="bday-color-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('bday','foreColor',this.value)">
                 <button title="Color de fondo del texto" onclick="document.getElementById('bday-bg-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_fill</span></button>
@@ -4210,6 +4214,23 @@ function emailExecImg(prefix) {
       `<img src="${url}" style="max-width:100%;height:auto;border-radius:6px;margin:8px 0;display:block">`);
     emailSyncToHidden(prefix);
   }
+}
+function emailExecImgFile(prefix, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { alert('La imagen no puede superar 3 MB'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const ed = document.getElementById(_emailEditorIds[prefix].editor);
+    if (ed) {
+      ed.focus();
+      document.execCommand('insertHTML', false,
+        `<img src="${e.target.result}" style="max-width:100%;height:auto;border-radius:6px;margin:8px 0;display:block">`);
+      emailSyncToHidden(prefix);
+    }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
 }
 function emailSyncToHidden(prefix) {
   const ids = _emailEditorIds[prefix];
