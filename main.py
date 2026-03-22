@@ -4061,6 +4061,31 @@ async def create_billing_portal(slug: str, request: Request, db: Session = Depen
     return {"portal_url": portal.url}
 
 
+@app.post("/api/admin/stripe-sync/{slug}")
+async def admin_stripe_sync(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Admin: forzar sync del plan desde Stripe."""
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")), db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    customer_id = getattr(biz, "stripe_customer_id", None)
+    if not customer_id:
+        raise HTTPException(status_code=400, detail="Sin stripe_customer_id")
+    from datetime import datetime as _dt
+    subs = _stripe_sdk.Subscription.list(customer=customer_id, limit=1, status="active")
+    if not subs.data:
+        raise HTTPException(status_code=404, detail="No hay suscripción activa en Stripe")
+    sub = subs.data[0]
+    pe = _dt.fromtimestamp(sub["current_period_end"])
+    db.execute(text(
+        "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
+        "stripe_subscription_status='active', stripe_current_period_end=:pe WHERE id=:bid"
+    ), {"sid": sub["id"], "pe": pe, "bid": str(biz.id)})
+    db.commit()
+    return {"ok": True, "plan": "pro", "subscription_id": sub["id"], "period_end": pe.isoformat()}
+
+
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     """Handle Stripe webhook events (subscription lifecycle)."""
