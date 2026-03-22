@@ -698,11 +698,11 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       </a>
     </nav>
     <!-- Plan chip -->
-    <div class="sidebar-plan">
-      <span class="plan-icon material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;color:var(--honey-dark)">workspace_premium</span>
+    <div class="sidebar-plan" id="sidebar-plan-chip" onclick="showSection('cuenta-plan')" style="cursor:pointer">
+      <span class="plan-icon material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;color:var(--honey-dark)" id="sidebar-plan-icon">workspace_premium</span>
       <div>
-        <div class="plan-name">Plan Activo</div>
-        <div class="plan-sub" id="sidebar-plan-name">{{ biz_name }}</div>
+        <div class="plan-name" id="sidebar-plan-label">Plan Activo</div>
+        <div class="plan-sub" id="sidebar-plan-name">{{ biz_plan|upper if biz_plan else 'FREE' }}</div>
       </div>
     </div>
     <div class="sidebar-footer">ZubCard © 2026</div>
@@ -1078,52 +1078,96 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div class="section-header">
           <div style="flex:1">
             <h1>Plan &amp; Suscripción</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Manage your subscription and billing</p>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona tu suscripción y facturación</p>
           </div>
         </div>
-        <!-- Current plan -->
-        <div class="card" style="margin-bottom:20px;background:var(--brown);color:white">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
-            <div>
-              <div style="font-size:.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,243,208,.6);margin-bottom:6px">PLAN ACTUAL</div>
-              <div style="font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1">ZubCard Pro</div>
-              <div style="font-size:.9rem;color:rgba(255,255,255,.75);margin-top:4px">Todo incluido · Sin límites</div>
+
+        <!-- ── FREE plan card ── -->
+        <div id="plan-free-card" style="display:none;margin-bottom:20px">
+          <div class="card" style="background:var(--cream-dark);border:2px solid var(--cream-border)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+              <div>
+                <div style="font-size:.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--brown-light);margin-bottom:6px">PLAN ACTUAL</div>
+                <div style="font-size:1.8rem;font-weight:900;color:var(--brown);line-height:1">ZubCard Free</div>
+                <div style="font-size:.9rem;color:var(--brown-light);margin-top:4px">Perfecto para empezar</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:2.2rem;font-weight:900;color:var(--brown);line-height:1">€0</div>
+                <div style="font-size:.8rem;color:var(--brown-light)">/mes</div>
+              </div>
             </div>
-            <div style="text-align:right">
-              <div style="font-size:2.2rem;font-weight:900;color:var(--gold);line-height:1">€39</div>
-              <div style="font-size:.8rem;color:rgba(255,255,255,.6)">/mes</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> 1 programa de tarjeta</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Hasta 100 clientes</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Escáner QR para caja</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Google &amp; Apple Wallet</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown-light)"><span style="color:var(--outline)">✗</span> Campañas email / push</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown-light)"><span style="color:var(--outline)">✗</span> Geo-notificaciones</div>
+            </div>
+            <button class="btn-sm btn-primary" onclick="startCheckout()" style="width:100%;justify-content:center;padding:12px;font-size:.9rem">
+              <span class="material-symbols-outlined" style="font-size:1rem">upgrade</span>
+              Pasar a Pro — <span id="plan-free-price-btn">€39/mes</span>
+            </button>
+          </div>
+          <!-- Pro features teaser -->
+          <div class="card" style="margin-top:16px">
+            <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:14px">Con ZubCard Pro desbloqueas</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Clientes ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Programas ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Campañas email + push</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Geo-notificaciones</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Analytics avanzados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> QR personalizados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Locales ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Email de cumpleaños</div>
             </div>
           </div>
-          <div style="display:inline-block;background:rgba(255,202,72,.2);color:var(--gold);font-size:.8rem;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.5px">
-            ✓ Prueba gratuita 14 días activa
+        </div>
+
+        <!-- ── PRO plan card ── -->
+        <div id="plan-pro-card" style="display:none;margin-bottom:20px">
+          <div class="card" style="background:var(--brown);color:white">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+              <div>
+                <div style="font-size:.7rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,243,208,.6);margin-bottom:6px">PLAN ACTUAL</div>
+                <div style="font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1">ZubCard Pro</div>
+                <div style="font-size:.9rem;color:rgba(255,255,255,.75);margin-top:4px">Todo incluido · Sin límites</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:2.2rem;font-weight:900;color:var(--gold);line-height:1" id="plan-pro-price">€39</div>
+                <div style="font-size:.8rem;color:rgba(255,255,255,.6)">/mes</div>
+              </div>
+            </div>
+            <div id="plan-sub-status-row" style="margin-bottom:16px">
+              <div style="display:inline-block;background:rgba(255,202,72,.2);color:var(--gold);font-size:.8rem;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.5px" id="plan-status-badge">✓ Activo</div>
+              <span id="plan-period-end" style="font-size:.78rem;color:rgba(255,255,255,.5);margin-left:12px"></span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.85)"><span style="color:var(--gold);font-weight:900">✓</span> Clientes ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.85)"><span style="color:var(--gold);font-weight:900">✓</span> Programas ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.85)"><span style="color:var(--gold);font-weight:900">✓</span> Campañas email + push</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.85)"><span style="color:var(--gold);font-weight:900">✓</span> Geo-notificaciones</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.85)"><span style="color:var(--gold);font-weight:900">✓</span> Locales ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.85)"><span style="color:var(--gold);font-weight:900">✓</span> Analytics avanzados</div>
+            </div>
+          </div>
+          <!-- Billing actions (Pro) -->
+          <div class="card" style="margin-top:16px">
+            <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:14px">Facturación</h3>
+            <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px">Gestiona tu suscripción, cambia de plan, descarga facturas o cancela desde el portal de Stripe.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn-sm btn-primary" onclick="openBillingPortal()" id="portal-btn">
+                <span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Portal de facturación
+              </button>
+            </div>
           </div>
         </div>
-        <!-- Feature list -->
-        <div class="card" style="margin-bottom:20px">
-          <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:18px">Incluido en tu plan</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Tarjetas de fidelidad ilimitadas</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Clientes ilimitados</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Negocios ilimitados</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Escáner QR para caja</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Geo-notificaciones de proximidad</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Email de bienvenida y cumpleaños</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Campañas por segmento</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Códigos de referido</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Google Wallet Pass</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Notificaciones push</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> Analytics e informes</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--green);font-weight:900">✓</span> QR personalizados por canal</div>
-          </div>
-        </div>
-        <!-- Billing actions -->
-        <div class="card">
-          <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:16px">Facturación</h3>
-          <p style="font-size:.88rem;color:var(--brown-light);margin-bottom:16px">La gestión de pagos estará disponible pronto. Durante la prueba gratuita no se cobra nada.</p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-sm" style="background:var(--cream);color:var(--brown);border:none;padding:9px 18px;border-radius:6px;font-size:.85rem;font-weight:700;cursor:not-allowed;opacity:.6" disabled>Cambiar plan</button>
-            <button class="btn-sm" style="background:var(--cream);color:var(--brown);border:none;padding:9px 18px;border-radius:6px;font-size:.85rem;font-weight:700;cursor:not-allowed;opacity:.6" disabled>Historial de pagos</button>
-          </div>
+
+        <!-- loading skeleton -->
+        <div id="plan-loading" style="text-align:center;padding:40px;color:var(--brown-light);font-size:.9rem">
+          <span class="material-symbols-outlined" style="font-size:2rem;display:block;margin-bottom:8px;opacity:.4">sync</span>
+          Cargando información del plan…
         </div>
       </div>
 
@@ -3101,6 +3145,31 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
     </div><!-- /content -->
   </div><!-- /main -->
 
+<!-- UPGRADE MODAL ───────────────────────────────────────────── -->
+<div id="upgrade-overlay" style="display:none;position:fixed;inset:0;background:rgba(38,23,12,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box" onclick="if(event.target===this)closeUpgradeModal()">
+  <div style="background:white;border-radius:8px;max-width:440px;width:100%;padding:32px;position:relative">
+    <button onclick="closeUpgradeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--brown-light)">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2.5rem;margin-bottom:8px">🚀</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.1em;color:var(--brown);margin-bottom:6px">ZubCard Pro</h2>
+      <p style="font-size:.9rem;color:var(--brown-light)" id="upgrade-modal-reason">Esta función requiere el plan Pro.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Clientes ilimitados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Programas ilimitados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Campañas email + push</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Geo-notificaciones</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Locales ilimitados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Analytics avanzados</div>
+    </div>
+    <button onclick="startCheckout()" id="upgrade-btn" style="width:100%;padding:13px;background:var(--brown);color:white;border:none;border-radius:4px;font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.05em">
+      <span class="material-symbols-outlined" style="font-size:1rem">upgrade</span>
+      Suscribirme — <span id="upgrade-price-label">€39/mes</span>
+    </button>
+    <p style="text-align:center;font-size:.72rem;color:var(--brown-light);margin-top:8px">Sin permanencia · Cancela cuando quieras</p>
+  </div>
+</div>
+
 <!-- CAMPAIGN EDITOR MODAL ─────────────────────────────────── -->
 <div id="camp-editor-overlay" class="camp-modal-overlay">
   <div class="camp-modal">
@@ -3391,6 +3460,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 // ── STATE ──────────────────────────────────────────────────────────────────
 const BASE = '{{ biz_api_base or "" }}' || window.location.origin;
 const BIZ_SLUG = '{{ biz_slug or "" }}';
+const BIZ_PLAN_INITIAL = '{{ biz_plan or "free" }}';
+let BIZ_PLAN = BIZ_PLAN_INITIAL;
 let PIN = '';
 let currentPage = 1;
 let totalPages = 1;
@@ -3507,6 +3578,7 @@ function showSection(name){
   if(name==='stores')        { loadStores(); loadDevices(); }
   if(name==='email')         loadEmailSettings();
   if(name==='cuenta-perfil') loadPerfil();
+  if(name==='cuenta-plan')   { renderPlanSection(); loadSubscriptionInfo(); }
   if(name==='geo'){          loadGeoSection(); setTimeout(checkVapidStatus,400); }
 
   // Keep Tarjetas parent highlighted when inside a card sub-section
@@ -3523,7 +3595,7 @@ function showSection(name){
 
 // ── DASHBOARD INIT ─────────────────────────────────────────────────────────
 async function initDashboard(){
-  await Promise.all([loadStats(), loadActivity(), loadTopCustomers(5,'dash'), loadBirthdaysBadge()]);
+  await Promise.all([loadStats(), loadActivity(), loadTopCustomers(5,'dash'), loadBirthdaysBadge(), loadSubscriptionInfo()]);
 }
 
 async function refreshAll(){
@@ -4943,6 +5015,132 @@ function renderActivityRows(rows, append){
 
 
 // ═══════════════════════════════════════════════════════════════════
+// ── PLAN / STRIPE ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+let _subInfo = null;
+
+async function loadSubscriptionInfo(){
+  if(!PIN) return;
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/subscription?pin=${PIN}`);
+    if(!r.ok) return;
+    _subInfo = await r.json();
+    BIZ_PLAN = _subInfo.plan || 'free';
+    // Update sidebar chip
+    const nameEl = document.getElementById('sidebar-plan-name');
+    const iconEl = document.getElementById('sidebar-plan-icon');
+    const labelEl = document.getElementById('sidebar-plan-label');
+    if(nameEl) nameEl.textContent = BIZ_PLAN.toUpperCase();
+    if(iconEl) iconEl.textContent = BIZ_PLAN==='pro' ? 'workspace_premium' : 'lock_open';
+    if(labelEl) labelEl.textContent = BIZ_PLAN==='pro' ? 'Plan activo' : 'Plan gratuito';
+    // Update price labels
+    const price = _subInfo.price_display || '€39';
+    document.querySelectorAll('#upgrade-price-label,#plan-free-price-btn').forEach(el=>{if(el)el.textContent=price+'/mes';});
+    const proPrice = document.getElementById('plan-pro-price');
+    if(proPrice) proPrice.textContent = price;
+    // Update Plan & Billing section if visible
+    renderPlanSection();
+  }catch(e){}
+}
+
+function renderPlanSection(){
+  const isFree = BIZ_PLAN !== 'pro';
+  const freeCard = document.getElementById('plan-free-card');
+  const proCard  = document.getElementById('plan-pro-card');
+  const loading  = document.getElementById('plan-loading');
+  if(loading) loading.style.display='none';
+  if(freeCard) freeCard.style.display = isFree  ? '' : 'none';
+  if(proCard)  proCard.style.display  = !isFree ? '' : 'none';
+  if(!isFree && _subInfo){
+    const badge = document.getElementById('plan-status-badge');
+    const pe    = document.getElementById('plan-period-end');
+    const statusMap = {active:'✓ Activo',trialing:'⏳ Prueba',past_due:'⚠ Pago pendiente',canceled:'✗ Cancelado'};
+    if(badge) badge.textContent = statusMap[_subInfo.subscription_status] || '✓ Activo';
+    if(pe && _subInfo.current_period_end){
+      const d = new Date(_subInfo.current_period_end);
+      pe.textContent = `Próxima factura: ${d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}`;
+    }
+  }
+}
+
+// Called when navigating to Plan section
+const _origShowSection = typeof showSection !== 'undefined' ? null : null;
+
+function openUpgradeModal(reason){
+  const overlay = document.getElementById('upgrade-overlay');
+  const reasonEl = document.getElementById('upgrade-modal-reason');
+  if(reasonEl) reasonEl.textContent = reason || 'Esta función requiere el plan Pro.';
+  if(overlay) overlay.style.display='flex';
+}
+function closeUpgradeModal(){
+  const overlay = document.getElementById('upgrade-overlay');
+  if(overlay) overlay.style.display='none';
+}
+
+/** Gate: if on Free plan, show upgrade modal and return false. Otherwise return true. */
+function requirePro(reason){
+  if(BIZ_PLAN === 'pro') return true;
+  openUpgradeModal(reason);
+  return false;
+}
+
+async function startCheckout(){
+  const btn = document.getElementById('upgrade-btn') || event?.target?.closest('button');
+  if(btn){ btn.disabled=true; btn.textContent='Redirigiendo a Stripe…'; }
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/subscription/checkout?pin=${PIN}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({pin:PIN})
+    });
+    const d = await r.json();
+    if(!r.ok){
+      showToast(d.detail || 'Error al iniciar pago','error');
+      if(btn){btn.disabled=false;btn.innerHTML='<span class="material-symbols-outlined" style="font-size:1rem">upgrade</span> Suscribirme — '+(_subInfo?.price_display||'€39')+'/mes';}
+      return;
+    }
+    window.location.href = d.checkout_url;
+  }catch(e){
+    showToast('Error de conexión','error');
+    if(btn){btn.disabled=false;}
+  }
+}
+
+async function openBillingPortal(){
+  const btn = document.getElementById('portal-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Abriendo portal…'; }
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/subscription/portal`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({pin:PIN})
+    });
+    const d = await r.json();
+    if(!r.ok){
+      showToast(d.detail || 'Error','error');
+      if(btn){btn.disabled=false;btn.innerHTML='<span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Portal de facturación';}
+      return;
+    }
+    window.open(d.portal_url, '_blank');
+    if(btn){btn.disabled=false;btn.innerHTML='<span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Portal de facturación';}
+  }catch(e){
+    showToast('Error de conexión','error');
+    if(btn){btn.disabled=false;}
+  }
+}
+
+// Check URL for stripe success/cancel after redirect
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  if(p.get('stripe_success')==='1'){
+    showToast('✅ ¡Suscripción activada! Bienvenido a Pro 🎉','success');
+    window.history.replaceState({},'',window.location.pathname);
+  }
+  if(p.get('stripe_cancel')==='1'){
+    showToast('Pago cancelado — puedes suscribirte cuando quieras','info');
+    window.history.replaceState({},'',window.location.pathname);
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════
 // ── CAMPAÑAS ─────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════
 let _campaigns = [];
@@ -5007,6 +5205,7 @@ function switchCampTab(tab){
 }
 
 function showNewCampaign(){
+  if(!requirePro('Las campañas son una función del plan Pro. Actualiza para enviar email y push ilimitados.')) return;
   _campEditorType='email';
   setCampType('email');
   openCampModal();
@@ -5132,7 +5331,10 @@ async function campSave(action){
       body:JSON.stringify({name,subject,body,segment,type:campType,status})
     });
     const data=await r.json();
-    if(!r.ok){if(msgEl){msgEl.textContent='Error al guardar';msgEl.style.color='var(--red)';}return;}
+    if(!r.ok){
+      if(r.status===402){ closeCampModal(); openUpgradeModal('Las campañas son una función del plan Pro.'); return; }
+      if(msgEl){msgEl.textContent='Error al guardar';msgEl.style.color='var(--red)';}return;
+    }
     if(msgEl){msgEl.textContent=action==='send'?'Enviando...':'Borrador guardado';msgEl.style.color='var(--green)';}
     if(action==='send'&&data.id) await sendCampaign(data.id,campType);
     await loadCampaigns();

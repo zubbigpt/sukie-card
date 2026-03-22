@@ -80,6 +80,28 @@ GOOGLE_REDIRECT_URI  = os.environ.get("GOOGLE_REDIRECT_URI", f"{os.environ.get('
 GOOGLE_WALLET_ISSUER_ID   = os.environ.get("GOOGLE_WALLET_ISSUER_ID", "")
 GOOGLE_WALLET_CREDENTIALS = os.environ.get("GOOGLE_WALLET_CREDENTIALS", "")  # JSON string
 
+# STRIPE CONFIG
+STRIPE_SECRET_KEY      = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+STRIPE_PRICE_ID_PRO    = os.environ.get("STRIPE_PRICE_ID_PRO", "")       # price_xxx
+STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")      # whsec_xxx
+STRIPE_PRO_PRICE_DISPLAY = os.environ.get("STRIPE_PRO_PRICE_DISPLAY", "€39")  # display only
+
+# PLAN LIMITS (Free tier)
+FREE_LIMITS = {
+    "max_customers":     100,
+    "max_card_programs":   1,
+    "campaigns":       False,   # cannot create/send campaigns
+}
+
+def _get_biz_plan(biz) -> str:
+    return (getattr(biz, "plan", None) or "free").lower()
+
+def _require_pro(biz):
+    """Raise HTTP 402 if the business is on the Free plan."""
+    if _get_biz_plan(biz) != "pro":
+        raise HTTPException(status_code=402, detail="upgrade_required")
+
 def generate_google_wallet_url(
     card_id: str,
     biz_slug: str,
@@ -264,6 +286,11 @@ def run_migrations():
         # ── Audit trail: source + store_id in stamp_transactions ─────────────────
         "ALTER TABLE stamp_transactions ADD COLUMN IF NOT EXISTS source VARCHAR DEFAULT 'admin'",
         "ALTER TABLE stamp_transactions ADD COLUMN IF NOT EXISTS store_id UUID",
+        # ── Stripe billing columns ────────────────────────────────────────────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_status VARCHAR",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_current_period_end TIMESTAMPTZ",
 
     ]
     from database import SessionLocal
@@ -3189,6 +3216,8 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         "biz_email":  biz.email,
         "stamps_per_reward": biz.stamps_per_reward,
         "card_title": biz.card_title,
+        "biz_plan":   _get_biz_plan(biz),
+        "stripe_configured": bool(STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO),
     })
 
 
@@ -3847,6 +3876,7 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_pro(biz)   # ← Free plan cannot create campaigns
     camp_id = str(uuid.uuid4())
     scheduled_at = payload.get("scheduled_at")  # ISO string or None
     db.execute(text(
@@ -3867,6 +3897,7 @@ def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depe
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_pro(biz)   # ← Free plan cannot send campaigns
     camp = db.execute(text(
         "SELECT name, subject, body, segment, type FROM campaigns WHERE id=:id AND business_id=:bid"
     ), {"id": campaign_id, "bid": str(biz.id)}).fetchone()
@@ -3937,6 +3968,167 @@ def delete_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = De
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# STRIPE / SUSCRIPCIONES
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/subscription")
+def get_subscription(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Return plan + Stripe subscription info for this business."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    plan = _get_biz_plan(biz)
+    stripe_configured = bool(STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO)
+    sub_status = getattr(biz, "stripe_subscription_status", None) or (
+        "active" if plan == "pro" else "inactive"
+    )
+    period_end = getattr(biz, "stripe_current_period_end", None)
+    return {
+        "plan": plan,
+        "stripe_configured": stripe_configured,
+        "stripe_publishable_key": STRIPE_PUBLISHABLE_KEY if stripe_configured else None,
+        "subscription_status": sub_status,
+        "current_period_end": period_end.isoformat() if period_end else None,
+        "price_display": STRIPE_PRO_PRICE_DISPLAY,
+    }
+
+
+@app.post("/api/biz/{slug}/subscription/checkout")
+async def create_checkout_session(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Create a Stripe Checkout Session for the Pro plan."""
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")), db)
+    if not STRIPE_SECRET_KEY or not STRIPE_PRICE_ID_PRO:
+        raise HTTPException(status_code=503,
+            detail="Stripe no configurado. Añade STRIPE_SECRET_KEY y STRIPE_PRICE_ID_PRO en Railway.")
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if _get_biz_plan(biz) == "pro":
+        raise HTTPException(status_code=400, detail="Ya tienes el plan Pro activo")
+
+    import stripe as _stripe
+    # Get or create Stripe customer
+    customer_id = getattr(biz, "stripe_customer_id", None)
+    if not customer_id:
+        customer = _stripe.Customer.create(
+            email=biz.email,
+            name=biz.name,
+            metadata={"biz_id": str(biz.id), "biz_slug": slug},
+        )
+        customer_id = customer.id
+        db.execute(text("UPDATE businesses SET stripe_customer_id=:cid WHERE id=:bid"),
+                   {"cid": customer_id, "bid": str(biz.id)})
+        db.commit()
+
+    session = _stripe.checkout.Session.create(
+        customer=customer_id,
+        mode="subscription",
+        line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
+        success_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_success=1",
+        cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
+        subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}},
+        allow_promotion_codes=True,
+        locale="es",
+    )
+    return {"checkout_url": session.url, "session_id": session.id}
+
+
+@app.post("/api/biz/{slug}/subscription/portal")
+async def create_billing_portal(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Create a Stripe Customer Portal session for managing billing."""
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")), db)
+    if not STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=503, detail="Stripe no configurado")
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    customer_id = getattr(biz, "stripe_customer_id", None)
+    if not customer_id:
+        raise HTTPException(status_code=400,
+            detail="No hay suscripción activa. Suscríbete primero al plan Pro.")
+
+    import stripe as _stripe
+    portal = _stripe.billing_portal.Session.create(
+        customer=customer_id,
+        return_url=f"{BASE_URL}/biz/{slug}/dashboard",
+    )
+    return {"portal_url": portal.url}
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    """Handle Stripe webhook events (subscription lifecycle)."""
+    payload = await request.body()
+    sig = request.headers.get("stripe-signature", "")
+    if not STRIPE_WEBHOOK_SECRET:
+        raise HTTPException(status_code=503, detail="Webhook secret not configured")
+
+    import stripe as _stripe
+    from datetime import datetime as _dt
+    try:
+        event = _stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except _stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    etype = event["type"]
+    data  = event["data"]["object"]
+
+    def _biz_by_customer(cid):
+        return db.execute(text(
+            "SELECT id FROM businesses WHERE stripe_customer_id=:cid"
+        ), {"cid": cid}).fetchone()
+
+    if etype == "checkout.session.completed":
+        cid = data.get("customer")
+        sid = data.get("subscription")
+        biz_row = _biz_by_customer(cid)
+        if biz_row and sid:
+            sub = _stripe.Subscription.retrieve(sid)
+            pe  = _dt.fromtimestamp(sub["current_period_end"])
+            db.execute(text(
+                "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
+                "stripe_subscription_status='active', stripe_current_period_end=:pe "
+                "WHERE id=:bid"
+            ), {"sid": sid, "pe": pe, "bid": str(biz_row[0])})
+            db.commit()
+            print(f"✅ Stripe checkout.session.completed — business {biz_row[0]} → pro")
+
+    elif etype in ("customer.subscription.updated", "customer.subscription.deleted"):
+        cid    = data.get("customer")
+        sid    = data.get("id")
+        status = data.get("status", "")
+        pe_ts  = data.get("current_period_end")
+        pe     = _dt.fromtimestamp(pe_ts) if pe_ts else None
+        biz_row = _biz_by_customer(cid)
+        if biz_row:
+            new_plan = "pro" if status in ("active", "trialing") else "free"
+            db.execute(text(
+                "UPDATE businesses SET plan=:plan, stripe_subscription_id=:sid, "
+                "stripe_subscription_status=:status, stripe_current_period_end=:pe "
+                "WHERE id=:bid"
+            ), {"plan": new_plan, "sid": sid, "status": status, "pe": pe, "bid": str(biz_row[0])})
+            db.commit()
+            print(f"✅ Stripe {etype} — business {biz_row[0]} status={status} plan={new_plan}")
+
+    elif etype == "invoice.payment_failed":
+        cid = data.get("customer")
+        biz_row = _biz_by_customer(cid)
+        if biz_row:
+            db.execute(text(
+                "UPDATE businesses SET stripe_subscription_status='past_due' WHERE id=:bid"
+            ), {"bid": str(biz_row[0])})
+            db.commit()
+            print(f"⚠️ Stripe invoice.payment_failed — business {biz_row[0]}")
+
+    return {"received": True}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # CARD PROGRAMS (multi-tarjeta)
 # ════════════════════════════════════════════════════════════════════════════════
 
@@ -3959,6 +4151,13 @@ async def create_card_program(slug: str, request: Request, db: Session = Depends
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    # Free plan: max 1 card program
+    if _get_biz_plan(biz) != "pro":
+        count = db.execute(text(
+            "SELECT COUNT(*) FROM card_programs WHERE business_id=:bid AND status='active'"
+        ), {"bid": str(biz.id)}).scalar() or 0
+        if count >= FREE_LIMITS["max_card_programs"]:
+            raise HTTPException(status_code=402, detail="upgrade_required")
     row = db.execute(text(
         "INSERT INTO card_programs (business_id, name, emoji, stamps_per_reward, reward_name, bg_color, accent_color, text_color, status) "
         "VALUES (:bid, :name, :emoji, :stamps, :reward, :bg, :accent, :txt, 'active') RETURNING id"

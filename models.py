@@ -148,5 +148,10 @@ class Business(Base):
     email_smtp_port  = Column(Integer, nullable=True)  # custom SMTP port
     email_smtp_user  = Column(String, nullable=True)   # custom SMTP user
     email_smtp_pass  = Column(String, nullable=True)   # custom SMTP password
+    # ── Stripe billing ─────────────────────────────────────────────────────────
+    stripe_customer_id        = Column(String, nullable=True)   # cus_xxx
+    stripe_subscription_id    = Column(String, nullable=True)   # sub_xxx
+    stripe_subscription_status = Column(String, nullable=True)  # active | past_due | canceled | trialing
+    stripe_current_period_end = Column(DateTime(timezone=True), nullable=True)
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
