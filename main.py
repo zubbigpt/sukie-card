@@ -1813,8 +1813,10 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
   </div>
 </div>"""
         try:
-            _send_email(to=cust.email, subject=subject, html=html)
-            sent += 1
+            if send_email(to_email=cust.email, subject=subject, html_body=html):
+                sent += 1
+            else:
+                errors.append(f"Email no enviado a {cust.email}")
         except Exception as e:
             errors.append(str(e))
 
@@ -2636,10 +2638,10 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     # Send confirmation email
     confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
     try:
-        _send_email(
-            to=email,
+        email_sent = send_email(
+            to_email=email,
             subject="Confirma tu cuenta en ZubCard",
-            html=f"""
+            html_body=f"""
 <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
   <h2 style="color:#26170c;font-size:1.4rem;margin-bottom:8px">¡Bienvenido a ZubCard, {name}! 🎉</h2>
   <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
@@ -2654,7 +2656,6 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
   </p>
 </div>"""
         )
-        email_sent = True
     except Exception:
         email_sent = False
 
@@ -2725,10 +2726,10 @@ async def resend_confirm(request: Request, db: Session = Depends(get_db)):
 
     confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
     try:
-        _send_email(
-            to=email,
+        send_email(
+            to_email=email,
             subject="Confirma tu cuenta en ZubCard",
-            html=f"""
+            html_body=f"""
 <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
   <h2 style="color:#26170c;font-size:1.3rem;margin-bottom:8px">Confirma tu cuenta en ZubCard</h2>
   <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">Haz clic en el enlace para activar tu cuenta:</p>
@@ -2819,10 +2820,10 @@ async def reset_password_request(request: Request, db: Session = Depends(get_db)
         db.commit()
         reset_url = f"{BASE_URL}/app/reset-password?token={reset_token}"
         try:
-            _send_email(
-                to=email,
+            send_email(
+                to_email=email,
                 subject="Restablece tu contraseña en ZubCard",
-                html=f"""
+                html_body=f"""
 <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
   <h2 style="color:#26170c;margin-bottom:8px">Restablecer contraseña</h2>
   <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
