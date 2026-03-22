@@ -529,8 +529,9 @@ def render_birthday_email(name: str, card_url: str) -> str:
     return template.render(name=name, card_url=card_url)
 
 
-def card_to_dict(card: models.LoyaltyCard, customer: models.Customer) -> dict:
+def card_to_dict(card: models.LoyaltyCard, customer: models.Customer, stamps_per_reward: int = None) -> dict:
     full_name = f"{customer.first_name or ''} {customer.last_name or ''}".strip()
+    _spr = stamps_per_reward if stamps_per_reward else STAMPS_PER_REWARD
     return {
         "id":             str(card.id),
         "customerId":     str(customer.id),
@@ -553,7 +554,7 @@ def card_to_dict(card: models.LoyaltyCard, customer: models.Customer) -> dict:
         "shopifyId":      customer.shopify_id or "",
         "cardUrl":        f"{BASE_URL}/card/{card.id}",
         "stamps":         card.stamps or 0,
-        "stampsOnCard":   STAMPS_PER_REWARD,
+        "stampsOnCard":   _spr,
         "totalStamps":    card.total_stamps or 0,
         "awardBalance":   card.award_balance or 0,
         "rewardsRedeemed": card.rewards_redeemed or 0,
@@ -1381,7 +1382,8 @@ def list_customers(
 
     total = q.count()
     rows  = q.offset((page - 1) * page_size).limit(page_size).all()
-    customers = [card_to_dict(card, cust) for card, cust in rows]
+    biz_spr = biz.stamps_per_reward if (slug and biz) else None
+    customers = [card_to_dict(card, cust, stamps_per_reward=biz_spr) for card, cust in rows]
 
     return {
         "customers":   customers,
@@ -4295,5 +4297,38 @@ async def auth_google_callback(
         ), {"bid": str(biz.id)})
         db.commit()
 
-    # Redirect to dashboard (internal PIN bootstraps sessionStorage — not user-visible secret)
-    return RedirectResponse(f"/biz/{biz.slug}/dashboard?pin={biz.admin_pin}&google=1")
+        # Send welcome email to new Google-registered businesses
+        try:
+            dashboard_url = f"{BASE_URL}/biz/{biz.slug}/dashboard"
+            send_email(
+                to_email=email,
+                subject=f"¡Bienvenido a ZubCard, {full_name}! 🎉",
+                html_body=f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+  <h2 style="color:#26170c;font-size:1.4rem;margin-bottom:8px">¡Bienvenido a ZubCard! 🎉</h2>
+  <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
+    Tu cuenta <strong>{full_name}</strong> ya está activa. Accede a tu panel de administración para
+    crear tu primera tarjeta de sellos y empezar a fidelizar clientes.
+  </p>
+  <a href="{dashboard_url}" style="display:inline-block;background:#26170c;color:#fff;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.95rem">
+    🚀 Ir a mi panel
+  </a>
+  <p style="color:#a08d83;font-size:.82rem;margin-top:28px;line-height:1.6">
+    Puedes iniciar sesión siempre con tu cuenta de Google en <a href="{BASE_URL}/app/login" style="color:#26170c">{BASE_URL}/app/login</a>
+  </p>
+</div>"""
+            )
+        except Exception:
+            pass
+
+    # Redirect to dashboard via cookie (PIN never visible in URL, history, or server logs)
+    response = RedirectResponse(f"/biz/{biz.slug}/dashboard?google=1", status_code=302)
+    response.set_cookie(
+        "_zc_boot",
+        biz.admin_pin,
+        max_age=90,
+        httponly=False,
+        samesite="strict",
+        path=f"/biz/{biz.slug}/dashboard",
+    )
+    return response
