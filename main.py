@@ -4128,22 +4128,22 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             "SELECT id FROM businesses WHERE stripe_customer_id=:cid"
         ), {"cid": cid}).fetchone()
 
-    if etype == "checkout.session.completed":
-        cid = data.get("customer")
-        sid = data.get("subscription")
-        biz_row = _biz_by_customer(cid)
-        if biz_row and sid:
-            sub = _stripe_sdk.Subscription.retrieve(sid)
-            pe  = _dt.fromtimestamp(sub["current_period_end"])
-            db.execute(text(
-                "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
-                "stripe_subscription_status='active', stripe_current_period_end=:pe "
-                "WHERE id=:bid"
-            ), {"sid": sid, "pe": pe, "bid": str(biz_row[0])})
-            db.commit()
-            print(f"✅ Stripe checkout.session.completed — business {biz_row[0]} → pro")
+    try:
+        if etype == "checkout.session.completed":
+            # Solo marcamos pro — el período exacto llega en customer.subscription.updated
+            cid = data.get("customer")
+            sid = data.get("subscription")
+            biz_row = _biz_by_customer(cid)
+            if biz_row and sid:
+                db.execute(text(
+                    "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
+                    "stripe_subscription_status='active' "
+                    "WHERE id=:bid"
+                ), {"sid": sid, "bid": str(biz_row[0])})
+                db.commit()
+                print(f"✅ Stripe checkout.session.completed — business {biz_row[0]} → pro")
 
-    elif etype in ("customer.subscription.updated", "customer.subscription.deleted"):
+    elif etype in ("customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"):
         cid    = data.get("customer")
         sid    = data.get("id")
         status = data.get("status", "")
@@ -4167,15 +4167,20 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 db.commit()
                 print(f"✅ Stripe {etype} — business {biz_row[0]} status={status} plan={new_plan}")
 
-    elif etype == "invoice.payment_failed":
-        cid = data.get("customer")
-        biz_row = _biz_by_customer(cid)
-        if biz_row:
-            db.execute(text(
-                "UPDATE businesses SET stripe_subscription_status='past_due' WHERE id=:bid"
-            ), {"bid": str(biz_row[0])})
-            db.commit()
-            print(f"⚠️ Stripe invoice.payment_failed — business {biz_row[0]}")
+        elif etype == "invoice.payment_failed":
+            cid = data.get("customer")
+            biz_row = _biz_by_customer(cid)
+            if biz_row:
+                db.execute(text(
+                    "UPDATE businesses SET stripe_subscription_status='past_due' WHERE id=:bid"
+                ), {"bid": str(biz_row[0])})
+                db.commit()
+                print(f"⚠️ Stripe invoice.payment_failed — business {biz_row[0]}")
+
+    except Exception as e:
+        print(f"❌ Stripe webhook error [{etype}]: {e}")
+        import traceback; traceback.print_exc()
+        # Devolvemos 200 para que Stripe no reintente — el error está loggeado
 
     return {"received": True}
 
