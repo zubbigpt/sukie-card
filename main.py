@@ -4232,7 +4232,10 @@ async def auth_google_callback(
         tokens = token_resp.json()
         access_token = tokens.get("access_token")
         if not access_token:
-            return RedirectResponse(f"/app/login?error=google_token_failed")
+            g_error = tokens.get("error", "unknown")
+            g_desc  = tokens.get("error_description", "")
+            print(f"[GOOGLE OAuth ERROR] {g_error}: {g_desc} | tokens={tokens}", flush=True)
+            return RedirectResponse(f"/app/login?error=google_token_failed&detail={g_error}")
 
         # Fetch user profile
         async with httpx.AsyncClient() as client:
