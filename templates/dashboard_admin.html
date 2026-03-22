@@ -2548,7 +2548,19 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
           <button class="btn-sm btn-primary" onclick="showAddStore()">+ Añadir local</button>
         </div>
-        <p style="color:var(--brown-light);font-size:.85rem;margin-bottom:20px">Gestiona tus puntos de venta. Cada local tiene su propio usuario para poner sellos desde el panel.</p>
+        <p style="color:var(--brown-light);font-size:.85rem;margin-bottom:16px">Gestiona tus puntos de venta. Cada local tiene su propio PIN para que los empleados puedan escanear sellos.</p>
+        <!-- Acceso empleado box -->
+        <div style="background:var(--brown);color:var(--cream);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.55;margin-bottom:4px">Link de acceso para empleados</div>
+            <div style="font-size:.88rem;font-weight:700;font-family:monospace;opacity:.9">/biz/{{ biz_slug }}/scanner-login</div>
+            <div style="font-size:.71rem;opacity:.55;margin-top:3px">El empleado abre esta URL, introduce su PIN y listo.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button onclick="copyLoginUrl()" style="padding:7px 13px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);color:var(--cream);border-radius:4px;font-size:.73rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px">📋 Copiar URL</button>
+            <a href="/biz/{{ biz_slug }}/scanner-login" target="_blank" style="padding:7px 13px;background:var(--gold);color:var(--brown);border-radius:4px;font-size:.73rem;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;letter-spacing:.5px">↗ Abrir</a>
+          </div>
+        </div>
         <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
           <div style="overflow-x:auto">
             <table style="width:100%;border-collapse:collapse;font-size:.85rem">
@@ -5397,6 +5409,13 @@ async function deleteStore(id){
 }
 
 // ── Scanner Devices ────────────────────────────────────────────────────────
+function copyLoginUrl(){
+  const url = window.location.origin + '/biz/' + BIZ_SLUG + '/scanner-login';
+  navigator.clipboard.writeText(url).then(()=>showToast('URL copiada ✓','success')).catch(()=>{
+    prompt('Copia esta URL:', url);
+  });
+}
+
 async function loadDevices(){
   const el=document.getElementById('devices-list');
   if(!el) return;

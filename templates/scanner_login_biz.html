@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{{ business_name }} — Acceso Empleado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: {{ primary_color }};
+      --accent:  {{ accent_color }};
+      --surface: #fff8f5;
+      --outline: #a08d83;
+      --outline-var: #e2cfc8;
+      --r: 0.75rem;
+      --r-lg: 1.25rem;
+      --shadow: 0 4px 24px rgba(38,23,12,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #f5ede4;
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 380px;
+      overflow: hidden;
+    }
+    .card-head {
+      background: var(--primary);
+      padding: 28px 24px 22px;
+      text-align: center;
+    }
+    .card-head .biz-name {
+      font-family: 'Epilogue', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .card-head .subtitle {
+      color: rgba(255,255,255,0.55);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .card-body { padding: 28px 24px 24px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Login screen */
+    .pin-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--outline);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    input[type=password] {
+      width: 100%;
+      padding: 16px;
+      border: 1.5px solid var(--outline-var);
+      border-radius: var(--r);
+      font-size: 28px;
+      font-family: 'Manrope', sans-serif;
+      color: var(--primary);
+      background: var(--surface);
+      text-align: center;
+      letter-spacing: 10px;
+      outline: none;
+      transition: border-color 0.18s;
+      margin-bottom: 8px;
+    }
+    input[type=password]:focus { border-color: var(--primary); }
+    input[type=text] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--outline-var);
+      border-radius: var(--r);
+      font-size: 13px;
+      font-family: 'Manrope', sans-serif;
+      color: var(--primary);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.18s;
+      margin-bottom: 16px;
+    }
+    input[type=text]:focus { border-color: var(--primary); }
+    .device-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--outline);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .device-hint {
+      font-size: 11px;
+      color: var(--outline);
+      margin-bottom: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: var(--r);
+      font-size: 15px;
+      font-weight: 800;
+      font-family: 'Manrope', sans-serif;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--accent);
+    }
+    .btn-primary:hover { filter: brightness(1.12); }
+    .btn-primary:active { transform: scale(0.98); }
+    .err-msg {
+      background: #fdecea;
+      color: #c0392b;
+      border-radius: var(--r);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    /* Pending screen */
+    .center-screen {
+      text-align: center;
+      padding: 8px 0 8px;
+    }
+    .big-icon { font-size: 52px; margin-bottom: 12px; }
+    .center-screen h2 {
+      font-family: 'Epilogue', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .center-screen p {
+      font-size: 13px;
+      color: var(--outline);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .chip-pending { background: #fff3cd; color: #856404; }
+    .chip-rejected { background: #f8d7da; color: #721c24; }
+    .pulse {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #f39c12;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.4; transform:scale(1.4); }
+    }
+    .btn-ghost {
+      background: none;
+      border: none;
+      color: var(--outline);
+      font-size: 12px;
+      font-family: 'Manrope', sans-serif;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 14px;
+      width: 100%;
+    }
+    .first-time-toggle {
+      font-size: 11px;
+      color: var(--outline);
+      text-align: center;
+      margin-top: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-head">
+    <div class="biz-name">{{ business_name }}</div>
+    <div class="subtitle">Acceso Empleado</div>
+  </div>
+  <div class="card-body">
+
+    <!-- SCREEN: PIN login -->
+    <div class="screen active" id="screen-pin">
+      <div class="err-msg" id="pin-error">PIN incorrecto. Inténtalo de nuevo.</div>
+      <label class="pin-label">PIN de tu local</label>
+      <input type="password" id="inp-pin" placeholder="••••" maxlength="8" autocomplete="off">
+
+      <div id="device-name-section" style="display:none">
+        <label class="device-label">Nombre de este dispositivo <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+        <input type="text" id="inp-device-name" placeholder="ej. Tablet Caja, iPad Mostrador">
+      </div>
+      <div class="device-hint" id="device-hint-new" style="display:none">
+        ℹ️ Primera vez desde este dispositivo — el admin deberá aprobarlo.
+      </div>
+
+      <button class="btn btn-primary" id="btn-enter" onclick="doLogin()">Entrar →</button>
+      <div class="first-time-toggle" id="toggle-device-name" onclick="toggleDeviceName()">
+        ¿Primera vez en este dispositivo?
+      </div>
+    </div>
+
+    <!-- SCREEN: Pending approval -->
+    <div class="screen" id="screen-pending">
+      <div class="center-screen">
+        <div class="big-icon">🔐</div>
+        <h2>Esperando aprobación</h2>
+        <p>El administrador de <strong>{{ business_name }}</strong> debe aprobar este dispositivo desde su panel.</p>
+        <div class="status-chip chip-pending"><span class="pulse"></span> Pendiente</div>
+        <p style="font-size:12px;color:var(--outline)">La página avanzará automáticamente cuando te aprueben.</p>
+        <button class="btn-ghost" onclick="resetLogin()">← Volver</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: Rejected -->
+    <div class="screen" id="screen-rejected">
+      <div class="center-screen">
+        <div class="big-icon">🚫</div>
+        <h2>Acceso revocado</h2>
+        <p>Este dispositivo fue bloqueado por el administrador. Contacta con tu responsable.</p>
+        <button class="btn-ghost" onclick="resetLogin()">← Intentar de nuevo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const BASE = '{{ base_url }}';
+  const SLUG = '{{ slug }}';
+
+  // ── Device token ───────────────────────────────────────────────────────────
+  function getDeviceToken() {
+    const key = 'zc_device_' + SLUG;
+    let tok = localStorage.getItem(key);
+    if (!tok) {
+      tok = (crypto.randomUUID ? crypto.randomUUID()
+           : Math.random().toString(36).slice(2) + Date.now().toString(36));
+      localStorage.setItem(key, tok);
+    }
+    return tok;
+  }
+
+  // ── On load: if device already known, check its status silently ────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    const key = 'zc_device_' + SLUG;
+    if (localStorage.getItem(key)) {
+      // Don't auto-login, but hide the "first time" hint if already registered
+      document.getElementById('toggle-device-name').style.display = 'none';
+    }
+  });
+
+  function toggleDeviceName() {
+    const sec = document.getElementById('device-name-section');
+    const hint = document.getElementById('device-hint-new');
+    const shown = sec.style.display !== 'none';
+    sec.style.display  = shown ? 'none' : 'block';
+    hint.style.display = shown ? 'none' : 'block';
+    document.getElementById('toggle-device-name').style.display = 'none';
+  }
+
+  // ── Login ──────────────────────────────────────────────────────────────────
+  async function doLogin() {
+    const pin        = document.getElementById('inp-pin').value.trim();
+    const deviceName = document.getElementById('inp-device-name').value.trim();
+    const errEl      = document.getElementById('pin-error');
+    const btn        = document.getElementById('btn-enter');
+
+    if (!pin) {
+      errEl.textContent = 'Introduce tu PIN.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Verificando...';
+
+    const deviceToken = getDeviceToken();
+
+    try {
+      const r = await fetch(`${BASE}/api/scanner/auth`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          slug:         SLUG,
+          pin:          pin,
+          device_token: deviceToken,
+          device_name:  deviceName || 'Dispositivo de ' + SLUG
+        })
+      });
+      const d = await r.json();
+
+      if (!r.ok) {
+        errEl.textContent = d.detail || 'PIN incorrecto.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Entrar →';
+        return;
+      }
+
+      if (d.status === 'approved') {
+        redirectToScanner(d);
+      } else if (d.status === 'pending') {
+        showPending(deviceToken);
+      } else if (d.status === 'rejected') {
+        showScreen('screen-rejected');
+      }
+    } catch(e) {
+      errEl.textContent = 'Error de conexión. Inténtalo de nuevo.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Entrar →';
+    }
+  }
+
+  // ── Pending: poll every 4s ─────────────────────────────────────────────────
+  let pollInterval = null;
+
+  function showPending(deviceToken) {
+    showScreen('screen-pending');
+    clearInterval(pollInterval);
+    pollInterval = setInterval(async () => {
+      try {
+        const r = await fetch(`${BASE}/api/scanner/device-status/${deviceToken}`);
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d.status === 'approved') {
+          clearInterval(pollInterval);
+          redirectToScanner(d);
+        } else if (d.status === 'rejected') {
+          clearInterval(pollInterval);
+          showScreen('screen-rejected');
+        }
+      } catch(e) {}
+    }, 4000);
+  }
+
+  // ── Redirect to scanner with store context ────────────────────────────────
+  function redirectToScanner(data) {
+    const params = new URLSearchParams({
+      store_name: data.store_name || '',
+      store_id:   data.store_id   || '',
+    });
+    window.location.href = `${BASE}/biz/${SLUG}/scanner?${params.toString()}`;
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function resetLogin() {
+    clearInterval(pollInterval);
+    // Clear device token so it re-registers
+    localStorage.removeItem('zc_device_' + SLUG);
+    showScreen('screen-pin');
+    document.getElementById('inp-pin').value = '';
+    document.getElementById('btn-enter').disabled = false;
+    document.getElementById('btn-enter').textContent = 'Entrar →';
+    document.getElementById('toggle-device-name').style.display = 'block';
+  }
+
+  // ── Enter key ─────────────────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+</script>
+</body>
+</html>

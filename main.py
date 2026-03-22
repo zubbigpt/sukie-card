@@ -3554,8 +3554,24 @@ def delete_store(slug: str, store_id: str, pin: str = "", db: Session = Depends(
 
 @app.get("/app/scanner-login", response_class=HTMLResponse)
 async def scanner_login_page(request: Request):
-    """Generic scanner login page — employee enters slug + PIN, device gets authorized."""
+    """Generic fallback — redirects to /biz/{slug}/scanner-login if slug saved in cookie, else shows help."""
     return templates.TemplateResponse("scanner_login.html", {"request": request, "base_url": BASE_URL})
+
+
+@app.get("/biz/{slug}/scanner-login", response_class=HTMLResponse)
+async def scanner_login_biz_page(request: Request, slug: str, db: Session = Depends(get_db)):
+    """Business-specific scanner login — employee only needs their PIN, no slug required."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return templates.TemplateResponse("scanner_login_biz.html", {
+        "request":       request,
+        "base_url":      BASE_URL,
+        "slug":          slug,
+        "business_name": biz.name,
+        "primary_color": biz.primary_color or "#3A3426",
+        "accent_color":  biz.accent_color  or "#FFF3CF",
+    })
 
 
 @app.post("/api/scanner/auth")
