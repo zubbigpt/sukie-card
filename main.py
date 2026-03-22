@@ -87,6 +87,11 @@ STRIPE_PRICE_ID_PRO    = os.environ.get("STRIPE_PRICE_ID_PRO", "")       # price
 STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")      # whsec_xxx
 STRIPE_PRO_PRICE_DISPLAY = os.environ.get("STRIPE_PRO_PRICE_DISPLAY", "€39")  # display only
 
+# Inicializar Stripe SDK con la clave secreta
+import stripe as _stripe_sdk
+if STRIPE_SECRET_KEY:
+    _stripe_sdk.api_key = STRIPE_SECRET_KEY
+
 # PLAN LIMITS (Free tier)
 FREE_LIMITS = {
     "max_customers":     100,
@@ -4008,11 +4013,10 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
     if _get_biz_plan(biz) == "pro":
         raise HTTPException(status_code=400, detail="Ya tienes el plan Pro activo")
 
-    import stripe as _stripe
     # Get or create Stripe customer
     customer_id = getattr(biz, "stripe_customer_id", None)
     if not customer_id:
-        customer = _stripe.Customer.create(
+        customer = _stripe_sdk.Customer.create(
             email=biz.email,
             name=biz.name,
             metadata={"biz_id": str(biz.id), "biz_slug": slug},
@@ -4022,7 +4026,7 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
                    {"cid": customer_id, "bid": str(biz.id)})
         db.commit()
 
-    session = _stripe.checkout.Session.create(
+    session = _stripe_sdk.checkout.Session.create(
         customer=customer_id,
         mode="subscription",
         line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
@@ -4050,8 +4054,7 @@ async def create_billing_portal(slug: str, request: Request, db: Session = Depen
         raise HTTPException(status_code=400,
             detail="No hay suscripción activa. Suscríbete primero al plan Pro.")
 
-    import stripe as _stripe
-    portal = _stripe.billing_portal.Session.create(
+    portal = _stripe_sdk.billing_portal.Session.create(
         customer=customer_id,
         return_url=f"{BASE_URL}/biz/{slug}/dashboard",
     )
@@ -4066,13 +4069,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     if not STRIPE_WEBHOOK_SECRET:
         raise HTTPException(status_code=503, detail="Webhook secret not configured")
 
-    import stripe as _stripe
     from datetime import datetime as _dt
     try:
-        event = _stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+        event = _stripe_sdk.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid payload")
-    except _stripe.error.SignatureVerificationError:
+    except _stripe_sdk.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     etype = event["type"]
@@ -4088,7 +4090,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         sid = data.get("subscription")
         biz_row = _biz_by_customer(cid)
         if biz_row and sid:
-            sub = _stripe.Subscription.retrieve(sid)
+            sub = _stripe_sdk.Subscription.retrieve(sid)
             pe  = _dt.fromtimestamp(sub["current_period_end"])
             db.execute(text(
                 "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
