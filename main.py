@@ -4063,27 +4063,43 @@ async def create_billing_portal(slug: str, request: Request, db: Session = Depen
 
 @app.post("/api/admin/stripe-sync/{slug}")
 async def admin_stripe_sync(slug: str, request: Request, db: Session = Depends(get_db)):
-    """Admin: forzar sync del plan desde Stripe."""
+    """Admin: forzar sync del plan desde Stripe o set manual con customer_id/sub_id."""
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    customer_id = getattr(biz, "stripe_customer_id", None)
+    from datetime import datetime as _dt
+
+    # Si se pasan customer_id y sub_id directo, no llamamos Stripe API
+    customer_id = body.get("customer_id") or getattr(biz, "stripe_customer_id", None)
+    sub_id      = body.get("subscription_id")
+    period_end  = body.get("period_end")  # ISO string opcional
+
     if not customer_id:
         raise HTTPException(status_code=400, detail="Sin stripe_customer_id")
-    from datetime import datetime as _dt
-    subs = _stripe_sdk.Subscription.list(customer=customer_id, limit=1, status="active")
-    if not subs.data:
-        raise HTTPException(status_code=404, detail="No hay suscripción activa en Stripe")
-    sub = subs.data[0]
-    pe = _dt.fromtimestamp(sub["current_period_end"])
+
+    if not sub_id:
+        # Buscar en Stripe
+        try:
+            result = _stripe_sdk.Subscription.list(customer=customer_id, limit=1)
+            active = [s for s in result.data if s.get("status") in ("active", "trialing")]
+            if not active:
+                raise HTTPException(status_code=404, detail="No hay suscripción activa en Stripe")
+            sub = active[0]
+            sub_id = sub["id"]
+            pe = _dt.fromtimestamp(sub["current_period_end"])
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error Stripe: {str(e)}")
+    else:
+        pe = _dt.fromisoformat(period_end) if period_end else _dt(2026, 4, 22)
+
     db.execute(text(
-        "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
+        "UPDATE businesses SET plan='pro', stripe_customer_id=:cid, stripe_subscription_id=:sid, "
         "stripe_subscription_status='active', stripe_current_period_end=:pe WHERE id=:bid"
-    ), {"sid": sub["id"], "pe": pe, "bid": str(biz.id)})
+    ), {"cid": customer_id, "sid": sub_id, "pe": pe, "bid": str(biz.id)})
     db.commit()
-    return {"ok": True, "plan": "pro", "subscription_id": sub["id"], "period_end": pe.isoformat()}
+    return {"ok": True, "plan": "pro", "customer_id": customer_id, "subscription_id": sub_id, "period_end": pe.isoformat()}
 
 
 @app.post("/api/stripe/webhook")
