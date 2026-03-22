@@ -2211,6 +2211,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           <button onclick="filterCampaigns('all')" class="camp-type active" id="camptype-all" style="padding:6px 14px;border:1.5px solid #0a0a0a;background:#0a0a0a;color:white;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">Todas</button>
           <button onclick="filterCampaigns('email')" class="camp-type" id="camptype-email" style="padding:6px 14px;border:1.5px solid var(--cream-border);background:white;color:#0a0a0a;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">Email</button>
           <button onclick="filterCampaigns('sms')" class="camp-type" id="camptype-sms" style="padding:6px 14px;border:1.5px solid var(--cream-border);background:white;color:#0a0a0a;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">SMS</button>
+          <button onclick="filterCampaigns('push')" class="camp-type" id="camptype-push" style="padding:6px 14px;border:1.5px solid var(--cream-border);background:white;color:#0a0a0a;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">Push</button>
         </div>
         <!-- tabs -->
         <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--cream-border)">
@@ -3114,11 +3115,19 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
     <div class="camp-modal-body">
       <!-- ── EDITOR PANE ── -->
       <div class="camp-editor-pane">
-        <!-- Subject -->
+        <!-- Campaign type selector -->
         <div>
-          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Asunto del email</label>
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:8px">Tipo de campaña</label>
+          <div style="display:flex;gap:6px">
+            <button id="camptype-btn-email" onclick="setCampType('email')" style="padding:6px 16px;border:1.5px solid #0a0a0a;background:#0a0a0a;color:white;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:.85rem">email</span> Email</button>
+            <button id="camptype-btn-push" onclick="setCampType('push')" style="padding:6px 16px;border:1.5px solid var(--cream-border);background:white;color:#0a0a0a;border-radius:2px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:.85rem">notifications</span> Push</button>
+          </div>
+        </div>
+        <!-- Subject / Push title -->
+        <div>
+          <label id="cmp-subject-label" style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Asunto del email</label>
           <input id="cmp-subject" class="field-input" placeholder="ej: ¡Una oferta especial para ti, {nombre}!" oninput="campUpdatePreview()">
-          <small style="font-size:.65rem;color:var(--brown-light)">Variables: {nombre}</small>
+          <small id="cmp-subject-hint" style="font-size:.65rem;color:var(--brown-light)">Variables: {nombre}</small>
         </div>
         <!-- Segments -->
         <div>
@@ -3135,8 +3144,17 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
           </div>
         </div>
-        <!-- Template picker -->
-        <div>
+        <!-- Push message body (shown when type=push) -->
+        <div id="cmp-push-section" style="display:none">
+          <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:flex;justify-content:space-between;margin-bottom:5px">
+            <span>Mensaje de la notificación</span>
+            <span id="cmp-push-counter" style="color:var(--honey);font-variant-numeric:tabular-nums">0/150</span>
+          </label>
+          <textarea id="cmp-push-body" class="field-input" maxlength="150" rows="3" placeholder="ej: ¡Visítanos hoy y consigue doble sello! Solo por hoy." oninput="campPushCounter();campUpdatePreview()" style="resize:vertical;min-height:80px;font-family:inherit;line-height:1.5;width:100%;box-sizing:border-box"></textarea>
+          <small style="font-size:.65rem;color:var(--brown-light)">Máx. 150 caracteres. Se envía a clientes con notificaciones activadas.</small>
+        </div>
+        <!-- Template picker (email only) -->
+        <div id="cmp-tpl-section">
           <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:8px">Plantilla</label>
           <div class="camp-tpl-row">
             <button class="camp-tpl-btn active" onclick="loadCampTemplate('minimal',this)">Minimal</button>
@@ -3145,8 +3163,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <button class="camp-tpl-btn" onclick="loadCampTemplate('birthday',this)">Cumpleaños</button>
           </div>
         </div>
-        <!-- Toolbar -->
-        <div>
+        <!-- Toolbar + rich editor (email only) -->
+        <div id="cmp-toolbar-section">
           <div class="camp-toolbar">
             <button title="Negrita" onclick="campExec('bold')"><b>B</b></button>
             <button title="Cursiva" onclick="campExec('italic')"><i>I</i></button>
@@ -3178,24 +3196,42 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <p>Hola <strong>{nombre}</strong>,</p><p>Tenemos una oferta especial para ti. ¡Visítanos pronto!</p>
           </div>
         </div>
-        <!-- Image URL -->
-        <div>
+        <!-- Image URL (email only) -->
+        <div id="cmp-img-section">
           <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Imagen de cabecera (URL)</label>
           <div style="display:flex;gap:8px">
             <input id="cmp-img-url" class="field-input" placeholder="https://…imagen.jpg" oninput="campUpdatePreview()">
             <button class="btn-sm btn-ghost" onclick="document.getElementById('cmp-img-url').value='';campUpdatePreview()">✕</button>
           </div>
         </div>
-        <!-- CTA Button text -->
-        <div>
+        <!-- CTA Button text (email only) -->
+        <div id="cmp-cta-section">
           <label style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);display:block;margin-bottom:5px">Texto del botón CTA</label>
           <input id="cmp-cta" class="field-input" placeholder="Ver mi tarjeta →" oninput="campUpdatePreview()">
         </div>
       </div>
       <!-- ── PREVIEW PANE ── -->
       <div class="camp-preview-pane">
-        <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:rgba(38,23,12,.4);text-align:center;margin-bottom:12px">Vista previa del email</p>
-        <div class="ep-wrap" id="cmp-preview"></div>
+        <!-- Email preview -->
+        <div id="cmp-email-preview-wrap">
+          <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:rgba(38,23,12,.4);text-align:center;margin-bottom:12px">Vista previa del email</p>
+          <div class="ep-wrap" id="cmp-preview"></div>
+        </div>
+        <!-- Push preview -->
+        <div id="cmp-push-preview-wrap" style="display:none">
+          <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;font-weight:700;color:rgba(38,23,12,.4);text-align:center;margin-bottom:12px">Vista previa de la notificación</p>
+          <div style="max-width:320px;margin:0 auto">
+            <div style="background:#1c1c1e;border-radius:16px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3)">
+              <div style="width:36px;height:36px;border-radius:8px;background:var(--honey);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">⭐</div>
+              <div style="flex:1;min-width:0">
+                <div id="cmp-push-preview-title" style="font-size:.8rem;font-weight:700;color:white;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ZubCard</div>
+                <div id="cmp-push-preview-body" style="font-size:.75rem;color:rgba(255,255,255,.75);line-height:1.4;word-break:break-word">Tu mensaje aparecerá aquí…</div>
+                <div style="font-size:.65rem;color:rgba(255,255,255,.4);margin-top:6px">ahora · zubcard.com</div>
+              </div>
+            </div>
+            <p style="font-size:.7rem;color:rgba(38,23,12,.35);text-align:center;margin-top:14px;line-height:1.5">Solo reciben la notificación clientes que<br>aceptaron push en su tarjeta de fidelización</p>
+          </div>
+        </div>
       </div>
     </div>
     <!-- Footer: hidden compat fields + action buttons -->
@@ -4911,6 +4947,7 @@ function renderActivityRows(rows, append){
 // ═══════════════════════════════════════════════════════════════════
 let _campaigns = [];
 let _campTypeFilter = 'all';
+let _campEditorType = 'email';
 let _campTab = 'active';
 
 async function loadCampaigns(){
@@ -4970,7 +5007,42 @@ function switchCampTab(tab){
 }
 
 function showNewCampaign(){
+  _campEditorType='email';
+  setCampType('email');
   openCampModal();
+}
+function setCampType(type){
+  _campEditorType=type;
+  const isPush=type==='push';
+  // toggle type buttons
+  const be=document.getElementById('camptype-btn-email');
+  const bp=document.getElementById('camptype-btn-push');
+  if(be){be.style.background=isPush?'white':'#0a0a0a';be.style.color=isPush?'#0a0a0a':'white';be.style.borderColor=isPush?'var(--cream-border)':'#0a0a0a';}
+  if(bp){bp.style.background=isPush?'#0a0a0a':'white';bp.style.color=isPush?'white':'#0a0a0a';bp.style.borderColor=isPush?'#0a0a0a':'var(--cream-border)';}
+  // toggle subject label
+  const lbl=document.getElementById('cmp-subject-label');
+  const hint=document.getElementById('cmp-subject-hint');
+  if(lbl) lbl.textContent=isPush?'Título de la notificación':'Asunto del email';
+  if(hint) hint.textContent=isPush?'Se muestra como título del push':'Variables: {nombre}';
+  if(document.getElementById('cmp-subject')) document.getElementById('cmp-subject').placeholder=isPush?'ej: ¡Nueva oferta para ti! 🎉':'ej: ¡Una oferta especial para ti, {nombre}!';
+  // toggle push section vs email sections
+  const show=(id,v)=>{const el=document.getElementById(id);if(el)el.style.display=v?'':'none';};
+  show('cmp-push-section',isPush);
+  show('cmp-tpl-section',!isPush);
+  show('cmp-toolbar-section',!isPush);
+  show('cmp-img-section',!isPush);
+  show('cmp-cta-section',!isPush);
+  show('cmp-email-preview-wrap',!isPush);
+  show('cmp-push-preview-wrap',isPush);
+  campUpdatePreview();
+}
+function campPushCounter(){
+  const ta=document.getElementById('cmp-push-body');
+  const ct=document.getElementById('cmp-push-counter');
+  if(!ta||!ct) return;
+  const n=ta.value.length;
+  ct.textContent=`${n}/150`;
+  ct.style.color=n>130?'var(--red)':n>100?'var(--honey)':'var(--brown-light)';
 }
 function openCampModal(){
   const overlay=document.getElementById('camp-editor-overlay');
@@ -5010,6 +5082,15 @@ function loadCampTemplate(key,btn){
   campUpdatePreview();
 }
 function campUpdatePreview(){
+  if(_campEditorType==='push'){
+    const title=document.getElementById('cmp-subject')?.value||'ZubCard';
+    const msg=document.getElementById('cmp-push-body')?.value||'Tu mensaje aparecerá aquí…';
+    const t=document.getElementById('cmp-push-preview-title');
+    const b=document.getElementById('cmp-push-preview-body');
+    if(t) t.textContent=title||'ZubCard';
+    if(b) b.textContent=msg||'Tu mensaje aparecerá aquí…';
+    return;
+  }
   const subj=document.getElementById('cmp-subject')?.value||'(sin asunto)';
   const bodyEl=document.getElementById('cmp-editor');
   const body=bodyEl?bodyEl.innerHTML:'';
@@ -5031,25 +5112,29 @@ function campUpdatePreview(){
 async function campSave(action){
   const name=document.getElementById('cmp-name')?.value.trim();
   const subject=document.getElementById('cmp-subject')?.value.trim()||'';
-  const bodyEl=document.getElementById('cmp-editor');
-  const body=bodyEl?bodyEl.innerText:'';
+  const isPush=_campEditorType==='push';
+  const body=isPush
+    ?(document.getElementById('cmp-push-body')?.value.trim()||'')
+    :(document.getElementById('cmp-editor')?.innerText||'');
   const segment=document.getElementById('nc-segment')?.value||'all';
   const msgEl=document.getElementById('cmp-msg');
   if(!name){if(msgEl){msgEl.textContent='⚠ Introduce un nombre';msgEl.style.color='var(--red)';}return;}
+  if(isPush&&!body&&action==='send'){if(msgEl){msgEl.textContent='⚠ Escribe el mensaje push';msgEl.style.color='var(--red)';}return;}
   // sync hidden fields for backward compat
   const hn=document.getElementById('nc-name'); if(hn) hn.value=name;
   const hs=document.getElementById('nc-subject'); if(hs) hs.value=subject;
   const hb=document.getElementById('nc-body'); if(hb) hb.value=body;
   const status=action==='send'?'sending':'draft';
+  const campType=isPush?'push':'email';
   try{
     const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns?pin=${PIN}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,subject,body,segment,type:'email',status})
+      body:JSON.stringify({name,subject,body,segment,type:campType,status})
     });
     const data=await r.json();
     if(!r.ok){if(msgEl){msgEl.textContent='Error al guardar';msgEl.style.color='var(--red)';}return;}
     if(msgEl){msgEl.textContent=action==='send'?'Enviando...':'Borrador guardado';msgEl.style.color='var(--green)';}
-    if(action==='send'&&data.id) await sendCampaign(data.id);
+    if(action==='send'&&data.id) await sendCampaign(data.id,campType);
     await loadCampaigns();
     setTimeout(()=>{closeCampModal();if(msgEl)msgEl.textContent='';},1400);
     showToast(action==='send'?'Campaña enviada':'Borrador guardado');
@@ -5079,11 +5164,12 @@ async function saveCampaign(action){
   }catch(e){if(msgEl){msgEl.textContent='❌ Error';msgEl.style.color='#c62828';}}
 }
 
-async function sendCampaign(id){
+async function sendCampaign(id,type){
   try{
     const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns/${id}/send?pin=${PIN}`,{method:'POST'});
     const d=await r.json();
-    showToast(`📧 Enviado a ${d.sent||0} clientes ✓`,'success');
+    const isPush=(type||d.type)==='push';
+    showToast(isPush?`🔔 Push enviado a ${d.sent||0} suscriptores ✓`:`📧 Enviado a ${d.sent||0} clientes ✓`,'success');
     await loadCampaigns();
   }catch(e){ showToast('Error al enviar','error'); }
 }

@@ -287,37 +287,57 @@ def _run_scheduled_campaigns():
     _db = _SL()
     try:
         rows = _db.execute(text(
-            "SELECT c.id, c.business_id, c.name, c.subject, c.body, c.segment, "
+            "SELECT c.id, c.business_id, c.name, c.subject, c.body, c.segment, c.type, "
             "       b.slug, b.email "
             "FROM campaigns c JOIN businesses b ON b.id=c.business_id "
             "WHERE c.status='draft' AND c.scheduled_at IS NOT NULL AND c.scheduled_at <= NOW()"
         )).fetchall()
         for row in rows:
-            camp_id, bid, _name, subject, body_txt, segment, slug, biz_email = row
+            camp_id, bid, camp_name, subject, body_txt, segment, camp_type, slug, biz_email = row
+            segment = segment or "all"
+            camp_type = camp_type or "email"
             try:
-                q_base = (
-                    "SELECT cu.email, cu.first_name FROM customers cu "
-                    "JOIN loyalty_cards lc ON lc.customer_id=cu.id "
-                    "WHERE cu.business_id=:bid AND cu.opt_in_email=TRUE "
-                    "AND cu.email NOT LIKE '%placeholder%'"
-                )
-                if segment == "active":
-                    q_base += " AND lc.stamps > 0"
-                customers = _db.execute(text(q_base), {"bid": str(bid)}).fetchall()
-                sent = 0
-                for cust in customers:
-                    try:
-                        body_html = f"<p>{(body_txt or '').replace('{nombre}', cust[1] or '')}</p>"
-                        sub_text = (subject or "").replace("{nombre}", cust[1] or "")
-                        if send_email(cust[0], sub_text, body_html):
-                            sent += 1
-                    except Exception:
-                        pass
+                if camp_type == "push":
+                    q_push = (
+                        "SELECT ps.endpoint, ps.p256dh, ps.auth FROM push_subscriptions ps "
+                        "JOIN loyalty_cards lc ON lc.id=ps.card_id "
+                        "WHERE lc.business_id=:bid"
+                    )
+                    if segment == "active":
+                        q_push += " AND lc.stamps > 0"
+                    subs = _db.execute(text(q_push), {"bid": str(bid)}).fetchall()
+                    result = _send_push_to_subscriptions(
+                        subs,
+                        title=subject or camp_name or "ZubCard",
+                        message=body_txt or "",
+                        url=f"/biz/{slug}/card",
+                    )
+                    sent = result["sent"]
+                    print(f"✅ Scheduled push campaign {camp_id} sent to {sent}/{len(subs)} subscribers")
+                else:
+                    q_base = (
+                        "SELECT cu.email, cu.first_name FROM customers cu "
+                        "JOIN loyalty_cards lc ON lc.customer_id=cu.id "
+                        "WHERE cu.business_id=:bid AND cu.opt_in_email=TRUE "
+                        "AND cu.email NOT LIKE '%placeholder%'"
+                    )
+                    if segment == "active":
+                        q_base += " AND lc.stamps > 0"
+                    customers = _db.execute(text(q_base), {"bid": str(bid)}).fetchall()
+                    sent = 0
+                    for cust in customers:
+                        try:
+                            body_html = f"<p>{(body_txt or '').replace('{nombre}', cust[1] or '')}</p>"
+                            sub_text = (subject or "").replace("{nombre}", cust[1] or "")
+                            if send_email(cust[0], sub_text, body_html):
+                                sent += 1
+                        except Exception:
+                            pass
+                    print(f"✅ Scheduled email campaign {camp_id} sent to {sent} customers")
                 _db.execute(text(
                     "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
                 ), {"id": str(camp_id)})
                 _db.commit()
-                print(f"✅ Scheduled campaign {camp_id} sent to {sent} customers")
             except Exception as e:
                 print(f"❌ Error sending scheduled campaign {camp_id}: {e}")
                 _db.rollback()
@@ -3842,17 +3862,44 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
 
 @app.post("/api/biz/{slug}/campaigns/{campaign_id}/send")
 def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
-    """Send email campaign to segmented customers"""
+    """Send email or push campaign to segmented customers"""
     verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     camp = db.execute(text(
-        "SELECT name, subject, body, segment FROM campaigns WHERE id=:id AND business_id=:bid"
+        "SELECT name, subject, body, segment, type FROM campaigns WHERE id=:id AND business_id=:bid"
     ), {"id": campaign_id, "bid": str(biz.id)}).fetchone()
     if not camp:
         raise HTTPException(status_code=404, detail="Campaña no encontrada")
-    segment = camp[3] or "all"
+    camp_name, subject, body_txt, segment, camp_type = camp
+    segment = segment or "all"
+    camp_type = camp_type or "email"
+
+    if camp_type == "push":
+        # Get push subscriptions for this business's card holders
+        q_push = (
+            "SELECT ps.endpoint, ps.p256dh, ps.auth FROM push_subscriptions ps "
+            "JOIN loyalty_cards lc ON lc.id=ps.card_id "
+            "WHERE lc.business_id=:bid"
+        )
+        if segment == "active":
+            q_push += " AND lc.stamps > 0"
+        subs = db.execute(text(q_push), {"bid": str(biz.id)}).fetchall()
+        result = _send_push_to_subscriptions(
+            subs,
+            title=subject or camp_name or "ZubCard",
+            message=body_txt or "",
+            url=f"/biz/{biz.slug}/card",
+        )
+        db.execute(text(
+            "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
+        ), {"id": campaign_id})
+        db.commit()
+        return {"sent": result["sent"], "failed": result.get("failed", 0),
+                "total_subscribers": len(subs), "status": "sent", "type": "push"}
+
+    # ── EMAIL ──
     q_base = (
         "SELECT c.email, c.first_name FROM customers c "
         "JOIN loyalty_cards lc ON lc.customer_id=c.id "
@@ -3864,8 +3911,8 @@ def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depe
     sent = 0
     for cust in customers:
         try:
-            body_html = f"<p>{(camp[2] or '').replace('{nombre}', cust[1] or '')}</p>"
-            subject_text = (camp[1] or "").replace("{nombre}", cust[1] or "")
+            body_html = f"<p>{(body_txt or '').replace('{nombre}', cust[1] or '')}</p>"
+            subject_text = (subject or "").replace("{nombre}", cust[1] or "")
             if send_email(cust[0], subject_text, body_html):
                 sent += 1
         except Exception:
