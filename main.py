@@ -248,6 +248,22 @@ def run_migrations():
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
         # Campaigns: scheduled sending support
         "ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ",
+        # ── Scanner device authorization ──────────────────────────────────────────
+        """CREATE TABLE IF NOT EXISTS scanner_devices (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
+            store_id UUID REFERENCES stores(id) ON DELETE SET NULL,
+            device_token VARCHAR UNIQUE NOT NULL,
+            device_name VARCHAR DEFAULT '',
+            store_name VARCHAR DEFAULT '',
+            status VARCHAR DEFAULT 'pending',
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            approved_at TIMESTAMPTZ,
+            last_seen_at TIMESTAMPTZ
+        )""",
+        # ── Audit trail: source + store_id in stamp_transactions ─────────────────
+        "ALTER TABLE stamp_transactions ADD COLUMN IF NOT EXISTS source VARCHAR DEFAULT 'admin'",
+        "ALTER TABLE stamp_transactions ADD COLUMN IF NOT EXISTS store_id UUID",
 
     ]
     from database import SessionLocal
@@ -1217,6 +1233,8 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
             transaction_type="stamp",
             note=body.get("note", f"+{n} sello(s)"),
             store=body.get("store", ""),
+            source=body.get("source", "admin"),
+            store_id=body.get("store_id") or None,
         )
         db.add(tx)
 
@@ -1274,6 +1292,8 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
         transaction_type="redeem",
         note=body.get("note", f"Premio canjeado: {REWARD_NAME}"),
         store=body.get("store", ""),
+        source=body.get("source", "admin"),
+        store_id=body.get("store_id") or None,
     )
     db.add(tx)
     db.commit()
@@ -1294,13 +1314,22 @@ def card_history(card_id: str, pin: str = "", db: Session = Depends(get_db)):
            .filter(models.StampTransaction.card_id == card.id)
            .order_by(models.StampTransaction.created_at.desc())
            .limit(100).all())
-    return {"history": [
+    def _src_label(src, store):
+        if src == "scanner" and store: return f"📱 {store}"
+        if src == "scanner": return "📱 Scanner"
+        if src == "passcode": return "🔑 Passcode"
+        if src == "register": return "🆕 Registro"
+        return "💻 Admin"
+
+    return [
         {"id": str(t.id), "stamps_added": t.stamps_added,
          "transaction_type": t.transaction_type or "stamp",
          "note": t.note, "store": t.store or "",
+         "source": getattr(t, "source", None) or "admin",
+         "source_label": _src_label(getattr(t, "source", None) or "admin", t.store or ""),
          "created_at": t.created_at.isoformat() if t.created_at else ""}
         for t in txs
-    ]}
+    ]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -3520,6 +3549,152 @@ def delete_store(slug: str, store_id: str, pin: str = "", db: Session = Depends(
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# SCANNER DEVICE AUTHORIZATION
+# ════════════════════════════════════════════════════════════════════════════════
+
+@app.get("/app/scanner-login", response_class=HTMLResponse)
+async def scanner_login_page(request: Request):
+    """Generic scanner login page — employee enters slug + PIN, device gets authorized."""
+    return templates.TemplateResponse("scanner_login.html", {"request": request, "base_url": BASE_URL})
+
+
+@app.post("/api/scanner/auth")
+async def scanner_auth(request: Request, db: Session = Depends(get_db)):
+    """
+    Employee login from scanner device.
+    Body: {slug, pin, device_token, device_name}
+    Returns:
+      - {status: 'pending', device_token} if new/pending device
+      - {status: 'approved', slug, store_name, store_id, session_token} if approved
+      - {status: 'rejected'} if revoked
+      - 403 if bad credentials
+    """
+    body = await request.json()
+    slug         = (body.get("slug") or "").strip().lower()
+    pin          = str(body.get("pin") or "").strip()
+    device_token = (body.get("device_token") or "").strip()
+    device_name  = (body.get("device_name") or "Este dispositivo").strip()
+
+    if not slug or not pin or not device_token:
+        raise HTTPException(status_code=400, detail="Faltan campos requeridos")
+
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    # Validate credentials: accept store PIN only (not admin)
+    store_row = db.execute(text(
+        "SELECT id, name FROM stores WHERE business_id=:bid AND pin=:pin AND active=TRUE LIMIT 1"
+    ), {"bid": str(biz.id), "pin": pin}).fetchone()
+
+    if not store_row:
+        raise HTTPException(status_code=403, detail="PIN incorrecto o tienda inactiva")
+
+    store_id   = str(store_row[0])
+    store_name = store_row[1]
+
+    # Check existing device record
+    dev = db.execute(text(
+        "SELECT id, status FROM scanner_devices WHERE device_token=:tok AND business_id=:bid LIMIT 1"
+    ), {"tok": device_token, "bid": str(biz.id)}).fetchone()
+
+    if dev:
+        status = dev[1]
+        if status == "approved":
+            # Update last_seen and store association (in case PIN changed stores)
+            db.execute(text(
+                "UPDATE scanner_devices SET last_seen_at=NOW(), store_id=:sid, store_name=:sname "
+                "WHERE device_token=:tok AND business_id=:bid"
+            ), {"sid": store_id, "sname": store_name, "tok": device_token, "bid": str(biz.id)})
+            db.commit()
+            return {"status": "approved", "slug": slug, "store_name": store_name,
+                    "store_id": store_id, "business_name": biz.name}
+        elif status == "rejected":
+            return {"status": "rejected"}
+        else:
+            return {"status": "pending", "device_token": device_token}
+    else:
+        # Register new device as pending
+        db.execute(text(
+            "INSERT INTO scanner_devices (business_id, store_id, device_token, device_name, store_name, status) "
+            "VALUES (:bid, :sid, :tok, :dname, :sname, 'pending')"
+        ), {"bid": str(biz.id), "sid": store_id, "tok": device_token,
+            "dname": device_name, "sname": store_name})
+        db.commit()
+        return {"status": "pending", "device_token": device_token}
+
+
+@app.get("/api/scanner/device-status/{device_token}")
+def scanner_device_status(device_token: str, db: Session = Depends(get_db)):
+    """Polling endpoint — employee page polls this to detect when admin approves the device."""
+    dev = db.execute(text(
+        "SELECT status, store_name, store_id, b.slug, b.name "
+        "FROM scanner_devices sd "
+        "JOIN businesses b ON b.id = sd.business_id "
+        "WHERE sd.device_token=:tok LIMIT 1"
+    ), {"tok": device_token}).fetchone()
+
+    if not dev:
+        raise HTTPException(status_code=404, detail="Dispositivo no encontrado")
+
+    if dev[0] == "approved":
+        return {"status": "approved", "store_name": dev[1], "store_id": str(dev[2]) if dev[2] else "",
+                "slug": dev[3], "business_name": dev[4]}
+    return {"status": dev[0]}
+
+
+@app.get("/api/biz/{slug}/scanner-devices")
+def list_scanner_devices(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Admin: list all registered scanner devices for this business."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    rows = db.execute(text(
+        "SELECT sd.id, sd.device_token, sd.device_name, sd.store_name, sd.status, "
+        "sd.created_at, sd.approved_at, sd.last_seen_at "
+        "FROM scanner_devices sd WHERE sd.business_id=:bid ORDER BY sd.created_at DESC"
+    ), {"bid": str(biz.id)}).fetchall()
+    return {"devices": [
+        {"id": str(r[0]), "device_token": r[1], "device_name": r[2] or "Sin nombre",
+         "store_name": r[3] or "", "status": r[4],
+         "created_at": r[5].isoformat() if r[5] else None,
+         "approved_at": r[6].isoformat() if r[6] else None,
+         "last_seen_at": r[7].isoformat() if r[7] else None}
+        for r in rows
+    ]}
+
+
+@app.post("/api/biz/{slug}/scanner-devices/{device_id}/approve")
+def approve_scanner_device(slug: str, device_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Admin: approve a pending scanner device."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text(
+        "UPDATE scanner_devices SET status='approved', approved_at=NOW() "
+        "WHERE id=:id AND business_id=:bid"
+    ), {"id": device_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "approved"}
+
+
+@app.post("/api/biz/{slug}/scanner-devices/{device_id}/revoke")
+def revoke_scanner_device(slug: str, device_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Admin: revoke an approved scanner device."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text(
+        "UPDATE scanner_devices SET status='rejected' WHERE id=:id AND business_id=:bid"
+    ), {"id": device_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "revoked"}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # PASSCODES
 # ════════════════════════════════════════════════════════════════════════════════
 
@@ -3950,7 +4125,9 @@ def activity_log(
 
     rows = db.execute(text(f"""
         SELECT st.created_at, c.first_name, c.last_name, c.email,
-               st.transaction_type, st.stamps_added, st.note, st.store
+               st.transaction_type, st.stamps_added, st.note, st.store,
+               COALESCE(st.source, 'admin') as source,
+               COALESCE(st.store, '') as store_name
         FROM stamp_transactions st
         JOIN loyalty_cards lc ON lc.id = st.card_id
         JOIN customers c ON c.id = lc.customer_id
@@ -3961,6 +4138,18 @@ def activity_log(
         LIMIT :limit OFFSET :offset
     """), {"bid": bid, "limit": limit, "offset": offset}).fetchall()
 
+    def source_label(source: str, store: str) -> str:
+        if source == "scanner" and store:
+            return f"📱 {store}"
+        elif source == "scanner":
+            return "📱 Scanner"
+        elif source == "passcode":
+            return "🔑 Passcode"
+        elif source == "register":
+            return "🆕 Registro"
+        else:
+            return "💻 Admin"
+
     return {
         "stats": stats,
         "rows": [
@@ -3970,7 +4159,9 @@ def activity_log(
                 "email": r[3] or "",
                 "type": r[4] or "stamp",
                 "amount": int(r[5] or 0),
-                "note": r[6] or r[7] or "",
+                "note": r[6] or "",
+                "source": r[8] or "admin",
+                "source_label": source_label(r[8] or "admin", r[9] or ""),
             }
             for r in rows
         ],

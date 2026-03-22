@@ -541,8 +541,13 @@ const BIZ_NAME    = "{{ business_name }}";
 const BASE_URL    = "{{ base_url }}";
 const DEFAULT_SPR = {{ stamps_per_reward }};
 
+// Read store_id / store_name from URL params (set by scanner_login redirect)
+const _urlParams    = new URLSearchParams(window.location.search);
+const URL_STORE_ID  = _urlParams.get('store_id')   || '';
+const URL_STORE_NAME= _urlParams.get('store_name') || '';
+
 let adminPin = "", currentCardId = "", currentCard = null;
-let employeeRole = "", employeeStore = "";
+let employeeRole = "", employeeStore = URL_STORE_NAME, employeeStoreId = URL_STORE_ID;
 let scanActive = false, videoStream = null, quickCount = 1;
 
 const PRODUCTS = [
@@ -784,7 +789,7 @@ async function redeemReward() {
   const name = currentCard.name||(currentCard.firstName||'');
   if (!confirm(`¿Canjear 1 galleta gratis para ${name}? (${n} disponible${n>1?'s':''})`)) return;
   try {
-    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin})});
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin, store:employeeStore||BIZ_NAME, store_id:employeeStoreId||undefined, source: employeeStoreId ? 'scanner' : 'admin'})});
     const d = await r.json();
     document.getElementById('success-icon').textContent='🎁';
     document.getElementById('success-title').textContent='¡Premio canjeado!';
@@ -839,7 +844,7 @@ async function submitStamps(mode) {
   const btn=document.getElementById(btnId); btn.disabled=true; btn.textContent='Añadiendo…';
   try {
     const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pin:adminPin, stamps:stamps, note:note, store:employeeStore||BIZ_NAME})});
+      body:JSON.stringify({pin:adminPin, stamps:stamps, note:note, store:employeeStore||BIZ_NAME, store_id:employeeStoreId||undefined, source: employeeStoreId ? 'scanner' : 'admin'})});
     const d = await r.json();
     if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
     const spr=getSPR(), name=currentCard.name||(currentCard.firstName||'');

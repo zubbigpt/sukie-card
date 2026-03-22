@@ -2576,6 +2576,23 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <button class="btn-sm btn-ghost" onclick="document.getElementById('store-form').style.display='none'" style="flex:1">Cancelar</button>
           </div>
         </div>
+
+        <!-- DISPOSITIVOS SCANNER -->
+        <div class="card-box" style="margin-top:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div>
+              <h3 style="color:var(--brown);font-size:.95rem;font-weight:800">📱 Dispositivos de Escáner</h3>
+              <p style="font-size:.78rem;color:var(--brown-light);margin-top:2px">Aprueba o revoca tablets / móviles que usan el escáner de empleado</p>
+            </div>
+            <button class="btn-sm btn-ghost" onclick="loadDevices()" style="font-size:.72rem">↺ Actualizar</button>
+          </div>
+          <div id="devices-list">
+            <p style="text-align:center;padding:20px;color:var(--brown-light);font-size:.82rem">Cargando dispositivos...</p>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--cream-border);font-size:.75rem;color:var(--brown-light)">
+            💡 El empleado accede desde <strong>zubcard.com/app/scanner-login</strong> y la primera vez queda pendiente hasta que lo apruebes aquí.
+          </div>
+        </div>
       </div>
 
             <!-- ═══ FIDELIZACIÓN UNIFICADA ═══ -->
@@ -3439,7 +3456,7 @@ function showSection(name){
   if(name==='cartas')       loadMenus();
   if(name==='passcodes')    setPCCardUrl();
   if(name==='passcodes')     loadPassCodes();
-  if(name==='stores')        loadStores();
+  if(name==='stores')        { loadStores(); loadDevices(); }
   if(name==='email')         loadEmailSettings();
   if(name==='cuenta-perfil') loadPerfil();
   if(name==='geo'){          loadGeoSection(); setTimeout(checkVapidStatus,400); }
@@ -3853,7 +3870,7 @@ async function loadActivity_client(cardId){
       <div class="activity-dot ${t.transaction_type||'stamp'}">${icons[t.transaction_type||'stamp']||'🍪'}</div>
       <div class="activity-content">
         <div class="a-title">${labels[t.transaction_type||'stamp']||t.transaction_type} ${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added}</div>
-        <div class="a-date">${t.created_at?new Date(t.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''} ${t.store?'· '+t.store:''}</div>
+        <div class="a-date">${t.created_at?new Date(t.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''} · ${t.source_label||t.store||'💻 Admin'}</div>
       </div>
     </div>`).join('');
 }
@@ -5377,6 +5394,60 @@ async function deleteStore(id){
     await loadStores();
     showToast('Local eliminado','success');
   }catch(e){ showToast('Error al eliminar','error'); }
+}
+
+// ── Scanner Devices ────────────────────────────────────────────────────────
+async function loadDevices(){
+  const el=document.getElementById('devices-list');
+  if(!el) return;
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/scanner-devices?pin=${PIN}`);
+    const d=await r.json();
+    renderDevices(d.devices||[]);
+  }catch(e){ el.innerHTML='<p style="color:#c62828;font-size:.8rem;padding:8px">Error al cargar dispositivos</p>'; }
+}
+
+function renderDevices(devices){
+  const el=document.getElementById('devices-list');
+  if(!el) return;
+  if(!devices.length){
+    el.innerHTML='<p style="text-align:center;padding:20px;color:var(--brown-light);font-size:.82rem">Sin dispositivos registrados aún. El empleado debe abrir <strong>zubcard.com/app/scanner-login</strong> desde su tablet/móvil.</p>';
+    return;
+  }
+  const statusColor={pending:'#856404',approved:'#155724',rejected:'#721c24'};
+  const statusBg={pending:'#fff3cd',approved:'#d4edda',rejected:'#f8d7da'};
+  const statusLabel={pending:'⏳ Pendiente',approved:'✅ Aprobado',rejected:'🚫 Revocado'};
+  el.innerHTML=devices.map(dev=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--cream-border);gap:8px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--brown)">${dev.device_name||'Sin nombre'}</div>
+        <div style="font-size:.72rem;color:var(--brown-light);margin-top:2px">🏪 ${dev.store_name||'—'} · ${dev.created_at?new Date(dev.created_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):''}</div>
+        ${dev.last_seen_at?`<div style="font-size:.68rem;color:var(--brown-light)">Última vez: ${new Date(dev.last_seen_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="background:${statusBg[dev.status]};color:${statusColor[dev.status]};border-radius:50px;padding:3px 10px;font-size:.7rem;font-weight:700">${statusLabel[dev.status]||dev.status}</span>
+        ${dev.status==='pending'?`<button class="btn-sm btn-primary" style="font-size:.72rem;padding:4px 12px" onclick="approveDevice('${dev.id}')">Aprobar</button>`:''}
+        ${dev.status==='approved'?`<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:4px 10px;color:#c62828" onclick="revokeDevice('${dev.id}')">Revocar</button>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approveDevice(id){
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/scanner-devices/${id}/approve?pin=${PIN}`,{method:'POST'});
+    await loadDevices();
+    showToast('Dispositivo aprobado ✅','success');
+  }catch(e){ showToast('Error','error'); }
+}
+
+async function revokeDevice(id){
+  if(!confirm('¿Revocar acceso a este dispositivo?')) return;
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/scanner-devices/${id}/revoke?pin=${PIN}`,{method:'POST'});
+    await loadDevices();
+    showToast('Dispositivo revocado','success');
+  }catch(e){ showToast('Error','error'); }
 }
 
 
