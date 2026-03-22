@@ -4130,42 +4130,41 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
     try:
         if etype == "checkout.session.completed":
-            # Solo marcamos pro — el período exacto llega en customer.subscription.updated
+            # Solo marcamos pro — el período exacto llega en subscription.created/updated
             cid = data.get("customer")
             sid = data.get("subscription")
             biz_row = _biz_by_customer(cid)
             if biz_row and sid:
                 db.execute(text(
                     "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
-                    "stripe_subscription_status='active' "
-                    "WHERE id=:bid"
+                    "stripe_subscription_status='active' WHERE id=:bid"
                 ), {"sid": sid, "bid": str(biz_row[0])})
                 db.commit()
-                print(f"✅ Stripe checkout.session.completed — business {biz_row[0]} → pro")
+                print(f"✅ checkout.session.completed — biz {biz_row[0]} → pro")
 
-    elif etype in ("customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"):
-        cid    = data.get("customer")
-        sid    = data.get("id")
-        status = data.get("status", "")
-        pe_ts  = data.get("current_period_end")
-        pe     = _dt.fromtimestamp(pe_ts) if pe_ts else None
-        biz_row = _biz_by_customer(cid)
-        if biz_row:
-            # Proteger cuentas con plan bloqueado (subscription_id != sub_xxx de Stripe)
-            stored = db.execute(text(
-                "SELECT stripe_subscription_id FROM businesses WHERE id=:bid"
-            ), {"bid": str(biz_row[0])}).scalar()
-            if stored and not stored.startswith("sub_"):
-                print(f"⏭️ Stripe {etype} ignorado — cuenta con plan bloqueado (stored={stored})")
-            else:
-                new_plan = "pro" if status in ("active", "trialing") else "free"
-                db.execute(text(
-                    "UPDATE businesses SET plan=:plan, stripe_subscription_id=:sid, "
-                    "stripe_subscription_status=:status, stripe_current_period_end=:pe "
-                    "WHERE id=:bid"
-                ), {"plan": new_plan, "sid": sid, "status": status, "pe": pe, "bid": str(biz_row[0])})
-                db.commit()
-                print(f"✅ Stripe {etype} — business {biz_row[0]} status={status} plan={new_plan}")
+        elif etype in ("customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"):
+            cid    = data.get("customer")
+            sid    = data.get("id")
+            status = data.get("status", "")
+            pe_ts  = data.get("current_period_end")
+            pe     = _dt.fromtimestamp(pe_ts) if pe_ts else None
+            biz_row = _biz_by_customer(cid)
+            if biz_row:
+                # Proteger cuentas con plan bloqueado (owner-account, etc.)
+                stored = db.execute(text(
+                    "SELECT stripe_subscription_id FROM businesses WHERE id=:bid"
+                ), {"bid": str(biz_row[0])}).scalar()
+                if stored and not stored.startswith("sub_"):
+                    print(f"⏭️ {etype} ignorado — plan bloqueado ({stored})")
+                else:
+                    new_plan = "pro" if status in ("active", "trialing") else "free"
+                    db.execute(text(
+                        "UPDATE businesses SET plan=:plan, stripe_subscription_id=:sid, "
+                        "stripe_subscription_status=:status, stripe_current_period_end=:pe "
+                        "WHERE id=:bid"
+                    ), {"plan": new_plan, "sid": sid, "status": status, "pe": pe, "bid": str(biz_row[0])})
+                    db.commit()
+                    print(f"✅ {etype} — biz {biz_row[0]} status={status} plan={new_plan}")
 
         elif etype == "invoice.payment_failed":
             cid = data.get("customer")
@@ -4175,12 +4174,16 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                     "UPDATE businesses SET stripe_subscription_status='past_due' WHERE id=:bid"
                 ), {"bid": str(biz_row[0])})
                 db.commit()
-                print(f"⚠️ Stripe invoice.payment_failed — business {biz_row[0]}")
+                print(f"⚠️ invoice.payment_failed — biz {biz_row[0]}")
+
+        else:
+            print(f"⏭️ Stripe event ignorado: {etype}")
 
     except Exception as e:
+        import traceback
         print(f"❌ Stripe webhook error [{etype}]: {e}")
-        import traceback; traceback.print_exc()
-        # Devolvemos 200 para que Stripe no reintente — el error está loggeado
+        traceback.print_exc()
+        # Siempre 200 para que Stripe no reintente — error loggeado en Railway
 
     return {"received": True}
 
