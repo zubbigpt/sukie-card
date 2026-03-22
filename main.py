@@ -2251,7 +2251,15 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
         ref_url  = f"{BASE_URL}/register?ref={ref_code}"
         html    = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url)
         subject = "¡Bienvenido/a! 🎉"
-    sent = send_email(customer.email, subject, html)
+    # Per-business email branding
+    biz_from_name = ""
+    biz_reply_to  = ""
+    if customer.business_id:
+        biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+        if biz:
+            biz_from_name = biz.email_from_name or biz.name or ""
+            biz_reply_to  = biz.email_reply_to  or ""
+    sent = send_email(customer.email, subject, html, from_name=biz_from_name, reply_to=biz_reply_to)
     return {"sent": sent, "to": customer.email, "type": email_type,
             "note": "SMTP no configurado - configura en Railway env vars" if not sent else "Email enviado"}
 
