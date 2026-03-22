@@ -4032,7 +4032,7 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
         line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
         success_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_success=1",
         cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
-        subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}},
+        subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}, "trial_period_days": 14},
         allow_promotion_codes=True,
         locale="es",
     )
