@@ -5482,7 +5482,7 @@ function showFidTab(tab) {
 }
 
 function initFidLandingQR() {
-  const url = `${window.location.origin}/biz/${BIZ_SLUG}/register`;
+  const url = `${BASE}/biz/${BIZ_SLUG}/register`;
   const el = document.getElementById('fid-reg-url');
   const link = document.getElementById('fid-preview-link');
   if (el) el.value = url;
@@ -6146,7 +6146,7 @@ function saveMenu(){
 /* ── PASSCODES CARD URL ────────────────────────────────────── */
 function setPCCardUrl(){
   const el=document.getElementById('pc-card-url');
-  if(el) el.textContent=`${window.location.origin}/biz/${BIZ_SLUG}/card/[TOKEN_CLIENTE]`;
+  if(el) el.textContent=`${BASE}/biz/${BIZ_SLUG}/card/[TOKEN_CLIENTE]`;
 }
 
 /* ── ANDROID VAPID STATUS CHECK ──────────────────────────── */
