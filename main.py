@@ -4034,6 +4034,8 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
         cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
         subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}, "trial_period_days": 14},
         allow_promotion_codes=True,
+        tax_id_collection={"enabled": True},   # piden NIF/CIF en el checkout
+        billing_address_collection="required",  # dirección completa obligatoria
         locale="es",
     )
     return {"checkout_url": session.url, "session_id": session.id}
