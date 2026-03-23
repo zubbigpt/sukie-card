@@ -675,6 +675,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       <a onclick="showSection('geo')" id="nav-geo">
         <span class="material-symbols-outlined icon">location_on</span> Geo &amp; Notificaciones
       </a>
+      <a onclick="showSection('reviews')" id="nav-reviews">
+        <span class="material-symbols-outlined icon">star</span> Reseñas Google
+      </a>
 
       <!-- Mi Cuenta (collapsible) -->
       <a onclick="toggleNav('nav-cuenta-sub')" id="nav-cuenta" class="nav-parent">
@@ -2584,6 +2587,55 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         </div>
       </div>
 
+      <!-- ═══ RESEÑAS GOOGLE ═══ -->
+      <div class="section" id="section-reviews">
+        <div class="section-header">
+          <div style="flex:1">
+            <h1>Reseñas en Google</h1>
+            <p class="section-desc">Pide reseñas automáticamente cuando un cliente llega a un número de sellos. Cuantas más reseñas, más visibilidad en Google Maps.</p>
+          </div>
+        </div>
+
+        <div class="card-box">
+          <h3 style="margin-bottom:16px;color:#0a0a0a">Configuración</h3>
+
+          <div style="margin-bottom:16px">
+            <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px">Link de reseña de Google</label>
+            <input id="review-url-input" type="url" placeholder="https://g.page/r/XXXXXXXXXX/review"
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream);box-sizing:border-box">
+            <p style="font-size:.76rem;color:var(--brown-light);margin-top:5px;line-height:1.5">
+              Para obtener tu link: abre <strong>Google Maps</strong> → busca tu negocio → <em>Obtener más reseñas</em> → copia el enlace.
+            </p>
+          </div>
+
+          <div style="margin-bottom:20px">
+            <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px">¿Cuándo mostrar el banner?</label>
+            <select id="review-trigger-select"
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+              <option value="0">Al canjear la primera recompensa</option>
+              <option value="5">A partir de 5 sellos acumulados</option>
+              <option value="10">A partir de 10 sellos acumulados</option>
+              <option value="20">A partir de 20 sellos acumulados</option>
+              <option value="30">A partir de 30 sellos acumulados</option>
+            </select>
+          </div>
+
+          <!-- Preview -->
+          <div style="background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:14px 16px;text-align:center;margin-bottom:20px">
+            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#a07c00;margin-bottom:8px">Vista previa — como lo verá el cliente</div>
+            <div style="font-size:1.35rem;margin-bottom:4px">⭐⭐⭐⭐⭐</div>
+            <div style="font-weight:700;color:#26170c;font-size:.95rem;margin-bottom:4px">¿Te gusta nuestro servicio?</div>
+            <div style="font-size:.82rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google 🙏</div>
+            <div style="display:inline-block;background:#4285F4;color:#fff;font-weight:700;font-size:.85rem;padding:8px 18px;border-radius:8px">✍️ Dejar reseña en Google</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="btn-sm btn-primary" onclick="saveReviewsConfig()" style="padding:10px 24px">Guardar</button>
+            <span id="reviews-status" style="font-size:.8rem;color:var(--brown-light)"></span>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ TIENDAS / LOCALES ═══ -->
       <div class="section" id="section-stores">
         <div class="section-header">
@@ -3539,7 +3591,8 @@ const sectionTitles = {
     'cuenta-perfil':'Mi Cuenta — Perfil',
     'cuenta-plan':'Mi Cuenta — Plan & Billing',
     apps:'Apps',
-    geo:'Geo &amp; Notificaciones'
+    geo:'Geo &amp; Notificaciones',
+    reviews:'Reseñas Google'
   };
 
 function toggleNav(subId){
@@ -3580,6 +3633,7 @@ function showSection(name){
   if(name==='cuenta-perfil') loadPerfil();
   if(name==='cuenta-plan')   { renderPlanSection(); loadSubscriptionInfo(); }
   if(name==='geo'){          loadGeoSection(); setTimeout(checkVapidStatus,400); }
+  if(name==='reviews'){      loadReviewsSection(); }
 
   // Keep Tarjetas parent highlighted when inside a card sub-section
   const cardSubSections = ['fidelizacion','activity','birthdays','clients','new-client','import'];
@@ -5566,6 +5620,44 @@ async function sendGeoPush2(){
   }catch(e){
     if(status) status.textContent='❌ Error al enviar';
     showToast('Error al enviar notificación','error');
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+// ── GOOGLE REVIEWS ───────────────────────────────────────────────────────────
+async function loadReviewsSection(){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/reviews-config?pin=${PIN}`);
+    const d=await r.json();
+    const urlInput=document.getElementById('review-url-input');
+    const triggerSel=document.getElementById('review-trigger-select');
+    if(urlInput) urlInput.value=d.google_review_url||'';
+    if(triggerSel){
+      const trigger=String(d.review_trigger_stamps||0);
+      // select matching option, or fall back to first
+      const opt=[...triggerSel.options].find(o=>o.value===trigger);
+      if(opt) opt.selected=true; else triggerSel.options[0].selected=true;
+    }
+  }catch(e){ console.warn('loadReviewsSection error',e); }
+}
+
+async function saveReviewsConfig(){
+  const status=document.getElementById('reviews-status');
+  const url=(document.getElementById('review-url-input')?.value||'').trim();
+  const trigger=parseInt(document.getElementById('review-trigger-select')?.value||'0');
+  if(status) status.textContent='Guardando…';
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/reviews-config`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:PIN, google_review_url:url, review_trigger_stamps:trigger})
+    });
+    if(!r.ok) throw new Error('Error');
+    if(status){ status.textContent='✅ Guardado'; setTimeout(()=>status.textContent='',3000); }
+    showToast('Configuración de reseñas guardada','success');
+  }catch(e){
+    if(status) status.textContent='❌ Error al guardar';
+    showToast('Error al guardar','error');
   }
 }
 // ────────────────────────────────────────────────────────────────────────────

@@ -651,6 +651,32 @@ body {
 </div>
 {% endif %}
 
+{% if google_review_url %}
+<!-- Google Review Banner — shown via JS when customer hits review_trigger_stamps -->
+<div id="review-banner" style="display:none;margin:14px 0 4px;background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:14px 16px;text-align:center">
+  <div style="font-size:1.35rem;margin-bottom:4px">⭐⭐⭐⭐⭐</div>
+  <div style="font-weight:700;color:#26170c;font-size:.97rem;margin-bottom:6px">¿Te gusta nuestro servicio?</div>
+  <div style="font-size:.85rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google 🙏</div>
+  <a href="{{ google_review_url }}" target="_blank" rel="noopener"
+     style="display:inline-block;background:#4285F4;color:#fff;font-weight:700;font-size:.9rem;padding:9px 20px;border-radius:8px;text-decoration:none">
+    ✍️ Dejar reseña en Google
+  </a>
+  <div style="margin-top:8px">
+    <button onclick="document.getElementById('review-banner').style.display='none';localStorage.setItem('review_dismissed','1')"
+      style="background:none;border:none;color:#aaa;font-size:.78rem;cursor:pointer;text-decoration:underline">No, gracias</button>
+  </div>
+</div>
+<script>
+const REVIEW_URL = '{{ google_review_url }}';
+const REVIEW_TRIGGER = {{ review_trigger_stamps|default(0) }};
+</script>
+{% else %}
+<script>
+const REVIEW_URL = '';
+const REVIEW_TRIGGER = 0;
+</script>
+{% endif %}
+
 <button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()">
   🔔 Activar notificaciones
 </button>
@@ -781,6 +807,9 @@ function renderCard(card, club) {
     </div>
   `).join('');
 
+  // Google Review banner
+  maybeShowReviewBanner(club.total_stamps || 0, club.stamps_on_card || 0, awardsBalance);
+
   // QR
   new QRCode(document.getElementById('qrcode'), {
     text: window.location.href,
@@ -893,6 +922,18 @@ async function activateNotifications() {
     console.error('Push subscription error:', e);
     showToast('Error activando notificaciones');
   }
+}
+
+function maybeShowReviewBanner(totalStamps, stampsOnCard, awardsBalance) {
+  if (!REVIEW_URL) return;
+  if (localStorage.getItem('review_dismissed') === '1') return;
+  const banner = document.getElementById('review-banner');
+  if (!banner) return;
+  // Show if: trigger is 0 and customer has redeemed at least 1 reward,
+  // OR trigger > 0 and total_stamps >= trigger
+  const shouldShow = (REVIEW_TRIGGER === 0 && awardsBalance > 0) ||
+                     (REVIEW_TRIGGER > 0 && totalStamps >= REVIEW_TRIGGER);
+  if (shouldShow) banner.style.display = 'block';
 }
 
 loadData();

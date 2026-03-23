@@ -296,6 +296,9 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_status VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_current_period_end TIMESTAMPTZ",
+        # ── Google Reviews ─────────────────────────────────────────────────────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS google_review_url VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS review_trigger_stamps INTEGER DEFAULT 0",
 
     ]
     from database import SessionLocal
@@ -963,6 +966,8 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     biz_name             = (biz.name               if biz else None) or ""
     biz_slug             = (biz.slug               if biz else None) or ""
     stamps_per_reward_val = (biz.stamps_per_reward if biz else None) or STAMPS_PER_REWARD
+    google_review_url    = getattr(biz, "google_review_url", "") or "" if biz else ""
+    review_trigger_stamps = getattr(biz, "review_trigger_stamps", 0) or 0 if biz else 0
 
     # Load business-scoped card_title for the page header
     card_title = (biz.card_title if biz else None) or biz_name or CARD_TITLE
@@ -1005,7 +1010,9 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
         "biz_slug":          biz_slug,
         "primary_color":     primary_color,
         "accent_color":      accent_color,
-        "google_wallet_url": google_wallet_url or "",
+        "google_wallet_url":      google_wallet_url or "",
+        "google_review_url":      google_review_url,
+        "review_trigger_stamps":  review_trigger_stamps,
     })
 
 
@@ -3162,6 +3169,44 @@ def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db)):
             "subscribers": len(rows),
             "note": "Dry run — VAPID keys not configured",
         }
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# GOOGLE REVIEWS — GET & PUT
+# ════════════════════════════════════════════════════════════════════════════════
+@app.get("/api/biz/{slug}/reviews-config")
+def get_reviews_config(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Get Google Reviews configuration for this business"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    return {
+        "google_review_url":    getattr(biz, "google_review_url", "") or "",
+        "review_trigger_stamps": getattr(biz, "review_trigger_stamps", 0) or 0,
+    }
+
+
+@app.put("/api/biz/{slug}/reviews-config")
+async def update_reviews_config(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Update Google Reviews configuration"""
+    body = await request.json()
+    pin  = str(body.get("pin", "")).strip()
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    db.execute(text(
+        "UPDATE businesses SET google_review_url=:url, review_trigger_stamps=:trigger WHERE slug=:slug"
+    ), {
+        "url":     (body.get("google_review_url") or "").strip(),
+        "trigger": int(body.get("review_trigger_stamps") or 0),
+        "slug":    slug,
+    })
+    db.commit()
+    return {"status": "updated"}
 
 
 @app.put("/api/biz/{slug}/profile")
