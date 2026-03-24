@@ -1411,85 +1411,38 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div style="background:#1c1c1e;border-radius:40px;padding:10px;box-shadow:0 24px 64px rgba(0,0,0,.45);position:relative;width:200px;flex-shrink:0">
               <!-- Notch -->
               <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:60px;height:10px;background:#1c1c1e;border-radius:6px;z-index:10"></div>
-              <!-- Screen -->
-              <div style="background:#f2f2f7;border-radius:32px;overflow:hidden;min-height:360px">
-
-                <!-- Card colored header -->
-                <div id="nc-phone-card" style="background:#0a0a0a;padding:18px 16px 16px;position:relative">
-                  <!-- Logo row -->
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-                    <div id="nc-phone-logo" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;overflow:hidden">🎁</div>
-                    <div>
-                      <div id="nc-phone-name" style="color:#fff;font-size:.75rem;font-weight:800;letter-spacing:.3px;text-transform:uppercase;line-height:1.2">MI TARJETA</div>
-                      <div id="nc-phone-subtitle" style="color:rgba(255,255,255,.5);font-size:.55rem">{{ biz_name or 'ZubCard' }}</div>
-                    </div>
+              <!-- Screen: Apple Wallet pass preview -->
+              <div style="background:#f2f2f7;border-radius:32px;overflow:hidden;min-height:360px;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:14px 8px">
+                <div id="nc-aw-pass" style="background:#26170c;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:-apple-system,Helvetica,sans-serif">
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px 5px">
+                    <span id="nc-aw-cardname" style="font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#ffca48">MI TARJETA</span>
+                    <span style="font-size:.46rem;font-weight:600;color:#ffca48;opacity:.6">Tarjeta de Fidelidad</span>
                   </div>
-                  <!-- Stamps grid -->
-                  <div id="nc-phone-stamps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:4px"></div>
-                </div>
-
-                <!-- White info area -->
-                <div style="background:#fff;padding:12px 14px">
-                  <!-- Titular + reward row -->
-                  <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                  <div id="nc-strip-wrap" style="width:100%;line-height:0"></div>
+                  <div style="padding:7px 11px 3px;display:flex;justify-content:space-between;align-items:flex-end">
                     <div>
-                      <div style="font-size:.5rem;color:#aaa;text-transform:uppercase;font-weight:700;letter-spacing:.5px">Titular</div>
-                      <div style="font-size:.65rem;font-weight:700;color:#222;margin-top:1px">NOMBRE CLIENTE</div>
+                      <div style="font-size:.36rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">SELLOS</div>
+                      <div id="nc-aw-sellos" style="font-size:1.1rem;font-weight:800;color:#ffca48;line-height:1">0<span style="font-size:.65rem;opacity:.55">/10</span></div>
                     </div>
                     <div style="text-align:right">
-                      <div id="nc-phone-reward-label" style="font-size:.5rem;color:#aaa;text-transform:uppercase;font-weight:700;letter-spacing:.5px">PREMIOS DISP.</div>
-                      <div style="font-size:.65rem;font-weight:700;color:#222;margin-top:1px">0</div>
+                      <div style="font-size:.36rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">PREMIO</div>
+                      <div id="nc-aw-premio" style="font-size:.6rem;font-weight:700;color:#ffca48">Premio</div>
                     </div>
                   </div>
-                  <!-- QR code placeholder -->
-                  <div style="display:flex;justify-content:center;padding:6px 0 10px">
-                    <div style="width:72px;height:72px;position:relative">
-                      <!-- QR grid simulation -->
-                      <svg viewBox="0 0 72 72" width="72" height="72" style="border-radius:4px">
-                        <rect width="72" height="72" fill="#fff"/>
-                        <!-- top-left finder -->
-                        <rect x="4" y="4" width="20" height="20" rx="2" fill="#222"/>
-                        <rect x="7" y="7" width="14" height="14" rx="1" fill="#fff"/>
-                        <rect x="10" y="10" width="8" height="8" fill="#222"/>
-                        <!-- top-right finder -->
-                        <rect x="48" y="4" width="20" height="20" rx="2" fill="#222"/>
-                        <rect x="51" y="7" width="14" height="14" rx="1" fill="#fff"/>
-                        <rect x="54" y="10" width="8" height="8" fill="#222"/>
-                        <!-- bottom-left finder -->
-                        <rect x="4" y="48" width="20" height="20" rx="2" fill="#222"/>
-                        <rect x="7" y="51" width="14" height="14" rx="1" fill="#fff"/>
-                        <rect x="10" y="54" width="8" height="8" fill="#222"/>
-                        <!-- random data dots -->
-                        <rect x="28" y="4" width="4" height="4" fill="#222"/><rect x="34" y="4" width="4" height="4" fill="#222"/>
-                        <rect x="40" y="4" width="4" height="4" fill="#222"/><rect x="28" y="10" width="4" height="4" fill="#222"/>
-                        <rect x="34" y="10" width="4" height="4" fill="#222"/><rect x="40" y="16" width="4" height="4" fill="#222"/>
-                        <rect x="4" y="28" width="4" height="4" fill="#222"/><rect x="10" y="28" width="4" height="4" fill="#222"/>
-                        <rect x="16" y="34" width="4" height="4" fill="#222"/><rect x="4" y="40" width="4" height="4" fill="#222"/>
-                        <rect x="28" y="28" width="4" height="4" fill="#222"/><rect x="34" y="28" width="4" height="4" fill="#222"/>
-                        <rect x="40" y="28" width="4" height="4" fill="#222"/><rect x="46" y="28" width="4" height="4" fill="#222"/>
-                        <rect x="28" y="34" width="4" height="4" fill="#222"/><rect x="46" y="34" width="4" height="4" fill="#222"/>
-                        <rect x="34" y="40" width="4" height="4" fill="#222"/><rect x="52" y="40" width="4" height="4" fill="#222"/>
-                        <rect x="58" y="34" width="4" height="4" fill="#222"/><rect x="64" y="28" width="4" height="4" fill="#222"/>
-                        <rect x="28" y="46" width="4" height="4" fill="#222"/><rect x="34" y="52" width="4" height="4" fill="#222"/>
-                        <rect x="40" y="46" width="4" height="4" fill="#222"/><rect x="52" y="52" width="4" height="4" fill="#222"/>
-                        <rect x="58" y="46" width="4" height="4" fill="#222"/><rect x="64" y="58" width="4" height="4" fill="#222"/>
-                        <rect x="28" y="58" width="4" height="4" fill="#222"/><rect x="46" y="58" width="4" height="4" fill="#222"/>
-                        <rect x="64" y="46" width="4" height="4" fill="#222"/>
-                      </svg>
+                  <div style="padding:0 11px 8px;display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                      <div style="font-size:.34rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:1px">TITULAR</div>
+                      <div style="font-size:.52rem;font-weight:700;color:#ffca48;opacity:.85">Nombre Cliente</div>
                     </div>
+                    <span id="nc-aw-emoji" style="font-size:.75rem">🎁</span>
+                  </div>
+                  <div style="margin:0 11px 10px;background:white;border-radius:4px;padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:4px">
+                    <div style="display:grid;grid-template-columns:repeat(5,2px);gap:1px;height:14px;align-items:stretch">
+                      <div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div>
+                    </div>
+                    <div style="font-size:.32rem;color:#888;letter-spacing:.06em;font-family:monospace">QR CODE</div>
                   </div>
                 </div>
-
-                <!-- Wallet bar -->
-                <div style="background:#f8f8f8;padding:9px 14px;display:flex;align-items:center;gap:9px;border-top:1px solid #ebebeb">
-                  <div id="nc-wallet-logo" style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden">🎁</div>
-                  <div>
-                    <div id="nc-wallet-biz" style="font-size:.62rem;color:#555;font-weight:600;line-height:1.2">Mi Negocio</div>
-                    <div id="nc-wallet-card-name" style="font-size:.58rem;color:#999;line-height:1.2">Mi Tarjeta</div>
-                  </div>
-                  <div style="margin-left:auto;font-size:.7rem;color:#bbb">⋮</div>
-                </div>
-
               </div>
             </div>
 
@@ -1600,50 +1553,53 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       }
 
       function ncUpdatePreview() {
-        const bg     = document.getElementById('nc-bg')?.value     || '#0a0a0a';
-        const accent = document.getElementById('nc-accent')?.value || '#00e676';
-        const textC  = document.getElementById('nc-text')?.value   || '#ffffff';
-        const name   = document.getElementById('nc-name')?.value   || 'MI TARJETA';
+        const bg     = document.getElementById('nc-bg')?.value     || '#26170c';
+        const accent = document.getElementById('nc-accent')?.value || '#ffca48';
+        const name   = document.getElementById('nc-name')?.value   || 'Mi Tarjeta';
         const stamps = parseInt(document.getElementById('nc-stamps')?.value) || 10;
         const reward = document.getElementById('nc-reward')?.value || 'Premio';
         const emoji  = document.getElementById('nc-emoji')?.value  || '🎁';
 
-        // Phone card header color
-        const phoneCard = document.getElementById('nc-phone-card');
-        if (phoneCard) phoneCard.style.background = bg;
+        // Update pass background
+        const awPass = document.getElementById('nc-aw-pass');
+        if (awPass) awPass.style.background = bg;
 
-        // Logo: if no image use emoji
-        const phoneLogo   = document.getElementById('nc-phone-logo');
-        const walletLogo  = document.getElementById('nc-wallet-logo');
-        const logoUrl = document.getElementById('nc-logo-url')?.value;
-        if (phoneLogo) {
-          if (logoUrl) {
-            phoneLogo.innerHTML = `<img src="${logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`;
-          } else {
-            phoneLogo.textContent = emoji;
-          }
-        }
-        if (walletLogo) {
-          if (logoUrl) {
-            walletLogo.innerHTML = `<img src="${logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`;
-          } else {
-            walletLogo.textContent = emoji;
-          }
-        }
+        // Update accent-colored text elements
+        ['nc-aw-cardname','nc-aw-premio'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.color = accent;
+        });
 
         // Card name
-        const phoneName = document.getElementById('nc-phone-name');
-        if (phoneName) phoneName.textContent = (name || 'MI TARJETA').toUpperCase();
-        const walletName = document.getElementById('nc-wallet-card-name');
-        if (walletName) walletName.textContent = name || 'Mi Tarjeta';
+        const awName = document.getElementById('nc-aw-cardname');
+        if (awName) awName.textContent = (name || 'MI TARJETA').toUpperCase();
 
-        // Reward label
-        const rewardLabel = document.getElementById('nc-phone-reward-label');
-        if (rewardLabel) rewardLabel.textContent = (reward || 'Premio').toUpperCase();
+        // SELLOS counter
+        const awSellos = document.getElementById('nc-aw-sellos');
+        if (awSellos) {
+          awSellos.style.color = accent;
+          awSellos.innerHTML = `0<span style="font-size:.65rem;opacity:.55;color:${accent}">/${stamps}</span>`;
+        }
 
-        // Stamps grid
-        const stampsEl = document.getElementById('nc-phone-stamps');
-        if (stampsEl) _renderStamps(stampsEl, stamps, 3, bg, accent, emoji);
+        // PREMIO
+        const awPremio = document.getElementById('nc-aw-premio');
+        if (awPremio) awPremio.textContent = reward || 'Premio';
+
+        // Emoji
+        const awEmoji = document.getElementById('nc-aw-emoji');
+        if (awEmoji) awEmoji.textContent = emoji;
+
+        // Redraw strip canvas
+        const stripWrap = document.getElementById('nc-strip-wrap');
+        if (stripWrap) {
+          stripWrap.innerHTML = '';
+          const w = awPass ? (awPass.offsetWidth || 164) : 164;
+          const h = Math.round(w * 0.385);
+          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0 };
+          const canvas = _buildStripCanvas(cardObj, w, h);
+          canvas.style.cssText = 'width:100%;display:block';
+          stripWrap.appendChild(canvas);
+        }
       }
 
       function ncHandleLogo(input) {
@@ -1770,69 +1726,43 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <!-- RIGHT: phone preview (only in card tab) -->
             <div id="ec-right-preview" style="background:#e8e8e8;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;overflow-y:auto">
               <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#aaa;margin-bottom:2px">PREVIEW</div>
-              <!-- Phone frame (same structure as create modal) -->
+              <!-- Phone frame with Apple Wallet pass preview -->
               <div style="background:#1c1c1e;border-radius:40px;padding:10px;box-shadow:0 20px 48px rgba(0,0,0,.4);width:180px;flex-shrink:0">
-                <div style="background:#f2f2f7;border-radius:32px;overflow:hidden">
-                  <div id="ec-phone-card" style="background:#0a0a0a;padding:16px 14px 14px">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-                      <div id="ec-phone-logo" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎁</div>
-                      <div>
-                        <div id="ec-phone-name" style="color:#fff;font-size:.7rem;font-weight:800;text-transform:uppercase;line-height:1.2">MI TARJETA</div>
-                        <div style="color:rgba(255,255,255,.45);font-size:.5rem">{{ biz_name or 'ZubCard' }}</div>
-                      </div>
+                <div style="background:#f2f2f7;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:12px 7px;min-height:300px">
+                  <div id="ec-aw-pass" style="background:#26170c;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.28);font-family:-apple-system,Helvetica,sans-serif">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px 4px">
+                      <span id="ec-aw-cardname" style="font-size:.58rem;font-weight:800;letter-spacing:.04em;color:#ffca48">MI TARJETA</span>
+                      <span style="font-size:.44rem;font-weight:600;color:#ffca48;opacity:.6">Tarjeta de Fidelidad</span>
                     </div>
-                    <div id="ec-phone-stamps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px"></div>
-                  </div>
-                  <div style="background:#fff;padding:10px 12px">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                    <div id="ec-strip-wrap" style="width:100%;line-height:0"></div>
+                    <div style="padding:6px 10px 3px;display:flex;justify-content:space-between;align-items:flex-end">
                       <div>
-                        <div style="font-size:.45rem;color:#aaa;text-transform:uppercase;font-weight:700">Titular</div>
-                        <div style="font-size:.6rem;font-weight:700;color:#222">NOMBRE CLIENTE</div>
+                        <div style="font-size:.34rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">SELLOS</div>
+                        <div id="ec-aw-sellos" style="font-size:1rem;font-weight:800;color:#ffca48;line-height:1">0<span style="font-size:.6rem;opacity:.55">/10</span></div>
                       </div>
                       <div style="text-align:right">
-                        <div id="ec-phone-reward-label" style="font-size:.45rem;color:#aaa;text-transform:uppercase;font-weight:700">PREMIO</div>
-                        <div style="font-size:.6rem;font-weight:700;color:#222">0</div>
+                        <div style="font-size:.34rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">PREMIO</div>
+                        <div id="ec-aw-premio" style="font-size:.56rem;font-weight:700;color:#ffca48">Premio</div>
                       </div>
                     </div>
-                    <div style="display:flex;justify-content:center;padding:4px 0 8px">
-                      <svg viewBox="0 0 60 60" width="60" height="60" style="border-radius:3px">
-                        <rect width="60" height="60" fill="#fff"/>
-                        <rect x="3" y="3" width="16" height="16" rx="2" fill="#222"/>
-                        <rect x="6" y="6" width="10" height="10" rx="1" fill="#fff"/>
-                        <rect x="8" y="8" width="6" height="6" fill="#222"/>
-                        <rect x="41" y="3" width="16" height="16" rx="2" fill="#222"/>
-                        <rect x="44" y="6" width="10" height="10" rx="1" fill="#fff"/>
-                        <rect x="46" y="8" width="6" height="6" fill="#222"/>
-                        <rect x="3" y="41" width="16" height="16" rx="2" fill="#222"/>
-                        <rect x="6" y="44" width="10" height="10" rx="1" fill="#fff"/>
-                        <rect x="8" y="46" width="6" height="6" fill="#222"/>
-                        <rect x="23" y="3" width="3" height="3" fill="#222"/><rect x="28" y="3" width="3" height="3" fill="#222"/>
-                        <rect x="33" y="3" width="3" height="3" fill="#222"/><rect x="23" y="8" width="3" height="3" fill="#222"/>
-                        <rect x="3" y="23" width="3" height="3" fill="#222"/><rect x="8" y="23" width="3" height="3" fill="#222"/>
-                        <rect x="23" y="23" width="3" height="3" fill="#222"/><rect x="28" y="23" width="3" height="3" fill="#222"/>
-                        <rect x="33" y="23" width="3" height="3" fill="#222"/><rect x="38" y="23" width="3" height="3" fill="#222"/>
-                        <rect x="23" y="28" width="3" height="3" fill="#222"/><rect x="33" y="33" width="3" height="3" fill="#222"/>
-                        <rect x="41" y="23" width="3" height="3" fill="#222"/><rect x="46" y="28" width="3" height="3" fill="#222"/>
-                        <rect x="51" y="23" width="3" height="3" fill="#222"/><rect x="56" y="28" width="3" height="3" fill="#222"/>
-                        <rect x="23" y="41" width="3" height="3" fill="#222"/><rect x="28" y="46" width="3" height="3" fill="#222"/>
-                        <rect x="33" y="41" width="3" height="3" fill="#222"/><rect x="41" y="41" width="3" height="3" fill="#222"/>
-                        <rect x="46" y="46" width="3" height="3" fill="#222"/><rect x="51" y="41" width="3" height="3" fill="#222"/>
-                        <rect x="56" y="51" width="3" height="3" fill="#222"/>
-                      </svg>
+                    <div style="padding:0 10px 7px;display:flex;justify-content:space-between;align-items:center">
+                      <div>
+                        <div style="font-size:.32rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:1px">TITULAR</div>
+                        <div style="font-size:.48rem;font-weight:700;color:#ffca48;opacity:.85">Nombre Cliente</div>
+                      </div>
+                      <span id="ec-aw-emoji" style="font-size:.7rem">🎁</span>
                     </div>
-                  </div>
-                  <div style="background:#f8f8f8;padding:8px 12px;display:flex;align-items:center;gap:8px;border-top:1px solid #ebebeb">
-                    <div id="ec-wallet-logo" style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem">🎁</div>
-                    <div>
-                      <div id="ec-wallet-name" style="font-size:.58rem;color:#555;font-weight:600">Mi Tarjeta</div>
-                      <div style="font-size:.5rem;color:#999">{{ biz_name or 'ZubCard' }}</div>
+                    <div style="margin:0 10px 8px;background:white;border-radius:4px;padding:4px 7px;display:flex;align-items:center;justify-content:center;gap:4px">
+                      <div style="display:grid;grid-template-columns:repeat(5,2px);gap:1px;height:13px;align-items:stretch">
+                        <div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div><div style="background:white"></div><div style="background:#1a1a1a;border-radius:1px"></div>
+                      </div>
+                      <div style="font-size:.3rem;color:#888;letter-spacing:.06em;font-family:monospace">QR CODE</div>
                     </div>
-                    <div style="margin-left:auto;font-size:.65rem;color:#bbb">⋮</div>
                   </div>
                 </div>
               </div>
               <div style="font-size:.6rem;color:#888;text-align:center;line-height:1.5;max-width:180px">
-                Vista en Google Wallet
+                Vista en Apple Wallet e iOS
               </div>
             </div>
 
@@ -1924,28 +1854,46 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       }
 
       function ecUpdatePreview() {
-        const bg     = document.getElementById('ec-bg')?.value     || '#0a0a0a';
-        const accent = document.getElementById('ec-accent')?.value || '#00e676';
-        const name   = document.getElementById('ec-name')?.value   || 'MI TARJETA';
+        const bg     = document.getElementById('ec-bg')?.value     || '#26170c';
+        const accent = document.getElementById('ec-accent')?.value || '#ffca48';
+        const name   = document.getElementById('ec-name')?.value   || 'Mi Tarjeta';
         const stamps = parseInt(document.getElementById('ec-stamps')?.value) || 10;
         const reward = document.getElementById('ec-reward')?.value || 'Premio';
         const emoji  = document.getElementById('ec-emoji')?.value  || '🎁';
 
-        const phoneCard = document.getElementById('ec-phone-card');
-        if (phoneCard) phoneCard.style.background = bg;
-        const phoneLogo = document.getElementById('ec-phone-logo');
-        if (phoneLogo) phoneLogo.textContent = emoji;
-        const walletLogo = document.getElementById('ec-wallet-logo');
-        if (walletLogo) walletLogo.textContent = emoji;
-        const phoneName = document.getElementById('ec-phone-name');
-        if (phoneName) phoneName.textContent = (name || 'MI TARJETA').toUpperCase();
-        const walletName = document.getElementById('ec-wallet-name');
-        if (walletName) walletName.textContent = name || 'Mi Tarjeta';
-        const rewardLabel = document.getElementById('ec-phone-reward-label');
-        if (rewardLabel) rewardLabel.textContent = (reward || 'Premio').toUpperCase();
+        const awPass = document.getElementById('ec-aw-pass');
+        if (awPass) awPass.style.background = bg;
 
-        const stampsEl = document.getElementById('ec-phone-stamps');
-        if (stampsEl) _renderStamps(stampsEl, stamps, 3, bg, accent, emoji);
+        ['ec-aw-cardname','ec-aw-premio'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.color = accent;
+        });
+
+        const awName = document.getElementById('ec-aw-cardname');
+        if (awName) awName.textContent = (name || 'MI TARJETA').toUpperCase();
+
+        const awSellos = document.getElementById('ec-aw-sellos');
+        if (awSellos) {
+          awSellos.style.color = accent;
+          awSellos.innerHTML = `0<span style="font-size:.6rem;opacity:.55;color:${accent}">/${stamps}</span>`;
+        }
+
+        const awPremio = document.getElementById('ec-aw-premio');
+        if (awPremio) awPremio.textContent = reward || 'Premio';
+
+        const awEmoji = document.getElementById('ec-aw-emoji');
+        if (awEmoji) awEmoji.textContent = emoji;
+
+        const stripWrap = document.getElementById('ec-strip-wrap');
+        if (stripWrap) {
+          stripWrap.innerHTML = '';
+          const w = awPass ? (awPass.offsetWidth || 156) : 156;
+          const h = Math.round(w * 0.385);
+          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0 };
+          const canvas = _buildStripCanvas(cardObj, w, h);
+          canvas.style.cssText = 'width:100%;display:block';
+          stripWrap.appendChild(canvas);
+        }
       }
 
       async function saveEditCard() {
