@@ -4366,13 +4366,18 @@ def redeem_passcode(slug: str, payload: dict = Body(...), db: Session = Depends(
         "UPDATE passcodes SET used=TRUE, used_by=:cid, used_at=NOW() WHERE id=:id"
     ), {"cid": card_id, "id": str(row[0])})
     db.execute(text(
-        "UPDATE loyalty_cards SET stamps = stamps + :s WHERE id=:cid"
+        "UPDATE loyalty_cards SET stamps = stamps + :s, total_stamps = COALESCE(total_stamps, 0) + :s WHERE id=:cid"
     ), {"s": stamps, "cid": card_id})
     db.execute(text(
         "INSERT INTO stamp_transactions (id, card_id, stamps_added, transaction_type, note, created_at) "
         "VALUES (:id, :cid, :s, 'passcode', :note, NOW())"
     ), {"id": str(uuid.uuid4()), "cid": card_id, "s": stamps, "note": f"PassCode: {code}"})
     db.commit()
+    # Push live Wallet update after passcode stamp
+    try:
+        _push_wallet_update(card_id, db)
+    except Exception:
+        pass
     return {"status": "ok", "stamps_added": stamps}
 
 
