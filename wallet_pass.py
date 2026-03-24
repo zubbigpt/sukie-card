@@ -261,7 +261,7 @@ def _sign_manifest(manifest_data: bytes, private_key, certificate, wwdr_cert) ->
     builder = builder.add_certificate(wwdr_cert)
     return builder.sign(
         serialization.Encoding.DER,
-        [PKCS7Options.DetachedSignature, PKCS7Options.NoCerts],
+        [PKCS7Options.DetachedSignature],
     )
 
 
