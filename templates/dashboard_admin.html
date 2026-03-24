@@ -1416,25 +1416,18 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <div id="nc-aw-pass" style="background:#26170c;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:-apple-system,Helvetica,sans-serif">
                   <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px 5px">
                     <span id="nc-aw-cardname" style="font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#ffca48">MI TARJETA</span>
-                    <span style="font-size:.46rem;font-weight:600;color:#ffca48;opacity:.6">Tarjeta de Fidelidad</span>
+                    <span id="nc-aw-sellos" style="font-size:.58rem;font-weight:700;color:#ffca48;opacity:.8">0/10 <span style="font-size:.42rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
                   </div>
                   <div id="nc-strip-wrap" style="width:100%;line-height:0"></div>
-                  <div style="padding:7px 11px 3px;display:flex;justify-content:space-between;align-items:flex-end">
+                  <div style="padding:8px 11px 8px;display:flex;justify-content:space-between;align-items:flex-end">
                     <div>
-                      <div style="font-size:.36rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">SELLOS</div>
-                      <div id="nc-aw-sellos" style="font-size:1.1rem;font-weight:800;color:#ffca48;line-height:1">0<span style="font-size:.65rem;opacity:.55">/10</span></div>
+                      <div style="font-size:.34rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:2px">TITULAR</div>
+                      <div style="font-size:.56rem;font-weight:700;color:#ffca48;opacity:.9">NOMBRE CLIENTE</div>
                     </div>
                     <div style="text-align:right">
-                      <div style="font-size:.36rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">PREMIO</div>
-                      <div id="nc-aw-premio" style="font-size:.6rem;font-weight:700;color:#ffca48">Premio</div>
+                      <div style="font-size:.34rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:2px">PREMIO</div>
+                      <div id="nc-aw-premio" style="font-size:.56rem;font-weight:700;color:#ffca48">Premio</div>
                     </div>
-                  </div>
-                  <div style="padding:0 11px 8px;display:flex;justify-content:space-between;align-items:center">
-                    <div>
-                      <div style="font-size:.34rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:1px">TITULAR</div>
-                      <div style="font-size:.52rem;font-weight:700;color:#ffca48;opacity:.85">Nombre Cliente</div>
-                    </div>
-                    <span id="nc-aw-emoji" style="font-size:.75rem">🎁</span>
                   </div>
                   <div style="margin:0 11px 10px;background:white;border-radius:4px;padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:4px">
                     <div style="display:grid;grid-template-columns:repeat(5,2px);gap:1px;height:14px;align-items:stretch">
@@ -1574,20 +1567,16 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         const awName = document.getElementById('nc-aw-cardname');
         if (awName) awName.textContent = (name || 'MI TARJETA').toUpperCase();
 
-        // SELLOS counter
+        // SELLOS counter (header)
         const awSellos = document.getElementById('nc-aw-sellos');
         if (awSellos) {
           awSellos.style.color = accent;
-          awSellos.innerHTML = `0<span style="font-size:.65rem;opacity:.55;color:${accent}">/${stamps}</span>`;
+          awSellos.innerHTML = `0/${stamps} <span style="font-size:.42rem;font-weight:600;letter-spacing:.08em;opacity:.7;color:${accent}">SELLOS</span>`;
         }
 
         // PREMIO
         const awPremio = document.getElementById('nc-aw-premio');
         if (awPremio) awPremio.textContent = reward || 'Premio';
-
-        // Emoji
-        const awEmoji = document.getElementById('nc-aw-emoji');
-        if (awEmoji) awEmoji.textContent = emoji;
 
         // Redraw strip canvas
         const stripWrap = document.getElementById('nc-strip-wrap');
@@ -1732,25 +1721,18 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                   <div id="ec-aw-pass" style="background:#26170c;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.28);font-family:-apple-system,Helvetica,sans-serif">
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px 4px">
                       <span id="ec-aw-cardname" style="font-size:.58rem;font-weight:800;letter-spacing:.04em;color:#ffca48">MI TARJETA</span>
-                      <span style="font-size:.44rem;font-weight:600;color:#ffca48;opacity:.6">Tarjeta de Fidelidad</span>
+                      <span id="ec-aw-sellos" style="font-size:.54rem;font-weight:700;color:#ffca48;opacity:.8">0/10 <span style="font-size:.38rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
                     </div>
                     <div id="ec-strip-wrap" style="width:100%;line-height:0"></div>
-                    <div style="padding:6px 10px 3px;display:flex;justify-content:space-between;align-items:flex-end">
+                    <div style="padding:7px 10px 7px;display:flex;justify-content:space-between;align-items:flex-end">
                       <div>
-                        <div style="font-size:.34rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">SELLOS</div>
-                        <div id="ec-aw-sellos" style="font-size:1rem;font-weight:800;color:#ffca48;line-height:1">0<span style="font-size:.6rem;opacity:.55">/10</span></div>
+                        <div style="font-size:.32rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:2px">TITULAR</div>
+                        <div style="font-size:.52rem;font-weight:700;color:#ffca48;opacity:.9">NOMBRE CLIENTE</div>
                       </div>
                       <div style="text-align:right">
-                        <div style="font-size:.34rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#ffca48;opacity:.7;margin-bottom:1px">PREMIO</div>
-                        <div id="ec-aw-premio" style="font-size:.56rem;font-weight:700;color:#ffca48">Premio</div>
+                        <div style="font-size:.32rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:2px">PREMIO</div>
+                        <div id="ec-aw-premio" style="font-size:.52rem;font-weight:700;color:#ffca48">Premio</div>
                       </div>
-                    </div>
-                    <div style="padding:0 10px 7px;display:flex;justify-content:space-between;align-items:center">
-                      <div>
-                        <div style="font-size:.32rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffca48;opacity:.55;margin-bottom:1px">TITULAR</div>
-                        <div style="font-size:.48rem;font-weight:700;color:#ffca48;opacity:.85">Nombre Cliente</div>
-                      </div>
-                      <span id="ec-aw-emoji" style="font-size:.7rem">🎁</span>
                     </div>
                     <div style="margin:0 10px 8px;background:white;border-radius:4px;padding:4px 7px;display:flex;align-items:center;justify-content:center;gap:4px">
                       <div style="display:grid;grid-template-columns:repeat(5,2px);gap:1px;height:13px;align-items:stretch">
@@ -1875,14 +1857,11 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         const awSellos = document.getElementById('ec-aw-sellos');
         if (awSellos) {
           awSellos.style.color = accent;
-          awSellos.innerHTML = `0<span style="font-size:.6rem;opacity:.55;color:${accent}">/${stamps}</span>`;
+          awSellos.innerHTML = `0/${stamps} <span style="font-size:.38rem;font-weight:600;letter-spacing:.08em;opacity:.7;color:${accent}">SELLOS</span>`;
         }
 
         const awPremio = document.getElementById('ec-aw-premio');
         if (awPremio) awPremio.textContent = reward || 'Premio';
-
-        const awEmoji = document.getElementById('ec-aw-emoji');
-        if (awEmoji) awEmoji.textContent = emoji;
 
         const stripWrap = document.getElementById('ec-strip-wrap');
         if (stripWrap) {
@@ -5841,7 +5820,9 @@ function fidCopyLink() {
 window._cardRegistry = {};
 
 function _buildStripCanvas(card, w, h) {
-  /* Render stamp strip — big circles (2 rows for 10 stamps), retina 2× */
+  /* Render stamp strip — clean elegant design: ONLY circles, no text.
+     Text fields (counter, titular, premio) are rendered by Apple Wallet
+     from pass.json, not in the strip image. */
   const DPR = 2;
   const canvas = document.createElement('canvas');
   canvas.width = w * DPR; canvas.height = h * DPR;
@@ -5859,54 +5840,35 @@ function _buildStripCanvas(card, w, h) {
 
   const BG     = hexRgb(card.bg_color     || '#26170c');
   const ACCENT = hexRgb(card.accent_color || '#ffca48');
-  const TEXT   = lighten(BG, 0.85);
-  const TSUB   = lighten(BG, 0.45);
-  const EBORD  = lighten(BG, 0.42);
-  const FICO   = darken(ACCENT, 0.42);
+  const EBORD  = lighten(BG, 0.40);
+  const FICO   = darken(ACCENT, 0.55);
 
   const spr    = card.stamps_per_reward || 10;
   const filled = card.filled || 0;
-  const bizName  = (card.name || 'ZubCard').substring(0,22);
-  const titular  = (card.titular || card.customer_name || '').substring(0,22);
-  const reward  = (card.reward_name || 'Premio').substring(0,20);
-  const fs = w / 320;
 
   // Background
   ctx.fillStyle = rgba(BG);
   ctx.fillRect(0, 0, w, h);
 
-  // ── Layout bands ──
-  const PAD    = Math.round(w * 0.048);
-  const TOP_H  = Math.round(h * 0.20);
-  const FOOT_H = Math.round(h * 0.22);
-  const MID_H  = h - TOP_H - FOOT_H;
+  // ── Circles fill the full strip — no text ──────────────────────────────
+  const PAD_H  = Math.round(w * 0.045);
+  const PAD_V  = Math.round(h * 0.12);
+  const availW = w - 2 * PAD_H;
+  const availH = h - 2 * PAD_V;
 
-  // ── Header: name left, counter right ──
-  ctx.textBaseline = 'middle';
-  ctx.font = `700 ${Math.round(11*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle = rgba(TEXT, 0.82);
-  ctx.fillText(bizName.toUpperCase(), PAD, TOP_H * 0.55);
-  ctx.fillStyle = rgba(ACCENT, 0.88);
-  ctx.textAlign = 'right';
-  ctx.fillText(`${filled}/${spr}`, w - PAD, TOP_H * 0.55);
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-
-  // ── Stamp circles: max ceil(spr/2) per row so circles are big ──
   const COLS  = spr <= 5 ? spr : Math.ceil(spr / 2);
   const ROWS  = Math.ceil(spr / COLS);
-  const availW = w - 2 * PAD;
-  const GAP_C = Math.round(availW * 0.032);
-  const GAP_R = Math.round(MID_H * 0.10);
+  const GAP_C = Math.round(availW * 0.040);
+  const GAP_R = ROWS > 1 ? Math.round(availH * 0.14) : 0;
   const DOT_D = Math.min(
     Math.floor((availW - GAP_C * (COLS - 1)) / COLS),
-    Math.floor((MID_H  - GAP_R * (ROWS - 1)) / ROWS)
+    Math.floor((availH - GAP_R * (ROWS - 1)) / Math.max(ROWS, 1))
   );
   const DOT_R = Math.floor(DOT_D / 2);
   const gridW = COLS * DOT_D + GAP_C * (COLS - 1);
   const gridH = ROWS * DOT_D + GAP_R * (ROWS - 1);
-  const gx0   = PAD + Math.floor((availW - gridW) / 2);
-  const gy0   = TOP_H + Math.floor((MID_H - gridH) / 2);
+  const gx0   = PAD_H + Math.floor((availW - gridW) / 2);
+  const gy0   = PAD_V + Math.floor((availH - gridH) / 2);
 
   for (let i = 0; i < spr; i++) {
     const col = i % COLS, row = Math.floor(i / COLS);
@@ -5921,7 +5883,7 @@ function _buildStripCanvas(card, w, h) {
       ctx.fill();
       // Checkmark
       const lw = Math.max(1.5, DOT_R * 0.16);
-      ctx.strokeStyle = rgba(FICO, 0.92);
+      ctx.strokeStyle = rgba(FICO, 0.95);
       ctx.lineWidth = lw;
       ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -5930,31 +5892,11 @@ function _buildStripCanvas(card, w, h) {
       ctx.lineTo(cx + DOT_R*0.38, cy - DOT_R*0.26);
       ctx.stroke();
     } else {
-      ctx.strokeStyle = rgba(EBORD, 0.38);
-      ctx.lineWidth = Math.max(1, Math.round(fs * 1.1));
+      ctx.strokeStyle = rgba(EBORD, 0.52);
+      ctx.lineWidth = Math.max(1.5, w / 320);
       ctx.stroke();
     }
   }
-
-  // ── Footer divider ──
-  const fy = h - FOOT_H;
-  ctx.strokeStyle = rgba(TSUB, 0.28);
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(PAD, fy); ctx.lineTo(w - PAD, fy); ctx.stroke();
-
-  // ── Footer text ──
-  const lblY = fy + Math.round(FOOT_H * 0.30);
-  const valY = fy + Math.round(FOOT_H * 0.72);
-  ctx.font = `500 ${Math.round(6.5*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle = rgba(TSUB, 0.72);
-  ctx.fillText('TITULAR', PAD, lblY);
-  ctx.textAlign = 'right'; ctx.fillText('PREMIO', w - PAD, lblY); ctx.textAlign = 'left';
-
-  ctx.font = `700 ${Math.round(8*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle = rgba(TEXT, 0.88);
-  ctx.fillText(titular.toUpperCase() || '—', PAD, valY);
-  ctx.fillStyle = rgba(ACCENT, 0.88);
-  ctx.textAlign = 'right'; ctx.fillText(reward, w - PAD, valY); ctx.textAlign = 'left';
 
   return canvas;
 }
@@ -6007,25 +5949,18 @@ function buildCardMockup(card){
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 6px">
         <span style="font-size:.72rem;font-weight:800;letter-spacing:.04em;color:${accentCol}">${(card.name||'TARJETA').toUpperCase()}</span>
-        <span style="font-size:.58rem;font-weight:600;color:${accentCol};opacity:.6">Tarjeta de Fidelidad</span>
+        <span style="font-size:.62rem;font-weight:700;color:${accentCol};opacity:.75">${card.filled||0}/${spr} <span style="font-size:.48rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
       </div>
       <div style="width:100%;line-height:0" id="strip-wrap-${cid}"></div>
-      <div style="padding:8px 14px 4px;display:flex;justify-content:space-between;align-items:flex-end">
+      <div style="padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:flex-end">
         <div>
-          <div style="font-size:.46rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:1px">SELLOS</div>
-          <div style="font-size:1.5rem;font-weight:800;color:${accentCol};line-height:1">${card.filled||0}<span style="font-size:.85rem;opacity:.55">/${spr}</span></div>
+          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:2px">TITULAR</div>
+          <div style="font-size:.68rem;font-weight:700;color:${accentCol};opacity:.9">${(card.titular||card.customer_name||bizName).toUpperCase()}</div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:.46rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:1px">PREMIO</div>
-          <div style="font-size:.72rem;font-weight:700;color:${accentCol}">${card.reward_name||'Premio'}</div>
+          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:2px">PREMIO</div>
+          <div style="font-size:.68rem;font-weight:700;color:${accentCol}">${card.reward_name||'Premio'}</div>
         </div>
-      </div>
-      <div style="padding:0 14px 8px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:1px">TITULAR</div>
-          <div style="font-size:.62rem;font-weight:700;color:${accentCol};opacity:.85">${bizName}</div>
-        </div>
-        <span style="font-size:.65rem">${card.emoji||'🎁'}</span>
       </div>
       <div style="margin:0 14px 10px;background:white;border-radius:6px;padding:6px 10px;display:flex;align-items:center;justify-content:center;gap:6px">
         <div style="display:grid;grid-template-columns:repeat(5,3px);gap:1px;height:22px;align-items:stretch">
@@ -6597,12 +6532,12 @@ function lpUpdatePreview(){
     <div id="lp-aw-pass" style="background:${lpBgColor};border-radius:6px;overflow:hidden;margin-bottom:7px;color:#fff">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 7px 3px">
         <span style="font-size:.38rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.88">${cardName.length>20?cardName.substring(0,20)+'…':cardName}</span>
-        <span style="font-size:.32rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;opacity:.5">Tarjeta de Fidelidad</span>
+        <span style="font-size:.34rem;font-weight:700;opacity:.75">0/${stampsN} <span style="font-size:.26rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
       </div>
       <div id="lp-strip-wrap" style="width:100%;line-height:0"></div>
-      <div style="display:flex;justify-content:space-between;padding:4px 7px 6px">
-        <div><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">Titular</div><div style="font-size:.4rem;font-weight:800">TU NOMBRE</div></div>
-        <div style="text-align:right"><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">Premio</div><div style="font-size:.4rem;font-weight:800;color:#ffca48">${stampsN} sellos</div></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 7px 6px">
+        <div><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">TITULAR</div><div style="font-size:.4rem;font-weight:800">TU NOMBRE</div></div>
+        <div style="text-align:right"><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">PREMIO</div><div style="font-size:.4rem;font-weight:800" style="color:${lpAccentColor}">${stampsN} sellos</div></div>
       </div>
     </div>
     <!-- BENEFITS -->
