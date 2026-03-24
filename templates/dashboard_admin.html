@@ -1421,7 +1421,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                     <div id="nc-phone-logo" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;overflow:hidden">🎁</div>
                     <div>
                       <div id="nc-phone-name" style="color:#fff;font-size:.75rem;font-weight:800;letter-spacing:.3px;text-transform:uppercase;line-height:1.2">MI TARJETA</div>
-                      <div style="color:rgba(255,255,255,.5);font-size:.55rem">Sukie Card</div>
+                      <div id="nc-phone-subtitle" style="color:rgba(255,255,255,.5);font-size:.55rem">{{ biz_name or 'ZubCard' }}</div>
                     </div>
                   </div>
                   <!-- Stamps grid -->
@@ -1485,7 +1485,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                   <div id="nc-wallet-logo" style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden">🎁</div>
                   <div>
                     <div id="nc-wallet-biz" style="font-size:.62rem;color:#555;font-weight:600;line-height:1.2">Mi Negocio</div>
-                    <div id="nc-wallet-card-name" style="font-size:.58rem;color:#999;line-height:1.2">Sukie Card</div>
+                    <div id="nc-wallet-card-name" style="font-size:.58rem;color:#999;line-height:1.2">Mi Tarjeta</div>
                   </div>
                   <div style="margin-left:auto;font-size:.7rem;color:#bbb">⋮</div>
                 </div>
@@ -1778,7 +1778,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                       <div id="ec-phone-logo" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎁</div>
                       <div>
                         <div id="ec-phone-name" style="color:#fff;font-size:.7rem;font-weight:800;text-transform:uppercase;line-height:1.2">MI TARJETA</div>
-                        <div style="color:rgba(255,255,255,.45);font-size:.5rem">Sukie Card</div>
+                        <div style="color:rgba(255,255,255,.45);font-size:.5rem">{{ biz_name or 'ZubCard' }}</div>
                       </div>
                     </div>
                     <div id="ec-phone-stamps" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px"></div>
@@ -1825,7 +1825,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                     <div id="ec-wallet-logo" style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem">🎁</div>
                     <div>
                       <div id="ec-wallet-name" style="font-size:.58rem;color:#555;font-weight:600">Mi Tarjeta</div>
-                      <div style="font-size:.5rem;color:#999">Sukie Card</div>
+                      <div style="font-size:.5rem;color:#999">{{ biz_name or 'ZubCard' }}</div>
                     </div>
                     <div style="margin-left:auto;font-size:.65rem;color:#bbb">⋮</div>
                   </div>
