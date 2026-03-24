@@ -975,6 +975,9 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
         if _prog2:
             strip_bg_url_val = getattr(_prog2, "strip_bg_url", None) or ""
             text_color_val   = getattr(_prog2, "text_color", None) or "#ffffff"
+            # Card creator stores colors in CardProgram — always override Business defaults
+            primary_color    = _prog2.bg_color or primary_color
+            accent_color     = _prog2.accent_color or accent_color
 
     try:
         from wallet_pass import generate_pkpass
@@ -1018,8 +1021,13 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     if customer and customer.business_id:
         biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
 
-    primary_color        = (biz.primary_color      if biz else None) or "#3A3426"
-    accent_color         = (biz.accent_color       if biz else None) or "#a8f0d0"
+    # Load CardProgram for this business (the card creator stores colors here)
+    _show_prog = db.query(models.CardProgram).filter(
+        models.CardProgram.business_id == customer.business_id
+    ).first() if customer and customer.business_id else None
+    # CardProgram.bg_color is the source of truth; fall back to Business colors
+    primary_color        = (_show_prog.bg_color      if _show_prog and _show_prog.bg_color      else None) or (biz.primary_color if biz else None) or "#26170c"
+    accent_color         = (_show_prog.accent_color  if _show_prog and _show_prog.accent_color  else None) or (biz.accent_color  if biz else None) or "#ffca48"
     biz_name             = (biz.name               if biz else None) or ""
     biz_slug             = (biz.slug               if biz else None) or ""
     stamps_per_reward_val = (biz.stamps_per_reward if biz else None) or STAMPS_PER_REWARD
@@ -3444,7 +3452,12 @@ async def biz_card(slug: str, card_id: str, request: Request, db: Session = Depe
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     first_name = customer.first_name if customer else "Cliente"
     card_url = f"{BASE_URL}/biz/{slug}/card/{card_id}"
-    primary_color = biz.primary_color or "#3A3426"
+    # CardProgram is source of truth for colors; fall back to Business settings
+    _biz_card_prog = db.query(models.CardProgram).filter(
+        models.CardProgram.business_id == biz.id
+    ).first()
+    primary_color = (_biz_card_prog.bg_color     if _biz_card_prog and _biz_card_prog.bg_color     else None) or biz.primary_color or "#26170c"
+    accent_color  = (_biz_card_prog.accent_color if _biz_card_prog and _biz_card_prog.accent_color else None) or biz.accent_color  or "#ffca48"
     # Generate Google Wallet URL (None if not configured)
     google_wallet_url = generate_google_wallet_url(
         card_id=card_id,
@@ -3469,7 +3482,7 @@ async def biz_card(slug: str, card_id: str, request: Request, db: Session = Depe
         "biz_slug":           slug,
         "card_title":         biz.card_title or biz.name,
         "primary_color":      primary_color,
-        "accent_color":       biz.accent_color or "#a8f0d0",
+        "accent_color":       accent_color,
         "api_base":           BASE_URL,
         "google_wallet_url":  google_wallet_url or "",
     })
