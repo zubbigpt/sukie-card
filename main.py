@@ -1558,25 +1558,29 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
     card = get_card_or_404(card_id, db)
 
     from sqlalchemy import text as _text
-    cid  = str(card.id)
-    uid_row = db.execute(_text("SELECT customer_id FROM loyalty_cards WHERE id = :cid"), {"cid": cid}).fetchone()
-    uid = str(uid_row[0]) if uid_row and uid_row[0] else None
+    import traceback as _tb
+    try:
+        cid  = str(card.id)
+        uid_row = db.execute(_text("SELECT customer_id FROM loyalty_cards WHERE id = :cid"), {"cid": cid}).fetchone()
+        uid = str(uid_row[0]) if uid_row and uid_row[0] else None
 
-    # Borrar en orden FK — todo SQL puro
-    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid::uuid"), {"cid": cid})
-    db.execute(_text("DELETE FROM referrals WHERE referrer_card = :cid::uuid OR referred_card = :cid::uuid"), {"cid": cid})
-    db.execute(_text("UPDATE passcodes SET used_by = NULL WHERE used_by = :cid::uuid"), {"cid": cid})
-    db.execute(_text("DELETE FROM stamp_transactions WHERE card_id = :cid::uuid"), {"cid": cid})
-    if uid:
-        db.execute(_text("DELETE FROM birthday_vouchers WHERE customer_id = :uid::uuid"), {"uid": uid})
-    db.execute(_text("DELETE FROM loyalty_cards WHERE id = :cid::uuid"), {"cid": cid})
-    if uid:
-        # Solo borrar cliente si no tiene otras tarjetas
-        other = db.execute(_text("SELECT COUNT(*) FROM loyalty_cards WHERE customer_id = :uid::uuid"), {"uid": uid}).scalar()
-        if (other or 0) == 0:
-            db.execute(_text("DELETE FROM customers WHERE id = :uid::uuid"), {"uid": uid})
-    db.commit()
-    return {"message": "Cliente eliminado"}
+        # Borrar en orden FK — todo SQL puro
+        db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid::uuid"), {"cid": cid})
+        db.execute(_text("DELETE FROM referrals WHERE referrer_card = :cid::uuid OR referred_card = :cid::uuid"), {"cid": cid})
+        db.execute(_text("UPDATE passcodes SET used_by = NULL WHERE used_by = :cid::uuid"), {"cid": cid})
+        db.execute(_text("DELETE FROM stamp_transactions WHERE card_id = :cid::uuid"), {"cid": cid})
+        if uid:
+            db.execute(_text("DELETE FROM birthday_vouchers WHERE customer_id = :uid::uuid"), {"uid": uid})
+        db.execute(_text("DELETE FROM loyalty_cards WHERE id = :cid::uuid"), {"cid": cid})
+        if uid:
+            other = db.execute(_text("SELECT COUNT(*) FROM loyalty_cards WHERE customer_id = :uid::uuid"), {"uid": uid}).scalar()
+            if (other or 0) == 0:
+                db.execute(_text("DELETE FROM customers WHERE id = :uid::uuid"), {"uid": uid})
+        db.commit()
+        return {"message": "Cliente eliminado"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)} | {_tb.format_exc()[-300:]}")
 
 
 @app.delete("/api/admin/customers-all")
