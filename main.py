@@ -425,14 +425,24 @@ def verify_api_key(request: Request):
 
 
 def verify_pin(pin: str, db: Session = None):
-    """Verify PIN against global ADMIN_PIN or any business admin_pin from DB"""
+    """Verify PIN against global ADMIN_PIN, any business admin_pin, or any active store PIN from DB"""
     if str(pin) == str(ADMIN_PIN):
         return
-    # If db provided, also check any business's admin_pin
+    # If db provided, also check any business's admin_pin OR any active store PIN
     if db:
         biz = db.query(models.Business).filter(models.Business.admin_pin == str(pin)).first()
         if biz:
             return
+        # Accept store employee PINs (enables scanner stamp adding with store PIN)
+        try:
+            store_row = db.execute(
+                text("SELECT id FROM stores WHERE pin=:pin AND active=TRUE LIMIT 1"),
+                {"pin": str(pin)},
+            ).fetchone()
+            if store_row:
+                return
+        except Exception:
+            pass
     raise HTTPException(status_code=403, detail="PIN incorrecto")
 
 
