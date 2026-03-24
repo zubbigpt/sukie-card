@@ -5897,9 +5897,9 @@ function buildCardMockup(card){
   card.stamps_per_reward = spr;
   window._cardRegistry[card.id] = card;
 
-  // Use business brand colors for the preview so it matches the actual customer card
-  const bgCol     = BIZ_PRIMARY_COLOR || card.bg_color     || '#26170c';
-  const accentCol = BIZ_ACCENT_COLOR  || card.accent_color || '#ffca48';
+  // Use the card program's own colors (what the user designed)
+  const bgCol     = card.bg_color     || '#26170c';
+  const accentCol = card.accent_color || '#ffca48';
   const textCol   = card.text_color   || '#ffffff';
 
   // Pre-compute values (no inline <script> — those don't run in innerHTML)
