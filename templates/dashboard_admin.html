@@ -5892,60 +5892,179 @@ function fidCopyLink() {
 // Card registry: avoid JSON-in-onclick (breaks with special chars)
 window._cardRegistry = {};
 
+function _buildStripCanvas(card, w, h) {
+  /* Render a stamp-strip preview onto a <canvas> element,
+     matching wallet_pass.py generate_strip_image logic.   */
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  function hexRgb(h) {
+    h = h.replace('#','');
+    if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  }
+  function darken([r,g,b],a=0.18){ return [Math.round(r*(1-a)),Math.round(g*(1-a)),Math.round(b*(1-a))]; }
+  function lighten([r,g,b],a=0.25){ return [Math.min(255,Math.round(r+(255-r)*a)),Math.min(255,Math.round(g+(255-g)*a)),Math.min(255,Math.round(b+(255-b)*a))]; }
+  function rgb(c,al=1){ return `rgba(${c[0]},${c[1]},${c[2]},${al})`; }
+
+  const BG     = hexRgb(card.bg_color     || '#26170c');
+  const ACCENT = hexRgb(card.accent_color || '#ffca48');
+  const TEXT   = lighten(BG, 0.88);
+  const TSUB   = lighten(BG, 0.42);
+  const EMPTY  = lighten(BG, 0.12);
+  const EBORD  = lighten(BG, 0.28);
+  const FICO   = darken(ACCENT, 0.50);
+
+  const spr    = card.stamps_per_reward || 10;
+  const filled = card.filled || 0;
+  const bizName = (card.name || 'ZubCard').substring(0,22);
+  const reward  = (card.reward_name || 'Premio').substring(0,20);
+
+  // Background
+  ctx.fillStyle = rgb(BG);
+  ctx.fillRect(0,0,w,h);
+
+  const PAD=Math.round(w*0.044), PAD_T=Math.round(h*0.09);
+  const fs = w/320; // scale factor
+
+  // Business name top-left
+  ctx.font = `800 ${Math.round(13*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle = rgb(TEXT);
+  ctx.fillText(bizName, PAD, PAD_T+Math.round(13*fs));
+
+  // Stamp counter top-right
+  const countStr = `${filled}/${spr}`;
+  ctx.font = `800 ${Math.round(11*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle = rgb(ACCENT, 0.9);
+  ctx.textAlign = 'right';
+  ctx.fillText(countStr, w-PAD, PAD_T+Math.round(11*fs));
+  ctx.textAlign = 'left';
+
+  // Stamp dots
+  const FOOTER_H = Math.round(h*0.21);
+  const topBand = PAD_T + Math.round(13*fs) + Math.round(6*fs);
+  const botBand = h - FOOTER_H - Math.round(4*fs);
+  const midY = Math.round((topBand+botBand)/2);
+  const availW = w - 2*PAD;
+  const COLS = Math.min(spr, 10);
+  const ROWS = Math.ceil(spr/COLS);
+  const DOT_D = Math.min(Math.round(14*fs), Math.floor((availW-(COLS-1)*Math.round(4*fs))/COLS));
+  const GAP = Math.max(Math.round(3*fs), Math.floor((availW-COLS*DOT_D)/Math.max(COLS-1,1)));
+  const gridW = COLS*DOT_D+GAP*(COLS-1);
+  const gridH = ROWS*DOT_D+(Math.round(4*fs))*(ROWS-1);
+  const gx0 = PAD+Math.floor((availW-gridW)/2);
+  const gy0 = midY-Math.floor(gridH/2);
+
+  for(let i=0;i<spr;i++){
+    const col=i%COLS, row=Math.floor(i/COLS);
+    const cx=gx0+col*(DOT_D+GAP)+Math.floor(DOT_D/2);
+    const cy=gy0+row*(DOT_D+Math.round(4*fs))+Math.floor(DOT_D/2);
+    const r=Math.floor(DOT_D/2);
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    if(i<filled){
+      ctx.fillStyle=rgb(ACCENT); ctx.fill();
+      // checkmark
+      const lw=Math.max(1,Math.floor(r/4));
+      ctx.strokeStyle=rgb(FICO,0.95); ctx.lineWidth=lw; ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(cx-r*0.35,cy+r*0.02); ctx.lineTo(cx-r*0.05,cy+r*0.32); ctx.lineTo(cx+r*0.40,cy-r*0.30);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle=rgb(EMPTY); ctx.fill();
+      ctx.strokeStyle=rgb(EBORD,0.7); ctx.lineWidth=Math.max(1,fs); ctx.stroke();
+    }
+  }
+
+  // Footer line
+  const fy=h-FOOTER_H;
+  ctx.strokeStyle=rgb(TSUB,0.35); ctx.lineWidth=Math.max(1,fs);
+  ctx.beginPath(); ctx.moveTo(PAD,fy); ctx.lineTo(w-PAD,fy); ctx.stroke();
+
+  // Footer labels + values
+  const lblY=fy+Math.round(h*0.04), valY=fy+Math.round(h*0.12);
+  ctx.font=`${Math.round(7*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle=rgb(TSUB,0.8);
+  ctx.fillText('TITULAR', PAD, lblY);
+  ctx.textAlign='right'; ctx.fillText('PREMIO', w-PAD, lblY); ctx.textAlign='left';
+
+  ctx.font=`800 ${Math.round(8*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle=rgb(TEXT,0.9);
+  ctx.fillText(bizName.toUpperCase(), PAD, valY);
+  ctx.fillStyle=rgb(ACCENT,0.9);
+  ctx.textAlign='right'; ctx.fillText(reward, w-PAD, valY); ctx.textAlign='left';
+
+  return canvas;
+}
+
 function buildCardMockup(card){
   const spr = card.stamps_per_reward || card.stamps || 10;
   card.stamps_per_reward = spr;
   window._cardRegistry[card.id] = card;
 
-  // Use the card program's own colors (what the user designed)
   const bgCol     = card.bg_color     || '#26170c';
   const accentCol = card.accent_color || '#ffca48';
-  const textCol   = card.text_color   || '#ffffff';
-
-  // Pre-compute values (no inline <script> — those don't run in innerHTML)
-  const max      = Math.min(spr, 20);
-  const cols     = max <= 5 ? max : (max <= 8 ? 4 : 5);
-  const filled   = card.filled || 0;
-  const emptyBg  = _emptyTileColor(bgCol);
-  const icon     = (card.emoji || '').replace(/'/g,"&#39;") || '✓';
-
-  const tilesHtml = Array.from({length: max}, (_, i) => {
-    const on = i < filled;
-    return `<div style="aspect-ratio:1/1;border-radius:6px;background:${on ? accentCol : emptyBg};display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1">${on ? icon : ''}</div>`;
-  }).join('') + (spr > 20 ? `<div style="font-size:.5rem;color:rgba(255,255,255,.5);align-self:center;grid-column:span 2">+${spr-20}</div>` : '');
-
+  const bizName   = '{{ biz_name }}';
   const ddId = `dd-${card.id}`;
   const cid  = card.id;
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
+
+  /* ── Apple Wallet pass mockup ────────────────────────────────────────
+     Dimensions mirror real storeCard layout:
+     • Top bar: logo area + logoText
+     • Strip image area (strip is ~38.5% of pass height)
+     • Primary field  (SELLOS)
+     • Secondary + Auxiliary fields (PREMIO · TITULAR)
+     • Barcode area
+  ──────────────────────────────────────────────────────────────────── */
   wrap.innerHTML = `
-    <!-- Card preview — uses business brand colors to match customer card -->
-    <div style="aspect-ratio:1.45/1;background:${bgCol};border-radius:var(--r-lg);padding:14px 14px 12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.15)">
-      <!-- Header: label + name -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div style="font-size:.42rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${accentCol};opacity:.85;margin-bottom:2px">LOYALTY CARD</div>
-          <div style="font-size:1rem;font-weight:800;color:${textCol};letter-spacing:.02em;line-height:1.1">${(card.name||'TARJETA').toUpperCase().substring(0,18)}</div>
-        </div>
-        <div style="font-size:.7rem;font-weight:800;color:${accentCol};opacity:.8;margin-top:4px">0/${spr}</div>
+    <!-- Apple Wallet pass mockup -->
+    <div class="aw-pass" style="
+        width:100%;background:${bgCol};border-radius:16px;
+        overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.22);
+        font-family:-apple-system,Helvetica,sans-serif;position:relative">
+
+      <!-- Pass top bar: logo text + series label -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 6px">
+        <span style="font-size:.72rem;font-weight:800;letter-spacing:.04em;color:${accentCol}">${(card.name||'TARJETA').toUpperCase()}</span>
+        <span style="font-size:.58rem;font-weight:600;color:${accentCol};opacity:.6">Tarjeta de Fidelidad</span>
       </div>
-      <!-- Stamp grid -->
-      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:5px;flex:1;align-content:start;padding:2px 0">
-        ${tilesHtml}
-      </div>
-      <!-- Footer -->
-      <div style="border-top:1px solid rgba(255,255,255,.18);padding-top:6px;margin-top:6px;display:flex;justify-content:space-between;align-items:flex-end">
+
+      <!-- Strip image — rendered by canvas -->
+      <div style="width:100%;line-height:0" id="strip-wrap-${cid}"></div>
+
+      <!-- Primary field: SELLOS -->
+      <div style="padding:8px 14px 4px;display:flex;justify-content:space-between;align-items:flex-end">
         <div>
-          <div style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px">TITULAR</div>
-          <div style="font-size:.6rem;font-weight:800;color:#fff">{{ biz_name|upper }}</div>
+          <div style="font-size:.46rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:1px">SELLOS</div>
+          <div style="font-size:1.5rem;font-weight:800;color:${accentCol};line-height:1">${card.filled||0}<span style="font-size:.85rem;opacity:.55">/${spr}</span></div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px">PREMIOS</div>
-          <div style="font-size:.55rem;font-weight:700;color:${accentCol}">${card.reward_name}</div>
+          <div style="font-size:.46rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:1px">PREMIO</div>
+          <div style="font-size:.72rem;font-weight:700;color:${accentCol}">${card.reward_name||'Premio'}</div>
         </div>
       </div>
+
+      <!-- Secondary fields: TITULAR -->
+      <div style="padding:0 14px 8px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:1px">TITULAR</div>
+          <div style="font-size:.62rem;font-weight:700;color:${accentCol};opacity:.85">${bizName}</div>
+        </div>
+        <span style="font-size:.65rem">${card.emoji||'🎁'}</span>
+      </div>
+
+      <!-- Barcode hint -->
+      <div style="margin:0 14px 10px;background:white;border-radius:6px;padding:6px 10px;display:flex;align-items:center;justify-content:center;gap:6px">
+        <div style="display:grid;grid-template-columns:repeat(5,3px);gap:1px;height:22px;align-items:stretch">
+          ${[1,0,1,1,0,1,0,1,0,1].map(v=>`<div style="background:${v?'#1a1a1a':'white'};border-radius:1px"></div>`).join('')}
+        </div>
+        <div style="font-size:.42rem;color:#888;letter-spacing:.06em;font-family:monospace">QR CODE</div>
+      </div>
     </div>
-    <!-- Info below preview -->
+
+    <!-- Info below pass -->
     <div class="stitch-card-info">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
@@ -5957,7 +6076,7 @@ function buildCardMockup(card){
         </div>
       </div>
       <div style="width:100%;height:3px;background:var(--surface-mid);border-radius:3px;margin-bottom:16px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100, ((card.filled||0)/spr)*100)}%;background:${card.accent_color};border-radius:3px;transition:width .6s"></div>
+        <div style="height:100%;width:${Math.min(100,((card.filled||0)/spr)*100)}%;background:${accentCol};border-radius:3px;transition:width .6s"></div>
       </div>
       <!-- Actions -->
       <div class="tarjeta-actions">
@@ -5993,6 +6112,20 @@ function buildCardMockup(card){
         </div>
       </div>
     </div>`;
+
+  // Render strip canvas after DOM insertion (need real pixel width)
+  requestAnimationFrame(() => {
+    const stripWrap = wrap.querySelector(`#strip-wrap-${cid}`);
+    if (!stripWrap) return;
+    const passEl = stripWrap.closest('.aw-pass');
+    const pw = passEl ? passEl.offsetWidth : 280;
+    const sw = pw;
+    const sh = Math.round(pw * 0.385); // strip is ~38.5% of pass width
+    const canvas = _buildStripCanvas(card, sw, sh);
+    canvas.style.cssText = 'width:100%;display:block';
+    stripWrap.appendChild(canvas);
+  });
+
   return wrap;
 }
 
