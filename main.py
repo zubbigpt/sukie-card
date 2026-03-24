@@ -3948,6 +3948,17 @@ def reset_owner(email: str = "", master_pin: str = "", db: Session = Depends(get
                 "  SELECT lc.id FROM loyalty_cards lc"
                 "  JOIN customers c ON lc.customer_id=c.id WHERE c.business_id=:bid)"
             ), {"bid": bid})
+            # Clear passcode used_by references before deleting loyalty_cards
+            db.execute(text(
+                "UPDATE passcodes SET used_by=NULL WHERE used_by IN ("
+                "  SELECT lc.id FROM loyalty_cards lc"
+                "  JOIN customers c ON lc.customer_id=c.id WHERE c.business_id=:bid)"
+            ), {"bid": bid})
+            db.execute(text(
+                "UPDATE wallet_devices SET card_id=NULL WHERE card_id IN ("
+                "  SELECT lc.id FROM loyalty_cards lc"
+                "  JOIN customers c ON lc.customer_id=c.id WHERE c.business_id=:bid)"
+            ), {"bid": bid})
             db.execute(text(
                 "DELETE FROM loyalty_cards WHERE customer_id IN ("
                 "  SELECT id FROM customers WHERE business_id=:bid)"
@@ -3959,6 +3970,7 @@ def reset_owner(email: str = "", master_pin: str = "", db: Session = Depends(get
             db.execute(text("DELETE FROM card_programs WHERE business_id=:bid"), {"bid": bid})
             db.execute(text("DELETE FROM custom_qrs WHERE business_id=:bid"), {"bid": bid})
             db.execute(text("DELETE FROM card_config WHERE business_id=:bid"), {"bid": bid})
+            db.execute(text("DELETE FROM scanner_devices WHERE business_id=:bid"), {"bid": bid})
             db.execute(text("DELETE FROM businesses WHERE id=:bid"), {"bid": bid})
             db.commit()
             deleted.append(bid)
@@ -4005,9 +4017,14 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
         db.execute(text(f"DELETE FROM push_subscriptions WHERE card_id IN ({lc_subq})"), {"bid": bid})
         db.execute(text(f"DELETE FROM referrals WHERE referrer_card IN ({lc_subq}) OR referred_card IN ({lc_subq})"), {"bid": bid})
         db.execute(text(f"DELETE FROM stamp_transactions WHERE card_id IN ({lc_subq})"), {"bid": bid})
+        # Clear FK references before deleting loyalty_cards
+        db.execute(text(f"UPDATE passcodes SET used_by=NULL WHERE used_by IN ({lc_subq})"), {"bid": bid})
+        db.execute(text(f"UPDATE wallet_devices SET card_id=NULL WHERE card_id IN ({lc_subq})"), {"bid": bid})
+        db.execute(text(f"DELETE FROM wallet_devices WHERE card_id IN ({lc_subq})"), {"bid": bid})
         db.execute(text(f"DELETE FROM loyalty_cards WHERE customer_id IN ({cust_subq})"), {"bid": bid})
         db.execute(text("DELETE FROM customers WHERE business_id=:bid"), {"bid": bid})
         # Business-level tables
+        db.execute(text("DELETE FROM scanner_devices WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM stores WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM passcodes WHERE business_id=:bid"), {"bid": bid})
         db.execute(text("DELETE FROM campaigns WHERE business_id=:bid"), {"bid": bid})
