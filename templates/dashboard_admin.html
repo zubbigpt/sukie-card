@@ -6073,9 +6073,14 @@ function _buildStripCanvas(card, w, h) {
           document.querySelectorAll('[data-card-id="' + card.id + '"] canvas').forEach(c => {
             const p = c.parentElement;
             if (p && p.id && p.id.includes('strip-wrap')) {
+              const rw = p.offsetWidth || w;
+              // Derive height from canvas actual rendered size, fall back to original h
+              const rh = c.offsetHeight || h;
               p.innerHTML = '';
-              const nc = _buildStripCanvas(card, p.offsetWidth || w, parseInt(c.style.height) || h);
-              nc.style.cssText = 'width:100%;display:block';
+              const nc = _buildStripCanvas(card, rw, rh);
+              // Preserve border-radius for Google Wallet strip
+              const isGw = p.id.includes('-gw-');
+              nc.style.cssText = isGw ? 'width:100%;display:block;border-radius:8px' : 'width:100%;display:block';
               p.appendChild(nc);
             }
           });
@@ -6154,6 +6159,7 @@ function buildCardMockup(card){
   const cid  = card.id;
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
+  wrap.setAttribute('data-card-id', cid);  // needed for async bg-image re-render
 
   /* ── Apple Wallet pass mockup ────────────────────────────────────────
      Dimensions mirror real storeCard layout:
