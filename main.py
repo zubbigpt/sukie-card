@@ -300,6 +300,18 @@ def run_migrations():
         # ── Google Reviews ─────────────────────────────────────────────────────────
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS google_review_url VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS review_trigger_stamps INTEGER DEFAULT 0",
+        # ── Apple Wallet live update web service ──────────────────────────────────
+        "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS wallet_auth_token VARCHAR",
+        """CREATE TABLE IF NOT EXISTS wallet_devices (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            device_library_id VARCHAR NOT NULL,
+            push_token VARCHAR NOT NULL,
+            card_id UUID REFERENCES loyalty_cards(id) ON DELETE CASCADE,
+            pass_type_id VARCHAR NOT NULL,
+            serial_number VARCHAR NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            UNIQUE(device_library_id, card_id)
+        )""",
 
     ]
     from database import SessionLocal
@@ -927,6 +939,323 @@ def cookies_page(request: Request):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# APPLE WALLET WEB SERVICE HELPERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _wallet_get_or_create_token(card, db: Session) -> str:
+    """Return existing wallet_auth_token or generate a new one and persist it."""
+    token = getattr(card, "wallet_auth_token", None)
+    if not token:
+        token = secrets.token_urlsafe(32)
+        db.execute(
+            text("UPDATE loyalty_cards SET wallet_auth_token=:tok WHERE id=:cid"),
+            {"tok": token, "cid": str(card.id)},
+        )
+        db.commit()
+        db.refresh(card)
+    return token
+
+
+def _wallet_serial_to_card_id(serial: str, db: Session):
+    """Convert wallet serial (card_id without dashes, first 20 chars) → card row."""
+    row = db.execute(
+        text("SELECT id FROM loyalty_cards WHERE REPLACE(id::text, '-', '') LIKE :prefix"),
+        {"prefix": serial + "%"},
+    ).fetchone()
+    return row[0] if row else None
+
+
+def _wallet_verify_auth(serial: str, auth_header: str, db: Session):
+    """Verify Apple Wallet Authorization header matches the card's auth token."""
+    token = (auth_header or "").replace("ApplePass ", "").strip()
+    card_id = _wallet_serial_to_card_id(serial, db)
+    if not card_id:
+        raise HTTPException(status_code=401, detail="Pass not found")
+    row = db.execute(
+        text("SELECT wallet_auth_token FROM loyalty_cards WHERE id=:cid"),
+        {"cid": str(card_id)},
+    ).fetchone()
+    stored = row[0] if row else None
+    if not stored or stored != token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return card_id
+
+
+async def _push_apple_wallet(push_token: str) -> bool:
+    """Send a background push notification to Apple Wallet via APNs HTTP/2."""
+    import base64, ssl, tempfile, os as _os
+    p12_b64    = _os.environ.get("APPLE_P12_B64", "")
+    p12_pass   = _os.environ.get("APPLE_P12_PASSWORD", "").encode()
+    pass_type  = _os.environ.get("APPLE_PASS_TYPE_ID", "")
+    if not (p12_b64 and pass_type):
+        print("⚠️  APPLE_P12_B64 or APPLE_PASS_TYPE_ID not set — skipping APN push")
+        return False
+    try:
+        from cryptography.hazmat.primitives.serialization.pkcs12 import load_key_and_certificates
+        from cryptography.hazmat.primitives.serialization import (
+            Encoding, PrivateFormat, NoEncryption
+        )
+        p12_bytes = base64.b64decode(p12_b64)
+        priv_key, cert, _ = load_key_and_certificates(p12_bytes, p12_pass)
+        pem_key  = priv_key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption())
+        pem_cert = cert.public_bytes(Encoding.PEM)
+
+        # Write to temp files for ssl context
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pem") as kf:
+            kf.write(pem_key); key_path = kf.name
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pem") as cf:
+            cf.write(pem_cert); cert_path = cf.name
+
+        try:
+            ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ssl_ctx.load_cert_chain(certfile=cert_path, keyfile=key_path)
+            ssl_ctx.check_hostname = True
+            ssl_ctx.verify_mode = ssl.CERT_REQUIRED
+            ssl_ctx.load_default_certs()
+
+            apn_url = f"https://api.push.apple.com/3/device/{push_token}"
+            headers = {
+                "apns-topic": pass_type,
+                "apns-push-type": "background",
+                "apns-priority": "5",
+            }
+            async with httpx.AsyncClient(http2=True, verify=ssl_ctx) as client:
+                resp = await client.post(apn_url, json={}, headers=headers)
+                ok = resp.status_code == 200
+                print(f"APNs push → {resp.status_code} for token …{push_token[-8:]}")
+                return ok
+        finally:
+            _os.unlink(key_path)
+            _os.unlink(cert_path)
+    except Exception as ex:
+        print(f"APNs push error: {ex}")
+        return False
+
+
+def _push_wallet_update(card_id, db: Session):
+    """Find all registered devices for this card and fire APNs pushes."""
+    import asyncio
+    try:
+        rows = db.execute(
+            text("SELECT push_token FROM wallet_devices WHERE card_id=:cid"),
+            {"cid": str(card_id)},
+        ).fetchall()
+        if not rows:
+            return
+        for row in rows:
+            push_token = row[0]
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.ensure_future(_push_apple_wallet(push_token))
+                else:
+                    loop.run_until_complete(_push_apple_wallet(push_token))
+            except Exception as ex:
+                print(f"Push dispatch error: {ex}")
+    except Exception as ex:
+        print(f"_push_wallet_update error: {ex}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# APPLE WALLET WEB SERVICE ENDPOINTS
+# https://developer.apple.com/library/archive/documentation/PassKit/Reference/PassKit_WebService/WebService.html
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.post("/api/wallet/v1/devices/{device_library_id}/registrations/{pass_type_id}/{serial_number}")
+async def wallet_register_device(
+    device_library_id: str,
+    pass_type_id: str,
+    serial_number: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Apple calls this when a pass is added to Wallet — register device/push token."""
+    auth_header = request.headers.get("Authorization", "")
+    card_id = _wallet_verify_auth(serial_number, auth_header, db)
+
+    body = await request.json()
+    push_token = body.get("pushToken", "")
+    if not push_token:
+        raise HTTPException(status_code=400, detail="pushToken required")
+
+    # Upsert: insert or update push_token on conflict
+    existing = db.execute(
+        text("SELECT id FROM wallet_devices WHERE device_library_id=:did AND card_id=:cid"),
+        {"did": device_library_id, "cid": str(card_id)},
+    ).fetchone()
+
+    if existing:
+        db.execute(
+            text("UPDATE wallet_devices SET push_token=:pt WHERE device_library_id=:did AND card_id=:cid"),
+            {"pt": push_token, "did": device_library_id, "cid": str(card_id)},
+        )
+        db.commit()
+        return JSONResponse(status_code=200, content={"status": "updated"})
+    else:
+        db.execute(
+            text("""INSERT INTO wallet_devices
+                    (id, device_library_id, push_token, card_id, pass_type_id, serial_number)
+                    VALUES (gen_random_uuid(), :did, :pt, :cid, :ptid, :sn)"""),
+            {
+                "did": device_library_id,
+                "pt": push_token,
+                "cid": str(card_id),
+                "ptid": pass_type_id,
+                "sn": serial_number,
+            },
+        )
+        db.commit()
+        return JSONResponse(status_code=201, content={"status": "registered"})
+
+
+@app.delete("/api/wallet/v1/devices/{device_library_id}/registrations/{pass_type_id}/{serial_number}")
+async def wallet_unregister_device(
+    device_library_id: str,
+    pass_type_id: str,
+    serial_number: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Apple calls this when a pass is removed from Wallet."""
+    auth_header = request.headers.get("Authorization", "")
+    card_id = _wallet_verify_auth(serial_number, auth_header, db)
+    db.execute(
+        text("DELETE FROM wallet_devices WHERE device_library_id=:did AND card_id=:cid"),
+        {"did": device_library_id, "cid": str(card_id)},
+    )
+    db.commit()
+    return JSONResponse(status_code=200, content={"status": "unregistered"})
+
+
+@app.get("/api/wallet/v1/devices/{device_library_id}/registrations/{pass_type_id}")
+def wallet_list_updatable_passes(
+    device_library_id: str,
+    pass_type_id: str,
+    passesUpdatedSince: str = None,
+    db: Session = Depends(get_db),
+):
+    """Apple polls this to find passes that have been updated since last check."""
+    query = """
+        SELECT wd.serial_number, lc.updated_at
+        FROM wallet_devices wd
+        JOIN loyalty_cards lc ON lc.id = wd.card_id
+        WHERE wd.device_library_id = :did
+          AND wd.pass_type_id = :ptid
+    """
+    params = {"did": device_library_id, "ptid": pass_type_id}
+    if passesUpdatedSince:
+        query += " AND lc.updated_at > :since"
+        params["since"] = passesUpdatedSince
+
+    rows = db.execute(text(query), params).fetchall()
+    if not rows:
+        return JSONResponse(status_code=204, content=None)
+
+    serials = [r[0] for r in rows]
+    last_updated = max(r[1] for r in rows if r[1])
+    return {
+        "serialNumbers": serials,
+        "lastUpdated": last_updated.isoformat() if last_updated else datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.get("/api/wallet/v1/passes/{pass_type_id}/{serial_number}")
+def wallet_get_updated_pass(
+    pass_type_id: str,
+    serial_number: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Apple calls this to get the latest version of a pass."""
+    from fastapi.responses import Response as FResponse
+    auth_header = request.headers.get("Authorization", "")
+    card_id = _wallet_verify_auth(serial_number, auth_header, db)
+
+    card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.id == card_id).first()
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+
+    # Gather business/program settings (same logic as wallet download)
+    stamps_per_reward = STAMPS_PER_REWARD
+    reward_name = "Premio"
+    biz_name = "Zubie Card"
+    primary_color = "#26170c"
+    accent_color = "#ffca48"
+    text_color_val = "#ffffff"
+    strip_bg_url_val = ""
+    biz_logo_url = ""
+    biz_lat = biz_lng = biz_geo_msg = None
+    biz_geo_radius = 300
+
+    if customer and customer.business_id:
+        biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+        if biz:
+            biz_name = biz.name or biz_name
+            stamps_per_reward = biz.stamps_per_reward or stamps_per_reward
+            primary_color = biz.primary_color or primary_color
+            accent_color = biz.accent_color or accent_color
+            biz_logo_url = biz.logo_url or ""
+            biz_lat = getattr(biz, "latitude", None)
+            biz_lng = getattr(biz, "longitude", None)
+            biz_geo_msg = getattr(biz, "geo_push_msg", None) or ""
+            biz_geo_radius = getattr(biz, "geo_radius_m", 300) or 300
+        prog = db.query(models.CardProgram).filter(
+            models.CardProgram.business_id == customer.business_id
+        ).first()
+        if prog:
+            reward_name = prog.reward_name or reward_name
+            strip_bg_url_val = getattr(prog, "strip_bg_url", None) or ""
+            text_color_val = getattr(prog, "text_color", None) or "#ffffff"
+            primary_color = prog.bg_color or primary_color
+            accent_color = prog.accent_color or accent_color
+
+    auth_token = getattr(card, "wallet_auth_token", "") or ""
+
+    try:
+        from wallet_pass import generate_pkpass
+        pkpass_bytes = generate_pkpass(
+            card_id=str(card.id),
+            first_name=customer.first_name if customer else "Cliente",
+            last_name=customer.last_name if customer else "",
+            stamps=card.stamps or 0,
+            stamps_per_reward=stamps_per_reward,
+            reward_name=reward_name,
+            biz_name=biz_name,
+            primary_color=primary_color,
+            accent_color=accent_color,
+            text_color=text_color_val,
+            latitude=biz_lat,
+            longitude=biz_lng,
+            geo_push_msg=biz_geo_msg or "",
+            geo_radius_m=biz_geo_radius,
+            strip_bg_url=strip_bg_url_val,
+            logo_url=biz_logo_url,
+            auth_token=auth_token,
+        )
+        return FResponse(
+            content=pkpass_bytes,
+            media_type="application/vnd.apple.pkpass",
+            headers={
+                "Last-Modified": datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT"),
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generando pass: {str(e)}")
+
+
+@app.post("/api/wallet/v1/log")
+async def wallet_log(request: Request):
+    """Apple sends diagnostic logs here — just acknowledge."""
+    try:
+        body = await request.json()
+        print(f"Apple Wallet log: {body}")
+    except Exception:
+        pass
+    return JSONResponse(status_code=200, content={})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # TARJETA PÚBLICA
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/card/{card_id}/wallet.pkpass")
@@ -979,6 +1308,9 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             primary_color    = _prog2.bg_color or primary_color
             accent_color     = _prog2.accent_color or accent_color
 
+    # Generate or reuse per-card wallet auth token for live update web service
+    auth_token = _wallet_get_or_create_token(card, db)
+
     try:
         from wallet_pass import generate_pkpass
         pkpass_bytes = generate_pkpass(
@@ -998,6 +1330,7 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             geo_radius_m=biz_geo_radius,
             strip_bg_url=strip_bg_url_val,
             logo_url=biz_logo_url,
+            auth_token=auth_token,
         )
         return FResponse(
             content=pkpass_bytes,
@@ -1365,6 +1698,8 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
 
     db.commit()
     db.refresh(card)
+    # Push live update to Apple Wallet if registered
+    _push_wallet_update(card.id, db)
     return {
         "message":       f"+{n} sello(s) añadidos" if n > 0 else "OK",
         "stamps":        card.stamps,
@@ -1394,6 +1729,7 @@ async def remove_stamps(card_id: str, request: Request, db: Session = Depends(ge
     db.add(tx)
     db.commit()
     db.refresh(card)
+    _push_wallet_update(card.id, db)
     return {"message": f"-{n} sello(s) eliminados", "stamps": card.stamps}
 
 
@@ -1421,6 +1757,7 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
     db.add(tx)
     db.commit()
     db.refresh(card)
+    _push_wallet_update(card.id, db)
     return {"message": "Premio canjeado ✅",
             "award_balance": card.award_balance,
             "rewards_redeemed": card.rewards_redeemed}
