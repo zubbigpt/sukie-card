@@ -1574,7 +1574,11 @@ async def delete_all_customers(pin: str = "", db: Session = Depends(get_db)):
     """Borra TODOS los clientes y sus tarjetas (solo para testing)"""
     verify_pin(pin, db)
     from sqlalchemy import text as _text
+    # FK order: child tables first
     db.execute(_text("DELETE FROM push_subscriptions"))
+    db.execute(_text("DELETE FROM referrals"))
+    db.execute(_text("UPDATE passcodes SET used_by = NULL"))
+    db.execute(_text("DELETE FROM birthday_vouchers"))
     db.execute(_text("DELETE FROM stamp_transactions"))
     db.execute(_text("DELETE FROM loyalty_cards"))
     db.execute(_text("DELETE FROM customers"))
