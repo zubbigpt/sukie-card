@@ -1558,13 +1558,24 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
 
-    # Borrar en orden FK: push_subscriptions → transacciones → tarjeta → cliente
+    # Borrar en orden FK completo
     from sqlalchemy import text as _text
-    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid"), {"cid": str(card.id)})
+    cid = str(card.id)
+    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid"), {"cid": cid})
+    db.execute(_text("DELETE FROM referrals WHERE referrer_card = :cid OR referred_card = :cid"), {"cid": cid})
+    db.execute(_text("UPDATE passcodes SET used_by = NULL WHERE used_by = :cid"), {"cid": cid})
+    if customer:
+        db.execute(_text("DELETE FROM birthday_vouchers WHERE customer_id = :uid"), {"uid": str(customer.id)})
     db.query(models.StampTransaction).filter(models.StampTransaction.card_id == card.id).delete()
     db.delete(card)
     if customer:
-        db.delete(customer)
+        # Only delete customer if they have no other cards
+        other_cards = db.query(models.LoyaltyCard).filter(
+            models.LoyaltyCard.customer_id == customer.id,
+            models.LoyaltyCard.id != card.id
+        ).count()
+        if other_cards == 0:
+            db.delete(customer)
     db.commit()
     return {"message": "Cliente eliminado"}
 
