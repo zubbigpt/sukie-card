@@ -5866,7 +5866,8 @@ function _buildStripCanvas(card, w, h) {
 
   const spr    = card.stamps_per_reward || 10;
   const filled = card.filled || 0;
-  const bizName = (card.name || 'ZubCard').substring(0,22);
+  const bizName  = (card.name || 'ZubCard').substring(0,22);
+  const titular  = (card.titular || card.customer_name || '').substring(0,22);
   const reward  = (card.reward_name || 'Premio').substring(0,20);
   const fs = w / 320;
 
@@ -5951,7 +5952,7 @@ function _buildStripCanvas(card, w, h) {
 
   ctx.font = `700 ${Math.round(8*fs)}px -apple-system,Helvetica,sans-serif`;
   ctx.fillStyle = rgba(TEXT, 0.88);
-  ctx.fillText(bizName.toUpperCase(), PAD, valY);
+  ctx.fillText(titular.toUpperCase() || '—', PAD, valY);
   ctx.fillStyle = rgba(ACCENT, 0.88);
   ctx.textAlign = 'right'; ctx.fillText(reward, w - PAD, valY); ctx.textAlign = 'left';
 

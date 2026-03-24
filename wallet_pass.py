@@ -157,58 +157,60 @@ def generate_strip_image(
     draw.text((sw - PAD, PAD_T), count_str,
               font=fnt_count, fill=(*ACCENT, 220), anchor="ra")
 
-    # ── Stamp dots row (centered vertically in middle band) ──────
-    FOOTER_H    = 26 * s
-    top_band    = PAD_T + 14 * s + 6 * s   # below biz name
-    bot_band    = sh - FOOTER_H - 4 * s
-    mid_y       = (top_band + bot_band) // 2
-    avail_w     = sw - 2 * PAD
+    # ── Layout bands — same proportions as JS canvas ─────────────
+    TOP_H  = round(sh * 0.20)
+    FOOT_H = round(sh * 0.22)
+    MID_H  = sh - TOP_H - FOOT_H
+    avail_w = sw - 2 * PAD
 
-    COLS = min(stamps_total, 10)
-    ROWS = _math.ceil(stamps_total / COLS)
+    # ── Stamp circles: 2 rows for >5 stamps (matches JS canvas) ──
+    COLS  = stamps_total if stamps_total <= 5 else _math.ceil(stamps_total / 2)
+    ROWS  = _math.ceil(stamps_total / COLS)
+    GAP_C = round(avail_w * 0.032)
+    GAP_R = round(MID_H   * 0.10)
+    DOT_D = min(
+        (avail_w - GAP_C * (COLS - 1)) // COLS,
+        (MID_H   - GAP_R * (ROWS - 1)) // max(ROWS, 1),
+    )
+    DOT_D = max(DOT_D, 4 * s)
+    DOT_R = DOT_D // 2
 
-    DOT_D   = min(14 * s, (avail_w - (COLS - 1) * 4 * s) // COLS)
-    DOT_D   = max(DOT_D, 8 * s)
-    GAP     = max(3 * s, (avail_w - COLS * DOT_D) // max(COLS - 1, 1))
-
-    grid_w  = COLS * DOT_D + GAP * (COLS - 1)
-    grid_h  = ROWS * DOT_D + (4 * s) * (ROWS - 1)
-    gx0     = PAD + (avail_w - grid_w) // 2
-    gy0     = mid_y - grid_h // 2
+    grid_w = COLS * DOT_D + GAP_C * (COLS - 1)
+    grid_h = ROWS * DOT_D + GAP_R * (ROWS - 1)
+    gx0    = PAD + (avail_w - grid_w) // 2
+    gy0    = TOP_H + (MID_H - grid_h) // 2
 
     for i in range(stamps_total):
         col = i % COLS
         row = i // COLS
-        cx  = gx0 + col * (DOT_D + GAP) + DOT_D // 2
-        cy  = gy0 + row * (DOT_D + 4 * s) + DOT_D // 2
-        r   = DOT_D // 2
+        cx  = gx0 + col * (DOT_D + GAP_C) + DOT_R
+        cy  = gy0 + row * (DOT_D + GAP_R) + DOT_R
+        r   = DOT_R
 
         if i < stamps:
             # Filled: solid accent circle with checkmark
             draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(*FILLED_FILL, 255))
-            # Checkmark
-            lw = max(2, r // 4)
-            x1 = cx - int(r * 0.35); y1 = cy + int(r * 0.02)
-            x2 = cx - int(r * 0.05); y2 = cy + int(r * 0.32)
-            x3 = cx + int(r * 0.40); y3 = cy - int(r * 0.30)
+            lw = max(2, round(r * 0.16))
+            x1 = cx - int(r * 0.30); y1 = cy + int(r * 0.06)
+            x2 = cx - int(r * 0.02); y2 = cy + int(r * 0.36)
+            x3 = cx + int(r * 0.38); y3 = cy - int(r * 0.26)
             draw.line([(x1, y1), (x2, y2)], fill=(*FILLED_ICON, 240), width=lw)
             draw.line([(x2, y2), (x3, y3)], fill=(*FILLED_ICON, 240), width=lw)
         else:
-            # Empty: dark circle with subtle border
-            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(*EMPTY_FILL, 255))
+            # Empty: outline only (no fill), like JS canvas
             draw.ellipse([cx - r, cy - r, cx + r, cy + r],
-                         outline=(*EMPTY_BORD, 180), width=max(1, s))
+                         outline=(*EMPTY_BORD, 97), width=max(1, s))
 
     # ── Footer ───────────────────────────────────────────────────
-    footer_y = sh - FOOTER_H
+    footer_y = sh - FOOT_H
     draw.line([(PAD, footer_y), (sw - PAD, footer_y)],
-              fill=(*TEXT_SUB, 60), width=max(1, s))
+              fill=(*TEXT_SUB, 71), width=max(1, s))
 
-    lbl_y = footer_y + 4 * s
-    val_y = footer_y + 12 * s
+    lbl_y = footer_y + round(FOOT_H * 0.30)
+    val_y = footer_y + round(FOOT_H * 0.72)
 
     # Left: customer name (TITULAR)
-    holder = (customer_name or biz_name)[:22]
+    holder = (customer_name or "")[:22]
     draw.text((PAD, lbl_y), "TITULAR",
               font=fnt_label, fill=(*TEXT_SUB, 180))
     draw.text((PAD, val_y), holder.upper(),
