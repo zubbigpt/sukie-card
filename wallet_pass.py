@@ -87,8 +87,8 @@ def generate_strip_image(
     scale: int = 2,
 ) -> bytes:
     """Generate a loyalty-card strip image for Apple Wallet.
-    Minimal dark design: business name top-left, stamp dots row, reward bottom-right.
-    No chip, no large accent blocks — clean and on-brand.
+    Clean elegant design: only large stamp circles on background — no text.
+    All text (name, counter, reward) is handled by pass.json fields.
     Returns PNG bytes. Falls back to the static file if PIL is unavailable."""
     if not _PIL_OK:
         path = ASSETS_DIR / ("strip@2x.png" if scale == 2 else "strip.png")
@@ -113,14 +113,9 @@ def generate_strip_image(
     BG     = _hex(bg_color)
     ACCENT = _hex(accent_color)
 
-    # Subtle slightly-lighter bg for depth
-    BG2         = _lighten(BG, 0.07)
-    EMPTY_FILL  = _lighten(BG, 0.12)    # barely-visible dot for empty stamp
-    EMPTY_BORD  = _lighten(BG, 0.28)    # border for empty dot
+    EMPTY_BORD  = _lighten(BG, 0.40)    # visible but subtle border for empty stamp
     FILLED_FILL = ACCENT
-    FILLED_ICON = _darken(ACCENT, 0.50)
-    TEXT_MAIN   = _lighten(BG, 0.88)    # near-white
-    TEXT_SUB    = _lighten(BG, 0.42)    # muted
+    FILLED_ICON = _darken(ACCENT, 0.55)
 
     # Canvas: 320×123 logical px (standard Apple Wallet strip)
     sw, sh = 320 * scale, 123 * scale
@@ -129,56 +124,27 @@ def generate_strip_image(
     img  = Image.new("RGB", (sw, sh), BG)
     draw = ImageDraw.Draw(img, "RGBA")
 
-    # Subtle gradient-like overlay on right side (cosmetic only)
-    for xi in range(sw // 2, sw):
-        alpha = int(18 * (xi - sw // 2) / (sw // 2))
-        draw.line([(xi, 0), (xi, sh)], fill=(*BG2, alpha))
+    # ── Stamp circles: fill the full strip — no text, just circles ───────────
+    PAD_H   = round(sw * 0.045)          # horizontal padding
+    PAD_V   = round(sh * 0.12)           # vertical padding top & bottom
+    avail_w = sw - 2 * PAD_H
+    avail_h = sh - 2 * PAD_V
 
-    def _fnt(path, size):
-        try:
-            return ImageFont.truetype(path, size)
-        except Exception:
-            return ImageFont.load_default()
-
-    fnt_biz    = _fnt(_FONT_BOLD, 13 * s)   # business name
-    fnt_label  = _fnt(_FONT_REG,   7 * s)   # tiny labels
-    fnt_reward = _fnt(_FONT_BOLD,  8 * s)   # reward text
-    fnt_count  = _fnt(_FONT_BOLD, 11 * s)   # x/y stamp count
-
-    PAD   = 14 * s
-    PAD_T = 11 * s
-
-    # ── Business name (top-left) ─────────────────────────────────
-    biz_display = (biz_name or "ZubCard")[:22]
-    draw.text((PAD, PAD_T), biz_display, font=fnt_biz, fill=(*TEXT_MAIN, 255))
-
-    # ── Stamp counter top-right (e.g. "3/10") ───────────────────
-    count_str = f"{stamps}/{stamps_total}"
-    draw.text((sw - PAD, PAD_T), count_str,
-              font=fnt_count, fill=(*ACCENT, 220), anchor="ra")
-
-    # ── Layout bands — same proportions as JS canvas ─────────────
-    TOP_H  = round(sh * 0.20)
-    FOOT_H = round(sh * 0.22)
-    MID_H  = sh - TOP_H - FOOT_H
-    avail_w = sw - 2 * PAD
-
-    # ── Stamp circles: 2 rows for >5 stamps (matches JS canvas) ──
     COLS  = stamps_total if stamps_total <= 5 else _math.ceil(stamps_total / 2)
     ROWS  = _math.ceil(stamps_total / COLS)
-    GAP_C = round(avail_w * 0.032)
-    GAP_R = round(MID_H   * 0.10)
+    GAP_C = round(avail_w * 0.040)
+    GAP_R = round(avail_h * 0.14) if ROWS > 1 else 0
     DOT_D = min(
         (avail_w - GAP_C * (COLS - 1)) // COLS,
-        (MID_H   - GAP_R * (ROWS - 1)) // max(ROWS, 1),
+        (avail_h - GAP_R * (ROWS - 1)) // max(ROWS, 1),
     )
     DOT_D = max(DOT_D, 4 * s)
     DOT_R = DOT_D // 2
 
     grid_w = COLS * DOT_D + GAP_C * (COLS - 1)
     grid_h = ROWS * DOT_D + GAP_R * (ROWS - 1)
-    gx0    = PAD + (avail_w - grid_w) // 2
-    gy0    = TOP_H + (MID_H - grid_h) // 2
+    gx0    = PAD_H + (avail_w - grid_w) // 2
+    gy0    = PAD_V + (avail_h - grid_h) // 2
 
     for i in range(stamps_total):
         col = i % COLS
@@ -194,33 +160,12 @@ def generate_strip_image(
             x1 = cx - int(r * 0.30); y1 = cy + int(r * 0.06)
             x2 = cx - int(r * 0.02); y2 = cy + int(r * 0.36)
             x3 = cx + int(r * 0.38); y3 = cy - int(r * 0.26)
-            draw.line([(x1, y1), (x2, y2)], fill=(*FILLED_ICON, 240), width=lw)
-            draw.line([(x2, y2), (x3, y3)], fill=(*FILLED_ICON, 240), width=lw)
+            draw.line([(x1, y1), (x2, y2)], fill=(*FILLED_ICON, 245), width=lw)
+            draw.line([(x2, y2), (x3, y3)], fill=(*FILLED_ICON, 245), width=lw)
         else:
-            # Empty: outline only (no fill), like JS canvas
+            # Empty: outline only — clean, no fill
             draw.ellipse([cx - r, cy - r, cx + r, cy + r],
-                         outline=(*EMPTY_BORD, 97), width=max(1, s))
-
-    # ── Footer ───────────────────────────────────────────────────
-    footer_y = sh - FOOT_H
-    draw.line([(PAD, footer_y), (sw - PAD, footer_y)],
-              fill=(*TEXT_SUB, 71), width=max(1, s))
-
-    lbl_y = footer_y + round(FOOT_H * 0.30)
-    val_y = footer_y + round(FOOT_H * 0.72)
-
-    # Left: customer name (TITULAR)
-    holder = (customer_name or "")[:22]
-    draw.text((PAD, lbl_y), "TITULAR",
-              font=fnt_label, fill=(*TEXT_SUB, 180))
-    draw.text((PAD, val_y), holder.upper(),
-              font=fnt_reward, fill=(*TEXT_MAIN, 230))
-
-    # Right: reward name (PREMIO)
-    draw.text((sw - PAD, lbl_y), "PREMIO",
-              font=fnt_label, fill=(*TEXT_SUB, 180), anchor="ra")
-    draw.text((sw - PAD, val_y), (reward_name or "Premio")[:20],
-              font=fnt_reward, fill=(*ACCENT, 220), anchor="ra")
+                         outline=(*EMPTY_BORD, 130), width=max(2, s))
 
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="PNG")
@@ -308,27 +253,28 @@ def build_pass_json(
         "foregroundColor": "rgb(255,243,208)",
         "labelColor": "rgb(160,141,131)",
         "storeCard": {
-            "primaryFields": [
+            "headerFields": [
                 {
                     "key": "stamps",
                     "label": "SELLOS",
                     "value": f"{stamps}/{stamps_per_reward}",
                     "changeMessage": "Tienes %@ sellos",
+                    "textAlignment": "PKTextAlignmentRight",
                 }
             ],
             "secondaryFields": [
                 {
-                    "key": "reward",
-                    "label": "PREMIO",
-                    "value": reward_name or "Premio",
-                }
-            ],
-            "auxiliaryFields": [
-                {
                     "key": "holder",
                     "label": "TITULAR",
                     "value": full_name,
-                }
+                    "textAlignment": "PKTextAlignmentLeft",
+                },
+                {
+                    "key": "reward",
+                    "label": "PREMIO",
+                    "value": reward_name or "Premio",
+                    "textAlignment": "PKTextAlignmentRight",
+                },
             ],
             "backFields": [
                 {
