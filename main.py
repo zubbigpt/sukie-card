@@ -1360,8 +1360,6 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
             transaction_type="stamp",
             note=body.get("note", f"+{n} sello(s)"),
             store=body.get("store", ""),
-            source=body.get("source", "admin"),
-            store_id=body.get("store_id") or None,
         )
         db.add(tx)
 
@@ -1419,8 +1417,6 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
         transaction_type="redeem",
         note=body.get("note", f"Premio canjeado: {REWARD_NAME}"),
         store=body.get("store", ""),
-        source=body.get("source", "admin"),
-        store_id=body.get("store_id") or None,
     )
     db.add(tx)
     db.commit()
