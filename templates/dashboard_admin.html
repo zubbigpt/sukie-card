@@ -1853,9 +1853,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         document.getElementById('ec-name').value = card.name || '';
         document.getElementById('ec-stamps').value = card.stamps_per_reward || card.stamps || 10;
         document.getElementById('ec-reward').value = card.reward_name || '';
-        // Colors
-        const bg = card.bg_color || '#0a0a0a';
-        const ac = card.accent_color || '#00e676';
+        // Colors — default to business brand colors
+        const bg = card.bg_color || BIZ_PRIMARY_COLOR || '#26170c';
+        const ac = card.accent_color || BIZ_ACCENT_COLOR || '#ffca48';
         const tx = card.text_color || '#ffffff';
         document.getElementById('ec-bg').value = bg;
         document.getElementById('ec-bg-txt').value = bg;
@@ -3513,6 +3513,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 const BASE = '{{ biz_api_base or "" }}' || window.location.origin;
 const BIZ_SLUG = '{{ biz_slug or "" }}';
 const BIZ_PLAN_INITIAL = '{{ biz_plan or "free" }}';
+const BIZ_PRIMARY_COLOR = '{{ primary_color or "#26170c" }}';
+const BIZ_ACCENT_COLOR  = '{{ accent_color  or "#ffca48" }}';
 let BIZ_PLAN = BIZ_PLAN_INITIAL;
 let PIN = '';
 let currentPage = 1;
@@ -5895,16 +5897,21 @@ function buildCardMockup(card){
   card.stamps_per_reward = spr;
   window._cardRegistry[card.id] = card;
 
+  // Use business brand colors for the preview so it matches the actual customer card
+  const bgCol     = BIZ_PRIMARY_COLOR || card.bg_color     || '#26170c';
+  const accentCol = BIZ_ACCENT_COLOR  || card.accent_color || '#ffca48';
+  const textCol   = card.text_color   || '#ffffff';
+
   // Pre-compute values (no inline <script> — those don't run in innerHTML)
   const max      = Math.min(spr, 20);
   const cols     = max <= 5 ? max : (max <= 8 ? 4 : 5);
   const filled   = card.filled || 0;
-  const emptyBg  = _emptyTileColor(card.bg_color);
+  const emptyBg  = _emptyTileColor(bgCol);
   const icon     = (card.emoji || '').replace(/'/g,"&#39;") || '✓';
 
   const tilesHtml = Array.from({length: max}, (_, i) => {
     const on = i < filled;
-    return `<div style="aspect-ratio:1/1;border-radius:6px;background:${on ? card.accent_color : emptyBg};display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1">${on ? icon : ''}</div>`;
+    return `<div style="aspect-ratio:1/1;border-radius:6px;background:${on ? accentCol : emptyBg};display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1">${on ? icon : ''}</div>`;
   }).join('') + (spr > 20 ? `<div style="font-size:.5rem;color:rgba(255,255,255,.5);align-self:center;grid-column:span 2">+${spr-20}</div>` : '');
 
   const ddId = `dd-${card.id}`;
@@ -5912,15 +5919,15 @@ function buildCardMockup(card){
   const wrap = document.createElement('div');
   wrap.className = 'tarjeta-card-wrap stitch-card-gallery';
   wrap.innerHTML = `
-    <!-- Card preview — matches customer card design exactly -->
-    <div style="aspect-ratio:1.45/1;background:${card.bg_color};border-radius:var(--r-lg);padding:14px 14px 12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.15)">
-      <!-- Header: label + name + chip -->
+    <!-- Card preview — uses business brand colors to match customer card -->
+    <div style="aspect-ratio:1.45/1;background:${bgCol};border-radius:var(--r-lg);padding:14px 14px 12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.15)">
+      <!-- Header: label + name -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
-          <div style="font-size:.42rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${card.accent_color};opacity:.85;margin-bottom:2px">LOYALTY CARD</div>
-          <div style="font-size:1rem;font-weight:800;color:#fff;letter-spacing:.02em;line-height:1.1">${(card.name||'TARJETA').toUpperCase().substring(0,18)}</div>
+          <div style="font-size:.42rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${accentCol};opacity:.85;margin-bottom:2px">LOYALTY CARD</div>
+          <div style="font-size:1rem;font-weight:800;color:${textCol};letter-spacing:.02em;line-height:1.1">${(card.name||'TARJETA').toUpperCase().substring(0,18)}</div>
         </div>
-        <div style="width:20px;height:14px;border-radius:2px;background:${card.accent_color};flex-shrink:0;margin-top:3px"></div>
+        <div style="font-size:.7rem;font-weight:800;color:${accentCol};opacity:.8;margin-top:4px">0/${spr}</div>
       </div>
       <!-- Stamp grid -->
       <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:5px;flex:1;align-content:start;padding:2px 0">
@@ -5934,7 +5941,7 @@ function buildCardMockup(card){
         </div>
         <div style="text-align:right">
           <div style="font-size:.38rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1px">PREMIOS</div>
-          <div style="font-size:.55rem;font-weight:700;color:${card.accent_color}">${card.reward_name}</div>
+          <div style="font-size:.55rem;font-weight:700;color:${accentCol}">${card.reward_name}</div>
         </div>
       </div>
     </div>
@@ -6033,12 +6040,12 @@ function openNewCardModal(){
   document.getElementById('nc-emoji').value = '🎁';
   const emojiBtn = document.getElementById('nc-emoji-btn'); if(emojiBtn) emojiBtn.textContent = '🎁';
   document.getElementById('nc-stamps').value = '10';
-  document.getElementById('nc-bg').value = '#0a0a0a';
-  document.getElementById('nc-accent').value = '#00e676';
+  document.getElementById('nc-bg').value = BIZ_PRIMARY_COLOR || '#26170c';
+  document.getElementById('nc-accent').value = BIZ_ACCENT_COLOR || '#ffca48';
   document.getElementById('nc-text').value = '#ffffff';
   // Reset text inputs
-  const bgt = document.getElementById('nc-bg-txt'); if(bgt) bgt.value = '#0a0a0a';
-  const act = document.getElementById('nc-accent-txt'); if(act) act.value = '#00e676';
+  const bgt = document.getElementById('nc-bg-txt'); if(bgt) bgt.value = BIZ_PRIMARY_COLOR || '#26170c';
+  const act = document.getElementById('nc-accent-txt'); if(act) act.value = BIZ_ACCENT_COLOR || '#ffca48';
   const txt = document.getElementById('nc-text-txt'); if(txt) txt.value = '#ffffff';
   // Reset logo
   const logoPrev = document.getElementById('nc-logo-preview'); if(logoPrev) logoPrev.innerHTML = '🏪';

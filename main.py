@@ -3268,6 +3268,8 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         "card_title": biz.card_title,
         "biz_plan":   _get_biz_plan(biz),
         "stripe_configured": bool(STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO),
+        "primary_color": biz.primary_color or "#26170c",
+        "accent_color":  biz.accent_color  or "#ffca48",
     })
 
 
