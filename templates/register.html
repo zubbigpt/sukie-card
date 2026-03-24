@@ -52,19 +52,14 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 .hero h1 .accent{color:var(--honey-dark)}
 .hero-sub{font-size:.92rem;color:var(--outline);line-height:1.8;max-width:380px}
 
-/* CARD MOCK */
+/* CARD MOCK — Apple Wallet canvas */
 .card-mock-wrap{margin:2rem 0}
-.card-mock{background:var(--primary);border-radius:var(--r-lg);padding:22px 20px;box-shadow:var(--shadow-lg);color:var(--on-primary)}
-.card-mock-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.12)}
-.card-brand{font-size:.56rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px}
-.card-name{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.5px;color:var(--on-primary)}
-.card-mock-chip{width:32px;height:22px;border-radius:var(--r-sm);background:var(--honey)}
-.card-mock-stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:16px}
-.stamp{aspect-ratio:1;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:1rem;background:rgba(255,255,255,.1)}
-.stamp.filled{background:var(--honey);color:var(--honey-dark)}
-.card-mock-footer{display:flex;justify-content:space-between;font-size:.72rem}
-.card-mock-footer .label{color:rgba(255,255,255,.45);font-size:.56rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
-.card-mock-footer .value{font-weight:800;color:var(--on-primary);font-size:.82rem}
+.aw-pass-reg{border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.28);color:#fff}
+.aw-pass-reg-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px}
+.aw-pass-reg-footer{display:flex;justify-content:space-between;padding:10px 14px 13px}
+.aw-fld{display:flex;flex-direction:column;gap:2px}
+.aw-fld-lbl{font-size:.5rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.55}
+.aw-fld-val{font-size:.8rem;font-weight:800;letter-spacing:.3px}
 
 /* BENEFITS */
 .benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;margin-bottom:2rem}
@@ -160,35 +155,75 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
     <p class="hero-sub">{{ header_text or 'Acumula sellos con cada compra y consigue tu premio. Gratis, sin app, en 30 segundos.' }}</p>
   </div>
 
-  <!-- CARD MOCK -->
+  <!-- CARD MOCK — Apple Wallet canvas -->
   <div class="card-mock-wrap">
-    <div class="card-mock">
-      <div class="card-mock-header">
-        <div>
-          <div class="card-brand">Loyalty Card</div>
-          <div class="card-name">{{ card_title or 'Fidelity Card' }}</div>
-        </div>
-        <div class="card-mock-chip"></div>
+    <div class="aw-pass-reg" id="reg-aw-pass" style="background:{{ primary_color or '#26170c' }}">
+      <div class="aw-pass-reg-header">
+        <span style="font-size:.65rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;opacity:.9">{{ card_title or biz_name or 'MI TARJETA' }}</span>
+        <span style="font-size:.5rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;opacity:.5">Tarjeta de Fidelidad</span>
       </div>
-      <div class="card-mock-stamps">
-        {% for i in range(stamps_per_reward) %}
-          <div class="stamp {% if i < 3 %}filled{% else %}empty{% endif %}">
-            {% if i < 3 %}☕{% endif %}
-          </div>
-        {% endfor %}
-      </div>
-      <div class="card-mock-footer">
-        <div>
-          <div class="label">Titular</div>
-          <div class="value">TU NOMBRE</div>
+      <div id="reg-strip-wrap" style="width:100%;line-height:0"></div>
+      <div class="aw-pass-reg-footer">
+        <div class="aw-fld">
+          <span class="aw-fld-lbl">Titular</span>
+          <span class="aw-fld-val">TU NOMBRE</span>
         </div>
-        <div>
-          <div class="label">Premios</div>
-          <div class="value">0 disponibles</div>
+        <div class="aw-fld" style="text-align:right">
+          <span class="aw-fld-lbl">Premio</span>
+          <span class="aw-fld-val" style="color:{{ accent_color or '#ffca48' }}">{{ reward_name or 'Premio' }}</span>
         </div>
       </div>
     </div>
   </div>
+  <script>
+  (function(){
+    function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+    function darken(c,a){return[Math.round(c[0]*(1-a)),Math.round(c[1]*(1-a)),Math.round(c[2]*(1-a))];}
+    function lighten(c,a){return[Math.min(255,Math.round(c[0]+(255-c[0])*a)),Math.min(255,Math.round(c[1]+(255-c[1])*a)),Math.min(255,Math.round(c[2]+(255-c[2])*a))];}
+    function rgba(c,al){return'rgba('+c[0]+','+c[1]+','+c[2]+','+(al==null?1:al)+')';}
+    function buildStrip(bg,accent,spr,w,h){
+      var DPR=2,canvas=document.createElement('canvas');
+      canvas.width=w*DPR;canvas.height=h*DPR;
+      var ctx=canvas.getContext('2d');ctx.scale(DPR,DPR);
+      var BG=hexRgb(bg),ACCENT=hexRgb(accent);
+      var TEXT=lighten(BG,.85),TSUB=lighten(BG,.45),EBORD=lighten(BG,.42),FICO=darken(ACCENT,.42);
+      ctx.fillStyle=rgba(BG);ctx.fillRect(0,0,w,h);
+      var PAD=Math.round(w*.048),TOP_H=Math.round(h*.20),FOOT_H=Math.round(h*.22),MID_H=h-TOP_H-FOOT_H;
+      var fs=w/320,filled=0;
+      // header count
+      ctx.textBaseline='middle';
+      ctx.font='700 '+Math.round(11*fs)+'px -apple-system,Helvetica,sans-serif';
+      ctx.fillStyle=rgba(ACCENT,.88);ctx.textAlign='right';
+      ctx.fillText('0/'+spr,w-PAD,TOP_H*.55);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+      // circles
+      var COLS=spr<=5?spr:Math.ceil(spr/2),ROWS=Math.ceil(spr/COLS);
+      var availW=w-2*PAD,GAP_C=Math.round(availW*.032),GAP_R=Math.round(MID_H*.10);
+      var DOT_D=Math.min(Math.floor((availW-GAP_C*(COLS-1))/COLS),Math.floor((MID_H-GAP_R*(ROWS-1))/ROWS));
+      var DOT_R=Math.floor(DOT_D/2),gridW=COLS*DOT_D+GAP_C*(COLS-1),gridH=ROWS*DOT_D+GAP_R*(ROWS-1);
+      var gx0=PAD+Math.floor((availW-gridW)/2),gy0=TOP_H+Math.floor((MID_H-gridH)/2);
+      for(var i=0;i<spr;i++){
+        var col=i%COLS,row=Math.floor(i/COLS);
+        var cx=gx0+col*(DOT_D+GAP_C)+DOT_R,cy=gy0+row*(DOT_D+GAP_R)+DOT_R;
+        ctx.beginPath();ctx.arc(cx,cy,DOT_R,0,Math.PI*2);
+        if(i<filled){ctx.fillStyle=rgba(ACCENT);ctx.fill();}
+        else{ctx.strokeStyle=rgba(EBORD,.38);ctx.lineWidth=Math.max(1,Math.round(fs*1.1));ctx.stroke();}
+      }
+      // footer divider
+      var fy=h-FOOT_H;ctx.strokeStyle=rgba(TSUB,.28);ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(PAD,fy);ctx.lineTo(w-PAD,fy);ctx.stroke();
+      return canvas;
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+      var wrap=document.getElementById('reg-strip-wrap');
+      if(!wrap)return;
+      var bg='{{ primary_color or "#26170c" }}',accent='{{ accent_color or "#ffca48" }}',spr={{ stamps_per_reward or 10 }};
+      var w=wrap.offsetWidth||300,h=Math.round(w*.50);
+      var canvas=buildStrip(bg,accent,spr,w,h);
+      canvas.style.cssText='width:100%;display:block';
+      wrap.appendChild(canvas);
+    });
+  })();
+  </script>
 
   <!-- BENEFITS -->
   <div class="benefits">

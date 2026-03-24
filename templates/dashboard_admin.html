@@ -6546,12 +6546,10 @@ function lpUpdatePreview(){
   const showPhone   = document.getElementById('cfg-field_phone')?.checked;
   const showBirth   = document.getElementById('cfg-field_birthdate')?.checked;
   const showLast    = document.getElementById('cfg-field_lastname')?.checked;
-
-  // Stamps row (max 5 cols, max 2 rows)
-  const stampCols   = stampsN <= 5 ? stampsN : 5;
-  const stampsHTML  = Array.from({length: stampsN}, (_,i) =>
-    `<div style="aspect-ratio:1;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:.55rem;background:${i<3?'#ffca48':'rgba(255,255,255,.1)'};">${i<3?'☕':''}</div>`
-  ).join('');
+  const lpBgColor   = document.getElementById('cfg-card_bg_color')?.value ||
+                      window.BIZ_PRIMARY_COLOR || '#26170c';
+  const lpAccentColor = document.getElementById('cfg-card_accent_color')?.value ||
+                        window.BIZ_ACCENT_COLOR || '#ffca48';
 
   // Hero title (multi-line)
   const heroRaw    = formTitle || 'ÚNETE.\nSELLA.\nGANA.';
@@ -6595,19 +6593,16 @@ function lpUpdatePreview(){
       <div style="font-family:'Bebas Neue',sans-serif;font-size:1.25rem;line-height:.9;color:#26170c;margin-bottom:3px">${heroHTML}</div>
       <div style="font-size:.44rem;color:#a08d83;line-height:1.5">${subShort}</div>
     </div>
-    <!-- CARD MOCK -->
-    <div style="background:#26170c;border-radius:6px;padding:9px 8px;margin-bottom:7px;color:#fff">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12)">
-        <div>
-          <div style="font-size:.32rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px">Loyalty Card</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.5px;color:#fff">${cardName.length>18?cardName.substring(0,18)+'…':cardName}</div>
-        </div>
-        <div style="width:16px;height:11px;border-radius:2px;background:#ffca48;flex-shrink:0"></div>
+    <!-- CARD MOCK — Apple Wallet canvas -->
+    <div id="lp-aw-pass" style="background:${lpBgColor};border-radius:6px;overflow:hidden;margin-bottom:7px;color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 7px 3px">
+        <span style="font-size:.38rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.88">${cardName.length>20?cardName.substring(0,20)+'…':cardName}</span>
+        <span style="font-size:.32rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;opacity:.5">Tarjeta de Fidelidad</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(${stampCols},1fr);gap:3px;margin-bottom:6px">${stampsHTML}</div>
-      <div style="display:flex;justify-content:space-between">
-        <div><div style="color:rgba(255,255,255,.45);font-size:.3rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px">Titular</div><div style="font-weight:800;font-size:.44rem;color:#fff">TU NOMBRE</div></div>
-        <div><div style="color:rgba(255,255,255,.45);font-size:.3rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px">Premios</div><div style="font-weight:800;font-size:.44rem;color:#fff">0 disponibles</div></div>
+      <div id="lp-strip-wrap" style="width:100%;line-height:0"></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 7px 6px">
+        <div><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">Titular</div><div style="font-size:.4rem;font-weight:800">TU NOMBRE</div></div>
+        <div style="text-align:right"><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">Premio</div><div style="font-size:.4rem;font-weight:800;color:#ffca48">${stampsN} sellos</div></div>
       </div>
     </div>
     <!-- BENEFITS -->
@@ -6635,6 +6630,23 @@ function lpUpdatePreview(){
       <div style="height:18px;border-radius:2px;background:${btnColor};display:flex;align-items:center;justify-content:center;font-size:.34rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-top:3px">${btnShort}</div>
     </div>
   `;
+  // Render Apple Wallet canvas strip inside the preview
+  requestAnimationFrame(() => {
+    const stripWrap = document.getElementById('lp-strip-wrap');
+    if (stripWrap) {
+      const cardObj = {
+        bg_color: lpBgColor, accent_color: lpAccentColor,
+        stamps_per_reward: stampsN, filled: 0,
+        name: cardName, reward_name: stampsN + ' sellos'
+      };
+      const pw = stripWrap.offsetWidth || 160;
+      const ph = Math.round(pw * 0.50);
+      const c = _buildStripCanvas(cardObj, pw, ph);
+      c.style.cssText = 'width:100%;display:block';
+      stripWrap.innerHTML = '';
+      stripWrap.appendChild(c);
+    }
+  });
 }
 // Attach listeners when section loads
 function attachLPListeners(){

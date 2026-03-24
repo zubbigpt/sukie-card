@@ -3334,6 +3334,7 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
         "accent_color":      biz.accent_color or "#a8f0d0",
         "api_base":          BASE_URL,
         "stamps_per_reward": biz.stamps_per_reward or STAMPS_PER_REWARD,
+        "reward_name":       landing_cfg.get("reward_name", "Premio"),
         "biz_slug":          slug,
         "ref":               ref,
         # Landing customization from config
