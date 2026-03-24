@@ -1560,13 +1560,26 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
 
     # Borrar en orden FK: push_subscriptions → transacciones → tarjeta → cliente
     from sqlalchemy import text as _text
-    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid"), {"cid": card.id})
+    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid"), {"cid": str(card.id)})
     db.query(models.StampTransaction).filter(models.StampTransaction.card_id == card.id).delete()
     db.delete(card)
     if customer:
         db.delete(customer)
     db.commit()
     return {"message": "Cliente eliminado"}
+
+
+@app.delete("/api/admin/customers-all")
+async def delete_all_customers(pin: str = "", db: Session = Depends(get_db)):
+    """Borra TODOS los clientes y sus tarjetas (solo para testing)"""
+    verify_pin(pin, db)
+    from sqlalchemy import text as _text
+    db.execute(_text("DELETE FROM push_subscriptions"))
+    db.execute(_text("DELETE FROM stamp_transactions"))
+    db.execute(_text("DELETE FROM loyalty_cards"))
+    db.execute(_text("DELETE FROM customers"))
+    db.commit()
+    return {"message": "Todos los clientes eliminados"}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
