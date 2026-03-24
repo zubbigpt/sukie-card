@@ -566,8 +566,25 @@ def send_email(
         return False
 
 
-def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_code: str = "", referral_url: str = "", wallet_url: str = "") -> str:
-    """Render welcome email HTML"""
+def render_welcome_email(
+    name: str,
+    card_url: str,
+    stamps: int = 0,
+    referral_code: str = "",
+    referral_url: str = "",
+    wallet_url: str = "",
+    # Card program branding (so email matches the actual card design)
+    card_bg_color: str = "#26170c",
+    card_accent_color: str = "#ffca48",
+    card_text_color: str = "#ffffff",
+    card_emoji: str = "⭐",
+    card_reward_name: str = "Premio",
+    card_stamps_per_reward: int = 10,
+    card_name: str = "",
+    card_biz_name: str = "ZubCard",
+    card_logo_url: str = "",
+) -> str:
+    """Render welcome email HTML with card branding"""
     template = templates.get_template("email_welcome.html")
     return template.render(
         name=name,
@@ -577,6 +594,32 @@ def render_welcome_email(name: str, card_url: str, stamps: int = 0, referral_cod
         referral_url=referral_url,
         wallet_url=wallet_url,
         subject="¡Bienvenido/a! 🎉",
+        card_bg_color=card_bg_color,
+        card_accent_color=card_accent_color,
+        card_text_color=card_text_color,
+        card_emoji=card_emoji,
+        card_reward_name=card_reward_name,
+        card_stamps_per_reward=card_stamps_per_reward,
+        card_name=card_name,
+        card_biz_name=card_biz_name,
+        card_logo_url=card_logo_url,
+    )
+
+
+def _prog_email_kwargs(prog, biz=None) -> dict:
+    """Extract card program branding kwargs for render_welcome_email."""
+    if not prog:
+        return {}
+    return dict(
+        card_bg_color=prog.bg_color or "#26170c",
+        card_accent_color=prog.accent_color or "#ffca48",
+        card_text_color=prog.text_color or "#ffffff",
+        card_emoji=prog.emoji or "⭐",
+        card_reward_name=prog.reward_name or "Premio",
+        card_stamps_per_reward=prog.stamps_per_reward or 10,
+        card_name=prog.name or "",
+        card_biz_name=(biz.name if biz else "") or (prog.name or ""),
+        card_logo_url=(biz.logo_url if biz else "") or "",
     )
 
 
@@ -1142,17 +1185,18 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
         # Use card program's custom subject/body if configured
         email_subject = "¡Bienvenido/a! 🎉"
         email_html    = None
+        _prog_for_email = None  # keep reference for branding kwargs
         if biz_id:
             try:
-                prog = db.query(models.CardProgram).filter(
+                _prog_for_email = db.query(models.CardProgram).filter(
                     models.CardProgram.business_id == biz_id
                 ).first()
-                if prog and prog.welcome_email_subject:
-                    email_subject = prog.welcome_email_subject
-                if prog and prog.welcome_email_body:
+                if _prog_for_email and _prog_for_email.welcome_email_subject:
+                    email_subject = _prog_for_email.welcome_email_subject
+                if _prog_for_email and _prog_for_email.welcome_email_body:
                     # Simple variable substitution for custom body
                     biz_name = biz.name if biz else ""
-                    custom_body = prog.welcome_email_body
+                    custom_body = _prog_for_email.welcome_email_body
                     custom_body = custom_body.replace("{nombre}", fn)
                     custom_body = custom_body.replace("{link_tarjeta}", card_url)
                     custom_body = custom_body.replace("{negocio}", biz_name)
@@ -1171,6 +1215,7 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
                 referral_code=referral_code,
                 referral_url=referral_url,
                 wallet_url=wallet_url if os.environ.get("APPLE_P12_B64") else "",
+                **_prog_email_kwargs(_prog_for_email, biz),
             )
 
         # Per-business email branding
@@ -2353,7 +2398,10 @@ def email_preview(card_id: str, pin: str = Query(""), db: Session = Depends(get_
     card_url = f"{BASE_URL}/card/{card_id}"
     ref_code = get_or_create_referral_code(card_id, db)
     ref_url  = f"{BASE_URL}/register?ref={ref_code}"
-    html = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url)
+    _biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer else None
+    _prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz.id).first() if _biz else None
+    html = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url,
+                                **_prog_email_kwargs(_prog, _biz))
     return HTMLResponse(content=html)
 
 
@@ -2385,7 +2433,10 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
     else:
         ref_code = get_or_create_referral_code(card_id, db)
         ref_url  = f"{BASE_URL}/register?ref={ref_code}"
-        html    = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url)
+        _biz2 = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer.business_id else None
+        _prog2 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz2.id).first() if _biz2 else None
+        html    = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url,
+                                       **_prog_email_kwargs(_prog2, _biz2))
         subject = "¡Bienvenido/a! 🎉"
     # Per-business email branding
     biz_from_name = ""
@@ -2414,9 +2465,12 @@ async def send_email_all(request: Request, db: Session = Depends(get_db)):
         if cust.email and "@" in cust.email:
             ref_code = get_or_create_referral_code(str(card.id), db)
             ref_url  = f"{BASE_URL}/register?ref={ref_code}"
+            _biz3 = db.query(models.Business).filter(models.Business.id == cust.business_id).first() if cust.business_id else None
+            _prog3 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz3.id).first() if _biz3 else None
             html    = render_welcome_email(cust.first_name or "Cliente",
                                            f"{BASE_URL}/card/{card.id}",
-                                           card.stamps or 0, ref_code, ref_url)
+                                           card.stamps or 0, ref_code, ref_url,
+                                           **_prog_email_kwargs(_prog3, _biz3))
             if send_email(cust.email, "¡Tu tarjeta de fidelización te espera! 🎉", html):
                 sent_count += 1
     return {"sent": sent_count, "total": len(rows)}
@@ -3337,16 +3391,33 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
             landing_cfg = stored.get("landing", {})
     except Exception:
         pass
+    # Fetch first card program for this business to sync visual design
+    _reg_prog = None
+    try:
+        _reg_prog = db.query(models.CardProgram).filter(
+            models.CardProgram.business_id == biz.id
+        ).first()
+    except Exception:
+        pass
+    # Use card program colors if available, fall back to biz defaults
+    _reg_bg      = (_reg_prog.bg_color if _reg_prog and _reg_prog.bg_color else None) or biz.primary_color or "#26170c"
+    _reg_accent  = (_reg_prog.accent_color if _reg_prog and _reg_prog.accent_color else None) or biz.accent_color or "#ffca48"
+    _reg_text    = (_reg_prog.text_color if _reg_prog and _reg_prog.text_color else None) or "#ffffff"
+    _reg_strip   = (_reg_prog.strip_bg_url if _reg_prog else None) or ""
+    _reg_spr     = (_reg_prog.stamps_per_reward if _reg_prog and _reg_prog.stamps_per_reward else None) or biz.stamps_per_reward or STAMPS_PER_REWARD
+    _reg_reward  = landing_cfg.get("reward_name") or (_reg_prog.reward_name if _reg_prog else None) or "Premio"
     return templates.TemplateResponse("register.html", {
         "request":           request,
-        "card_title":        biz.card_title or biz.name,
+        "card_title":        (_reg_prog.name if _reg_prog else None) or biz.card_title or biz.name,
         "biz_name":          biz.name,
         "logo_url":          biz.logo_url or "",
-        "primary_color":     biz.primary_color or "#00e676",
-        "accent_color":      biz.accent_color or "#a8f0d0",
+        "primary_color":     _reg_bg,
+        "accent_color":      _reg_accent,
+        "text_color":        _reg_text,
+        "strip_bg_url":      _reg_strip,
         "api_base":          BASE_URL,
-        "stamps_per_reward": biz.stamps_per_reward or STAMPS_PER_REWARD,
-        "reward_name":       landing_cfg.get("reward_name", "Premio"),
+        "stamps_per_reward": _reg_spr,
+        "reward_name":       _reg_reward,
         "biz_slug":          slug,
         "ref":               ref,
         # Landing customization from config

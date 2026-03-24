@@ -55,7 +55,7 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 /* CARD MOCK — Apple Wallet canvas */
 .card-mock-wrap{margin:2rem 0}
 .aw-pass-reg{border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.28);color:#fff}
-.aw-pass-reg-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px}
+.aw-pass-reg-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;gap:6px}
 .aw-pass-reg-footer{display:flex;justify-content:space-between;padding:10px 14px 13px}
 .aw-fld{display:flex;flex-direction:column;gap:2px}
 .aw-fld-lbl{font-size:.5rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.55}
@@ -159,66 +159,98 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
   <div class="card-mock-wrap">
     <div class="aw-pass-reg" id="reg-aw-pass" style="background:{{ primary_color or '#26170c' }}">
       <div class="aw-pass-reg-header">
-        <span style="font-size:.65rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;opacity:.9">{{ card_title or biz_name or 'MI TARJETA' }}</span>
-        <span style="font-size:.5rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;opacity:.5">Tarjeta de Fidelidad</span>
+        {% if logo_url %}<img src="{{ logo_url }}" style="width:20px;height:20px;border-radius:4px;object-fit:contain;flex-shrink:0">{% endif %}
+        <span style="font-size:.65rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:{{ text_color or '#ffffff' }};opacity:.9;flex:1">{{ card_title or biz_name or 'MI TARJETA' }}</span>
+        <span style="font-size:.5rem;font-weight:600;letter-spacing:.8px;color:{{ accent_color or '#ffca48' }};opacity:.75">0/{{ stamps_per_reward or 10 }} <span style="font-size:.4rem;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
       </div>
       <div id="reg-strip-wrap" style="width:100%;line-height:0"></div>
       <div class="aw-pass-reg-footer">
         <div class="aw-fld">
-          <span class="aw-fld-lbl">Titular</span>
-          <span class="aw-fld-val">TU NOMBRE</span>
+          <span class="aw-fld-lbl" style="color:{{ accent_color or '#ffca48' }};opacity:.6">Titular</span>
+          <span class="aw-fld-val" style="color:{{ text_color or '#ffffff' }}">TU NOMBRE</span>
         </div>
         <div class="aw-fld" style="text-align:right">
-          <span class="aw-fld-lbl">Premio</span>
-          <span class="aw-fld-val" style="color:{{ accent_color or '#ffca48' }}">{{ reward_name or 'Premio' }}</span>
+          <span class="aw-fld-lbl" style="color:{{ accent_color or '#ffca48' }};opacity:.6">Premio</span>
+          <span class="aw-fld-val" style="color:{{ text_color or '#ffffff' }}">{{ reward_name or 'Premio' }}</span>
         </div>
       </div>
     </div>
   </div>
   <script>
   (function(){
+    /* ── Strip canvas — mirrors _buildStripCanvas in dashboard (circles only) ── */
     function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
     function darken(c,a){return[Math.round(c[0]*(1-a)),Math.round(c[1]*(1-a)),Math.round(c[2]*(1-a))];}
     function lighten(c,a){return[Math.min(255,Math.round(c[0]+(255-c[0])*a)),Math.min(255,Math.round(c[1]+(255-c[1])*a)),Math.min(255,Math.round(c[2]+(255-c[2])*a))];}
     function rgba(c,al){return'rgba('+c[0]+','+c[1]+','+c[2]+','+(al==null?1:al)+')';}
-    function buildStrip(bg,accent,spr,w,h){
-      var DPR=2,canvas=document.createElement('canvas');
-      canvas.width=w*DPR;canvas.height=h*DPR;
-      var ctx=canvas.getContext('2d');ctx.scale(DPR,DPR);
-      var BG=hexRgb(bg),ACCENT=hexRgb(accent);
-      var TEXT=lighten(BG,.85),TSUB=lighten(BG,.45),EBORD=lighten(BG,.42),FICO=darken(ACCENT,.42);
-      ctx.fillStyle=rgba(BG);ctx.fillRect(0,0,w,h);
-      var PAD=Math.round(w*.048),TOP_H=Math.round(h*.20),FOOT_H=Math.round(h*.22),MID_H=h-TOP_H-FOOT_H;
-      var fs=w/320,filled=0;
-      // header count
-      ctx.textBaseline='middle';
-      ctx.font='700 '+Math.round(11*fs)+'px -apple-system,Helvetica,sans-serif';
-      ctx.fillStyle=rgba(ACCENT,.88);ctx.textAlign='right';
-      ctx.fillText('0/'+spr,w-PAD,TOP_H*.55);ctx.textAlign='left';ctx.textBaseline='alphabetic';
-      // circles
-      var COLS=spr<=5?spr:Math.ceil(spr/2),ROWS=Math.ceil(spr/COLS);
-      var availW=w-2*PAD,GAP_C=Math.round(availW*.032),GAP_R=Math.round(MID_H*.10);
-      var DOT_D=Math.min(Math.floor((availW-GAP_C*(COLS-1))/COLS),Math.floor((MID_H-GAP_R*(ROWS-1))/ROWS));
-      var DOT_R=Math.floor(DOT_D/2),gridW=COLS*DOT_D+GAP_C*(COLS-1),gridH=ROWS*DOT_D+GAP_R*(ROWS-1);
-      var gx0=PAD+Math.floor((availW-gridW)/2),gy0=TOP_H+Math.floor((MID_H-gridH)/2);
+
+    function buildStrip(card, w, h) {
+      var DPR=2, canvas=document.createElement('canvas');
+      canvas.width=w*DPR; canvas.height=h*DPR;
+      var ctx=canvas.getContext('2d'); ctx.scale(DPR,DPR);
+      var BG=hexRgb(card.bg), ACCENT=hexRgb(card.accent);
+      var EBORD=lighten(BG,.40), FICO=darken(ACCENT,.55);
+      var spr=card.spr, filled=0, hasBg=!!(card.bgUrl);
+
+      // ── Background ────────────────────────────────────────────────────────────
+      if(hasBg && card._bgImg && card._bgImg.complete){
+        var img=card._bgImg;
+        var sf=Math.max(w/img.naturalWidth,h/img.naturalHeight);
+        var nw=img.naturalWidth*sf,nh=img.naturalHeight*sf;
+        ctx.drawImage(img,(w-nw)/2,(h-nh)/2,nw,nh);
+        ctx.fillStyle=rgba(BG,0.40); ctx.fillRect(0,0,w,h);
+      } else {
+        ctx.fillStyle=rgba(BG); ctx.fillRect(0,0,w,h);
+        if(hasBg && !card._bgImg){
+          card._bgImg=new Image();
+          card._bgImg.onload=function(){
+            var wrap=document.getElementById('reg-strip-wrap');
+            if(wrap){wrap.innerHTML='';var c=buildStrip(card,w,h);c.style.cssText='width:100%;display:block';wrap.appendChild(c);}
+          };
+          card._bgImg.src=card.bgUrl;
+        }
+      }
+
+      // ── Circles (full-strip, no text) ─────────────────────────────────────────
+      var PAD_H=Math.round(w*0.045), PAD_V=Math.round(h*0.12);
+      var availW=w-2*PAD_H, availH=h-2*PAD_V;
+      var COLS=spr<=5?spr:Math.ceil(spr/2), ROWS=Math.ceil(spr/COLS);
+      var GAP_C=Math.round(availW*0.040), GAP_R=ROWS>1?Math.round(availH*0.14):0;
+      var DOT_D=Math.min(Math.floor((availW-GAP_C*(COLS-1))/COLS),Math.floor((availH-GAP_R*(ROWS-1))/Math.max(ROWS,1)));
+      var DOT_R=Math.floor(DOT_D/2);
+      var gridW=COLS*DOT_D+GAP_C*(COLS-1), gridH=ROWS*DOT_D+GAP_R*(ROWS-1);
+      var gx0=PAD_H+Math.floor((availW-gridW)/2), gy0=PAD_V+Math.floor((availH-gridH)/2);
+      var EMPTY_ALPHA=hasBg?0.65:0.52;
       for(var i=0;i<spr;i++){
         var col=i%COLS,row=Math.floor(i/COLS);
-        var cx=gx0+col*(DOT_D+GAP_C)+DOT_R,cy=gy0+row*(DOT_D+GAP_R)+DOT_R;
-        ctx.beginPath();ctx.arc(cx,cy,DOT_R,0,Math.PI*2);
-        if(i<filled){ctx.fillStyle=rgba(ACCENT);ctx.fill();}
-        else{ctx.strokeStyle=rgba(EBORD,.38);ctx.lineWidth=Math.max(1,Math.round(fs*1.1));ctx.stroke();}
+        var cx=gx0+col*(DOT_D+GAP_C)+DOT_R, cy=gy0+row*(DOT_D+GAP_R)+DOT_R;
+        ctx.beginPath(); ctx.arc(cx,cy,DOT_R,0,Math.PI*2);
+        if(i<filled){
+          ctx.fillStyle=rgba(ACCENT); ctx.fill();
+          var lw=Math.max(1.5,DOT_R*0.16);
+          ctx.strokeStyle=rgba(FICO,0.95); ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+          ctx.beginPath();
+          ctx.moveTo(cx-DOT_R*0.30,cy+DOT_R*0.06); ctx.lineTo(cx-DOT_R*0.02,cy+DOT_R*0.36); ctx.lineTo(cx+DOT_R*0.38,cy-DOT_R*0.26);
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle=rgba(hasBg?[255,255,255]:EBORD,EMPTY_ALPHA);
+          ctx.lineWidth=Math.max(1.5,w/320); ctx.stroke();
+        }
       }
-      // footer divider
-      var fy=h-FOOT_H;ctx.strokeStyle=rgba(TSUB,.28);ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(PAD,fy);ctx.lineTo(w-PAD,fy);ctx.stroke();
       return canvas;
     }
+
     document.addEventListener('DOMContentLoaded',function(){
       var wrap=document.getElementById('reg-strip-wrap');
       if(!wrap)return;
-      var bg='{{ primary_color or "#26170c" }}',accent='{{ accent_color or "#ffca48" }}',spr={{ stamps_per_reward or 10 }};
-      var w=wrap.offsetWidth||300,h=Math.round(w*.50);
-      var canvas=buildStrip(bg,accent,spr,w,h);
+      var card={
+        bg:'{{ primary_color or "#26170c" }}',
+        accent:'{{ accent_color or "#ffca48" }}',
+        spr:{{ stamps_per_reward or 10 }},
+        bgUrl:'{{ strip_bg_url or "" }}'
+      };
+      var w=wrap.offsetWidth||300, h=Math.round(w*0.328);  /* 375x123 ratio */
+      var canvas=buildStrip(card,w,h);
       canvas.style.cssText='width:100%;display:block';
       wrap.appendChild(canvas);
     });

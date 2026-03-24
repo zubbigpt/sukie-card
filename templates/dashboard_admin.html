@@ -6827,14 +6827,22 @@ function lpUpdatePreview(){
   requestAnimationFrame(() => {
     const stripWrap = document.getElementById('lp-strip-wrap');
     if (stripWrap) {
-      const cardObj = {
-        bg_color: lpBgColor, accent_color: lpAccentColor,
-        stamps_per_reward: stampsN, filled: 0,
-        name: cardName, reward_name: stampsN + ' sellos'
-      };
+      // Get strip_bg_url from the first card program in registry (if any)
+      const firstCard = Object.values(window._cardRegistry || {})[0];
+      const lpStripBgUrl = (firstCard && firstCard.strip_bg_url) ? firstCard.strip_bg_url : '';
+
+      if (!window._lpPreviewCard) window._lpPreviewCard = {};
+      const pCard = window._lpPreviewCard;
+      if (lpStripBgUrl !== (pCard.strip_bg_url || '')) delete pCard._strip_bg_img;
+      pCard.bg_color = lpBgColor; pCard.accent_color = lpAccentColor;
+      pCard.stamps_per_reward = stampsN; pCard.filled = 0;
+      pCard.name = cardName; pCard.reward_name = stampsN + ' sellos';
+      pCard.strip_bg_url = lpStripBgUrl;
+      pCard._onBgLoad = () => lpUpdatePreview();
+
       const pw = stripWrap.offsetWidth || 160;
       const ph = Math.round(pw * 0.50);
-      const c = _buildStripCanvas(cardObj, pw, ph);
+      const c = _buildStripCanvas(pCard, pw, ph);
       c.style.cssText = 'width:100%;display:block';
       stripWrap.innerHTML = '';
       stripWrap.appendChild(c);
