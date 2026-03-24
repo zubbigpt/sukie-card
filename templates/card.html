@@ -651,6 +651,21 @@ body {
 </div>
 {% endif %}
 
+{% if wallet_url %}
+<div class="wallet-btn-wrap" id="apple-wallet-wrap" style="display:none;justify-content:center;margin:8px 0">
+  <a href="{{ wallet_url }}">
+    <img src="https://developer.apple.com/wallet/add-to-apple-wallet-guidelines-images/button_new.png"
+         alt="Añadir a Apple Wallet" style="height:44px">
+  </a>
+</div>
+<script>
+if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+  var appleBtn = document.getElementById('apple-wallet-wrap');
+  if (appleBtn) appleBtn.style.display = 'flex';
+}
+</script>
+{% endif %}
+
 {% if google_review_url %}
 <!-- Google Review Banner — shown via JS when customer hits review_trigger_stamps -->
 <div id="review-banner" style="display:none;margin:14px 0 4px;background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:14px 16px;text-align:center">
