@@ -1556,26 +1556,25 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
             pin = ""
     verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
-    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
 
-    # Borrar en orden FK completo
     from sqlalchemy import text as _text
-    cid = str(card.id)
-    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid"), {"cid": cid})
-    db.execute(_text("DELETE FROM referrals WHERE referrer_card = :cid OR referred_card = :cid"), {"cid": cid})
-    db.execute(_text("UPDATE passcodes SET used_by = NULL WHERE used_by = :cid"), {"cid": cid})
-    if customer:
-        db.execute(_text("DELETE FROM birthday_vouchers WHERE customer_id = :uid"), {"uid": str(customer.id)})
-    db.query(models.StampTransaction).filter(models.StampTransaction.card_id == card.id).delete()
-    db.delete(card)
-    if customer:
-        # Only delete customer if they have no other cards
-        other_cards = db.query(models.LoyaltyCard).filter(
-            models.LoyaltyCard.customer_id == customer.id,
-            models.LoyaltyCard.id != card.id
-        ).count()
-        if other_cards == 0:
-            db.delete(customer)
+    cid  = str(card.id)
+    uid_row = db.execute(_text("SELECT customer_id FROM loyalty_cards WHERE id = :cid"), {"cid": cid}).fetchone()
+    uid = str(uid_row[0]) if uid_row and uid_row[0] else None
+
+    # Borrar en orden FK — todo SQL puro
+    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid::uuid"), {"cid": cid})
+    db.execute(_text("DELETE FROM referrals WHERE referrer_card = :cid::uuid OR referred_card = :cid::uuid"), {"cid": cid})
+    db.execute(_text("UPDATE passcodes SET used_by = NULL WHERE used_by = :cid::uuid"), {"cid": cid})
+    db.execute(_text("DELETE FROM stamp_transactions WHERE card_id = :cid::uuid"), {"cid": cid})
+    if uid:
+        db.execute(_text("DELETE FROM birthday_vouchers WHERE customer_id = :uid::uuid"), {"uid": uid})
+    db.execute(_text("DELETE FROM loyalty_cards WHERE id = :cid::uuid"), {"cid": cid})
+    if uid:
+        # Solo borrar cliente si no tiene otras tarjetas
+        other = db.execute(_text("SELECT COUNT(*) FROM loyalty_cards WHERE customer_id = :uid::uuid"), {"uid": uid}).scalar()
+        if (other or 0) == 0:
+            db.execute(_text("DELETE FROM customers WHERE id = :uid::uuid"), {"uid": uid})
     db.commit()
     return {"message": "Cliente eliminado"}
 
