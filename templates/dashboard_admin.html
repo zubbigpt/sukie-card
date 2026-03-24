@@ -414,14 +414,18 @@ nav a.active .icon{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 2
 .stamp-actions input:focus{border-color:var(--honey);box-shadow:0 0 0 3px rgba(255,202,72,.12)}
 
 /* ── ACTIVITY LOG ─────────────────────────────────────────── */
-.activity-log{display:flex;flex-direction:column;gap:1px;border:1px solid var(--cream-border);border-radius:var(--r-lg);overflow:hidden}
-.activity-item{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:var(--white);border-bottom:1px solid rgba(210,196,188,.3);transition:background .12s}
+.activity-log{display:flex;flex-direction:column;gap:0;border:1px solid var(--cream-border);border-radius:var(--r-lg);overflow:hidden}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;background:var(--white);border-bottom:1px solid rgba(210,196,188,.3);transition:background .12s}
 .activity-item:last-child{border-bottom:none}
 .activity-item:hover{background:var(--surface-low)}
-.activity-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0;margin-top:6px}/* square geometric dot */
-.activity-dot.stamp{background:var(--primary)}
-.activity-dot.redeem{background:var(--honey-dark)}
-.activity-dot.register{background:var(--green)}
+/* Icon chip replaces old 6px dot */
+.activity-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-size:.78rem}
+.activity-icon .material-symbols-outlined{font-size:.9rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20}
+.activity-icon.stamp{background:rgba(38,23,12,.07);color:var(--brown)}
+.activity-icon.redeem{background:rgba(120,90,0,.1);color:var(--honey-dark)}
+.activity-icon.register{background:rgba(46,125,50,.08);color:var(--green)}
+.activity-icon.adjust{background:rgba(160,141,131,.1);color:var(--outline)}
+.activity-icon.passcode{background:rgba(38,23,12,.05);color:var(--brown-light)}
 .activity-text{font-size:.8rem;color:var(--primary);font-weight:500}
 .activity-time{font-size:.68rem;color:var(--brown-light);margin-top:2px}
 
@@ -937,7 +941,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <h1>Cartas Digitales</h1>
             <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Crea y comparte menús digitales con QR</p>
           </div>
-          <button class="btn-sm btn-primary" onclick="showToast('Cartas digitales — próximamente 🚀')" style="padding:10px 18px">+ Nueva carta</button>
+          <button class="btn-sm btn-primary" onclick="showToast('Cartas digitales — próximamente')" style="padding:10px 18px">+ Nueva carta</button>
         </div>
 
         <!-- Stats Row -->
@@ -1116,14 +1120,14 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           <div class="card" style="margin-top:16px">
             <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:14px">Con ZubCard Pro desbloqueas</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Clientes ilimitados</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Programas ilimitados</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Campañas email + push</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Geo-notificaciones</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Analytics avanzados</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> QR personalizados</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Locales ilimitados</div>
-              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Email de cumpleaños</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Clientes ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Programas ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Campañas email + push</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Geo-notificaciones</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Analytics avanzados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> QR personalizados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Locales ilimitados</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Email de cumpleaños</div>
             </div>
           </div>
         </div>
@@ -1192,7 +1196,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div style="flex:1">
               <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;margin-bottom:6px;color:white">WhatsApp Business</h3>
               <p style="font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:12px;line-height:1.5">Envía notificaciones automáticas, confirmaciones de sellos y campañas a través de WhatsApp directamente a tus clientes.</p>
-              <button class="btn-sm" onclick="showToast('Integración WhatsApp — próximamente 🚀')" style="background:#25D366;color:white;border:none;padding:10px 18px;border-radius:var(--r-sm);font-weight:700;cursor:pointer">Conectar →</button>
+              <button class="btn-sm" onclick="showToast('Integración WhatsApp — próximamente')" style="background:#25D366;color:white;border:none;padding:10px 18px;border-radius:var(--r-sm);font-weight:700;cursor:pointer">Conectar →</button>
             </div>
           </div>
         </div>
@@ -1207,7 +1211,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
             <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">Zapier</h4>
             <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Automatiza flujos de trabajo entre ZubCard y miles de apps.</p>
-            <button class="btn-sm btn-ghost" onclick="showToast('Integración Zapier — próximamente 🚀')" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
+            <button class="btn-sm btn-ghost" onclick="showToast('Integración Zapier — próximamente')" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
           </div>
           <!-- Shopify -->
           <div class="card">
@@ -1216,7 +1220,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
             <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">Shopify</h4>
             <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Sincroniza clientes y órdenes desde tu tienda Shopify.</p>
-            <button class="btn-sm btn-ghost" onclick="showToast('Integración Shopify — próximamente 🚀')" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
+            <button class="btn-sm btn-ghost" onclick="showToast('Integración Shopify — próximamente')" style="width:100%;padding:8px;font-size:.8rem">Conectar</button>
           </div>
           <!-- Custom API -->
           <div class="card">
@@ -1225,7 +1229,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
             <h4 style="font-weight:700;margin-bottom:8px;font-size:1rem">API Personalizada</h4>
             <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Integra ZubCard con tu sistema personalizado vía REST API.</p>
-            <button class="btn-sm btn-ghost" onclick="showToast('Documentación API — próximamente 🚀')" style="width:100%;padding:8px;font-size:.8rem">Ver docs</button>
+            <button class="btn-sm btn-ghost" onclick="showToast('Documentación API — próximamente')" style="width:100%;padding:8px;font-size:.8rem">Ver docs</button>
           </div>
         </div>
       </div>
@@ -2093,12 +2097,12 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           });
           if (!res.ok) throw new Error((await res.json()).detail || 'Error');
           msg.style.color = '#2e7d32';
-          msg.textContent = '✅ Cambios guardados';
+          msg.textContent = 'Cambios guardados';
           document.getElementById('ec-modal-title').textContent = document.getElementById('ec-name').value.trim();
           loadTarjetas(); // refresh grid
         } catch(e) {
           msg.style.color = '#cc2222';
-          msg.textContent = '❌ ' + e.message;
+          msg.textContent = 'Error: ' + e.message;
         } finally {
           btn.disabled = false; btn.textContent = 'Guardar cambios';
         }
@@ -2778,7 +2782,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div style="font-size:.71rem;opacity:.55;margin-top:3px">El empleado abre esta URL, introduce su PIN y listo.</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <button onclick="copyLoginUrl()" style="padding:7px 13px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);color:var(--cream);border-radius:4px;font-size:.73rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px">📋 Copiar URL</button>
+            <button onclick="copyLoginUrl()" style="padding:7px 13px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);color:var(--cream);border-radius:4px;font-size:.73rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px;display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.9rem">content_copy</span> Copiar URL</button>
             <a href="/biz/{{ biz_slug }}/scanner-login" target="_blank" style="padding:7px 13px;background:var(--gold);color:var(--brown);border-radius:4px;font-size:.73rem;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;letter-spacing:.5px">↗ Abrir</a>
           </div>
         </div>
@@ -2814,7 +2818,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div class="card-box" style="margin-top:24px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
             <div>
-              <h3 style="color:var(--brown);font-size:.95rem;font-weight:800">📱 Dispositivos de Escáner</h3>
+              <h3 style="color:var(--brown);font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">smartphone</span> Dispositivos de Escáner</h3>
               <p style="font-size:.78rem;color:var(--brown-light);margin-top:2px">Aprueba o revoca tablets / móviles que usan el escáner de empleado</p>
             </div>
             <button class="btn-sm btn-ghost" onclick="loadDevices()" style="font-size:.72rem">↺ Actualizar</button>
@@ -2823,7 +2827,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <p style="text-align:center;padding:20px;color:var(--brown-light);font-size:.82rem">Cargando dispositivos...</p>
           </div>
           <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--cream-border);font-size:.75rem;color:var(--brown-light)">
-            💡 El empleado accede desde <strong>zubcard.com/biz/{{ biz_slug }}/scanner-login</strong> y la primera vez queda pendiente hasta que lo apruebes aquí.
+            <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;color:var(--honey-dark)">tips_and_updates</span> El empleado accede desde <strong>zubcard.com/biz/{{ biz_slug }}/scanner-login</strong> y la primera vez queda pendiente hasta que lo apruebes aquí.
           </div>
         </div>
       </div>
@@ -2920,9 +2924,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </details>
 
           <div style="display:flex;gap:12px;align-items:center;margin-top:20px">
-            <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px">💾 GUARDAR PROGRAMA</button>
-            <span id="cfg-save-msg" style="display:none;color:var(--green);font-weight:600">✅ Guardado</span>
-            <span id="cfg-err-msg" style="display:none;color:var(--red);font-weight:600">❌ Error</span>
+            <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px;display:inline-flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">save</span> GUARDAR PROGRAMA</button>
+            <span id="cfg-save-msg" style="display:none;color:var(--green);font-weight:600">Guardado</span>
+            <span id="cfg-err-msg" style="display:none;color:var(--red);font-weight:600">Error</span>
           </div>
         </div><!-- /fid-panel-programa -->
 
@@ -2930,7 +2934,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div id="fid-panel-diseno" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
             <div></div>
-            <button onclick="saveDesign()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:2px;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar diseño</button>
+            <button onclick="saveDesign()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:2px;font-size:.9rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">save</span> Guardar diseño</button>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 260px;gap:28px;align-items:start">
@@ -3082,7 +3086,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
               <input type="text" id="fid-reg-url" readonly
                 style="flex:1;min-width:200px;max-width:380px;padding:10px 14px;border:2px solid var(--cream-border);border-radius:2px;background:var(--cream);font-size:.8rem;outline:none;color:var(--brown-mid)">
-              <button onclick="fidCopyLink()" style="padding:10px 16px;background:var(--brown);color:var(--cream);border:none;border-radius:2px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">📋 Copiar</button>
+              <button onclick="fidCopyLink()" style="padding:10px 16px;background:var(--brown);color:var(--cream);border:none;border-radius:2px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.9rem">content_copy</span> Copiar</button>
               <a id="fid-preview-link" href="#" target="_blank" style="padding:10px 16px;background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);font-size:.8rem;font-weight:700;text-decoration:none;border-radius:2px;white-space:nowrap">↗ Abrir</a>
             </div>
             <p style="font-size:.78rem;color:var(--brown-light)">Coloca este QR en tu local. Los clientes lo escanean y se registran.</p>
@@ -3296,7 +3300,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <button onclick="sendDistribution()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600">📨 Enviar distribución</button>
-              <button onclick="previewEmail()" style="background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600">👁️ Preview bienvenida</button>
+              <button onclick="previewEmail()" style="background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600;display:inline-flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:1rem">visibility</span> Preview bienvenida</button>
               <button onclick="previewBirthdayEmail()" style="background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600">🎂 Preview cumpleaños</button>
             </div>
             <div id="dist-result" style="margin-top:12px;display:none"></div>
@@ -3311,7 +3315,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
 
           <div style="display:flex;gap:12px;align-items:center;margin-top:20px">
-            <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px">💾 GUARDAR EMAILS</button>
+            <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px;display:inline-flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">save</span> GUARDAR EMAILS</button>
             <span id="email-save-msg" style="font-size:.78rem;font-weight:600;display:none"></span>
           </div>
         </div><!-- /fid-panel-emails -->
@@ -3326,17 +3330,17 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
   <div style="background:white;border-radius:8px;max-width:440px;width:100%;padding:32px;position:relative">
     <button onclick="closeUpgradeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--brown-light)">✕</button>
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:2.5rem;margin-bottom:8px">🚀</div>
+      <div style="width:56px;height:56px;background:var(--honey-light);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><span class="material-symbols-outlined" style="font-size:1.8rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 48">workspace_premium</span></div>
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.1em;color:var(--brown);margin-bottom:6px">ZubCard Pro</h2>
       <p style="font-size:.9rem;color:var(--brown-light)" id="upgrade-modal-reason">Esta función requiere el plan Pro.</p>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
-      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Clientes ilimitados</div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Programas ilimitados</div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Campañas email + push</div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Geo-notificaciones</div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Locales ilimitados</div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span style="color:var(--honey-dark);font-weight:900">★</span> Analytics avanzados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Clientes ilimitados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Programas ilimitados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Campañas email + push</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Geo-notificaciones</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Locales ilimitados</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--brown)"><span class="material-symbols-outlined" style="font-size:.85rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20">check_circle</span> Analytics avanzados</div>
     </div>
     <button onclick="startCheckout()" id="upgrade-btn" style="width:100%;padding:13px;background:var(--brown);color:white;border:none;border-radius:4px;font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.05em">
       <span class="material-symbols-outlined" style="font-size:1rem">upgrade</span>
@@ -3543,7 +3547,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       <button class="tab" onclick="showTab('tab-stamps')">Sellos</button>
       <button class="tab" onclick="showTab('tab-activity')">Actividad</button>
       <button class="tab" onclick="showTab('tab-edit')">Editar</button>
-      <button class="tab" onclick="showTab('tab-danger')">⚠ Eliminar</button>
+      <button class="tab" onclick="showTab('tab-danger')"><span class="material-symbols-outlined" style="font-size:.85rem;vertical-align:middle">warning</span> Eliminar</button>
     </div>
 
     <!-- TAB: GENERAL -->
@@ -3611,7 +3615,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
       <!-- Award banner -->
       <div id="d-award-banner" style="display:none;background:linear-gradient(135deg,#d4a017,#f5cb53);border-radius:14px;padding:16px;text-align:center">
-        <div style="font-size:1.5rem;margin-bottom:4px">🎁</div>
+        <div style="margin-bottom:6px"><span class="material-symbols-outlined" style="font-size:1.8rem;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48;color:#0a0a0a">card_giftcard</span></div>
         <div style="font-size:.95rem;font-weight:800;color:#0a0a0a;margin-bottom:10px"><span id="d-award-count"></span> premio(s) disponible(s)</div>
         <button class="btn-sm btn-primary" onclick="redeemFromDrawer()">Canjear premio</button>
       </div>
@@ -3621,7 +3625,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
     <div class="tab-content" id="tab-stamps">
       <h3 style="font-size:.95rem;font-weight:600;margin-bottom:14px">Añadir sellos</h3>
       <div class="stamp-actions">
-        <input type="number" id="d-stamps-input" placeholder="Nº cookies" min="1" max="50">
+        <input type="number" id="d-stamps-input" placeholder="Cantidad" min="1" max="50">
         <button class="btn-sm btn-primary" style="font-size:.9rem;padding:10px 18px" onclick="addStampsFromDrawer()">Añadir</button>
         <button class="btn-sm btn-ghost" style="font-size:.9rem;padding:10px 14px" onclick="removeStampsFromDrawer()"><span class="material-symbols-outlined" style="font-size:.9rem">remove</span></button>
       </div>
@@ -4005,7 +4009,7 @@ async function bdaySendOne(customerId) {
       btn.disabled = false;
     }
   } catch(e) {
-    btn.textContent = '❌ Error'; btn.disabled = false;
+    btn.textContent = 'Error'; btn.disabled = false;
   }
 }
 
@@ -4023,7 +4027,7 @@ async function bdaySendAll() {
     btn.textContent = `✅ ${data.sent} enviados`;
     loadBirthdays();
   } catch(e) {
-    btn.textContent = '❌ Error'; btn.disabled = false;
+    btn.textContent = 'Error'; btn.disabled = false;
   }
 }
 
@@ -4112,7 +4116,7 @@ async function loadClients(page=1, q=''){
       <td><strong>${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</strong></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.email}</td>
       <td><span style="font-weight:700">${c.stamps||0}</span> / ${c.stampsOnCard||c.stamps_per_reward||10}</td>
-      <td>${c.awardBalance||c.award_balance||0} 🎁</td>
+      <td>${c.awardBalance||c.award_balance||0} <span class="material-symbols-outlined" style="font-size:.85rem;vertical-align:middle;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20">card_giftcard</span></td>
       <td><span class="badge ${c.cardActive!==false&&c.card_active!==false?'badge-green':'badge-red'}">${c.cardActive!==false&&c.card_active!==false?'Activa':'Inactiva'}</span></td>
       <td style="font-size:.78rem;color:var(--brown-light)">${(c.createdAt||c.created_at||'').slice(0,10)}</td>
       <td><button class="btn-sm btn-ghost" onclick="event.stopPropagation();openDrawer('${c.id||c.card_id}')">→</button></td>
@@ -4223,11 +4227,13 @@ async function loadActivity_client(cardId){
   const log=document.getElementById('d-activity-log');
   if(!data||data.length===0){log.innerHTML='<div class="empty-state">Sin actividad registrada</div>';return;}
   const _actEmoji = Object.values(window._cardRegistry||{})[0]?.emoji || '⭐';
-  const icons={stamp:_actEmoji,redeem:'🎁',adjust:'⚙',register:'👋'};
-  const labels={stamp:'Sellos añadidos',redeem:'Premio canjeado',adjust:'Ajuste manual',register:'Alta tarjeta'};
+  const _ms = n=>`<span class="material-symbols-outlined">${n}</span>`;
+  const icons={stamp:_actEmoji,redeem:_ms('card_giftcard'),adjust:_ms('tune'),register:_ms('person_add'),passcode:_ms('vpn_key')};
+  const labels={stamp:'Sellos añadidos',redeem:'Premio canjeado',adjust:'Ajuste manual',register:'Alta tarjeta',passcode:'PassCode'};
+  const types={stamp:'stamp',redeem:'redeem',adjust:'adjust',register:'register',passcode:'passcode'};
   log.innerHTML=data.map(t=>`
     <div class="activity-item">
-      <div class="activity-dot ${t.transaction_type||'stamp'}">${icons[t.transaction_type||'stamp']||_actEmoji}</div>
+      <div class="activity-icon ${types[t.transaction_type||'stamp']||'stamp'}">${icons[t.transaction_type||'stamp']||_ms('toll')}</div>
       <div class="activity-content">
         <div class="a-title">${labels[t.transaction_type||'stamp']||t.transaction_type} ${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added}</div>
         <div class="a-date">${t.created_at?new Date(t.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''} · ${t.source_label||t.store||'💻 Admin'}</div>
@@ -4271,7 +4277,7 @@ async function redeemFromDrawer(){
   const r=await fetch(`${BASE}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:PIN})});
   const d=await r.json();
   if(d.detail){showToast(d.detail,'error');return;}
-  showToast(`Premio canjeado 🎁 Quedan ${d.award_balance}`,'success');
+  showToast(`Premio canjeado · Quedan ${d.award_balance}`,'success');
   await loadDrawerData(currentCardId);
 }
 
@@ -4709,7 +4715,7 @@ async function saveConfig() {
     // lp-save-msg (next to "Guardar landing" button)
     const lpMsg = document.getElementById('lp-save-msg');
     if (lpMsg) {
-      lpMsg.textContent = ok ? '✅ Guardado' : ('❌ ' + (errDetail || 'Error al guardar'));
+      lpMsg.textContent = ok ? 'Guardado' : ('Error: ' + (errDetail || 'Error al guardar'));
       lpMsg.style.color = ok ? 'var(--green)' : 'var(--red,#c62828)';
       lpMsg.style.display = '';
       if (ok) setTimeout(() => { lpMsg.style.display = 'none'; }, 3000);
@@ -4723,7 +4729,7 @@ async function saveConfig() {
     // email-save-msg (next to "Guardar Emails" button)
     const emailMsg = document.getElementById('email-save-msg');
     if (emailMsg) {
-      emailMsg.textContent = ok ? '✅ Guardado' : ('❌ ' + (errDetail || 'Error al guardar'));
+      emailMsg.textContent = ok ? 'Guardado' : ('Error: ' + (errDetail || 'Error al guardar'));
       emailMsg.style.color = ok ? 'var(--green,#2e7d32)' : 'var(--red,#c62828)';
       emailMsg.style.display = '';
       if (ok) setTimeout(() => { emailMsg.style.display = 'none'; }, 3000);
@@ -5040,7 +5046,7 @@ async function saveDesign() {
       msgEl.style.display = 'block';
       msgEl.style.background = '#fbe9e7';
       msgEl.style.color = '#c62828';
-      msgEl.textContent = '❌ Error al guardar el diseño';
+      msgEl.textContent = 'Error al guardar el diseño';
     }
   } catch(e) {
     showToast('Error al guardar', 'error');
@@ -5155,8 +5161,8 @@ function renderCustomQRs(qrs){
       <td style="padding:10px 12px;font-size:.75rem;font-family:monospace;color:var(--brown-light);word-break:break-all">${url}</td>
       <td style="padding:10px 12px;text-align:center"><div id="mini-qr-${q.id}" style="display:inline-block"></div></td>
       <td style="padding:10px 12px;text-align:center">
-        <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick="copyQRLink('${url}')">📋</button>
-        <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteCustomQR('${q.id}')">🗑</button>
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick="copyQRLink('${url}')"><span class="material-symbols-outlined" style="font-size:.85rem">content_copy</span></button>
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteCustomQR('${q.id}')"><span class="material-symbols-outlined" style="font-size:.85rem">delete</span></button>
       </td>
     </tr>`;
   }).join('');
@@ -5597,13 +5603,13 @@ async function saveCampaign(action){
       body:JSON.stringify({name,subject,body,segment,type:'email',status})
     });
     const data=await r.json();
-    if(!r.ok){if(msgEl){msgEl.textContent='❌ Error';msgEl.style.color='#c62828';}return;}
+    if(!r.ok){if(msgEl){msgEl.textContent='Error';msgEl.style.color='#c62828';}return;}
     if(msgEl){msgEl.textContent=action==='send'?'✅ Enviando...':'✅ Borrador guardado';msgEl.style.color='#2e7d32';}
     if(action==='send'&&data.id) await sendCampaign(data.id);
     await loadCampaigns();
     setTimeout(()=>{document.getElementById('new-campaign-form').style.display='none';if(msgEl)msgEl.textContent='';},1500);
     showToast(action==='send'?'Campaña enviada ✓':'Borrador guardado ✓','success');
-  }catch(e){if(msgEl){msgEl.textContent='❌ Error';msgEl.style.color='#c62828';}}
+  }catch(e){if(msgEl){msgEl.textContent='Error';msgEl.style.color='#c62828';}}
 }
 
 async function sendCampaign(id,type){
@@ -5652,7 +5658,7 @@ async function generatePassCodes(){
     setTimeout(()=>{if(msgEl)msgEl.textContent='';},3000);
     await loadPassCodes();
     showToast(`${data.generated||count} códigos creados ✓`,'success');
-  }catch(e){if(msgEl){msgEl.textContent='❌ '+e.message;msgEl.style.color='#c62828';}}
+  }catch(e){if(msgEl){msgEl.textContent='Error: '+e.message;msgEl.style.color='#c62828';}}
 }
 
 async function loadPassCodes(){
@@ -5714,7 +5720,7 @@ async function searchGeoAddress(){
   try{
     const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, {headers:{'Accept-Language':'es'}});
     const data = await r.json();
-    if(!data.length){ if(status) status.textContent='❌ Dirección no encontrada'; return; }
+    if(!data.length){ if(status) status.textContent='Error: Dirección no encontrada'; return; }
     const lat = parseFloat(data[0].lat);
     const lng = parseFloat(data[0].lon);
     document.getElementById('geo-lat2').value = lat.toFixed(6);
@@ -5727,7 +5733,7 @@ async function searchGeoAddress(){
     }
     if(status){ status.textContent='✅ Ubicación encontrada'; setTimeout(()=>{ status.textContent=''; },3000); }
   }catch(e){
-    if(status) status.textContent='❌ Error al buscar: '+e.message;
+    if(status) status.textContent='Error al buscar: '+e.message;
   }
 }
 
@@ -5774,7 +5780,7 @@ async function saveGeoConfig2(){
     if(status){status.textContent='✅ Ubicación guardada';setTimeout(()=>{status.textContent='';},3000);}
     showToast('Ubicación guardada — el próximo .pkpass incluirá la notificación de proximidad','success');
   }catch(e){
-    if(status) status.textContent='❌ '+e.message;
+    if(status) status.textContent='Error: '+e.message;
     showToast('Error al guardar: '+e.message,'error');
   }
 }
@@ -5792,7 +5798,7 @@ function detectLocation2(){
     else { initGeoMap(lat, lng); }
     reverseGeocodeGeo(lat, lng);
     if(status){status.textContent='✅ Ubicación detectada — recuerda guardar';setTimeout(()=>{status.textContent='';},4000);}
-  },err=>{ if(status) status.textContent='❌ '+err.message; });
+  },err=>{ if(status) status.textContent='Error: '+err.message; });
 }
 
 async function sendGeoPush2(){
@@ -5804,7 +5810,7 @@ async function sendGeoPush2(){
     if(status) status.textContent=d.message||`✅ Enviado a ${d.sent||0} suscriptor(es)`;
     showToast(d.message||'Notificación enviada','success');
   }catch(e){
-    if(status) status.textContent='❌ Error al enviar';
+    if(status) status.textContent='Error al enviar';
     showToast('Error al enviar notificación','error');
   }
 }
@@ -5839,10 +5845,10 @@ async function saveReviewsConfig(){
       body:JSON.stringify({pin:PIN, google_review_url:url, review_trigger_stamps:trigger})
     });
     if(!r.ok) throw new Error('Error');
-    if(status){ status.textContent='✅ Guardado'; setTimeout(()=>status.textContent='',3000); }
+    if(status){ status.textContent='Guardado'; setTimeout(()=>status.textContent='',3000); }
     showToast('Configuración de reseñas guardada','success');
   }catch(e){
-    if(status) status.textContent='❌ Error al guardar';
+    if(status) status.textContent='Error al guardar';
     showToast('Error al guardar','error');
   }
 }
@@ -5963,7 +5969,7 @@ async function saveStore(){
     document.getElementById('store-form').style.display='none';
     await loadStores();
     showToast(id?'Local actualizado ✓':'Local añadido ✓','success');
-  }catch(e){if(msgEl){msgEl.textContent='❌ '+e.message;msgEl.style.color='#c62828';}}
+  }catch(e){if(msgEl){msgEl.textContent='Error: '+e.message;msgEl.style.color='#c62828';}}
 }
 
 async function deleteStore(id){
@@ -6633,7 +6639,7 @@ async function savePerfil() {
       body: JSON.stringify(payload)
     });
     if (r.ok) {
-      msg.textContent = '✅ Guardado correctamente';
+      msg.textContent = 'Guardado correctamente';
       msg.style.color = 'var(--green)';
     } else {
       const d = await r.json();
@@ -6747,14 +6753,14 @@ async function saveEmailSettings(){
     });
     const d = await r.json();
     if(r.ok){
-      if(status) { status.textContent = '✅ Guardado'; status.style.color='var(--green)'; }
+      if(status) { status.textContent = 'Guardado'; status.style.color='var(--green)'; }
       showToast('Configuración de email guardada', 'success');
       setTimeout(()=>{ if(status) status.textContent=''; }, 3000);
     } else {
-      if(status) { status.textContent = '❌ Error al guardar'; status.style.color='#c62828'; }
+      if(status) { status.textContent = 'Error al guardar'; status.style.color='#c62828'; }
     }
   } catch(e) {
-    if(status) { status.textContent = '❌ Error de conexión'; status.style.color='#c62828'; }
+    if(status) { status.textContent = 'Error de conexión'; status.style.color='#c62828'; }
   }
 }
 
@@ -6773,12 +6779,12 @@ async function sendTestEmail(){
       if(status){ status.textContent = `✅ Email enviado a ${toEmail}`; status.style.color='var(--green)'; }
       showToast(`Email de prueba enviado a ${toEmail}`, 'success');
     } else {
-      if(status){ status.textContent = `❌ ${d.detail||'Error al enviar'}`; status.style.color='#c62828'; }
+      if(status){ status.textContent = `Error: ${d.detail||'Error al enviar'}`; status.style.color='#c62828'; }
       showToast(d.detail||'Error al enviar el email', 'error');
     }
     setTimeout(()=>{ if(status) status.textContent=''; }, 5000);
   } catch(e) {
-    if(status){ status.textContent='❌ Error de conexión'; status.style.color='#c62828'; }
+    if(status){ status.textContent='Error de conexión'; status.style.color='#c62828'; }
   }
 }
 

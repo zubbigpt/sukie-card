@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root {
@@ -629,12 +631,12 @@ body {
 
     <!-- Referral -->
     <div class="referral-section" id="referral-section" style="display:none">
-      <div class="referral-title">🎁 Invita a tus amigos</div>
+      <div class="referral-title" style="display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-symbols-outlined" style="font-size:1rem;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">card_giftcard</span> Invita a tus amigos</div>
       <div class="referral-code" id="referral-code">XXXX</div>
       <div class="referral-sub">Comparte tu link y los dos ganáis 2 sellos extra</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-        <button class="referral-copy-btn" onclick="copyReferral()">📋 Copiar link</button>
-        <button class="referral-copy-btn" onclick="shareReferral()">📤 Compartir</button>
+        <button class="referral-copy-btn" onclick="copyReferral()" style="display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.85rem">content_copy</span> Copiar link</button>
+        <button class="referral-copy-btn" onclick="shareReferral()" style="display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.85rem">share</span> Compartir</button>
       </div>
     </div>
   </div>
@@ -673,8 +675,8 @@ if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'Mac
   <div style="font-weight:700;color:#26170c;font-size:.97rem;margin-bottom:6px">¿Te gusta nuestro servicio?</div>
   <div style="font-size:.85rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google 🙏</div>
   <a href="{{ google_review_url }}" target="_blank" rel="noopener"
-     style="display:inline-block;background:#4285F4;color:#fff;font-weight:700;font-size:.9rem;padding:9px 20px;border-radius:8px;text-decoration:none">
-    ✍️ Dejar reseña en Google
+     style="display:inline-flex;align-items:center;gap:6px;background:#4285F4;color:#fff;font-weight:700;font-size:.9rem;padding:9px 20px;border-radius:8px;text-decoration:none">
+    <span class="material-symbols-outlined" style="font-size:.95rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20">rate_review</span> Dejar reseña en Google
   </a>
   <div style="margin-top:8px">
     <button onclick="document.getElementById('review-banner').style.display='none';localStorage.setItem('review_dismissed','1')"
@@ -692,11 +694,11 @@ const REVIEW_TRIGGER = 0;
 </script>
 {% endif %}
 
-<button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()">
-  🔔 Activar notificaciones
+<button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()" style="display:inline-flex;align-items:center;justify-content:center;gap:7px">
+  <span class="material-symbols-outlined" style="font-size:1rem">notifications</span> Activar notificaciones
 </button>
-<button class="action-btn btn-secondary" onclick="shareCard()">
-  🔗 Compartir mi tarjeta
+<button class="action-btn btn-secondary" onclick="shareCard()" style="display:inline-flex;align-items:center;justify-content:center;gap:7px">
+  <span class="material-symbols-outlined" style="font-size:1rem">share</span> Compartir mi tarjeta
 </button>
 
 <div class="toast" id="toast"></div>
@@ -860,7 +862,7 @@ async function loadReferral() {
 
 function copyReferral() {
   const text = _referralUrl || document.getElementById('referral-code').textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('✅ Link copiado'));
+  navigator.clipboard.writeText(text).then(() => showToast('Link copiado'));
 }
 
 function shareReferral() {
@@ -868,11 +870,11 @@ function shareReferral() {
   if (navigator.share) {
     navigator.share({
       title: '¡Únete y gana sellos!',
-      text: '¡Regístrate con mi link y los dos ganamos sellos extra! 🎁',
+      text: '¡Regístrate con mi link y los dos ganamos sellos extra!',
       url: text
     });
   } else {
-    navigator.clipboard.writeText(text).then(() => showToast('🔗 Link copiado'));
+    navigator.clipboard.writeText(text).then(() => showToast('Link copiado'));
   }
 }
 
@@ -885,7 +887,7 @@ function shareCard() {
     });
   } else {
     navigator.clipboard.writeText(window.location.href);
-    showToast('🔗 Enlace copiado');
+    showToast('Enlace copiado');
   }
 }
 
@@ -911,7 +913,7 @@ async function activateNotifications() {
     const keyRes = await fetch(API_BASE + '/api/push/vapid-public');
     const keyData = await keyRes.json();
     if (!keyData.key) {
-      showToast('🔔 Permiso concedido (notificaciones no configuradas en servidor)');
+      showToast('Permiso concedido (notificaciones no configuradas en servidor)');
       return;
     }
     const swReg = await navigator.serviceWorker.register('/sw.js');
@@ -930,9 +932,9 @@ async function activateNotifications() {
         keys: subJson.keys
       })
     });
-    showToast('🔔 ¡Notificaciones activadas!');
+    showToast('¡Notificaciones activadas!');
     const btn = document.getElementById('notif-btn');
-    if (btn) { btn.textContent = '✅ Notificaciones activas'; btn.disabled = true; }
+    if (btn) { btn.textContent = 'Notificaciones activas'; btn.disabled = true; }
   } catch(e) {
     console.error('Push subscription error:', e);
     showToast('Error activando notificaciones');

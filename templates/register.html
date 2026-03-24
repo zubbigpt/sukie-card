@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
 <style>
 :root{
   --surface:#fff8f5;
@@ -65,7 +67,8 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 .benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;margin-bottom:2rem}
 .benefit{background:var(--on-primary);border-radius:var(--r);padding:1.1rem .8rem;text-align:center;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
 .benefit:hover{box-shadow:var(--shadow)}
-.benefit .icon{font-size:1.5rem;margin-bottom:.5rem}
+.benefit .icon{width:40px;height:40px;border-radius:10px;background:var(--honey-light);display:flex;align-items:center;justify-content:center;margin:0 auto .6rem}
+.benefit .icon .material-symbols-outlined{font-size:1.25rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
 .benefit .txt{font-size:.72rem;color:var(--outline);line-height:1.6;font-weight:600}
 
 /* FORM */
@@ -105,7 +108,8 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 
 /* SUCCESS */
 .success-screen{display:none;text-align:center;padding:2rem 0;animation:fade-up .5s ease both}
-.success-icon{width:76px;height:76px;border-radius:50%;background:var(--honey);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 1.35rem;box-shadow:var(--shadow)}
+.success-icon{width:76px;height:76px;border-radius:50%;background:var(--honey);display:flex;align-items:center;justify-content:center;margin:0 auto 1.35rem;box-shadow:var(--shadow)}
+.success-icon .material-symbols-outlined{font-size:2rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 700,'GRAD' 0,'opsz' 48}
 .success-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:-.5px;color:var(--primary);margin-bottom:.5rem}
 .success-screen p{font-size:.9rem;color:var(--outline);line-height:1.8;margin-bottom:1.75rem}
 .btn-view-card{display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;background:var(--primary);color:var(--on-primary);font-size:.8rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border-radius:var(--r-sm);transition:background .18s}
@@ -260,15 +264,15 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
   <!-- BENEFITS -->
   <div class="benefits">
     <div class="benefit">
-      <div class="icon">⚡</div>
+      <div class="icon"><span class="material-symbols-outlined">toll</span></div>
       <div class="txt">1 sello<br>por compra</div>
     </div>
     <div class="benefit">
-      <div class="icon">🎁</div>
+      <div class="icon"><span class="material-symbols-outlined">card_giftcard</span></div>
       <div class="txt">Premio cada<br>{{ stamps_per_reward }} sellos</div>
     </div>
     <div class="benefit">
-      <div class="icon">🎂</div>
+      <div class="icon"><span class="material-symbols-outlined">cake</span></div>
       <div class="txt">Sorpresa en<br>tu cumple</div>
     </div>
   </div>
@@ -334,7 +338,7 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 
     <!-- SUCCESS -->
     <div class="success-screen" id="success-screen">
-      <div class="success-icon">🎉</div>
+      <div class="success-icon"><span class="material-symbols-outlined">check</span></div>
       <h2>¡BIENVENIDO!</h2>
       <p id="success-text">Tu tarjeta está lista. Muéstrala en caja en tu próxima visita para empezar a acumular sellos.</p>
       <a href="#" id="view-card-btn" class="btn-view-card">Ver mi tarjeta →</a>
