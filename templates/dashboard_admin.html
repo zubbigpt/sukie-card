@@ -1594,7 +1594,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         if (stripWrap) {
           stripWrap.innerHTML = '';
           const w = awPass ? (awPass.offsetWidth || 164) : 164;
-          const h = Math.round(w * 0.385);
+          const h = Math.round(w * 0.50);
           const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0 };
           const canvas = _buildStripCanvas(cardObj, w, h);
           canvas.style.cssText = 'width:100%;display:block';
@@ -1888,7 +1888,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         if (stripWrap) {
           stripWrap.innerHTML = '';
           const w = awPass ? (awPass.offsetWidth || 156) : 156;
-          const h = Math.round(w * 0.385);
+          const h = Math.round(w * 0.50);
           const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0 };
           const canvas = _buildStripCanvas(cardObj, w, h);
           canvas.style.cssText = 'width:100%;display:block';
@@ -5841,106 +5841,119 @@ function fidCopyLink() {
 window._cardRegistry = {};
 
 function _buildStripCanvas(card, w, h) {
-  /* Render a stamp-strip preview onto a <canvas> element,
-     matching wallet_pass.py generate_strip_image logic.   */
+  /* Render stamp strip — big circles (2 rows for 10 stamps), retina 2× */
+  const DPR = 2;
   const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
+  canvas.width = w * DPR; canvas.height = h * DPR;
   const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
 
-  function hexRgb(h) {
-    h = h.replace('#','');
-    if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  function hexRgb(hex) {
+    hex = hex.replace('#','');
+    if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
   }
-  function darken([r,g,b],a=0.18){ return [Math.round(r*(1-a)),Math.round(g*(1-a)),Math.round(b*(1-a))]; }
-  function lighten([r,g,b],a=0.25){ return [Math.min(255,Math.round(r+(255-r)*a)),Math.min(255,Math.round(g+(255-g)*a)),Math.min(255,Math.round(b+(255-b)*a))]; }
-  function rgb(c,al=1){ return `rgba(${c[0]},${c[1]},${c[2]},${al})`; }
+  function darken([r,g,b],a){ return [Math.round(r*(1-a)),Math.round(g*(1-a)),Math.round(b*(1-a))]; }
+  function lighten([r,g,b],a){ return [Math.min(255,Math.round(r+(255-r)*a)),Math.min(255,Math.round(g+(255-g)*a)),Math.min(255,Math.round(b+(255-b)*a))]; }
+  function rgba(c,al=1){ return `rgba(${c[0]},${c[1]},${c[2]},${al})`; }
 
   const BG     = hexRgb(card.bg_color     || '#26170c');
   const ACCENT = hexRgb(card.accent_color || '#ffca48');
-  const TEXT   = lighten(BG, 0.88);
-  const TSUB   = lighten(BG, 0.42);
-  const EMPTY  = lighten(BG, 0.06);   // nearly invisible — same as bg
-  const EBORD  = lighten(BG, 0.32);   // faint border only
-  const FICO   = darken(ACCENT, 0.50);
+  const TEXT   = lighten(BG, 0.85);
+  const TSUB   = lighten(BG, 0.45);
+  const EBORD  = lighten(BG, 0.42);
+  const FICO   = darken(ACCENT, 0.42);
 
   const spr    = card.stamps_per_reward || 10;
   const filled = card.filled || 0;
   const bizName = (card.name || 'ZubCard').substring(0,22);
   const reward  = (card.reward_name || 'Premio').substring(0,20);
+  const fs = w / 320;
 
   // Background
-  ctx.fillStyle = rgb(BG);
-  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle = rgba(BG);
+  ctx.fillRect(0, 0, w, h);
 
-  const PAD=Math.round(w*0.044), PAD_T=Math.round(h*0.09);
-  const fs = w/320; // scale factor
+  // ── Layout bands ──
+  const PAD    = Math.round(w * 0.048);
+  const TOP_H  = Math.round(h * 0.20);
+  const FOOT_H = Math.round(h * 0.22);
+  const MID_H  = h - TOP_H - FOOT_H;
 
-  // Business name top-left
-  ctx.font = `800 ${Math.round(13*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle = rgb(TEXT);
-  ctx.fillText(bizName, PAD, PAD_T+Math.round(13*fs));
-
-  // Stamp counter top-right
-  const countStr = `${filled}/${spr}`;
-  ctx.font = `800 ${Math.round(11*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle = rgb(ACCENT, 0.9);
+  // ── Header: name left, counter right ──
+  ctx.textBaseline = 'middle';
+  ctx.font = `700 ${Math.round(11*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle = rgba(TEXT, 0.82);
+  ctx.fillText(bizName.toUpperCase(), PAD, TOP_H * 0.55);
+  ctx.fillStyle = rgba(ACCENT, 0.88);
   ctx.textAlign = 'right';
-  ctx.fillText(countStr, w-PAD, PAD_T+Math.round(11*fs));
+  ctx.fillText(`${filled}/${spr}`, w - PAD, TOP_H * 0.55);
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 
-  // Stamp dots
-  const FOOTER_H = Math.round(h*0.21);
-  const topBand = PAD_T + Math.round(13*fs) + Math.round(6*fs);
-  const botBand = h - FOOTER_H - Math.round(4*fs);
-  const midY = Math.round((topBand+botBand)/2);
-  const availW = w - 2*PAD;
-  const COLS = Math.min(spr, 10);
-  const ROWS = Math.ceil(spr/COLS);
-  const DOT_D = Math.min(Math.round(14*fs), Math.floor((availW-(COLS-1)*Math.round(4*fs))/COLS));
-  const GAP = Math.max(Math.round(3*fs), Math.floor((availW-COLS*DOT_D)/Math.max(COLS-1,1)));
-  const gridW = COLS*DOT_D+GAP*(COLS-1);
-  const gridH = ROWS*DOT_D+(Math.round(4*fs))*(ROWS-1);
-  const gx0 = PAD+Math.floor((availW-gridW)/2);
-  const gy0 = midY-Math.floor(gridH/2);
+  // ── Stamp circles: max ceil(spr/2) per row so circles are big ──
+  const COLS  = spr <= 5 ? spr : Math.ceil(spr / 2);
+  const ROWS  = Math.ceil(spr / COLS);
+  const availW = w - 2 * PAD;
+  const GAP_C = Math.round(availW * 0.032);
+  const GAP_R = Math.round(MID_H * 0.10);
+  const DOT_D = Math.min(
+    Math.floor((availW - GAP_C * (COLS - 1)) / COLS),
+    Math.floor((MID_H  - GAP_R * (ROWS - 1)) / ROWS)
+  );
+  const DOT_R = Math.floor(DOT_D / 2);
+  const gridW = COLS * DOT_D + GAP_C * (COLS - 1);
+  const gridH = ROWS * DOT_D + GAP_R * (ROWS - 1);
+  const gx0   = PAD + Math.floor((availW - gridW) / 2);
+  const gy0   = TOP_H + Math.floor((MID_H - gridH) / 2);
 
-  for(let i=0;i<spr;i++){
-    const col=i%COLS, row=Math.floor(i/COLS);
-    const cx=gx0+col*(DOT_D+GAP)+Math.floor(DOT_D/2);
-    const cy=gy0+row*(DOT_D+Math.round(4*fs))+Math.floor(DOT_D/2);
-    const r=Math.floor(DOT_D/2);
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-    if(i<filled){
-      ctx.fillStyle=rgb(ACCENT); ctx.fill();
-      // checkmark
-      const lw=Math.max(1,Math.floor(r/4));
-      ctx.strokeStyle=rgb(FICO,0.95); ctx.lineWidth=lw; ctx.lineCap='round';
+  for (let i = 0; i < spr; i++) {
+    const col = i % COLS, row = Math.floor(i / COLS);
+    const cx  = gx0 + col * (DOT_D + GAP_C) + DOT_R;
+    const cy  = gy0 + row * (DOT_D + GAP_R) + DOT_R;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, DOT_R, 0, Math.PI * 2);
+
+    if (i < filled) {
+      ctx.fillStyle = rgba(ACCENT);
+      ctx.fill();
+      // Checkmark
+      const lw = Math.max(1.5, DOT_R * 0.16);
+      ctx.strokeStyle = rgba(FICO, 0.92);
+      ctx.lineWidth = lw;
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath();
-      ctx.moveTo(cx-r*0.35,cy+r*0.02); ctx.lineTo(cx-r*0.05,cy+r*0.32); ctx.lineTo(cx+r*0.40,cy-r*0.30);
+      ctx.moveTo(cx - DOT_R*0.30, cy + DOT_R*0.06);
+      ctx.lineTo(cx - DOT_R*0.02, cy + DOT_R*0.36);
+      ctx.lineTo(cx + DOT_R*0.38, cy - DOT_R*0.26);
       ctx.stroke();
     } else {
-      ctx.fillStyle=rgb(EMPTY,0.0); ctx.fill(); // transparent fill
-      ctx.strokeStyle=rgb(EBORD,0.38); ctx.lineWidth=Math.max(1,Math.round(fs*0.8)); ctx.stroke();
+      ctx.strokeStyle = rgba(EBORD, 0.38);
+      ctx.lineWidth = Math.max(1, Math.round(fs * 1.1));
+      ctx.stroke();
     }
   }
 
-  // Footer line
-  const fy=h-FOOTER_H;
-  ctx.strokeStyle=rgb(TSUB,0.35); ctx.lineWidth=Math.max(1,fs);
-  ctx.beginPath(); ctx.moveTo(PAD,fy); ctx.lineTo(w-PAD,fy); ctx.stroke();
+  // ── Footer divider ──
+  const fy = h - FOOT_H;
+  ctx.strokeStyle = rgba(TSUB, 0.28);
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, fy); ctx.lineTo(w - PAD, fy); ctx.stroke();
 
-  // Footer labels + values
-  const lblY=fy+Math.round(h*0.04), valY=fy+Math.round(h*0.12);
-  ctx.font=`${Math.round(7*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle=rgb(TSUB,0.8);
+  // ── Footer text ──
+  const lblY = fy + Math.round(FOOT_H * 0.30);
+  const valY = fy + Math.round(FOOT_H * 0.72);
+  ctx.font = `500 ${Math.round(6.5*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle = rgba(TSUB, 0.72);
   ctx.fillText('TITULAR', PAD, lblY);
-  ctx.textAlign='right'; ctx.fillText('PREMIO', w-PAD, lblY); ctx.textAlign='left';
+  ctx.textAlign = 'right'; ctx.fillText('PREMIO', w - PAD, lblY); ctx.textAlign = 'left';
 
-  ctx.font=`800 ${Math.round(8*fs)}px -apple-system,Helvetica,sans-serif`;
-  ctx.fillStyle=rgb(TEXT,0.9);
+  ctx.font = `700 ${Math.round(8*fs)}px -apple-system,Helvetica,sans-serif`;
+  ctx.fillStyle = rgba(TEXT, 0.88);
   ctx.fillText(bizName.toUpperCase(), PAD, valY);
-  ctx.fillStyle=rgb(ACCENT,0.9);
-  ctx.textAlign='right'; ctx.fillText(reward, w-PAD, valY); ctx.textAlign='left';
+  ctx.fillStyle = rgba(ACCENT, 0.88);
+  ctx.textAlign = 'right'; ctx.fillText(reward, w - PAD, valY); ctx.textAlign = 'left';
 
   return canvas;
 }
@@ -6138,7 +6151,7 @@ function buildCardMockup(card){
       const passEl = stripWrap.closest('.aw-pass');
       const pw = passEl ? passEl.offsetWidth : 280;
       const sw = pw;
-      const sh = Math.round(pw * 0.385);
+      const sh = Math.round(pw * 0.50);
       const canvas = _buildStripCanvas(card, sw, sh);
       canvas.style.cssText = 'width:100%;display:block';
       stripWrap.appendChild(canvas);
@@ -6149,7 +6162,7 @@ function buildCardMockup(card){
     if (stripWrapGw) {
       const gwPassEl = stripWrapGw.closest('[id^="pass-android-"]');
       const gwW = gwPassEl ? gwPassEl.offsetWidth : 300;
-      const gwH = Math.round(gwW * 0.32); // slightly shallower for Material look
+      const gwH = Math.round(gwW * 0.42); // slightly shallower for Material look
       const canvasGw = _buildStripCanvas(card, gwW, gwH);
       canvasGw.style.cssText = 'width:100%;display:block;border-radius:8px';
       stripWrapGw.appendChild(canvasGw);
@@ -6188,7 +6201,7 @@ function switchPassTab(platform, cid) {
       if (card) {
         requestAnimationFrame(() => {
           const gwW = androidEl.offsetWidth || 300;
-          const gwH = Math.round(gwW * 0.32);
+          const gwH = Math.round(gwW * 0.42);
           const canvasGw = _buildStripCanvas(card, gwW, gwH);
           canvasGw.style.cssText = 'width:100%;display:block;border-radius:8px';
           stripWrapGw.appendChild(canvasGw);
