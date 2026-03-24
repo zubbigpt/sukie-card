@@ -6018,23 +6018,36 @@ function buildCardMockup(card){
      • Secondary + Auxiliary fields (PREMIO · TITULAR)
      • Barcode area
   ──────────────────────────────────────────────────────────────────── */
+  // helper: lighten/darken hex for Google Wallet
+  function _hexLighten(hex, amt=0.25){
+    const [r,g,b]=hex.replace('#','').match(/.{2}/g).map(x=>parseInt(x,16));
+    return `rgb(${Math.min(255,Math.round(r+(255-r)*amt))},${Math.min(255,Math.round(g+(255-g)*amt))},${Math.min(255,Math.round(b+(255-b)*amt))})`;
+  }
+
   wrap.innerHTML = `
-    <!-- Apple Wallet pass mockup -->
-    <div class="aw-pass" style="
+    <!-- iOS / Android toggle -->
+    <div style="display:flex;gap:0;margin-bottom:10px;border:1.5px solid var(--cream-border);border-radius:8px;overflow:hidden;width:fit-content">
+      <button id="tab-ios-${cid}" onclick="switchPassTab('ios','${cid}')"
+        style="padding:5px 14px;font-size:.72rem;font-weight:700;border:none;cursor:pointer;background:var(--brown);color:#fff;font-family:inherit;letter-spacing:.03em">
+        🍎 Apple
+      </button>
+      <button id="tab-android-${cid}" onclick="switchPassTab('android','${cid}')"
+        style="padding:5px 14px;font-size:.72rem;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--brown-light);font-family:inherit;letter-spacing:.03em">
+        🤖 Google
+      </button>
+    </div>
+
+    <!-- ══ APPLE WALLET MOCKUP ══ -->
+    <div id="pass-ios-${cid}" class="aw-pass" style="
         width:100%;background:${bgCol};border-radius:16px;
         overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.22);
         font-family:-apple-system,Helvetica,sans-serif;position:relative">
 
-      <!-- Pass top bar: logo text + series label -->
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 6px">
         <span style="font-size:.72rem;font-weight:800;letter-spacing:.04em;color:${accentCol}">${(card.name||'TARJETA').toUpperCase()}</span>
         <span style="font-size:.58rem;font-weight:600;color:${accentCol};opacity:.6">Tarjeta de Fidelidad</span>
       </div>
-
-      <!-- Strip image — rendered by canvas -->
       <div style="width:100%;line-height:0" id="strip-wrap-${cid}"></div>
-
-      <!-- Primary field: SELLOS -->
       <div style="padding:8px 14px 4px;display:flex;justify-content:space-between;align-items:flex-end">
         <div>
           <div style="font-size:.46rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:1px">SELLOS</div>
@@ -6045,8 +6058,6 @@ function buildCardMockup(card){
           <div style="font-size:.72rem;font-weight:700;color:${accentCol}">${card.reward_name||'Premio'}</div>
         </div>
       </div>
-
-      <!-- Secondary fields: TITULAR -->
       <div style="padding:0 14px 8px;display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:1px">TITULAR</div>
@@ -6054,13 +6065,71 @@ function buildCardMockup(card){
         </div>
         <span style="font-size:.65rem">${card.emoji||'🎁'}</span>
       </div>
-
-      <!-- Barcode hint -->
       <div style="margin:0 14px 10px;background:white;border-radius:6px;padding:6px 10px;display:flex;align-items:center;justify-content:center;gap:6px">
         <div style="display:grid;grid-template-columns:repeat(5,3px);gap:1px;height:22px;align-items:stretch">
           ${[1,0,1,1,0,1,0,1,0,1].map(v=>`<div style="background:${v?'#1a1a1a':'white'};border-radius:1px"></div>`).join('')}
         </div>
         <div style="font-size:.42rem;color:#888;letter-spacing:.06em;font-family:monospace">QR CODE</div>
+      </div>
+    </div>
+
+    <!-- ══ GOOGLE WALLET MOCKUP ══ -->
+    <div id="pass-android-${cid}" style="display:none;width:100%;border-radius:16px;overflow:hidden;
+        box-shadow:0 4px 24px rgba(0,0,0,.22);font-family:'Google Sans',Roboto,sans-serif;
+        background:#fff;border:1px solid #e0e0e0">
+
+      <!-- Google Wallet top bar -->
+      <div style="background:${bgCol};padding:14px 16px 10px;position:relative">
+        <!-- Issuer row -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:28px;height:28px;border-radius:50%;background:${accentCol};display:flex;align-items:center;justify-content:center;font-size:.9rem">${card.emoji||'🎁'}</div>
+            <span style="font-size:.7rem;font-weight:700;color:${accentCol};letter-spacing:.02em">${bizName.toUpperCase()}</span>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="${accentCol}" opacity=".6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        </div>
+        <!-- Card name + strip canvas -->
+        <div style="width:100%;line-height:0;border-radius:8px;overflow:hidden" id="strip-wrap-gw-${cid}"></div>
+      </div>
+
+      <!-- Google Wallet fields -->
+      <div style="padding:14px 16px 10px">
+        <!-- Points row -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:.52rem;font-weight:500;color:#888;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">Sellos</div>
+            <div style="font-size:1.4rem;font-weight:700;color:#1a1a1a;line-height:1">${card.filled||0}<span style="font-size:.8rem;color:#888;font-weight:400"> / ${spr}</span></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:.52rem;font-weight:500;color:#888;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">Premio</div>
+            <div style="font-size:.72rem;font-weight:600;color:#1a1a1a">${card.reward_name||'Premio'}</div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="height:4px;background:#f0f0f0;border-radius:4px;margin-bottom:12px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(100,((card.filled||0)/spr)*100)}%;background:${bgCol};border-radius:4px;transition:width .6s"></div>
+        </div>
+
+        <!-- QR hint -->
+        <div style="background:#f8f8f8;border-radius:10px;padding:8px;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="32" height="32" viewBox="0 0 100 100" fill="#1a1a1a">
+            <rect x="5" y="5" width="38" height="38" rx="4" fill="none" stroke="#1a1a1a" stroke-width="6"/>
+            <rect x="17" y="17" width="14" height="14"/>
+            <rect x="57" y="5" width="38" height="38" rx="4" fill="none" stroke="#1a1a1a" stroke-width="6"/>
+            <rect x="69" y="17" width="14" height="14"/>
+            <rect x="5" y="57" width="38" height="38" rx="4" fill="none" stroke="#1a1a1a" stroke-width="6"/>
+            <rect x="17" y="69" width="14" height="14"/>
+            <rect x="57" y="57" width="8" height="8"/>
+            <rect x="72" y="57" width="8" height="8"/>
+            <rect x="87" y="57" width="8" height="8"/>
+            <rect x="57" y="72" width="8" height="8"/>
+            <rect x="72" y="87" width="8" height="8"/>
+            <rect x="87" y="72" width="8" height="8"/>
+            <rect x="87" y="87" width="8" height="8"/>
+          </svg>
+          <div style="font-size:.55rem;color:#888">Escanea en caja</div>
+        </div>
       </div>
     </div>
 
@@ -6113,20 +6182,72 @@ function buildCardMockup(card){
       </div>
     </div>`;
 
-  // Render strip canvas after DOM insertion (need real pixel width)
+  // Render strip canvases after DOM insertion (need real pixel width)
   requestAnimationFrame(() => {
+    // Apple Wallet strip
     const stripWrap = wrap.querySelector(`#strip-wrap-${cid}`);
-    if (!stripWrap) return;
-    const passEl = stripWrap.closest('.aw-pass');
-    const pw = passEl ? passEl.offsetWidth : 280;
-    const sw = pw;
-    const sh = Math.round(pw * 0.385); // strip is ~38.5% of pass width
-    const canvas = _buildStripCanvas(card, sw, sh);
-    canvas.style.cssText = 'width:100%;display:block';
-    stripWrap.appendChild(canvas);
+    if (stripWrap) {
+      const passEl = stripWrap.closest('.aw-pass');
+      const pw = passEl ? passEl.offsetWidth : 280;
+      const sw = pw;
+      const sh = Math.round(pw * 0.385);
+      const canvas = _buildStripCanvas(card, sw, sh);
+      canvas.style.cssText = 'width:100%;display:block';
+      stripWrap.appendChild(canvas);
+    }
+
+    // Google Wallet strip (same canvas, wider aspect ratio 16:5)
+    const stripWrapGw = wrap.querySelector(`#strip-wrap-gw-${cid}`);
+    if (stripWrapGw) {
+      const gwPassEl = stripWrapGw.closest('[id^="pass-android-"]');
+      const gwW = gwPassEl ? gwPassEl.offsetWidth : 300;
+      const gwH = Math.round(gwW * 0.32); // slightly shallower for Material look
+      const canvasGw = _buildStripCanvas(card, gwW, gwH);
+      canvasGw.style.cssText = 'width:100%;display:block;border-radius:8px';
+      stripWrapGw.appendChild(canvasGw);
+    }
   });
 
   return wrap;
+}
+
+function switchPassTab(platform, cid) {
+  const iosEl = document.getElementById(`pass-ios-${cid}`);
+  const androidEl = document.getElementById(`pass-android-${cid}`);
+  const tabIos = document.getElementById(`tab-ios-${cid}`);
+  const tabAndroid = document.getElementById(`tab-android-${cid}`);
+  if (!iosEl || !androidEl) return;
+
+  if (platform === 'ios') {
+    iosEl.style.display = '';
+    androidEl.style.display = 'none';
+    tabIos.style.background = 'var(--brown)';
+    tabIos.style.color = '#fff';
+    tabAndroid.style.background = 'transparent';
+    tabAndroid.style.color = 'var(--brown-light)';
+  } else {
+    iosEl.style.display = 'none';
+    androidEl.style.display = '';
+    tabAndroid.style.background = 'var(--brown)';
+    tabAndroid.style.color = '#fff';
+    tabIos.style.background = 'transparent';
+    tabIos.style.color = 'var(--brown-light)';
+
+    // Lazy-render GW strip on first switch (it was hidden so offsetWidth was 0)
+    const stripWrapGw = document.getElementById(`strip-wrap-gw-${cid}`);
+    if (stripWrapGw && !stripWrapGw.firstChild) {
+      const card = window._cardRegistry[cid];
+      if (card) {
+        requestAnimationFrame(() => {
+          const gwW = androidEl.offsetWidth || 300;
+          const gwH = Math.round(gwW * 0.32);
+          const canvasGw = _buildStripCanvas(card, gwW, gwH);
+          canvasGw.style.cssText = 'width:100%;display:block;border-radius:8px';
+          stripWrapGw.appendChild(canvasGw);
+        });
+      }
+    }
+  }
 }
 
 async function loadTarjetas(){
