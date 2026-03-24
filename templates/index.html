@@ -725,5 +725,41 @@ const revealObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 </script>
+
+<!-- ── Cookie Consent Banner ─────────────────────────────────── -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:#1a0f08;border-top:1px solid rgba(255,202,72,0.25);
+  padding:16px 24px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;font-family:'Manrope',sans-serif;">
+  <p style="margin:0;color:#d4b896;font-size:13px;max-width:600px;line-height:1.5">
+    🍪 Usamos cookies esenciales para que la app funcione correctamente.
+    <a href="#" onclick="return false;" style="color:#ffca48;text-decoration:underline">Más info</a>
+  </p>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="cookieConsent('essential')" style="
+      background:transparent;border:1px solid rgba(255,202,72,0.4);color:#d4b896;
+      padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Manrope',sans-serif">
+      Solo esenciales
+    </button>
+    <button onclick="cookieConsent('all')" style="
+      background:#ffca48;border:none;color:#26170c;
+      padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif">
+      Aceptar todo
+    </button>
+  </div>
+</div>
+<script>
+(function() {
+  const COOKIE_KEY = 'zubcard_cookie_consent';
+  function cookieConsent(choice) {
+    localStorage.setItem(COOKIE_KEY, choice);
+    document.getElementById('cookie-banner').style.display = 'none';
+  }
+  window.cookieConsent = cookieConsent;
+  if (!localStorage.getItem(COOKIE_KEY)) {
+    document.getElementById('cookie-banner').style.display = 'flex';
+  }
+})();
+</script>
 </body>
 </html>
