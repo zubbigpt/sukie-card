@@ -1558,7 +1558,9 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
 
-    # Borrar transacciones → tarjeta → cliente
+    # Borrar en orden FK: push_subscriptions → transacciones → tarjeta → cliente
+    from sqlalchemy import text as _text
+    db.execute(_text("DELETE FROM push_subscriptions WHERE card_id = :cid"), {"cid": card.id})
     db.query(models.StampTransaction).filter(models.StampTransaction.card_id == card.id).delete()
     db.delete(card)
     if customer:
