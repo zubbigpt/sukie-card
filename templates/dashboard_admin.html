@@ -5860,8 +5860,8 @@ function _buildStripCanvas(card, w, h) {
   const ACCENT = hexRgb(card.accent_color || '#ffca48');
   const TEXT   = lighten(BG, 0.88);
   const TSUB   = lighten(BG, 0.42);
-  const EMPTY  = lighten(BG, 0.12);
-  const EBORD  = lighten(BG, 0.28);
+  const EMPTY  = lighten(BG, 0.06);   // nearly invisible — same as bg
+  const EBORD  = lighten(BG, 0.32);   // faint border only
   const FICO   = darken(ACCENT, 0.50);
 
   const spr    = card.stamps_per_reward || 10;
@@ -5919,8 +5919,8 @@ function _buildStripCanvas(card, w, h) {
       ctx.moveTo(cx-r*0.35,cy+r*0.02); ctx.lineTo(cx-r*0.05,cy+r*0.32); ctx.lineTo(cx+r*0.40,cy-r*0.30);
       ctx.stroke();
     } else {
-      ctx.fillStyle=rgb(EMPTY); ctx.fill();
-      ctx.strokeStyle=rgb(EBORD,0.7); ctx.lineWidth=Math.max(1,fs); ctx.stroke();
+      ctx.fillStyle=rgb(EMPTY,0.0); ctx.fill(); // transparent fill
+      ctx.strokeStyle=rgb(EBORD,0.38); ctx.lineWidth=Math.max(1,Math.round(fs*0.8)); ctx.stroke();
     }
   }
 
