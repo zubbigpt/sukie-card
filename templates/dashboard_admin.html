@@ -1431,9 +1431,14 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               <!-- Screen: Apple Wallet pass preview -->
               <div style="background:#f2f2f7;border-radius:32px;overflow:hidden;min-height:360px;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:14px 8px">
                 <div id="nc-aw-pass" style="background:#26170c;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:-apple-system,Helvetica,sans-serif">
-                  <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px 5px">
-                    <span id="nc-aw-cardname" style="font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#ffca48">MI TARJETA</span>
-                    <span id="nc-aw-sellos" style="font-size:.58rem;font-weight:700;color:#ffca48;opacity:.8">0/10 <span style="font-size:.42rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px 5px;gap:4px">
+                    <div style="display:flex;align-items:center;gap:5px;min-width:0;flex:1;overflow:hidden">
+                      <div id="nc-aw-logo" style="width:20px;height:20px;border-radius:4px;overflow:hidden;flex-shrink:0;display:none;background:rgba(255,255,255,.15)">
+                        <img style="width:100%;height:100%;object-fit:contain">
+                      </div>
+                      <span id="nc-aw-cardname" style="font-size:.62rem;font-weight:800;letter-spacing:.04em;color:#ffca48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">MI TARJETA</span>
+                    </div>
+                    <span id="nc-aw-sellos" style="font-size:.58rem;font-weight:700;color:#ffca48;opacity:.8;flex-shrink:0">0/10 <span style="font-size:.42rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
                   </div>
                   <div id="nc-strip-wrap" style="width:100%;line-height:0"></div>
                   <div style="padding:8px 11px 8px;display:flex;justify-content:space-between;align-items:flex-end">
@@ -1597,21 +1602,46 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         if (awPremio) awPremio.textContent = reward || 'Premio';
 
         // Redraw strip canvas
+        // ── Logo in pass preview ──────────────────────────────────────────
+        const logoUrl = document.getElementById('nc-logo-url')?.value || '';
+        const awLogoEl = document.getElementById('nc-aw-logo');
+        if (awLogoEl) {
+          if (logoUrl) {
+            awLogoEl.style.display = '';
+            const li = awLogoEl.querySelector('img');
+            if (li && li.src !== logoUrl) li.src = logoUrl;
+          } else {
+            awLogoEl.style.display = 'none';
+          }
+        }
+
+        // ── Strip canvas ──────────────────────────────────────────────────
         const stripWrap = document.getElementById('nc-strip-wrap');
         if (stripWrap) {
-          stripWrap.innerHTML = '';
-          const w = awPass ? (awPass.offsetWidth || 164) : 164;
-          const h = Math.round(w * 0.50);
-          // Get strip bg URL from file reader if selected
+          // Get strip bg URL
           let ncBgUrl = '';
-          if (_ncStripBgFile && !ncBgUrl) {
-            // Already read into _ncBgPreviewUrl by ncHandleStripBg
+          if (_ncStripBgFile) {
             const prev = document.getElementById('nc-strip-bg-preview');
             const img = prev && prev.querySelector('img');
             if (img) ncBgUrl = img.src;
           }
-          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0, strip_bg_url: ncBgUrl };
-          const canvas = _buildStripCanvas(cardObj, w, h);
+          // Use a PERSISTENT card object so _strip_bg_img survives across calls
+          if (!window._ncPreviewCard) window._ncPreviewCard = {};
+          const pCard = window._ncPreviewCard;
+          // If strip bg URL changed, reset cached image
+          if (ncBgUrl !== (pCard.strip_bg_url || '')) delete pCard._strip_bg_img;
+          // Update properties
+          pCard.bg_color = bg; pCard.accent_color = accent;
+          pCard.name = name || 'Mi Tarjeta'; pCard.reward_name = reward || 'Premio';
+          pCard.stamps_per_reward = stamps; pCard.filled = 0;
+          pCard.strip_bg_url = ncBgUrl;
+          // When bg image finishes loading, re-run the preview
+          pCard._onBgLoad = () => ncUpdatePreview();
+
+          stripWrap.innerHTML = '';
+          const w = awPass ? (awPass.offsetWidth || 164) : 164;
+          const h = Math.round(w * 0.50);
+          const canvas = _buildStripCanvas(pCard, w, h);
           canvas.style.cssText = 'width:100%;display:block';
           stripWrap.appendChild(canvas);
         }
@@ -1763,9 +1793,14 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               <div style="background:#1c1c1e;border-radius:40px;padding:10px;box-shadow:0 20px 48px rgba(0,0,0,.4);width:180px;flex-shrink:0">
                 <div style="background:#f2f2f7;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:12px 7px;min-height:300px">
                   <div id="ec-aw-pass" style="background:#26170c;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.28);font-family:-apple-system,Helvetica,sans-serif">
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px 4px">
-                      <span id="ec-aw-cardname" style="font-size:.58rem;font-weight:800;letter-spacing:.04em;color:#ffca48">MI TARJETA</span>
-                      <span id="ec-aw-sellos" style="font-size:.54rem;font-weight:700;color:#ffca48;opacity:.8">0/10 <span style="font-size:.38rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px 4px;gap:4px">
+                      <div style="display:flex;align-items:center;gap:4px;min-width:0;flex:1;overflow:hidden">
+                        <div id="ec-aw-logo" style="width:18px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0;display:none;background:rgba(255,255,255,.15)">
+                          <img style="width:100%;height:100%;object-fit:contain">
+                        </div>
+                        <span id="ec-aw-cardname" style="font-size:.58rem;font-weight:800;letter-spacing:.04em;color:#ffca48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">MI TARJETA</span>
+                      </div>
+                      <span id="ec-aw-sellos" style="font-size:.54rem;font-weight:700;color:#ffca48;opacity:.8;flex-shrink:0">0/10 <span style="font-size:.38rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
                     </div>
                     <div id="ec-strip-wrap" style="width:100%;line-height:0"></div>
                     <div style="padding:7px 10px 7px;display:flex;justify-content:space-between;align-items:flex-end">
@@ -1821,7 +1856,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         document.getElementById('ec-text-txt').value = tx;
         // Reset messages
         document.getElementById('ec-msg').textContent = '';
-        // Strip background image
+        // Strip background image — reset persistent preview card for this new card
+        window._ecPreviewCard = {};
         window._ecStripBgUrl = card.strip_bg_url || '';
         ecRenderStripBgPreview(window._ecStripBgUrl);
         // Load email config
@@ -1911,13 +1947,37 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         const awPremio = document.getElementById('ec-aw-premio');
         if (awPremio) awPremio.textContent = reward || 'Premio';
 
+        // ── Logo in pass preview (biz logo if available) ─────────────────
+        const ecLogoEl = document.getElementById('ec-aw-logo');
+        if (ecLogoEl) {
+          const bizLogoUrl = (typeof BIZ_LOGO_URL !== 'undefined' && BIZ_LOGO_URL) ? BIZ_LOGO_URL : '';
+          if (bizLogoUrl) {
+            ecLogoEl.style.display = '';
+            const li = ecLogoEl.querySelector('img');
+            if (li && li.src !== bizLogoUrl) li.src = bizLogoUrl;
+          } else {
+            ecLogoEl.style.display = 'none';
+          }
+        }
+
+        // ── Strip canvas ──────────────────────────────────────────────────
         const stripWrap = document.getElementById('ec-strip-wrap');
         if (stripWrap) {
+          const ecBgUrl = window._ecStripBgUrl || '';
+          // Persistent card object so _strip_bg_img survives across calls
+          if (!window._ecPreviewCard) window._ecPreviewCard = {};
+          const pCard = window._ecPreviewCard;
+          if (ecBgUrl !== (pCard.strip_bg_url || '')) delete pCard._strip_bg_img;
+          pCard.bg_color = bg; pCard.accent_color = accent;
+          pCard.name = name || 'Mi Tarjeta'; pCard.reward_name = reward || 'Premio';
+          pCard.stamps_per_reward = stamps; pCard.filled = 0;
+          pCard.strip_bg_url = ecBgUrl;
+          pCard._onBgLoad = () => ecUpdatePreview();
+
           stripWrap.innerHTML = '';
           const w = awPass ? (awPass.offsetWidth || 156) : 156;
           const h = Math.round(w * 0.50);
-          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0, strip_bg_url: window._ecStripBgUrl || '' };
-          const canvas = _buildStripCanvas(cardObj, w, h);
+          const canvas = _buildStripCanvas(pCard, w, h);
           canvas.style.cssText = 'width:100%;display:block';
           stripWrap.appendChild(canvas);
         }
@@ -3579,6 +3639,7 @@ const BIZ_SLUG = '{{ biz_slug or "" }}';
 const BIZ_PLAN_INITIAL = '{{ biz_plan or "free" }}';
 const BIZ_PRIMARY_COLOR = '{{ primary_color or "#26170c" }}';
 const BIZ_ACCENT_COLOR  = '{{ accent_color  or "#ffca48" }}';
+const BIZ_LOGO_URL      = '{{ logo_url or "" }}';
 let BIZ_PLAN = BIZ_PLAN_INITIAL;
 let PIN = '';
 let currentPage = 1;
@@ -6003,7 +6064,12 @@ function _buildStripCanvas(card, w, h) {
       if (!card._strip_bg_img) {
         card._strip_bg_img = new Image();
         card._strip_bg_img.onload = () => {
-          // Trigger a re-render of all canvases that use this card
+          // If caller gave us a re-render callback (e.g. live preview), use it
+          if (typeof card._onBgLoad === 'function') {
+            card._onBgLoad();
+            return;
+          }
+          // Otherwise re-render gallery canvases for this card id
           document.querySelectorAll('[data-card-id="' + card.id + '"] canvas').forEach(c => {
             const p = c.parentElement;
             if (p && p.id && p.id.includes('strip-wrap')) {
@@ -6381,6 +6447,8 @@ function openNewCardModal(){
 }
 function closeNewCardModal(){
   document.getElementById('modal-nueva-tarjeta').style.display = 'none';
+  // Clear persistent preview card so next open starts fresh
+  window._ncPreviewCard = {};
 }
 async function saveNewCard(){
   const name   = document.getElementById('nc-name').value.trim();

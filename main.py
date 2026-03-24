@@ -3314,6 +3314,7 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         "stripe_configured": bool(STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO),
         "primary_color": biz.primary_color or "#26170c",
         "accent_color":  biz.accent_color  or "#ffca48",
+        "logo_url":      biz.logo_url or "",
     })
 
 
@@ -3610,6 +3611,7 @@ async def dashboard_rich(request: Request):
         "biz_email": "",
         "primary_color": "#3A3426",
         "accent_color": "#F5E6C8",
+        "logo_url": "",
     })
 
 
