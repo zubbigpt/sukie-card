@@ -106,6 +106,8 @@ class CardProgram(Base):
     # Expiry / visit rules
     expiry_days           = Column(Integer, nullable=True)    # stamps expire after N days (null = never)
     max_stamps_per_visit  = Column(Integer, nullable=True)    # cap per visit (null = unlimited)
+    # Strip background image (stored as base64 data URL or external URL)
+    strip_bg_url          = Column(Text, nullable=True)
     created_at            = Column(DateTime(timezone=True), server_default=func.now())
     updated_at            = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

@@ -1380,7 +1380,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
 
             <!-- Logo upload -->
-            <div style="margin-bottom:22px">
+            <div style="margin-bottom:14px">
               <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:8px">LOGO DEL NEGOCIO (opcional)</label>
               <div id="nc-logo-drop" onclick="document.getElementById('nc-logo-input').click()"
                 style="border:2px dashed #e0e0e0;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;background:#fafafa"
@@ -1393,6 +1393,23 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <input id="nc-logo-input" type="file" accept="image/*" style="display:none" onchange="ncHandleLogo(this)">
               </div>
               <input id="nc-logo-url" type="hidden" value="">
+            </div>
+
+            <!-- Strip background image upload -->
+            <div style="margin-bottom:22px">
+              <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">IMAGEN DE FONDO DEL STRIP (opcional)</label>
+              <div style="font-size:.68rem;color:#aaa;margin-bottom:8px">Se verá detrás de los círculos de sellos en Apple Wallet. Recomendado: 750×246 px.</div>
+              <div id="nc-strip-bg-drop" onclick="document.getElementById('nc-strip-bg-input').click()"
+                style="border:2px dashed #e0e0e0;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;background:#fafafa"
+                onmouseover="this.style.borderColor='#aaa'" onmouseout="this.style.borderColor='#e0e0e0'">
+                <div id="nc-strip-bg-preview" style="width:80px;height:26px;border-radius:4px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#aaa;flex-shrink:0;overflow:hidden;border:1px solid #e0e0e0">Sin imagen</div>
+                <div style="flex:1">
+                  <div style="font-size:.82rem;font-weight:600;color:#555">Haz clic para subir imagen de fondo</div>
+                  <div style="font-size:.68rem;color:#aaa;margin-top:2px">JPG o PNG — máx. 8 MB</div>
+                </div>
+                <button id="nc-strip-bg-remove" onclick="event.stopPropagation();ncRemoveStripBg()" style="display:none;background:#fee;border:none;border-radius:4px;padding:3px 7px;font-size:.65rem;font-weight:700;color:#c00;cursor:pointer">✕ Quitar</button>
+                <input id="nc-strip-bg-input" type="file" accept="image/*" style="display:none" onchange="ncHandleStripBg(this)">
+              </div>
             </div>
 
             <button onclick="saveNewCard()" id="btn-save-card"
@@ -1557,10 +1574,11 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         const awPass = document.getElementById('nc-aw-pass');
         if (awPass) awPass.style.background = bg;
 
-        // Update accent-colored text elements
+        const textColor = document.getElementById('nc-text')?.value || '#ffffff';
+        // Card name uses text color; PREMIO uses text color; labels use accent
         ['nc-aw-cardname','nc-aw-premio'].forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.style.color = accent;
+          if (el) el.style.color = textColor;
         });
 
         // Card name
@@ -1584,7 +1602,15 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           stripWrap.innerHTML = '';
           const w = awPass ? (awPass.offsetWidth || 164) : 164;
           const h = Math.round(w * 0.50);
-          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0 };
+          // Get strip bg URL from file reader if selected
+          let ncBgUrl = '';
+          if (_ncStripBgFile && !ncBgUrl) {
+            // Already read into _ncBgPreviewUrl by ncHandleStripBg
+            const prev = document.getElementById('nc-strip-bg-preview');
+            const img = prev && prev.querySelector('img');
+            if (img) ncBgUrl = img.src;
+          }
+          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0, strip_bg_url: ncBgUrl };
           const canvas = _buildStripCanvas(cardObj, w, h);
           canvas.style.cssText = 'width:100%;display:block';
           stripWrap.appendChild(canvas);
@@ -1702,6 +1728,24 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                     </div>
                   </div>
                 </div>
+                <!-- Strip background image upload -->
+                <div style="margin-bottom:14px">
+                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">IMAGEN DE FONDO DEL STRIP</label>
+                  <div style="font-size:.65rem;color:#aaa;margin-bottom:7px">Aparece detrás de los sellos en Apple Wallet. JPG/PNG recomendado 750×246 px.</div>
+                  <div id="ec-strip-bg-drop" onclick="document.getElementById('ec-strip-bg-input').click()"
+                    style="border:2px dashed #e0e0e0;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s;background:#fafafa"
+                    onmouseover="this.style.borderColor='#aaa'" onmouseout="this.style.borderColor='#e0e0e0'">
+                    <div id="ec-strip-bg-preview" style="width:80px;height:26px;border-radius:4px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:.58rem;color:#aaa;flex-shrink:0;overflow:hidden;border:1px solid #e0e0e0">Sin imagen</div>
+                    <div style="flex:1">
+                      <div style="font-size:.78rem;font-weight:600;color:#555">Haz clic para subir imagen</div>
+                      <div style="font-size:.65rem;color:#aaa;margin-top:1px">JPG o PNG — máx. 8 MB</div>
+                    </div>
+                    <button id="ec-strip-bg-remove" onclick="event.stopPropagation();ecRemoveStripBg()" style="display:none;background:#fee;border:none;border-radius:4px;padding:3px 7px;font-size:.62rem;font-weight:700;color:#c00;cursor:pointer">✕ Quitar</button>
+                    <input id="ec-strip-bg-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="ecHandleStripBg(this)">
+                  </div>
+                  <div id="ec-strip-bg-msg" style="min-height:14px;margin-top:5px;font-size:.65rem;color:#888;text-align:center"></div>
+                </div>
+
                 <button onclick="saveEditCard()" id="btn-ec-save"
                   style="width:100%;padding:13px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:800;cursor:pointer">
                   Guardar cambios
@@ -1777,6 +1821,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         document.getElementById('ec-text-txt').value = tx;
         // Reset messages
         document.getElementById('ec-msg').textContent = '';
+        // Strip background image
+        window._ecStripBgUrl = card.strip_bg_url || '';
+        ecRenderStripBgPreview(window._ecStripBgUrl);
         // Load email config
         loadCardEmailConfig();
         // Show card tab
@@ -1846,9 +1893,10 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         const awPass = document.getElementById('ec-aw-pass');
         if (awPass) awPass.style.background = bg;
 
+        const textColor = document.getElementById('ec-text')?.value || '#ffffff';
         ['ec-aw-cardname','ec-aw-premio'].forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.style.color = accent;
+          if (el) el.style.color = textColor;
         });
 
         const awName = document.getElementById('ec-aw-cardname');
@@ -1868,11 +1916,100 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           stripWrap.innerHTML = '';
           const w = awPass ? (awPass.offsetWidth || 156) : 156;
           const h = Math.round(w * 0.50);
-          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0 };
+          const cardObj = { bg_color: bg, accent_color: accent, name: name || 'Mi Tarjeta', reward_name: reward || 'Premio', stamps_per_reward: stamps, filled: 0, strip_bg_url: window._ecStripBgUrl || '' };
           const canvas = _buildStripCanvas(cardObj, w, h);
           canvas.style.cssText = 'width:100%;display:block';
           stripWrap.appendChild(canvas);
         }
+      }
+
+      // ── Strip background image: Edit Card ────────────────────────────────────
+      function ecRenderStripBgPreview(dataUrl) {
+        const prev = document.getElementById('ec-strip-bg-preview');
+        const removeBtn = document.getElementById('ec-strip-bg-remove');
+        if (!prev) return;
+        if (dataUrl) {
+          prev.innerHTML = '';
+          prev.style.background = 'none';
+          const img = document.createElement('img');
+          img.src = dataUrl; img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+          prev.appendChild(img);
+          if (removeBtn) removeBtn.style.display = '';
+        } else {
+          prev.innerHTML = 'Sin imagen'; prev.style.background = '#f0f0f0';
+          if (removeBtn) removeBtn.style.display = 'none';
+        }
+        ecUpdatePreview();
+      }
+
+      async function ecHandleStripBg(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const msg = document.getElementById('ec-strip-bg-msg');
+        if (msg) msg.textContent = 'Subiendo…';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+          const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${ecCurrentCardId}/strip-bg?pin=${PIN}`, {method:'POST', body: fd});
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || 'Error');
+          window._ecStripBgUrl = data.strip_bg_url;
+          ecRenderStripBgPreview(data.strip_bg_url);
+          if (msg) msg.textContent = '✓ Imagen guardada';
+          setTimeout(() => { if(msg) msg.textContent = ''; }, 2500);
+        } catch(e) {
+          if (msg) msg.textContent = '✗ ' + e.message;
+        }
+        input.value = '';
+      }
+
+      async function ecRemoveStripBg() {
+        const msg = document.getElementById('ec-strip-bg-msg');
+        if (msg) msg.textContent = 'Eliminando…';
+        try {
+          await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${ecCurrentCardId}/strip-bg?pin=${PIN}`, {method:'DELETE'});
+          window._ecStripBgUrl = '';
+          ecRenderStripBgPreview('');
+          if (msg) msg.textContent = '✓ Imagen eliminada';
+          setTimeout(() => { if(msg) msg.textContent = ''; }, 2500);
+        } catch(e) {
+          if (msg) msg.textContent = '✗ Error';
+        }
+      }
+
+      // ── Strip background image: New Card ─────────────────────────────────────
+      let _ncStripBgFile = null;
+
+      function ncRenderStripBgPreview(dataUrl) {
+        const prev = document.getElementById('nc-strip-bg-preview');
+        const removeBtn = document.getElementById('nc-strip-bg-remove');
+        if (!prev) return;
+        if (dataUrl) {
+          prev.innerHTML = '';
+          prev.style.background = 'none';
+          const img = document.createElement('img');
+          img.src = dataUrl; img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+          prev.appendChild(img);
+          if (removeBtn) removeBtn.style.display = '';
+        } else {
+          prev.innerHTML = 'Sin imagen'; prev.style.background = '#f0f0f0';
+          if (removeBtn) removeBtn.style.display = 'none';
+        }
+        ncUpdatePreview();
+      }
+
+      function ncHandleStripBg(input) {
+        if (!input.files || !input.files[0]) return;
+        _ncStripBgFile = input.files[0];
+        const reader = new FileReader();
+        reader.onload = e => ncRenderStripBgPreview(e.target.result);
+        reader.readAsDataURL(_ncStripBgFile);
+        input.value = '';
+      }
+
+      function ncRemoveStripBg() {
+        _ncStripBgFile = null;
+        ncRenderStripBgPreview('');
       }
 
       async function saveEditCard() {
@@ -5845,10 +5982,47 @@ function _buildStripCanvas(card, w, h) {
 
   const spr    = card.stamps_per_reward || 10;
   const filled = card.filled || 0;
+  const hasBg  = !!(card.strip_bg_url);
 
-  // Background
-  ctx.fillStyle = rgba(BG);
-  ctx.fillRect(0, 0, w, h);
+  // ── Background (solid color or image with overlay) ────────────────────
+  if (hasBg) {
+    // Draw image asynchronously if not yet loaded; for sync rendering use solid bg
+    if (card._strip_bg_img && card._strip_bg_img.complete) {
+      // Cover: scale to fill
+      const img = card._strip_bg_img;
+      const sf  = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+      const nw  = img.naturalWidth * sf, nh = img.naturalHeight * sf;
+      ctx.drawImage(img, (w - nw) / 2, (h - nh) / 2, nw, nh);
+      // Semi-transparent BG color overlay (40%)
+      ctx.fillStyle = rgba(BG, 0.40);
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      // Image not loaded yet — fill BG color and try to load async
+      ctx.fillStyle = rgba(BG);
+      ctx.fillRect(0, 0, w, h);
+      if (!card._strip_bg_img) {
+        card._strip_bg_img = new Image();
+        card._strip_bg_img.onload = () => {
+          // Trigger a re-render of all canvases that use this card
+          document.querySelectorAll('[data-card-id="' + card.id + '"] canvas').forEach(c => {
+            const p = c.parentElement;
+            if (p && p.id && p.id.includes('strip-wrap')) {
+              p.innerHTML = '';
+              const nc = _buildStripCanvas(card, p.offsetWidth || w, parseInt(c.style.height) || h);
+              nc.style.cssText = 'width:100%;display:block';
+              p.appendChild(nc);
+            }
+          });
+        };
+        card._strip_bg_img.src = card.strip_bg_url;
+      }
+    }
+  } else {
+    ctx.fillStyle = rgba(BG);
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const EMPTY_BORDER_ALPHA = hasBg ? 0.65 : 0.52;
 
   // ── Circles fill the full strip — no text ──────────────────────────────
   const PAD_H  = Math.round(w * 0.045);
@@ -5892,7 +6066,7 @@ function _buildStripCanvas(card, w, h) {
       ctx.lineTo(cx + DOT_R*0.38, cy - DOT_R*0.26);
       ctx.stroke();
     } else {
-      ctx.strokeStyle = rgba(EBORD, 0.52);
+      ctx.strokeStyle = rgba(hasBg ? [255,255,255] : EBORD, EMPTY_BORDER_ALPHA);
       ctx.lineWidth = Math.max(1.5, w / 320);
       ctx.stroke();
     }
@@ -5908,6 +6082,7 @@ function buildCardMockup(card){
 
   const bgCol     = card.bg_color     || '#26170c';
   const accentCol = card.accent_color || '#ffca48';
+  const textCol   = card.text_color   || '#ffffff';  // user-chosen text color
   const bizName   = '{{ biz_name }}';
   const ddId = `dd-${card.id}`;
   const cid  = card.id;
@@ -5948,18 +6123,18 @@ function buildCardMockup(card){
         font-family:-apple-system,Helvetica,sans-serif;position:relative">
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 6px">
-        <span style="font-size:.72rem;font-weight:800;letter-spacing:.04em;color:${accentCol}">${(card.name||'TARJETA').toUpperCase()}</span>
-        <span style="font-size:.62rem;font-weight:700;color:${accentCol};opacity:.75">${card.filled||0}/${spr} <span style="font-size:.48rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
+        <span style="font-size:.72rem;font-weight:800;letter-spacing:.04em;color:${textCol}">${(card.name||'TARJETA').toUpperCase()}</span>
+        <span style="font-size:.62rem;font-weight:700;color:${textCol};opacity:.8">${card.filled||0}/${spr} <span style="font-size:.48rem;font-weight:600;letter-spacing:.08em;opacity:.65;color:${accentCol}">SELLOS</span></span>
       </div>
       <div style="width:100%;line-height:0" id="strip-wrap-${cid}"></div>
       <div style="padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:flex-end">
         <div>
-          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:2px">TITULAR</div>
-          <div style="font-size:.68rem;font-weight:700;color:${accentCol};opacity:.9">${(card.titular||card.customer_name||bizName).toUpperCase()}</div>
+          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:2px">TITULAR</div>
+          <div style="font-size:.68rem;font-weight:700;color:${textCol};opacity:.95">${(card.titular||card.customer_name||bizName).toUpperCase()}</div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.55;margin-bottom:2px">PREMIO</div>
-          <div style="font-size:.68rem;font-weight:700;color:${accentCol}">${card.reward_name||'Premio'}</div>
+          <div style="font-size:.44rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${accentCol};opacity:.7;margin-bottom:2px">PREMIO</div>
+          <div style="font-size:.68rem;font-weight:700;color:${textCol}">${card.reward_name||'Premio'}</div>
         </div>
       </div>
       <div style="margin:0 14px 10px;background:white;border-radius:6px;padding:6px 10px;display:flex;align-items:center;justify-content:center;gap:6px">
@@ -6234,6 +6409,15 @@ async function saveNewCard(){
     });
     const data = await res.json();
     if(data.id){
+      // If a strip background image was selected, upload it now
+      if (_ncStripBgFile) {
+        try {
+          const fd = new FormData();
+          fd.append('file', _ncStripBgFile);
+          await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${data.id}/strip-bg?pin=${PIN}`, {method:'POST', body: fd});
+          _ncStripBgFile = null;
+        } catch(e) { /* non-fatal */ }
+      }
       closeNewCardModal();
       loadTarjetas();
       showToast('Tarjeta creada ✓', 'success');

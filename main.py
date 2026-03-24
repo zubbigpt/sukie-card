@@ -273,6 +273,7 @@ def run_migrations():
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS expiry_days INTEGER",
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS max_stamps_per_visit INTEGER",
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()",
+        "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS strip_bg_url TEXT",
         # Campaigns: scheduled sending support
         "ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ",
         # ── Scanner device authorization ──────────────────────────────────────────
@@ -911,7 +912,9 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
         if prog:
             reward_name = prog.reward_name or reward_name
 
-    # Pull geo config from the business record for iOS lock-screen notifications
+    # Pull strip background, text color + geo config from the business/program record
+    strip_bg_url_val = ""
+    text_color_val   = "#ffffff"
     biz_lat = biz_lng = biz_geo_msg = None
     biz_geo_radius = 300
     if customer and customer.business_id:
@@ -921,6 +924,12 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             biz_lng        = getattr(_geo_biz, "longitude", None)
             biz_geo_msg    = getattr(_geo_biz, "geo_push_msg", None) or ""
             biz_geo_radius = getattr(_geo_biz, "geo_radius_m", 300) or 300
+        _prog2 = db.query(models.CardProgram).filter(
+            models.CardProgram.business_id == customer.business_id
+        ).first()
+        if _prog2:
+            strip_bg_url_val = getattr(_prog2, "strip_bg_url", None) or ""
+            text_color_val   = getattr(_prog2, "text_color", None) or "#ffffff"
 
     try:
         from wallet_pass import generate_pkpass
@@ -934,10 +943,12 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             biz_name=biz_name,
             primary_color=primary_color,
             accent_color=accent_color,
+            text_color=text_color_val,
             latitude=biz_lat,
             longitude=biz_lng,
             geo_push_msg=biz_geo_msg or "",
             geo_radius_m=biz_geo_radius,
+            strip_bg_url=strip_bg_url_val,
         )
         return FResponse(
             content=pkpass_bytes,
@@ -4280,7 +4291,7 @@ def list_card_programs(slug: str, pin: str = "", db: Session = Depends(get_db)):
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     rows = db.execute(text(
-        "SELECT id, name, emoji, stamps_per_reward, reward_name, bg_color, accent_color, text_color, status, sort_order, created_at "
+        "SELECT id, name, emoji, stamps_per_reward, reward_name, bg_color, accent_color, text_color, status, sort_order, strip_bg_url, created_at "
         "FROM card_programs WHERE business_id=:bid ORDER BY sort_order, created_at"
     ), {"bid": str(biz.id)}).fetchall()
     return [dict(r._mapping) for r in rows]
@@ -4345,6 +4356,73 @@ async def update_card_program(slug: str, program_id: str, request: Request, pin:
     })
     db.commit()
     return {"status": "updated"}
+
+
+@app.post("/api/biz/{slug}/card-programs/{program_id}/strip-bg")
+async def upload_strip_bg(
+    slug: str, program_id: str,
+    pin: str = "",
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload a background image for the stamp strip.
+    Accepts JPG/PNG/WEBP, resizes to 750×246 (2×), stores as base64 data URL in DB."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    # Validate content type
+    ct = file.content_type or ""
+    if not ct.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Solo se permiten imágenes (JPG, PNG, WEBP)")
+
+    raw = await file.read()
+    if len(raw) > 8 * 1024 * 1024:   # 8 MB limit
+        raise HTTPException(status_code=413, detail="Imagen demasiado grande (máx 8 MB)")
+
+    try:
+        from PIL import Image as _PILImg
+        import io as _io
+        import base64 as _b64
+        img = _PILImg.open(_io.BytesIO(raw)).convert("RGB")
+        # Resize/crop to 750×246 (strip @2x) maintaining aspect ratio (cover)
+        TW, TH = 750, 246
+        iw, ih = img.size
+        scale_f = max(TW / iw, TH / ih)
+        nw, nh = round(iw * scale_f), round(ih * scale_f)
+        img = img.resize((nw, nh), _PILImg.LANCZOS)
+        left = (nw - TW) // 2
+        top  = (nh - TH) // 2
+        img  = img.crop((left, top, left + TW, top + TH))
+        buf = _io.BytesIO()
+        img.save(buf, format="JPEG", quality=82, optimize=True)
+        data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Error procesando imagen: {e}")
+
+    db.execute(
+        text("UPDATE card_programs SET strip_bg_url=:url WHERE id=:id AND business_id=:bid"),
+        {"url": data_url, "id": program_id, "bid": str(biz.id)}
+    )
+    db.commit()
+    # Return just the data URL (truncated for the response)
+    return {"status": "ok", "strip_bg_url": data_url}
+
+
+@app.delete("/api/biz/{slug}/card-programs/{program_id}/strip-bg")
+def delete_strip_bg(slug: str, program_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Remove the strip background image from a card program."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(
+        text("UPDATE card_programs SET strip_bg_url=NULL WHERE id=:id AND business_id=:bid"),
+        {"id": program_id, "bid": str(biz.id)}
+    )
+    db.commit()
+    return {"status": "deleted"}
 
 
 @app.delete("/api/biz/{slug}/card-programs/{program_id}")

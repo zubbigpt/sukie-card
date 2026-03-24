@@ -85,11 +85,20 @@ def generate_strip_image(
     bg_color: str = "#26170c",
     accent_color: str = "#ffca48",
     scale: int = 2,
+    strip_bg_bytes: bytes | None = None,
 ) -> bytes:
     """Generate a loyalty-card strip image for Apple Wallet.
     Clean elegant design: only large stamp circles on background — no text.
+    If strip_bg_bytes is provided, uses it as the background image (with a
+    semi-transparent color overlay so circles remain visible).
     All text (name, counter, reward) is handled by pass.json fields.
-    Returns PNG bytes. Falls back to the static file if PIL is unavailable."""
+    Returns PNG bytes. Falls back to the static file if PIL is unavailable.
+
+    Official Apple Wallet storeCard strip dimensions:
+      strip.png   : 375 × 123 px  (@1x)
+      strip@2x.png: 750 × 246 px  (@2x)
+      strip@3x.png: 1125 × 369 px (@3x)
+    """
     if not _PIL_OK:
         path = ASSETS_DIR / ("strip@2x.png" if scale == 2 else "strip.png")
         if path.exists():
@@ -113,15 +122,36 @@ def generate_strip_image(
     BG     = _hex(bg_color)
     ACCENT = _hex(accent_color)
 
-    EMPTY_BORD  = _lighten(BG, 0.40)    # visible but subtle border for empty stamp
+    EMPTY_BORD  = _lighten(BG, 0.40) if not strip_bg_bytes else (255, 255, 255)
     FILLED_FILL = ACCENT
     FILLED_ICON = _darken(ACCENT, 0.55)
 
-    # Canvas: 320×123 logical px (standard Apple Wallet strip)
-    sw, sh = 320 * scale, 123 * scale
+    # Canvas: 375×123 logical px (official Apple Wallet storeCard strip)
+    sw, sh = 375 * scale, 123 * scale
     s = scale
 
-    img  = Image.new("RGB", (sw, sh), BG)
+    # ── Background layer ──────────────────────────────────────────────────────
+    if strip_bg_bytes:
+        try:
+            bg_img = Image.open(io.BytesIO(strip_bg_bytes)).convert("RGB")
+            # Cover: resize so image fills the strip completely
+            iw, ih = bg_img.size
+            sf = max(sw / iw, sh / ih)
+            nw, nh = round(iw * sf), round(ih * sf)
+            bg_img = bg_img.resize((nw, nh), Image.LANCZOS)
+            left = (nw - sw) // 2
+            top  = (nh - sh) // 2
+            bg_img = bg_img.crop((left, top, left + sw, top + sh))
+            img = bg_img.copy()
+            # Semi-transparent BG color overlay for contrast (40% opacity)
+            overlay = Image.new("RGBA", (sw, sh), (*BG, 102))
+            img.paste(overlay, (0, 0), overlay)
+            img = img.convert("RGB")
+        except Exception:
+            img = Image.new("RGB", (sw, sh), BG)
+    else:
+        img = Image.new("RGB", (sw, sh), BG)
+
     draw = ImageDraw.Draw(img, "RGBA")
 
     # ── Stamp circles: fill the full strip — no text, just circles ───────────
@@ -165,7 +195,8 @@ def generate_strip_image(
         else:
             # Empty: outline only — clean, no fill
             draw.ellipse([cx - r, cy - r, cx + r, cy + r],
-                         outline=(*EMPTY_BORD, 130), width=max(2, s))
+                         outline=(*EMPTY_BORD, 150 if strip_bg_bytes else 130),
+                         width=max(2, s))
 
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="PNG")
@@ -217,6 +248,7 @@ def build_pass_json(
     biz_name: str,
     primary_color: str = "#26170c",
     accent_color: str = "#ffca48",
+    text_color: str = "#ffffff",
     auth_token: str = "",
     latitude: float | None = None,
     longitude: float | None = None,
@@ -237,6 +269,7 @@ def build_pass_json(
 
     bg = hex_to_rgb(primary_color)
     fg = hex_to_rgb(accent_color)
+    tc = hex_to_rgb(text_color or "#ffffff")
 
     full_name = f"{first_name} {last_name}".strip() or "Cliente"
     serial = str(card_id).replace("-", "")[:20]
@@ -250,8 +283,8 @@ def build_pass_json(
         "description": "Tarjeta de Fidelidad",
         "logoText": (biz_name or "ZubCard")[:20],
         "backgroundColor": bg,
-        "foregroundColor": "rgb(255,243,208)",
-        "labelColor": "rgb(160,141,131)",
+        "foregroundColor": tc,       # user-chosen text color
+        "labelColor": fg,            # accent color for field labels
         "storeCard": {
             "headerFields": [
                 {
@@ -342,14 +375,17 @@ def generate_pkpass(
     biz_name: str = "ZubCard",
     primary_color: str = "#26170c",
     accent_color: str = "#ffca48",
+    text_color: str = "#ffffff",
     latitude: float | None = None,
     longitude: float | None = None,
     geo_push_msg: str = "",
     geo_radius_m: int = 300,
+    strip_bg_url: str = "",
 ) -> bytes:
     """
     Generate a signed .pkpass file and return it as bytes.
     Raises ValueError if Apple certificates are not configured.
+    strip_bg_url: base64 data URL or https URL for the strip background image.
     """
     private_key, certificate, wwdr_cert = _load_certificates()
 
@@ -364,6 +400,7 @@ def generate_pkpass(
         biz_name=biz_name,
         primary_color=primary_color,
         accent_color=accent_color,
+        text_color=text_color,
         latitude=latitude,
         longitude=longitude,
         geo_push_msg=geo_push_msg,
@@ -378,6 +415,20 @@ def generate_pkpass(
         if asset_path.exists():
             assets[fname] = asset_path.read_bytes()
 
+    # Decode strip background image if provided
+    _strip_bg_bytes: bytes | None = None
+    if strip_bg_url:
+        try:
+            if strip_bg_url.startswith("data:"):
+                _b64_part = strip_bg_url.split(",", 1)[1]
+                _strip_bg_bytes = base64.b64decode(_b64_part)
+            else:
+                import urllib.request as _urlreq
+                with _urlreq.urlopen(strip_bg_url, timeout=5) as _r:
+                    _strip_bg_bytes = _r.read()
+        except Exception:
+            _strip_bg_bytes = None  # fall back to solid color background
+
     # Dynamic strip: clean minimal design
     customer_name = f"{first_name} {last_name}".strip()
     try:
@@ -386,13 +437,15 @@ def generate_pkpass(
             customer_name=customer_name,
             stamps=stamps, stamps_total=stamps_per_reward,
             reward_name=reward_name, bg_color=primary_color,
-            accent_color=accent_color, scale=1)
+            accent_color=accent_color, scale=1,
+            strip_bg_bytes=_strip_bg_bytes)
         assets["strip@2x.png"] = generate_strip_image(
             card_name="TARJETA DE FIDELIDAD", biz_name=biz_name,
             customer_name=customer_name,
             stamps=stamps, stamps_total=stamps_per_reward,
             reward_name=reward_name, bg_color=primary_color,
-            accent_color=accent_color, scale=2)
+            accent_color=accent_color, scale=2,
+            strip_bg_bytes=_strip_bg_bytes)
     except Exception as _e:
         # Fall back to static strip if generation fails
         for fname in ["strip.png", "strip@2x.png"]:

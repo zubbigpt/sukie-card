@@ -59,16 +59,15 @@
 
 <!-- CTA BUTTONS -->
 <tr><td style="padding:24px 24px 28px;background:#ffffff;text-align:center">
-  <a href="{{ card_url }}" style="display:inline-block;background:#26170c;color:#fff3d0;padding:15px 32px;border-radius:8px;text-decoration:none;font-weight:800;font-size:14px;margin-bottom:14px;letter-spacing:0.5px">🎫 Ver Mi Tarjeta →</a>
-  <br>
   {% if wallet_url %}
-  <a href="{{ wallet_url }}" style="display:inline-block;background:#000000;color:#ffffff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:0.3px">
-    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="" style="height:0;width:0;display:none">
+  <a href="{{ wallet_url }}" style="display:inline-block;background:#000000;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
     🍎 Añadir a Apple Wallet
   </a>
-  {% else %}
-  <a href="{{ card_url }}" style="display:inline-block;background:#fff3d0;color:#785a00;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">📱 Guardar tarjeta</a>
+  <br>
   {% endif %}
+  <a href="{{ card_url }}" style="display:inline-block;background:#34a853;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px">
+    🤖 Añadir a Android Wallet
+  </a>
 </td></tr>
 
 <!-- HOW IT WORKS -->
