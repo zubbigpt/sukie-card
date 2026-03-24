@@ -254,6 +254,7 @@ def build_pass_json(
     longitude: float | None = None,
     geo_push_msg: str = "",
     geo_radius_m: int = 300,
+    logo_url: str = "",
 ) -> dict:
     """Build the pass.json dict for a loyalty card."""
     pass_type_id = os.environ.get("APPLE_PASS_TYPE_ID", "pass.com.zubiecard.loyalty")
@@ -281,7 +282,9 @@ def build_pass_json(
         "teamIdentifier": team_id,
         "organizationName": biz_name or "Zubie Card",
         "description": "Tarjeta de Fidelidad",
-        "logoText": (biz_name or "ZubCard")[:20],
+        # If a business logo image is provided, suppress the text (image shows instead).
+        # If no logo image, show the business name as text in the top-left.
+        "logoText": "" if logo_url else (biz_name or "ZubCard")[:20],
         "backgroundColor": bg,
         "foregroundColor": tc,       # user-chosen text color
         "labelColor": fg,            # accent color for field labels
@@ -381,6 +384,7 @@ def generate_pkpass(
     geo_push_msg: str = "",
     geo_radius_m: int = 300,
     strip_bg_url: str = "",
+    logo_url: str = "",
 ) -> bytes:
     """
     Generate a signed .pkpass file and return it as bytes.
@@ -405,15 +409,47 @@ def generate_pkpass(
         longitude=longitude,
         geo_push_msg=geo_push_msg,
         geo_radius_m=geo_radius_m,
+        logo_url=logo_url,
     )
     pass_json_bytes = json.dumps(pass_data, ensure_ascii=False, indent=2).encode("utf-8")
 
     # 2. Load image assets (strip is generated dynamically)
     assets: dict[str, bytes] = {}
-    for fname in ["icon.png", "icon@2x.png", "icon@3x.png", "logo.png", "logo@2x.png"]:
+    # Always include icon assets (app icon — not visible in the pass header)
+    for fname in ["icon.png", "icon@2x.png", "icon@3x.png"]:
         asset_path = ASSETS_DIR / fname
         if asset_path.exists():
             assets[fname] = asset_path.read_bytes()
+
+    # Logo: use business logo if provided, otherwise use business name text (no image)
+    if logo_url and _PIL_OK:
+        try:
+            # Decode the logo (data URL or https URL)
+            if logo_url.startswith("data:"):
+                _logo_b64 = logo_url.split(",", 1)[1]
+                _logo_bytes = base64.b64decode(_logo_b64)
+            else:
+                import urllib.request as _urlreq2
+                with _urlreq2.urlopen(logo_url, timeout=5) as _r2:
+                    _logo_bytes = _r2.read()
+
+            # Resize to Apple Wallet logo spec: 160×50 @1x, 320×100 @2x
+            for _fname, _w, _h in [("logo.png", 160, 50), ("logo@2x.png", 320, 100)]:
+                _img = Image.open(io.BytesIO(_logo_bytes)).convert("RGBA")
+                # Fit within bounds preserving aspect ratio, transparent background
+                _img.thumbnail((_w, _h), Image.LANCZOS)
+                _canvas = Image.new("RGBA", (_w, _h), (0, 0, 0, 0))
+                _ox = (_w - _img.width) // 2
+                _oy = (_h - _img.height) // 2
+                _canvas.paste(_img, (_ox, _oy), _img)
+                _buf = io.BytesIO()
+                _canvas.save(_buf, format="PNG")
+                assets[_fname] = _buf.getvalue()
+        except Exception:
+            # Logo decode failed — fall back to text-only (no logo image included)
+            pass
+    # If logo_url is empty or failed: no logo.png/logo@2x.png → Apple Wallet shows
+    # logoText (the business name) in the top-left instead.
 
     # Decode strip background image if provided
     _strip_bg_bytes: bytes | None = None

@@ -942,6 +942,7 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
     biz_name = "Zubie Card"
     primary_color = "#26170c"
     accent_color = "#ffca48"
+    biz_logo_url = ""
     if customer and customer.business_id:
         biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
         if biz:
@@ -949,6 +950,7 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             stamps_per_reward = biz.stamps_per_reward or stamps_per_reward
             primary_color = biz.primary_color or primary_color
             accent_color = biz.accent_color or accent_color
+            biz_logo_url = biz.logo_url or ""
         prog = db.query(models.CardProgram).filter(
             models.CardProgram.business_id == customer.business_id
         ).first()
@@ -992,6 +994,7 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             geo_push_msg=biz_geo_msg or "",
             geo_radius_m=biz_geo_radius,
             strip_bg_url=strip_bg_url_val,
+            logo_url=biz_logo_url,
         )
         return FResponse(
             content=pkpass_bytes,
