@@ -76,18 +76,19 @@ _FONT_REG  = "/usr/share/fonts/truetype/google-fonts/Poppins-Regular.ttf"
 
 
 def generate_strip_image(
-    card_name: str = "FIDELITY CARD",
-    biz_name: str = "Sukie Card",
+    card_name: str = "TARJETA DE FIDELIDAD",
+    biz_name: str = "ZubCard",
+    customer_name: str = "",
     stamps: int = 0,
-    stamps_total: int = 8,
+    stamps_total: int = 10,
     reward_name: str = "Premio",
     bg_color: str = "#26170c",
     accent_color: str = "#ffca48",
     scale: int = 2,
 ) -> bytes:
     """Generate a loyalty-card strip image for Apple Wallet.
-    Clean tile-style design: solid bg, square stamp tiles with checkmark,
-    chip top-right, TITULAR/PREMIOS footer.
+    Minimal dark design: business name top-left, stamp dots row, reward bottom-right.
+    No chip, no large accent blocks — clean and on-brand.
     Returns PNG bytes. Falls back to the static file if PIL is unavailable."""
     if not _PIL_OK:
         path = ASSETS_DIR / ("strip@2x.png" if scale == 2 else "strip.png")
@@ -111,19 +112,27 @@ def generate_strip_image(
 
     BG     = _hex(bg_color)
     ACCENT = _hex(accent_color)
-    WHITE  = (255, 255, 255)
 
-    EMPTY_FILL  = _darken(BG, 0.15)
+    # Subtle slightly-lighter bg for depth
+    BG2         = _lighten(BG, 0.07)
+    EMPTY_FILL  = _lighten(BG, 0.12)    # barely-visible dot for empty stamp
+    EMPTY_BORD  = _lighten(BG, 0.28)    # border for empty dot
     FILLED_FILL = ACCENT
-    FILLED_ICON = _darken(ACCENT, 0.45)
-    TEXT_MAIN   = _lighten(BG, 0.85)
-    TEXT_SUB    = _lighten(BG, 0.45)
+    FILLED_ICON = _darken(ACCENT, 0.50)
+    TEXT_MAIN   = _lighten(BG, 0.88)    # near-white
+    TEXT_SUB    = _lighten(BG, 0.42)    # muted
 
+    # Canvas: 320×123 logical px (standard Apple Wallet strip)
     sw, sh = 320 * scale, 123 * scale
     s = scale
 
     img  = Image.new("RGB", (sw, sh), BG)
     draw = ImageDraw.Draw(img, "RGBA")
+
+    # Subtle gradient-like overlay on right side (cosmetic only)
+    for xi in range(sw // 2, sw):
+        alpha = int(18 * (xi - sw // 2) / (sw // 2))
+        draw.line([(xi, 0), (xi, sh)], fill=(*BG2, alpha))
 
     def _fnt(path, size):
         try:
@@ -131,99 +140,85 @@ def generate_strip_image(
         except Exception:
             return ImageFont.load_default()
 
-    fnt_label  = _fnt(_FONT_REG,  8 * s)
-    fnt_name   = _fnt(_FONT_BOLD, 16 * s)
-    fnt_small  = _fnt(_FONT_REG,  8 * s)
-    fnt_bold_s = _fnt(_FONT_BOLD, 9 * s)
+    fnt_biz    = _fnt(_FONT_BOLD, 13 * s)   # business name
+    fnt_label  = _fnt(_FONT_REG,   7 * s)   # tiny labels
+    fnt_reward = _fnt(_FONT_BOLD,  8 * s)   # reward text
+    fnt_count  = _fnt(_FONT_BOLD, 11 * s)   # x/y stamp count
 
     PAD   = 14 * s
-    PAD_T = 10 * s
+    PAD_T = 11 * s
 
-    # ── LOYALTY CARD label ──────────────────────────────────────
-    draw.text((PAD, PAD_T), "LOYALTY CARD",
-              font=fnt_label, fill=(*TEXT_SUB, 255))
+    # ── Business name (top-left) ─────────────────────────────────
+    biz_display = (biz_name or "ZubCard")[:22]
+    draw.text((PAD, PAD_T), biz_display, font=fnt_biz, fill=(*TEXT_MAIN, 255))
 
-    # ── Card name ───────────────────────────────────────────────
-    draw.text((PAD, PAD_T + 10 * s), card_name.upper()[:20],
-              font=fnt_name, fill=(*TEXT_MAIN, 255))
+    # ── Stamp counter top-right (e.g. "3/10") ───────────────────
+    count_str = f"{stamps}/{stamps_total}"
+    draw.text((sw - PAD, PAD_T), count_str,
+              font=fnt_count, fill=(*ACCENT, 220), anchor="ra")
 
-    # ── Chip (top-right, simple rounded rect with lines) ────────
-    cw, ch_c = 22 * s, 16 * s
-    chip_x = sw - PAD - cw
-    chip_y = PAD_T
-    draw.rounded_rectangle(
-        [chip_x, chip_y, chip_x + cw, chip_y + ch_c],
-        radius=3 * s, fill=(*ACCENT, 255)
-    )
-    line_col = (*_darken(ACCENT, 0.4), 200)
-    draw.line([(chip_x + 7*s, chip_y + 2), (chip_x + 7*s,  chip_y + ch_c - 2)],
-              fill=line_col, width=max(1, s))
-    draw.line([(chip_x + 15*s, chip_y + 2), (chip_x + 15*s, chip_y + ch_c - 2)],
-              fill=line_col, width=max(1, s))
-    draw.line([(chip_x + 2, chip_y + 8*s), (chip_x + cw - 2, chip_y + 8*s)],
-              fill=line_col, width=max(1, s))
+    # ── Stamp dots row (centered vertically in middle band) ──────
+    FOOTER_H    = 26 * s
+    top_band    = PAD_T + 14 * s + 6 * s   # below biz name
+    bot_band    = sh - FOOTER_H - 4 * s
+    mid_y       = (top_band + bot_band) // 2
+    avail_w     = sw - 2 * PAD
 
-    # ── Stamp grid ──────────────────────────────────────────────
-    FOOTER_H     = 28 * s
-    grid_top     = PAD_T + 10 * s + 18 * s + 4 * s
-    grid_bottom  = sh - FOOTER_H - 6 * s
-    grid_h_avail = grid_bottom - grid_top
-    grid_w_avail = sw - 2 * PAD
-
-    COLS = min(stamps_total, 5)
+    COLS = min(stamps_total, 10)
     ROWS = _math.ceil(stamps_total / COLS)
 
-    GAP          = 5 * s
-    tile_from_w  = (grid_w_avail - GAP * (COLS - 1)) // COLS
-    tile_from_h  = (grid_h_avail - GAP * (ROWS - 1)) // ROWS
-    tile         = min(tile_from_w, tile_from_h, 22 * s)
-    tile         = max(tile, 12 * s)
+    DOT_D   = min(14 * s, (avail_w - (COLS - 1) * 4 * s) // COLS)
+    DOT_D   = max(DOT_D, 8 * s)
+    GAP     = max(3 * s, (avail_w - COLS * DOT_D) // max(COLS - 1, 1))
 
-    grid_w = COLS * tile + GAP * (COLS - 1)
-    grid_h = ROWS * tile + GAP * (ROWS - 1)
-    gx0    = PAD + (grid_w_avail - grid_w) // 2
-    gy0    = grid_top + (grid_h_avail - grid_h) // 2
-
-    radius = max(3 * s, tile // 5)
-
-    def _draw_check(cx, cy, size, color):
-        lw = max(2, size // 7)
-        x1 = cx - int(size * 0.28); y1 = cy + int(size * 0.02)
-        x2 = cx - int(size * 0.04); y2 = cy + int(size * 0.24)
-        x3 = cx + int(size * 0.32); y3 = cy - int(size * 0.24)
-        draw.line([(x1, y1), (x2, y2)], fill=(*color, 230), width=lw)
-        draw.line([(x2, y2), (x3, y3)], fill=(*color, 230), width=lw)
+    grid_w  = COLS * DOT_D + GAP * (COLS - 1)
+    grid_h  = ROWS * DOT_D + (4 * s) * (ROWS - 1)
+    gx0     = PAD + (avail_w - grid_w) // 2
+    gy0     = mid_y - grid_h // 2
 
     for i in range(stamps_total):
         col = i % COLS
         row = i // COLS
-        x   = gx0 + col * (tile + GAP)
-        y   = gy0 + row * (tile + GAP)
-        cx2 = x + tile // 2
-        cy2 = y + tile // 2
+        cx  = gx0 + col * (DOT_D + GAP) + DOT_D // 2
+        cy  = gy0 + row * (DOT_D + 4 * s) + DOT_D // 2
+        r   = DOT_D // 2
 
         if i < stamps:
-            draw.rounded_rectangle([x, y, x + tile, y + tile],
-                                   radius=radius, fill=(*FILLED_FILL, 255))
-            _draw_check(cx2, cy2, tile, FILLED_ICON)
+            # Filled: solid accent circle with checkmark
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(*FILLED_FILL, 255))
+            # Checkmark
+            lw = max(2, r // 4)
+            x1 = cx - int(r * 0.35); y1 = cy + int(r * 0.02)
+            x2 = cx - int(r * 0.05); y2 = cy + int(r * 0.32)
+            x3 = cx + int(r * 0.40); y3 = cy - int(r * 0.30)
+            draw.line([(x1, y1), (x2, y2)], fill=(*FILLED_ICON, 240), width=lw)
+            draw.line([(x2, y2), (x3, y3)], fill=(*FILLED_ICON, 240), width=lw)
         else:
-            draw.rounded_rectangle([x, y, x + tile, y + tile],
-                                   radius=radius, fill=(*EMPTY_FILL, 255))
+            # Empty: dark circle with subtle border
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(*EMPTY_FILL, 255))
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r],
+                         outline=(*EMPTY_BORD, 180), width=max(1, s))
 
-    # ── Footer ──────────────────────────────────────────────────
+    # ── Footer ───────────────────────────────────────────────────
     footer_y = sh - FOOTER_H
     draw.line([(PAD, footer_y), (sw - PAD, footer_y)],
-              fill=(*TEXT_SUB, 80), width=max(1, s))
+              fill=(*TEXT_SUB, 60), width=max(1, s))
+
     lbl_y = footer_y + 4 * s
-    val_y = footer_y + 13 * s
+    val_y = footer_y + 12 * s
+
+    # Left: customer name (TITULAR)
+    holder = (customer_name or biz_name)[:22]
     draw.text((PAD, lbl_y), "TITULAR",
-              font=fnt_small, fill=(*TEXT_SUB, 200))
-    draw.text((PAD, val_y), biz_name.upper()[:22],
-              font=fnt_bold_s, fill=(*TEXT_MAIN, 255))
-    draw.text((sw - PAD, lbl_y), "PREMIOS",
-              font=fnt_small, fill=(*TEXT_SUB, 200), anchor="ra")
-    draw.text((sw - PAD, val_y), reward_name[:20],
-              font=fnt_bold_s, fill=(*ACCENT, 230), anchor="ra")
+              font=fnt_label, fill=(*TEXT_SUB, 180))
+    draw.text((PAD, val_y), holder.upper(),
+              font=fnt_reward, fill=(*TEXT_MAIN, 230))
+
+    # Right: reward name (PREMIO)
+    draw.text((sw - PAD, lbl_y), "PREMIO",
+              font=fnt_label, fill=(*TEXT_SUB, 180), anchor="ra")
+    draw.text((sw - PAD, val_y), (reward_name or "Premio")[:20],
+              font=fnt_reward, fill=(*ACCENT, 220), anchor="ra")
 
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="PNG")
@@ -305,8 +300,8 @@ def build_pass_json(
         "serialNumber": serial,
         "teamIdentifier": team_id,
         "organizationName": biz_name or "Zubie Card",
-        "description": f"Tarjeta de Fidelidad · {biz_name or 'Zubie Card'}",
-        "logoText": (biz_name or "ZUBIECARD").upper()[:20],
+        "description": "Tarjeta de Fidelidad",
+        "logoText": (biz_name or "ZubCard")[:20],
         "backgroundColor": bg,
         "foregroundColor": "rgb(255,243,208)",
         "labelColor": "rgb(160,141,131)",
@@ -396,7 +391,7 @@ def generate_pkpass(
     stamps: int = 0,
     stamps_per_reward: int = 10,
     reward_name: str = "Premio",
-    biz_name: str = "Zubie Card",
+    biz_name: str = "ZubCard",
     primary_color: str = "#26170c",
     accent_color: str = "#ffca48",
     latitude: float | None = None,
@@ -435,15 +430,18 @@ def generate_pkpass(
         if asset_path.exists():
             assets[fname] = asset_path.read_bytes()
 
-    # Dynamic strip: dark FIDELITY CARD design with stamp grid
+    # Dynamic strip: clean minimal design
+    customer_name = f"{first_name} {last_name}".strip()
     try:
         assets["strip.png"]   = generate_strip_image(
-            card_name="FIDELITY CARD", biz_name=biz_name,
+            card_name="TARJETA DE FIDELIDAD", biz_name=biz_name,
+            customer_name=customer_name,
             stamps=stamps, stamps_total=stamps_per_reward,
             reward_name=reward_name, bg_color=primary_color,
             accent_color=accent_color, scale=1)
         assets["strip@2x.png"] = generate_strip_image(
-            card_name="FIDELITY CARD", biz_name=biz_name,
+            card_name="TARJETA DE FIDELIDAD", biz_name=biz_name,
+            customer_name=customer_name,
             stamps=stamps, stamps_total=stamps_per_reward,
             reward_name=reward_name, bg_color=primary_color,
             accent_color=accent_color, scale=2)
