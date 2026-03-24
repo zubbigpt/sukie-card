@@ -3913,11 +3913,12 @@ async function loadTopCustomers(limit=5, target='dash'){
   const medals=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
   const listEl = document.getElementById(target==='dash'?'dash-top-list':'bi-top-list');
   if(!listEl) return;
+  const _topEmoji = Object.values(window._cardRegistry||{})[0]?.emoji || '⭐';
   listEl.innerHTML = data.length===0?'<div class="empty-state">Sin datos aún</div>':data.map((c,i)=>`
     <div class="top-item" onclick="openDrawer('${c.id||c.card_id}')">
       <div class="top-rank">${medals[i]||i+1}</div>
       <div class="top-info"><div class="top-name">${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</div><div class="top-email">${c.email}</div></div>
-      <div class="top-stamps">${c.totalStamps||c.total_stamps||0}🍪</div>
+      <div class="top-stamps">${c.totalStamps||c.total_stamps||0}${_topEmoji}</div>
     </div>`).join('');
 }
 
@@ -4191,8 +4192,9 @@ async function loadDrawerData(cardId){
   if(pf) pf.style.width=Math.min(100,Math.round((stamps/spr)*100))+'%';
   const sprDisp=document.getElementById('d-spr-display'); if(sprDisp) sprDisp.textContent=spr;
   // Stamps grid
+  const _cardEmoji = Object.values(window._cardRegistry||{})[0]?.emoji || '⭐';
   let gridHtml='';
-  for(let i=0;i<spr;i++) gridHtml+=`<div class="stamp-dot ${i<stamps?'filled':''}">${i<stamps?'🍪':'○'}</div>`;
+  for(let i=0;i<spr;i++) gridHtml+=`<div class="stamp-dot ${i<stamps?'filled':''}">${i<stamps?_cardEmoji:'○'}</div>`;
   document.getElementById('d-stamps-grid').innerHTML=gridHtml;
   // Notes
   const notes=c.notes||'';
@@ -4220,11 +4222,12 @@ async function loadActivity_client(cardId){
   const data=await r.json();
   const log=document.getElementById('d-activity-log');
   if(!data||data.length===0){log.innerHTML='<div class="empty-state">Sin actividad registrada</div>';return;}
-  const icons={stamp:'🍪',redeem:'🎁',adjust:'⚙',register:'👋'};
+  const _actEmoji = Object.values(window._cardRegistry||{})[0]?.emoji || '⭐';
+  const icons={stamp:_actEmoji,redeem:'🎁',adjust:'⚙',register:'👋'};
   const labels={stamp:'Sellos añadidos',redeem:'Premio canjeado',adjust:'Ajuste manual',register:'Alta tarjeta'};
   log.innerHTML=data.map(t=>`
     <div class="activity-item">
-      <div class="activity-dot ${t.transaction_type||'stamp'}">${icons[t.transaction_type||'stamp']||'🍪'}</div>
+      <div class="activity-dot ${t.transaction_type||'stamp'}">${icons[t.transaction_type||'stamp']||_actEmoji}</div>
       <div class="activity-content">
         <div class="a-title">${labels[t.transaction_type||'stamp']||t.transaction_type} ${t.stamps_added>0?'+'+t.stamps_added:t.stamps_added}</div>
         <div class="a-date">${t.created_at?new Date(t.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''} · ${t.source_label||t.store||'💻 Admin'}</div>
@@ -5852,12 +5855,13 @@ function renderPassCodes(codes){
     tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Sin códigos — genera usando el panel izquierdo</td></tr>';
     return;
   }
+  const _pcEmoji = Object.values(window._cardRegistry||{})[0]?.emoji || '⭐';
   tbody.innerHTML=codes.map(c=>{
     const used=c.used||c.used_by;
     const exp=c.expires_at?new Date(c.expires_at).toLocaleDateString('es-ES'):'—';
     return `<tr style="border-bottom:1px solid var(--cream-border);${used?'opacity:.55':''}">
       <td style="padding:8px 14px;font-family:monospace;font-weight:700;letter-spacing:2px;font-size:.92rem">${c.code}</td>
-      <td style="padding:8px 14px;text-align:center;font-weight:600">${c.stamps||1} 🍪</td>
+      <td style="padding:8px 14px;text-align:center;font-weight:600">${c.stamps||1} ${_pcEmoji}</td>
       <td style="padding:8px 14px;text-align:center"><span style="padding:2px 8px;border-radius:2px;font-size:.7rem;font-weight:700;${used?'background:#fbe9e7;color:#c62828':'background:#e8f5e9;color:#2e7d32'}">${used?'Usado':'Disponible'}</span></td>
       <td style="padding:8px 14px;font-size:.78rem;color:var(--brown-light)">${exp}</td>
       <td style="padding:8px 14px;font-size:.78rem;color:var(--brown-light)">${c.used_by_name||'—'}</td>
