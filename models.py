@@ -39,6 +39,7 @@ class LoyaltyCard(Base):
     total_stamps     = Column(Integer, default=0)    # acumulados de por vida
     rewards_redeemed = Column(Integer, default=0)    # premios canjeados histórico
     award_balance    = Column(Integer, default=0)    # premios disponibles
+    wallet_auth_token = Column(String, nullable=True)  # per-card Apple Wallet auth token (stable)
     created_at       = Column(DateTime(timezone=True), server_default=func.now())
     updated_at       = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
