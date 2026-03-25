@@ -347,22 +347,16 @@ def _run_scheduled_campaigns():
             camp_type = camp_type or "email"
             try:
                 if camp_type == "push":
-                    q_push = (
-                        "SELECT ps.endpoint, ps.p256dh, ps.auth FROM push_subscriptions ps "
-                        "JOIN loyalty_cards lc ON lc.id=ps.card_id "
-                        "WHERE lc.business_id=:bid"
-                    )
-                    if segment == "active":
-                        q_push += " AND lc.stamps > 0"
-                    subs = _db.execute(text(q_push), {"bid": str(bid)}).fetchall()
-                    result = _send_push_to_subscriptions(
-                        subs,
+                    import asyncio as _asyncio
+                    result = _asyncio.run(_send_apns_campaign(
+                        _db,
+                        business_id=str(bid),
                         title=subject or camp_name or "ZubCard",
                         message=body_txt or "",
-                        url=f"/biz/{slug}/card",
-                    )
+                        segment=segment,
+                    ))
                     sent = result["sent"]
-                    print(f"✅ Scheduled push campaign {camp_id} sent to {sent}/{len(subs)} subscribers")
+                    print(f"✅ Scheduled push campaign {camp_id} sent to {sent}/{result['total_wallet_devices']} wallet devices")
                 else:
                     q_base = (
                         "SELECT cu.email, cu.first_name FROM customers cu "
@@ -992,55 +986,62 @@ def _wallet_verify_auth(serial: str, auth_header: str, db: Session):
     return card_id
 
 
-async def _push_apple_wallet(push_token: str) -> bool:
-    """Send a background push notification to Apple Wallet via APNs HTTP/2."""
+async def _apns_send(push_token: str, payload: dict, push_type: str = "background", priority: int = 5) -> bool:
+    """Core APNs HTTP/2 sender. Used for both wallet updates and campaign alerts."""
     import base64, ssl, tempfile, os as _os
-    p12_b64    = _os.environ.get("APPLE_P12_B64", "")
-    p12_pass   = _os.environ.get("APPLE_P12_PASSWORD", "").encode()
-    pass_type  = _os.environ.get("APPLE_PASS_TYPE_ID", "")
+    p12_b64   = _os.environ.get("APPLE_P12_B64", "")
+    p12_pass  = _os.environ.get("APPLE_P12_PASSWORD", "").encode()
+    pass_type = _os.environ.get("APPLE_PASS_TYPE_ID", "")
     if not (p12_b64 and pass_type):
-        print("⚠️  APPLE_P12_B64 or APPLE_PASS_TYPE_ID not set — skipping APN push")
+        print("⚠️  APPLE_P12_B64 or APPLE_PASS_TYPE_ID not set — skipping APNs send")
         return False
     try:
         from cryptography.hazmat.primitives.serialization.pkcs12 import load_key_and_certificates
-        from cryptography.hazmat.primitives.serialization import (
-            Encoding, PrivateFormat, NoEncryption
-        )
+        from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
         p12_bytes = base64.b64decode(p12_b64)
         priv_key, cert, _ = load_key_and_certificates(p12_bytes, p12_pass)
         pem_key  = priv_key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption())
         pem_cert = cert.public_bytes(Encoding.PEM)
-
-        # Write to temp files for ssl context
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pem") as kf:
             kf.write(pem_key); key_path = kf.name
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pem") as cf:
             cf.write(pem_cert); cert_path = cf.name
-
         try:
             ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
             ssl_ctx.load_cert_chain(certfile=cert_path, keyfile=key_path)
             ssl_ctx.check_hostname = True
             ssl_ctx.verify_mode = ssl.CERT_REQUIRED
             ssl_ctx.load_default_certs()
-
             apn_url = f"https://api.push.apple.com/3/device/{push_token}"
             headers = {
                 "apns-topic": pass_type,
-                "apns-push-type": "background",
-                "apns-priority": "5",
+                "apns-push-type": push_type,
+                "apns-priority": str(priority),
             }
             async with httpx.AsyncClient(http2=True, verify=ssl_ctx) as client:
-                resp = await client.post(apn_url, json={}, headers=headers)
+                resp = await client.post(apn_url, json=payload, headers=headers)
                 ok = resp.status_code == 200
-                print(f"APNs push → {resp.status_code} for token …{push_token[-8:]}")
+                print(f"APNs {push_type} → {resp.status_code} for token …{push_token[-8:]}")
+                if not ok:
+                    print(f"APNs error body: {resp.text[:200]}")
                 return ok
         finally:
             _os.unlink(key_path)
             _os.unlink(cert_path)
     except Exception as ex:
-        print(f"APNs push error: {ex}")
+        print(f"APNs send error: {ex}")
         return False
+
+
+async def _push_apple_wallet(push_token: str) -> bool:
+    """Send silent background push to tell Wallet app to refresh the pass."""
+    return await _apns_send(push_token, payload={}, push_type="background", priority=5)
+
+
+async def _push_apple_alert(push_token: str, title: str, body: str) -> bool:
+    """Send a visible push notification alert via Apple Wallet APNs."""
+    payload = {"aps": {"alert": {"title": title, "body": body}, "sound": "default"}}
+    return await _apns_send(push_token, payload=payload, push_type="alert", priority=10)
 
 
 async def _push_wallet_update(card_id, db: Session):
@@ -2890,6 +2891,48 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
     return {"message": "Suscripción creada"}
 
 
+async def _send_apns_campaign(db: Session, business_id: str, title: str, message: str, segment: str = "all") -> dict:
+    """Send APNs alert notifications to all wallet-registered devices for a business."""
+    q = (
+        "SELECT wd.push_token, c.first_name FROM wallet_devices wd "
+        "JOIN loyalty_cards lc ON lc.id = wd.card_id "
+        "JOIN customers c ON c.id = lc.customer_id "
+        "WHERE c.business_id = :bid"
+    )
+    params: dict = {"bid": str(business_id)}
+    if segment == "active":
+        q += " AND lc.stamps > 0"
+    elif segment == "near_reward":
+        q += " AND lc.stamps >= (SELECT stamps_per_reward - 2 FROM businesses WHERE id=:bid2)"
+        params["bid2"] = str(business_id)
+    elif segment == "inactive":
+        q += " AND lc.updated_at < NOW() - INTERVAL '30 days'"
+    elif segment.startswith("min_stamps:"):
+        try:
+            min_s = int(segment.split(":")[1])
+            q += " AND lc.stamps >= :min_s"
+            params["min_s"] = min_s
+        except Exception:
+            pass
+    rows = db.execute(text(q), params).fetchall()
+    sent = failed = 0
+    for row in rows:
+        push_token, first_name = row[0], row[1] or ""
+        personalised_title = title.replace("{nombre}", first_name)
+        personalised_body  = message.replace("{nombre}", first_name)
+        try:
+            ok = await _push_apple_alert(push_token, personalised_title, personalised_body)
+            if ok:
+                sent += 1
+            else:
+                failed += 1
+        except Exception as ex:
+            print(f"Campaign APNs error: {ex}")
+            failed += 1
+    print(f"Campaign APNs: {sent} sent, {failed} failed out of {len(rows)} wallet devices")
+    return {"sent": sent, "failed": failed, "total_wallet_devices": len(rows)}
+
+
 def _send_push_to_subscriptions(subs_rows, title: str, message: str, url: str = "/") -> dict:
     """Send a web push notification to a list of (endpoint, p256dh, auth) rows."""
     if not VAPID_PUBLIC or not VAPID_PRIVATE:
@@ -4478,7 +4521,7 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
 
 
 @app.post("/api/biz/{slug}/campaigns/{campaign_id}/send")
-def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
+async def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
     """Send email or push campaign to segmented customers"""
     verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
@@ -4495,27 +4538,21 @@ def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depe
     camp_type = camp_type or "email"
 
     if camp_type == "push":
-        # Get push subscriptions for this business's card holders
-        q_push = (
-            "SELECT ps.endpoint, ps.p256dh, ps.auth FROM push_subscriptions ps "
-            "JOIN loyalty_cards lc ON lc.id=ps.card_id "
-            "WHERE lc.business_id=:bid"
-        )
-        if segment == "active":
-            q_push += " AND lc.stamps > 0"
-        subs = db.execute(text(q_push), {"bid": str(biz.id)}).fetchall()
-        result = _send_push_to_subscriptions(
-            subs,
+        # Send APNs alert to all wallet-registered devices for this business
+        result = await _send_apns_campaign(
+            db,
+            business_id=str(biz.id),
             title=subject or camp_name or "ZubCard",
             message=body_txt or "",
-            url=f"/biz/{biz.slug}/card",
+            segment=segment,
         )
         db.execute(text(
             "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
         ), {"id": campaign_id})
         db.commit()
         return {"sent": result["sent"], "failed": result.get("failed", 0),
-                "total_subscribers": len(subs), "status": "sent", "type": "push"}
+                "total_wallet_devices": result["total_wallet_devices"],
+                "status": "sent", "type": "push"}
 
     # ── EMAIL ──
     q_base = (
