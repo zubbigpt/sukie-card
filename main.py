@@ -3868,6 +3868,40 @@ def debug_db(pin: str = "", db: Session = Depends(get_db)):
         return {"error": str(e)}
 
 
+@app.get("/api/admin/wallet-devices")
+def admin_wallet_devices(pin: str = "", db: Session = Depends(get_db)):
+    """Debug: list wallet_devices registrations and attempt a test APNs push."""
+    if pin != ADMIN_PIN:
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    rows = db.execute(text(
+        "SELECT wd.id, wd.device_library_id, wd.push_token, wd.card_id, wd.pass_type_id, wd.serial_number, "
+        "       lc.stamps, c.first_name, c.last_name "
+        "FROM wallet_devices wd "
+        "LEFT JOIN loyalty_cards lc ON lc.id = wd.card_id "
+        "LEFT JOIN customers c ON c.id = lc.customer_id "
+        "ORDER BY wd.id DESC LIMIT 50"
+    )).fetchall()
+    import os as _os
+    p12_set  = bool(_os.environ.get("APPLE_P12_B64", ""))
+    ptid_set = bool(_os.environ.get("APPLE_PASS_TYPE_ID", ""))
+    return {
+        "apple_p12_configured": p12_set,
+        "apple_pass_type_id_configured": ptid_set,
+        "device_count": len(rows),
+        "devices": [
+            {
+                "device_library_id": r[1][:16] + "...",
+                "push_token": r[2][:12] + "...",
+                "card_id": str(r[3]),
+                "serial": r[5],
+                "customer": f"{r[7]} {r[8]}",
+                "stamps": r[6],
+            }
+            for r in rows
+        ],
+    }
+
+
 @app.post("/api/admin/cleanup-test-data")
 def cleanup_test_data(pin: str = "", db: Session = Depends(get_db)):
     """One-time cleanup: remove test/placeholder customers"""
