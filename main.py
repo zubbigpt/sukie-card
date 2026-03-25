@@ -313,6 +313,8 @@ def run_migrations():
             created_at TIMESTAMPTZ DEFAULT NOW(),
             UNIQUE(device_library_id, card_id)
         )""",
+        # Clean up orphaned wallet_devices entries left from deleted cards
+        "DELETE FROM wallet_devices WHERE card_id IS NULL",
 
     ]
     from database import SessionLocal
