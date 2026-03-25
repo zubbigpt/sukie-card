@@ -3600,10 +3600,13 @@ async def update_biz_geo(slug: str, request: Request, db: Session = Depends(get_
 
 
 @app.post("/api/biz/{slug}/geo/push-nearby")
-def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db)):
+async def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db)):
     """
-    Send a proximity push notification to all subscribers of this business.
-    Uses pywebpush if VAPID keys are configured; otherwise returns a dry-run report.
+    Send a proximity push notification to all customers of this business.
+    - Apple Wallet users: APNs alert via wallet_devices (no opt-in required beyond adding card)
+    - Android / browser users: web push via push_subscriptions (requires browser opt-in)
+    Note: iOS users with the pass added to Wallet also get automatic geo alerts from the
+    pass's locations[] field when they are physically near the store.
     """
     biz = get_business_by_slug(slug, db)
     if not biz:
@@ -3611,11 +3614,21 @@ def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db)):
     if pin != str(biz.admin_pin):
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
-    push_msg  = getattr(biz, "geo_push_msg", None) or "¡Estás cerca! Visítanos y acumula sellos 🎉"
-    biz_name  = biz.name or "ZubCard"
+    push_msg = getattr(biz, "geo_push_msg", None) or "¡Estás cerca! Visítanos y acumula sellos 🎉"
+    biz_name = biz.name or "ZubCard"
 
-    # Collect all push subscriptions for this business via loyalty_cards → customers → business_id
-    rows = db.execute(text(
+    # ── Apple Wallet (APNs) ──────────────────────────────────────────────────
+    apns_result = await _send_apns_campaign(
+        db,
+        business_id=str(biz.id),
+        title=biz_name,
+        message=push_msg,
+        segment="all",
+    )
+
+    # ── Android / browser web push ───────────────────────────────────────────
+    web_sent = web_failed = 0
+    web_rows = db.execute(text(
         "SELECT ps.endpoint, ps.p256dh, ps.auth "
         "FROM push_subscriptions ps "
         "JOIN loyalty_cards lc ON lc.id = ps.card_id "
@@ -3623,49 +3636,33 @@ def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db)):
         "WHERE c.business_id = :bid"
     ), {"bid": str(biz.id)}).fetchall()
 
-    if not rows:
-        return {"message": "Sin suscriptores activos", "sent": 0}
-
-    # Attempt real sends if VAPID keys are present
-    if VAPID_PUBLIC and VAPID_PRIVATE:
+    if web_rows and VAPID_PUBLIC and VAPID_PRIVATE:
         try:
             from pywebpush import webpush, WebPushException  # type: ignore
+            import json as _json
+            payload = _json.dumps({"title": biz_name, "body": push_msg, "icon": "/static/icon-192.png"})
+            vapid_claims = {"sub": f"mailto:{biz.email}"}
+            for endpoint, p256dh, auth_key in web_rows:
+                try:
+                    webpush(
+                        subscription_info={"endpoint": endpoint, "keys": {"p256dh": p256dh, "auth": auth_key}},
+                        data=payload,
+                        vapid_private_key=VAPID_PRIVATE,
+                        vapid_claims=vapid_claims,
+                    )
+                    web_sent += 1
+                except Exception:
+                    web_failed += 1
         except ImportError:
-            return {
-                "message": f"{len(rows)} suscriptor(es) encontrado(s) — instala pywebpush en el servidor para enviar",
-                "sent": 0,
-                "subscribers": len(rows),
-            }
+            pass
 
-        import json as _json
-        payload = _json.dumps({"title": biz_name, "body": push_msg, "icon": "/static/icon-192.png"})
-        vapid_claims = {"sub": f"mailto:{biz.email}"}
-        sent = 0
-        failed = 0
-        for endpoint, p256dh, auth_key in rows:
-            try:
-                webpush(
-                    subscription_info={"endpoint": endpoint, "keys": {"p256dh": p256dh, "auth": auth_key}},
-                    data=payload,
-                    vapid_private_key=VAPID_PRIVATE,
-                    vapid_claims=vapid_claims,
-                )
-                sent += 1
-            except Exception:
-                failed += 1
-        return {
-            "message": f"Notificación enviada a {sent} suscriptor(es)",
-            "sent": sent,
-            "failed": failed,
-        }
-    else:
-        # No VAPID keys — dry run
-        return {
-            "message": f"{len(rows)} suscriptor(es) encontrado(s). Configura VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY en Railway para enviar.",
-            "sent": 0,
-            "subscribers": len(rows),
-            "note": "Dry run — VAPID keys not configured",
-        }
+    total_sent = apns_result["sent"] + web_sent
+    return {
+        "message": f"Notificación enviada a {total_sent} cliente(s)",
+        "sent": total_sent,
+        "apple_wallet": {"sent": apns_result["sent"], "failed": apns_result["failed"], "devices": apns_result["total_wallet_devices"]},
+        "android_web": {"sent": web_sent, "failed": web_failed, "subscribers": len(web_rows)},
+    }
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -4538,21 +4535,29 @@ async def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session 
     camp_type = camp_type or "email"
 
     if camp_type == "push":
-        # Send APNs alert to all wallet-registered devices for this business
-        result = await _send_apns_campaign(
-            db,
-            business_id=str(biz.id),
-            title=subject or camp_name or "ZubCard",
-            message=body_txt or "",
-            segment=segment,
+        title_txt = subject or camp_name or "ZubCard"
+        msg_txt   = body_txt or ""
+        # Apple Wallet (APNs) — iOS
+        apns_result = await _send_apns_campaign(db, str(biz.id), title_txt, msg_txt, segment)
+        # Android / browser web push
+        web_sent = web_failed = 0
+        q_web = (
+            "SELECT ps.endpoint, ps.p256dh, ps.auth FROM push_subscriptions ps "
+            "JOIN loyalty_cards lc ON lc.id=ps.card_id "
+            "JOIN customers c ON c.id=lc.customer_id WHERE c.business_id=:bid"
         )
-        db.execute(text(
-            "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
-        ), {"id": campaign_id})
+        if segment == "active":
+            q_web += " AND lc.stamps > 0"
+        web_rows = db.execute(text(q_web), {"bid": str(biz.id)}).fetchall()
+        if web_rows and VAPID_PUBLIC and VAPID_PRIVATE:
+            web_result = _send_push_to_subscriptions(web_rows, title_txt, msg_txt)
+            web_sent   = web_result["sent"]
+            web_failed = web_result["failed"]
+        db.execute(text("UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"), {"id": campaign_id})
         db.commit()
-        return {"sent": result["sent"], "failed": result.get("failed", 0),
-                "total_wallet_devices": result["total_wallet_devices"],
-                "status": "sent", "type": "push"}
+        total_sent = apns_result["sent"] + web_sent
+        return {"sent": total_sent, "apple_wallet": apns_result["sent"],
+                "android_web": web_sent, "status": "sent", "type": "push"}
 
     # ── EMAIL ──
     q_base = (
