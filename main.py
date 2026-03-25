@@ -1152,7 +1152,10 @@ def wallet_list_updatable_passes(
     """
     params = {"did": device_library_id, "ptid": pass_type_id}
     if passesUpdatedSince:
+        # URL query params decode + as space; fix timezone offset before passing to DB
+        passesUpdatedSince = passesUpdatedSince.replace(" ", "+")
         query += " AND lc.updated_at > :since"
+        passesUpdatedSince = passesUpdatedSince.replace(" ", "+")
         params["since"] = passesUpdatedSince
 
     rows = db.execute(text(query), params).fetchall()
