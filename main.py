@@ -1042,24 +1042,22 @@ async def _push_apple_wallet(push_token: str) -> bool:
         return False
 
 
-def _push_wallet_update(card_id, db: Session):
+async def _push_wallet_update(card_id, db: Session):
     """Find all registered devices for this card and fire APNs pushes."""
-    import asyncio
     try:
         rows = db.execute(
             text("SELECT push_token FROM wallet_devices WHERE card_id=:cid"),
             {"cid": str(card_id)},
         ).fetchall()
         if not rows:
+            print(f"No wallet devices registered for card {card_id}")
             return
+        print(f"Pushing APNs update to {len(rows)} device(s) for card {card_id}")
         for row in rows:
             push_token = row[0]
             try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    asyncio.ensure_future(_push_apple_wallet(push_token))
-                else:
-                    loop.run_until_complete(_push_apple_wallet(push_token))
+                result = await _push_apple_wallet(push_token)
+                print(f"APNs push result for token ...{push_token[-8:]}: {result}")
             except Exception as ex:
                 print(f"Push dispatch error: {ex}")
     except Exception as ex:
@@ -1709,7 +1707,7 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
     db.commit()
     db.refresh(card)
     # Push live update to Apple Wallet if registered
-    _push_wallet_update(card.id, db)
+    await _push_wallet_update(card.id, db)
     return {
         "message":       f"+{n} sello(s) añadidos" if n > 0 else "OK",
         "stamps":        card.stamps,
@@ -1739,7 +1737,7 @@ async def remove_stamps(card_id: str, request: Request, db: Session = Depends(ge
     db.add(tx)
     db.commit()
     db.refresh(card)
-    _push_wallet_update(card.id, db)
+    await _push_wallet_update(card.id, db)
     return {"message": f"-{n} sello(s) eliminados", "stamps": card.stamps}
 
 
@@ -1767,7 +1765,7 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
     db.add(tx)
     db.commit()
     db.refresh(card)
-    _push_wallet_update(card.id, db)
+    await _push_wallet_update(card.id, db)
     return {"message": "Premio canjeado ✅",
             "award_balance": card.award_balance,
             "rewards_redeemed": card.rewards_redeemed}
@@ -4394,7 +4392,7 @@ def generate_passcodes(slug: str, pin: str = "", payload: dict = Body(...), db: 
 
 
 @app.post("/api/biz/{slug}/passcodes/redeem")
-def redeem_passcode(slug: str, payload: dict = Body(...), db: Session = Depends(get_db)):
+async def redeem_passcode(slug: str, payload: dict = Body(...), db: Session = Depends(get_db)):
     """Public endpoint: customer redeems a passcode to get stamps on their card."""
     biz = get_business_by_slug(slug, db)
     if not biz:
@@ -4426,7 +4424,7 @@ def redeem_passcode(slug: str, payload: dict = Body(...), db: Session = Depends(
     db.commit()
     # Push live Wallet update after passcode stamp
     try:
-        _push_wallet_update(card_id, db)
+        await _push_wallet_update(card_id, db)
     except Exception:
         pass
     return {"status": "ok", "stamps_added": stamps}
