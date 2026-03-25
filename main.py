@@ -242,6 +242,7 @@ def run_migrations():
         "DELETE FROM customers WHERE id NOT IN (SELECT DISTINCT customer_id FROM loyalty_cards WHERE customer_id IS NOT NULL)",
         # Upgrade Café Luna demo account to pro
         "UPDATE businesses SET plan='pro' WHERE slug='cafeluna'",
+        "UPDATE businesses SET plan='pro' WHERE slug='sukiecookie'",
         # ── Tiendas / Locales ──────────────────────────────────────────────────────
         "CREATE TABLE IF NOT EXISTS stores (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, pin VARCHAR NOT NULL DEFAULT '', notes TEXT DEFAULT '', active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW())",
         # ── PassCodes ─────────────────────────────────────────────────────────────
