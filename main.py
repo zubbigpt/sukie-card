@@ -3102,6 +3102,65 @@ def get_vapid_public():
     return {"key": VAPID_PUBLIC or None}
 
 
+@app.get("/api/biz/{slug}/vapid-public-key")
+def get_biz_vapid_public(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Return the VAPID public key for the given business (frontend VAPID status check)."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    if not VAPID_PUBLIC:
+        raise HTTPException(status_code=404, detail="VAPID no configurado")
+    return {"public_key": VAPID_PUBLIC}
+
+
+@app.get("/api/biz/{slug}/push-subscriptions/count")
+def get_push_sub_count(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Return the number of active web push subscriptions for this business."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if pin != str(biz.admin_pin):
+        raise HTTPException(status_code=403, detail="PIN incorrecto")
+    row = db.execute(
+        text(
+            "SELECT COUNT(*) FROM push_subscriptions ps "
+            "JOIN loyalty_cards lc ON lc.id = ps.card_id "
+            "JOIN customers c ON c.id = lc.customer_id "
+            "WHERE c.business_id = :bid"
+        ),
+        {"bid": str(biz.id)},
+    ).fetchone()
+    return {"count": row[0] if row else 0}
+
+
+@app.get("/api/geo/search")
+async def geo_search(q: str = "", limit: int = 1):
+    """Proxy geocoding search to Nominatim (server-side, with proper User-Agent)."""
+    if not q.strip():
+        raise HTTPException(status_code=400, detail="q is required")
+    url = f"https://nominatim.openstreetmap.org/search?format=json&q={q}&limit={limit}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(url, headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"})
+            return r.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Geocoding error: {e}")
+
+
+@app.get("/api/geo/reverse")
+async def geo_reverse(lat: float = 0.0, lng: float = 0.0):
+    """Proxy reverse geocoding to Nominatim (server-side, with proper User-Agent)."""
+    url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lng}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(url, headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"})
+            return r.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Reverse geocoding error: {e}")
+
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ZUBCARD SAAS PLATFORM

@@ -5702,7 +5702,7 @@ function initGeoMap(lat, lng){
 
 async function reverseGeocodeGeo(lat, lng){
   try{
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {headers:{'Accept-Language':'es'}});
+    const r = await fetch(`${BASE}/api/geo/reverse?lat=${lat}&lng=${lng}`);
     const d = await r.json();
     if(d.display_name){
       const parts = d.display_name.split(',').slice(0,4).join(',');
@@ -5718,7 +5718,7 @@ async function searchGeoAddress(){
   const status = document.getElementById('geo-status2');
   if(status) status.textContent = '🔍 Buscando…';
   try{
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, {headers:{'Accept-Language':'es'}});
+    const r = await fetch(`${BASE}/api/geo/search?q=${encodeURIComponent(q)}&limit=1`);
     const data = await r.json();
     if(!data.length){ if(status) status.textContent='Error: Dirección no encontrada'; return; }
     const lat = parseFloat(data[0].lat);
