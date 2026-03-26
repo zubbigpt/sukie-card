@@ -592,6 +592,7 @@ def render_welcome_email(
     referral_code: str = "",
     referral_url: str = "",
     wallet_url: str = "",
+    google_wallet_url: str = "",
     # Card program branding (so email matches the actual card design)
     card_bg_color: str = "#26170c",
     card_accent_color: str = "#ffca48",
@@ -612,6 +613,7 @@ def render_welcome_email(
         referral_code=referral_code,
         referral_url=referral_url,
         wallet_url=wallet_url,
+        google_wallet_url=google_wallet_url,
         subject="¡Bienvenido/a! 🎉",
         card_bg_color=card_bg_color,
         card_accent_color=card_accent_color,
@@ -1566,6 +1568,28 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
         # Wallet URL — always include; if Apple certs not configured it just 404s gracefully
         wallet_url = f"{BASE_URL}/card/{card.id}/wallet.pkpass"
 
+        # Google Wallet URL for Android
+        _gw_url = ""
+        try:
+            _gw_biz_slug = slug or (biz.slug if biz else "")
+            _gw_biz_name = biz.name if biz else ""
+            _gw_prog = _prog_for_email
+            _gw_color = _gw_prog.bg_color if _gw_prog else "#26170c"
+            _gw_spr   = _gw_prog.stamps_per_reward if _gw_prog else 10
+            if _gw_biz_slug:
+                _gw_url = generate_google_wallet_url(
+                    card_id=str(card.id),
+                    biz_slug=_gw_biz_slug,
+                    biz_name=_gw_biz_name,
+                    customer_name=fn,
+                    stamps=card.stamps or 0,
+                    stamps_per_reward=_gw_spr,
+                    card_url=card_url,
+                    primary_color=_gw_color,
+                ) or ""
+        except Exception:
+            _gw_url = ""
+
         if email_html is None:
             email_html = render_welcome_email(
                 name=fn,
@@ -1574,6 +1598,7 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
                 referral_code=referral_code,
                 referral_url=referral_url,
                 wallet_url=wallet_url if os.environ.get("APPLE_P12_B64") else "",
+                google_wallet_url=_gw_url,
                 **_prog_email_kwargs(_prog_for_email, biz),
             )
 
