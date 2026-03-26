@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   <style>
     :root {
       --surface: #fff8f5;
@@ -37,27 +38,33 @@
     }
     .top-bar {
       width: 100%;
-      background: var(--primary);
-      color: var(--accent);
+      background: #1a1a1a;
+      color: #e0e0e0;
       padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     .top-bar .logo-txt {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 20px;
       letter-spacing: 1px;
-      color: var(--accent);
+      color: #ffffff;
     }
     .top-bar .employee-info {
       font-size: 11px;
       font-weight: 700;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
       border-radius: 50px;
       padding: 4px 12px;
       letter-spacing: 1px;
       text-transform: uppercase;
+      color: #bdbdbd;
+    }
+    .material-symbols-outlined {
+      vertical-align: middle;
+      font-size: inherit;
     }
     .wrapper {
       width: 100%;
@@ -412,7 +419,7 @@
   <!-- SCREEN 1: PIN -->
   <div class="screen active" id="screen-pin">
     <div class="pin-wrap">
-      <div class="icon">🔐</div>
+      <div class="icon"><span class="material-symbols-outlined" style="font-size:52px">lock</span></div>
       <h2>Acceso de Caja</h2>
       <p class="pin-desc">
         <strong>Usuario / PIN del empleado</strong><br>
@@ -429,7 +436,7 @@
   <div class="screen" id="screen-camera">
     <div class="card">
       <div class="card-head">
-        <h2>📷 Escanear tarjeta cliente</h2>
+        <h2><span class="material-symbols-outlined">qr_code_scanner</span> Escanear tarjeta cliente</h2>
         <p>Apunta la cámara al QR del cliente</p>
       </div>
       <div class="card-body" style="padding:16px;">
@@ -444,7 +451,7 @@
         <p id="scan-status">Buscando QR…</p>
       </div>
     </div>
-    <button class="btn btn-ghost" onclick="logout()">← Cerrar sesión</button>
+    <button class="btn btn-ghost" onclick="logout()"><span class="material-symbols-outlined">arrow_back</span> Cerrar sesión</button>
   </div>
 
   <!-- SCREEN 3: STAMP -->
@@ -452,7 +459,7 @@
     <div class="card">
       <div class="card-body">
         <div class="customer-row">
-          <div class="customer-avatar" id="cust-avatar">⭐</div>
+          <div class="customer-avatar" id="cust-avatar"><span class="material-symbols-outlined" style="font-size:22px">person</span></div>
           <div>
             <div class="customer-name" id="cust-name">—</div>
             <div class="customer-sub" id="cust-sub">—</div>
@@ -466,8 +473,8 @@
       </div>
     </div>
     <div class="mode-tabs">
-      <button class="mode-tab active" id="tab-quick" onclick="setMode('quick')">⚡ Sello rápido</button>
-      <button class="mode-tab" id="tab-purchase" onclick="setMode('purchase')">🛍 Modo compra</button>
+      <button class="mode-tab active" id="tab-quick" onclick="setMode('quick')"><span class="material-symbols-outlined">bolt</span> Sello rápido</button>
+      <button class="mode-tab" id="tab-purchase" onclick="setMode('purchase')"><span class="material-symbols-outlined">shopping_bag</span> Modo compra</button>
     </div>
     <!-- Quick mode -->
     <div id="mode-quick">
@@ -481,13 +488,13 @@
           </div>
           <div class="err-msg" id="quick-error"></div>
           <button class="btn btn-primary" id="quick-add-btn" onclick="submitStamps('quick')">
-            ✅ Añadir <span id="quick-label">1 sello</span>
+            <span class="material-symbols-outlined">check_circle</span> Añadir <span id="quick-label">1 sello</span>
           </button>
           <div id="redeem-wrap-quick"></div>
-          <button class="btn btn-ghost" onclick="goBackToScanner()">📷 Escanear otro cliente</button>
+          <button class="btn btn-ghost" onclick="goBackToScanner()"><span class="material-symbols-outlined">qr_code_scanner</span> Escanear otro cliente</button>
           <div class="admin-actions">
             <button class="btn btn-danger" id="remove-stamp-quick-btn" onclick="removeStamp()" style="display:none;">
-              − Quitar sello
+              <span class="material-symbols-outlined">remove_circle</span> Quitar sello
             </button>
           </div>
         </div>
@@ -503,12 +510,12 @@
             <span class="val" id="purchase-total">0</span>
           </div>
           <div class="err-msg" id="purchase-error"></div>
-          <button class="btn btn-primary" id="purchase-add-btn" onclick="submitStamps('purchase')">✅ Confirmar compra</button>
+          <button class="btn btn-primary" id="purchase-add-btn" onclick="submitStamps('purchase')"><span class="material-symbols-outlined">check_circle</span> Confirmar compra</button>
           <div id="redeem-wrap-purchase"></div>
-          <button class="btn btn-ghost" onclick="goBackToScanner()">📷 Escanear otro cliente</button>
+          <button class="btn btn-ghost" onclick="goBackToScanner()"><span class="material-symbols-outlined">qr_code_scanner</span> Escanear otro cliente</button>
           <div class="admin-actions">
             <button class="btn btn-danger" id="remove-stamp-purchase-btn" onclick="removeStamp()" style="display:none;">
-              − Quitar sello
+              <span class="material-symbols-outlined">remove_circle</span> Quitar sello
             </button>
           </div>
         </div>
@@ -521,14 +528,14 @@
     <div class="card">
       <div class="card-body">
         <div class="success-wrap">
-          <div class="big-icon" id="success-icon">✅</div>
+          <div class="big-icon" id="success-icon"><span class="material-symbols-outlined" style="font-size:72px">check_circle</span></div>
           <h2 id="success-title">¡Hecho!</h2>
           <p id="success-name"></p>
           <p id="success-detail"></p>
           <div id="success-reward" style="display:none;" class="reward-alert"></div>
         </div>
-        <button class="btn btn-primary" onclick="goBackToScanner()">📷 Siguiente cliente</button>
-        <button class="btn btn-ghost" onclick="logout()">← Cerrar sesión</button>
+        <button class="btn btn-primary" onclick="goBackToScanner()"><span class="material-symbols-outlined">qr_code_scanner</span> Siguiente cliente</button>
+        <button class="btn btn-ghost" onclick="logout()"><span class="material-symbols-outlined">arrow_back</span> Cerrar sesión</button>
       </div>
     </div>
   </div>
@@ -740,9 +747,18 @@ function getSPR() { return (currentCard && currentCard.stampsOnCard) ? currentCa
 function renderCustomer() {
   const c = currentCard, spr = getSPR();
   const hasAward = (c.awardBalance || 0) > 0;
-  document.getElementById('cust-name').textContent = c.name || ((c.firstName||'') + ' ' + (c.lastName||'')).trim();
+  const fullName = c.name || ((c.firstName||'') + ' ' + (c.lastName||'')).trim();
+  document.getElementById('cust-name').textContent = fullName;
   document.getElementById('cust-sub').textContent = `${c.totalStamps} sellos totales`;
-  document.getElementById('cust-avatar').textContent = hasAward ? '🎁' : '⭐';
+  // Avatar: initials from customer name, or redeem icon if has award
+  const avatar = document.getElementById('cust-avatar');
+  if (hasAward) {
+    avatar.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">redeem</span>';
+  } else {
+    const parts = fullName.split(' ').filter(Boolean);
+    const initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : (parts[0] || 'C')[0].toUpperCase();
+    avatar.textContent = initials;
+  }
 
   // Render stamps progress bar
   const bar = document.getElementById('stamps-bar');
@@ -757,7 +773,7 @@ function renderCustomer() {
 
   // Render awards
   const aw = document.getElementById('award-wrap');
-  aw.innerHTML = hasAward ? `<div class="award-pill">🎉 ${c.awardBalance} premio${c.awardBalance>1?'s':''} disponible${c.awardBalance>1?'s':''}</div>` : '';
+  aw.innerHTML = hasAward ? `<div class="award-pill"><span class="material-symbols-outlined" style="font-size:16px">redeem</span> ${c.awardBalance} premio${c.awardBalance>1?'s':''} disponible${c.awardBalance>1?'s':''}</div>` : '';
 
   // Show remove stamp button only if customer has stamps
   const removeButtons = document.querySelectorAll('[id^="remove-stamp-"]');
@@ -807,7 +823,7 @@ function renderRedeemButtons() {
   ['quick','purchase'].forEach(mode => {
     const w = document.getElementById(`redeem-wrap-${mode}`);
     const n = (currentCard && currentCard.awardBalance) || 0;
-    w.innerHTML = n > 0 ? `<button class="btn btn-reward" onclick="redeemReward()">🎁 Canjear galleta gratis${n>1?' ('+n+' disponibles)':''}</button>` : '';
+    w.innerHTML = n > 0 ? `<button class="btn btn-reward" onclick="redeemReward()"><span class="material-symbols-outlined">redeem</span> Canjear galleta gratis${n>1?' ('+n+' disponibles)':''}</button>` : '';
   });
 }
 
@@ -818,7 +834,7 @@ async function redeemReward() {
   try {
     const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin, store:employeeStore||BIZ_NAME, store_id:employeeStoreId||undefined, source: employeeStoreId ? 'scanner' : 'admin'})});
     const d = await r.json();
-    document.getElementById('success-icon').textContent='🎁';
+    document.getElementById('success-icon').innerHTML='<span class="material-symbols-outlined" style="font-size:72px">redeem</span>';
     document.getElementById('success-title').textContent='¡Premio canjeado!';
     document.getElementById('success-name').textContent=name;
     document.getElementById('success-detail').textContent=`Premios restantes: ${d.award_balance}`;
@@ -850,7 +866,7 @@ async function removeStamp() {
     const d = await r.json();
     if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
     const spr=getSPR();
-    document.getElementById('success-icon').textContent='−';
+    document.getElementById('success-icon').innerHTML='<span class="material-symbols-outlined" style="font-size:72px">remove_circle</span>';
     document.getElementById('success-title').textContent='Sello eliminado';
     document.getElementById('success-name').textContent=name;
     document.getElementById('success-detail').textContent=`−1 sello. Total: ${d.stamps} / ${spr}`;
@@ -875,15 +891,15 @@ async function submitStamps(mode) {
     const d = await r.json();
     if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
     const spr=getSPR(), name=currentCard.name||(currentCard.firstName||'');
-    document.getElementById('success-icon').textContent='✅';
+    document.getElementById('success-icon').innerHTML='<span class="material-symbols-outlined" style="font-size:72px">check_circle</span>';
     document.getElementById('success-title').textContent='¡Hecho!';
     document.getElementById('success-name').textContent=name;
     document.getElementById('success-detail').textContent=`+${stamps} sello${stamps>1?'s':''} añadido${stamps>1?'s':''}. Total: ${d.stamps} / ${spr}`;
     const aw=(d.award_balance||0), ar=document.getElementById('success-reward');
-    if(aw>0){ar.innerHTML=`🎉 ¡Premio desbloqueado! ${name} tiene ${aw} galleta${aw>1?'s':''} gratis.`;ar.style.display='block';}
+    if(aw>0){ar.innerHTML=`<span class="material-symbols-outlined">redeem</span> ¡Premio desbloqueado! ${name} tiene ${aw} galleta${aw>1?'s':''} gratis.`;ar.style.display='block';}
     else{ar.style.display='none';}
     showScreen('success');
-  } catch(e) { btn.disabled=false; btn.textContent=mode==='quick'?'✅ Añadir sellos':'✅ Confirmar compra'; alert('Error de red.'); }
+  } catch(e) { btn.disabled=false; btn.innerHTML=mode==='quick'?'<span class="material-symbols-outlined">check_circle</span> Añadir sellos':'<span class="material-symbols-outlined">check_circle</span> Confirmar compra'; alert('Error de red.'); }
 }
 
 function goBackToScanner() {

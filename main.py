@@ -1249,6 +1249,7 @@ def wallet_get_updated_pass(
             strip_bg_url=strip_bg_url_val,
             logo_url=biz_logo_url,
             auth_token=auth_token,
+            award_balance=card.award_balance or 0,
         )
         return FResponse(
             content=pkpass_bytes,
@@ -1348,6 +1349,7 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             strip_bg_url=strip_bg_url_val,
             logo_url=biz_logo_url,
             auth_token=auth_token,
+            award_balance=card.award_balance or 0,
         )
         return FResponse(
             content=pkpass_bytes,
