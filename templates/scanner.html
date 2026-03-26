@@ -615,38 +615,65 @@ async function startCamera() {
   const st = document.getElementById('scan-status');
   st.textContent = 'Iniciando cámara…'; st.className = '';
   try {
-    videoStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:{ ideal:'environment' }, width:{ ideal:1280 } }
-    });
+    // Try high-res first, fall back to basic environment camera
+    const constraints = [
+      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { facingMode: { ideal: 'environment' } } },
+      { video: true }
+    ];
+    let stream = null;
+    for (const c of constraints) {
+      try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch(e) {}
+    }
+    if (!stream) throw new Error('No camera');
+    videoStream = stream;
     const v = document.getElementById('cam-video');
-    v.srcObject = videoStream; await v.play();
+    v.srcObject = videoStream;
+    // Wait for metadata + play
+    await new Promise((res, rej) => {
+      v.onloadedmetadata = () => v.play().then(res).catch(rej);
+      setTimeout(rej, 5000);
+    });
     scanActive = true; st.textContent = 'Buscando QR…';
-    requestAnimationFrame(scanFrame);
+    _scanLoop();
   } catch(e) {
     st.textContent = '⚠ Sin acceso a la cámara. Revisa los permisos.'; st.className = 'err';
+    console.error('Camera error:', e);
   }
 }
 function stopCamera() {
   scanActive = false;
   if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
 }
+function _scanLoop() {
+  if (!scanActive) return;
+  requestAnimationFrame(scanFrame);
+}
 function scanFrame() {
   if (!scanActive) return;
   const v = document.getElementById('cam-video'), c = document.getElementById('cam-canvas');
-  if (v.readyState < v.HAVE_ENOUGH_DATA) { requestAnimationFrame(scanFrame); return; }
-  c.width = v.videoWidth; c.height = v.videoHeight;
-  const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
+  if (!v || v.readyState < v.HAVE_ENOUGH_DATA || v.videoWidth === 0) { _scanLoop(); return; }
+
+  // Use smaller canvas for faster jsQR processing
+  const MAX = 640;
+  const scale = Math.min(1, MAX / Math.max(v.videoWidth, v.videoHeight));
+  c.width  = Math.round(v.videoWidth  * scale);
+  c.height = Math.round(v.videoHeight * scale);
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(v, 0, 0, c.width, c.height);
   const img = ctx.getImageData(0, 0, c.width, c.height);
-  const code = jsQR(img.data, img.width, img.height, { inversionAttempts:'dontInvert' });
-  if (code) {
+
+  const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+  if (code && code.data) {
     // Birthday voucher QR? URL contains /birthday/{token}
     const bdayMatch = code.data.match(/\/birthday\/([a-f0-9]{24})/i);
     if (bdayMatch) { scanActive = false; stopCamera(); redeemBirthdayVoucher(bdayMatch[1]); return; }
-    // Regular loyalty card UUID
+    // Regular loyalty card UUID (from URL or raw UUID)
     const id = code.data.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
     if (id) { scanActive = false; stopCamera(); loadCustomer(id[0]); return; }
   }
-  requestAnimationFrame(scanFrame);
+  // Continue loop with a small delay to reduce CPU on mobile
+  setTimeout(_scanLoop, 80);
 }
 
 // BIRTHDAY VOUCHER REDEEM
