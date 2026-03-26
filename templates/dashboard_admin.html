@@ -2596,12 +2596,18 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
           <!-- Map search bar -->
           <label style="font-size:.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--brown-light)">Buscar una dirección en el mapa</label>
-          <div style="display:flex;gap:8px;margin-top:4px;margin-bottom:12px">
-            <input id="geo-search2" type="text" placeholder="Ej: Café Miramar, Calle Mayor 12 Madrid…"
-              style="flex:1;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();searchGeoAddress();}">
-            <button onclick="searchGeoAddress()" class="btn-sm btn-primary" style="padding:9px 16px;display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:.9rem">search</span></button>
-            <button onclick="detectLocation2()" class="btn-sm btn-ghost" style="padding:9px 14px;white-space:nowrap;display:flex;align-items:center;gap:4px" title="Usar mi ubicación actual"><span class="material-symbols-outlined" style="font-size:.9rem">my_location</span></button>
+          <div style="position:relative;margin-top:4px;margin-bottom:12px">
+            <div style="display:flex;gap:8px">
+              <input id="geo-search2" type="text" placeholder="Ej: Calle Mayor 12, Madrid…"
+                autocomplete="off"
+                style="flex:1;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)"
+                oninput="geoAutocomplete(this.value)"
+                onkeydown="geoSearchKeydown(event)">
+              <button onclick="searchGeoAddress()" class="btn-sm btn-primary" style="padding:9px 16px;display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:.9rem">search</span></button>
+              <button onclick="detectLocation2()" class="btn-sm btn-ghost" style="padding:9px 14px;white-space:nowrap;display:flex;align-items:center;gap:4px" title="Usar mi ubicación actual"><span class="material-symbols-outlined" style="font-size:.9rem">my_location</span></button>
+            </div>
+            <!-- Autocomplete dropdown -->
+            <div id="geo-autocomplete-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:#fff;border:1.5px solid var(--cream-border);border-radius:0 0 8px 8px;box-shadow:0 6px 20px rgba(0,0,0,.12);max-height:220px;overflow-y:auto"></div>
           </div>
 
           <!-- Map -->
@@ -5724,9 +5730,82 @@ async function reverseGeocodeGeo(lat, lng){
   }catch(e){}
 }
 
+let _geoAutocompleteTimer = null;
+let _geoAcSelected = -1;
+let _geoAcResults = [];
+
+async function geoAutocomplete(val){
+  clearTimeout(_geoAutocompleteTimer);
+  const list = document.getElementById('geo-autocomplete-list');
+  if(!val || val.trim().length < 3){ if(list) list.style.display='none'; return; }
+  _geoAutocompleteTimer = setTimeout(async ()=>{
+    try{
+      const r = await fetch(`${BASE}/api/geo/search?q=${encodeURIComponent(val.trim())}&limit=5`);
+      _geoAcResults = await r.json();
+      _geoAcSelected = -1;
+      if(!_geoAcResults.length){ list.style.display='none'; return; }
+      list.innerHTML = _geoAcResults.map((item, i) => {
+        const parts = item.display_name.split(',');
+        const main = parts.slice(0,2).join(',');
+        const sub  = parts.slice(2,5).join(',');
+        return `<div data-idx="${i}" onmousedown="geoAcPick(${i})"
+          style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--cream-border);transition:background .15s"
+          onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background='#fff'">
+          <div style="font-size:.87rem;font-weight:600;color:#0a0a0a">${main}</div>
+          <div style="font-size:.75rem;color:var(--brown-light)">${sub}</div>
+        </div>`;
+      }).join('');
+      list.style.display='block';
+    }catch(e){ if(list) list.style.display='none'; }
+  }, 350);
+}
+
+function geoSearchKeydown(e){
+  const list = document.getElementById('geo-autocomplete-list');
+  const items = list ? list.querySelectorAll('[data-idx]') : [];
+  if(e.key==='ArrowDown'){ e.preventDefault(); _geoAcSelected=Math.min(_geoAcSelected+1,items.length-1); _geoAcHighlight(items); return; }
+  if(e.key==='ArrowUp'){   e.preventDefault(); _geoAcSelected=Math.max(_geoAcSelected-1,0); _geoAcHighlight(items); return; }
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(_geoAcSelected>=0 && _geoAcResults[_geoAcSelected]){ geoAcPick(_geoAcSelected); }
+    else { searchGeoAddress(); }
+    return;
+  }
+  if(e.key==='Escape'){ if(list) list.style.display='none'; }
+}
+
+function _geoAcHighlight(items){
+  items.forEach((el,i)=>{ el.style.background = i===_geoAcSelected ? 'var(--cream)' : '#fff'; });
+}
+
+function geoAcPick(idx){
+  const item = _geoAcResults[idx];
+  if(!item) return;
+  const list = document.getElementById('geo-autocomplete-list');
+  if(list) list.style.display='none';
+  const lat = parseFloat(item.lat);
+  const lng = parseFloat(item.lon);
+  const addrParts = item.display_name.split(',').slice(0,4).join(',');
+  document.getElementById('geo-search2').value = addrParts;
+  document.getElementById('geo-lat2').value = lat.toFixed(6);
+  document.getElementById('geo-lng2').value = lng.toFixed(6);
+  if(document.getElementById('geo-address2')) document.getElementById('geo-address2').value = addrParts;
+  if(_geoMap && _geoMarker){ _geoMap.setView([lat, lng], 16); _geoMarker.setLatLng([lat, lng]); }
+  const status = document.getElementById('geo-status2');
+  if(status){ status.textContent='✅ Ubicación seleccionada'; setTimeout(()=>{ status.textContent=''; },2500); }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e){
+  const list = document.getElementById('geo-autocomplete-list');
+  if(list && !list.contains(e.target) && e.target.id!=='geo-search2') list.style.display='none';
+});
+
 async function searchGeoAddress(){
   const q = (document.getElementById('geo-search2')?.value||'').trim();
   if(!q) return;
+  const list = document.getElementById('geo-autocomplete-list');
+  if(list) list.style.display='none';
   const status = document.getElementById('geo-status2');
   if(status) status.textContent = '🔍 Buscando…';
   try{
