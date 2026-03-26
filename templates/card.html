@@ -106,18 +106,6 @@ body {
   margin-top: 4px;
   font-weight: 600;
 }
-.tier-badge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  transition: all 0.3s;
-}
 .card-member-info {
   display: flex;
   justify-content: space-between;
@@ -194,8 +182,11 @@ body {
   transform: scale(1.03);
 }
 .stamp.filled::after {
-  content: attr(data-emoji);
-  font-size: 22px;
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
 }
 .stamp:not(.filled)::after {
   content: '';
@@ -273,142 +264,6 @@ body {
   color: var(--outline);
   margin-top: 2px;
   font-weight: 700;
-}
-
-/* Tier progression */
-.tier-progression {
-  background: var(--surface-low);
-  border-radius: var(--r);
-  padding: 16px;
-  margin-bottom: 14px;
-}
-.tier-prog-title {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--outline);
-  margin-bottom: 12px;
-}
-.tier-prog-bar-wrap {
-  position: relative;
-  margin-bottom: 8px;
-}
-.tier-prog-bar-bg {
-  height: 8px;
-  background: var(--outline-var);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.tier-prog-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  background: var(--honey);
-  transition: width 1s ease;
-}
-.tier-prog-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-.tier-prog-label {
-  font-size: 10px;
-  color: var(--outline);
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-weight: 600;
-}
-.tier-prog-info {
-  font-size: 11px;
-  color: var(--primary-mid);
-  text-align: center;
-  margin-top: 8px;
-  font-weight: 700;
-}
-
-/* Benefits */
-.benefits-section {
-  background: var(--surface-low);
-  border-radius: var(--r);
-  padding: 16px;
-  margin-bottom: 14px;
-}
-.benefits-title {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--outline);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.benefit-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  font-size: 12px;
-  color: var(--primary);
-  border-bottom: 1px solid var(--outline-var);
-}
-.benefit-item:last-child { border-bottom: none; }
-.benefit-check {
-  width: 18px;
-  height: 18px;
-  background: var(--primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: white;
-  font-size: 10px;
-}
-
-/* Next tier preview */
-.next-tier-card {
-  background: var(--surface-mid);
-  border-radius: var(--r);
-  padding: 16px;
-  margin-bottom: 14px;
-}
-.next-tier-title {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--outline);
-  margin-bottom: 10px;
-}
-.next-tier-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.next-tier-emoji { font-size: 32px; }
-.next-tier-details { flex: 1; }
-.next-tier-name {
-  font-family: 'Epilogue', sans-serif;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--primary);
-}
-.next-tier-reward {
-  font-size: 12px;
-  color: var(--outline);
-  margin-top: 2px;
-}
-.next-tier-stamps {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--honey-dark);
-  background: var(--honey-light);
-  padding: 4px 10px;
-  border-radius: 10px;
-  white-space: nowrap;
 }
 
 /* QR */
@@ -548,7 +403,6 @@ body {
         <div class="card-title-text">{{ card_title }}</div>
         <div class="card-subtitle">Tarjeta de Fidelidad</div>
       </div>
-      <div class="tier-badge" id="tier-badge">🥉 BRONCE</div>
     </div>
     <div class="card-member-info">
       <div class="member-name">{{ first_name }}</div>
@@ -569,7 +423,7 @@ body {
 
     <!-- Reward box -->
     <div class="reward-progress" id="reward-box">
-      <div class="reward-emoji-big" id="reward-emoji">🎁</div>
+      <div class="reward-emoji-big" id="reward-emoji"><span class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1">redeem</span></div>
       <div class="reward-info">
         <div class="reward-info-title" id="reward-name">Premio</div>
         <div class="reward-info-sub" id="reward-desc"></div>
@@ -586,40 +440,6 @@ body {
       <div class="stat-box">
         <div class="stat-value" id="total-rewards">0</div>
         <div class="stat-label">Premios canjeados</div>
-      </div>
-    </div>
-
-    <!-- Tier progression -->
-    <div class="tier-progression" id="tier-progression-box">
-      <div class="tier-prog-title">Progreso al siguiente nivel</div>
-      <div class="tier-prog-bar-wrap">
-        <div class="tier-prog-bar-bg">
-          <div class="tier-prog-bar-fill" id="tier-bar" style="width:0%;"></div>
-        </div>
-      </div>
-      <div class="tier-prog-labels">
-        <div class="tier-prog-label" id="tier-from-label">🥉 Bronce</div>
-        <div class="tier-prog-label" id="tier-to-label">🥈 Plata</div>
-      </div>
-      <div class="tier-prog-info" id="tier-prog-info">Faltan 50 sellos para nivel Plata</div>
-    </div>
-
-    <!-- Benefits -->
-    <div class="benefits-section" id="benefits-box">
-      <div class="benefits-title" id="benefits-title">🏆 Tus beneficios Bronce</div>
-      <div id="benefits-list"></div>
-    </div>
-
-    <!-- Next tier -->
-    <div class="next-tier-card" id="next-tier-box">
-      <div class="next-tier-title">✨ Siguiente nivel</div>
-      <div class="next-tier-info">
-        <div class="next-tier-emoji" id="next-tier-emoji">🥈</div>
-        <div class="next-tier-details">
-          <div class="next-tier-name" id="next-tier-name">Plata</div>
-          <div class="next-tier-reward" id="next-tier-reward">Box de 6 cookies</div>
-        </div>
-        <div class="next-tier-stamps" id="next-tier-stamps">50 sellos</div>
       </div>
     </div>
 
@@ -671,9 +491,9 @@ if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'Mac
 {% if google_review_url %}
 <!-- Google Review Banner — shown via JS when customer hits review_trigger_stamps -->
 <div id="review-banner" style="display:none;margin:14px 0 4px;background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:14px 16px;text-align:center">
-  <div style="font-size:1.35rem;margin-bottom:4px">⭐⭐⭐⭐⭐</div>
+  <div style="margin-bottom:4px"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span></div>
   <div style="font-weight:700;color:#26170c;font-size:.97rem;margin-bottom:6px">¿Te gusta nuestro servicio?</div>
-  <div style="font-size:.85rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google 🙏</div>
+  <div style="font-size:.85rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google</div>
   <a href="{{ google_review_url }}" target="_blank" rel="noopener"
      style="display:inline-flex;align-items:center;gap:6px;background:#4285F4;color:#fff;font-weight:700;font-size:.9rem;padding:9px 20px;border-radius:8px;text-decoration:none">
     <span class="material-symbols-outlined" style="font-size:.95rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20">rate_review</span> Dejar reseña en Google
@@ -721,7 +541,6 @@ function buildStamps(current, total) {
   for (let i = 0; i < total; i++) {
     const s = document.createElement('div');
     s.className = 'stamp' + (i < current ? ' filled' : '');
-    s.setAttribute('data-emoji', '🍪');
     grid.appendChild(s);
   }
   document.getElementById('stamps-count').textContent = current + '/' + total;
@@ -750,18 +569,11 @@ async function loadData() {
 
 function renderCard(card, club) {
   const tier = club.current_tier || {};
-  const nextTier = club.next_tier;
   const clubInfo = club.club || {};
 
   // Club header
   document.getElementById('club-name').textContent = clubInfo.nombre || 'VIP Club';
   document.getElementById('club-tagline').textContent = clubInfo.tagline || '';
-
-  // Tier badge
-  const badge = document.getElementById('tier-badge');
-  badge.textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce').toUpperCase();
-  badge.style.background = tier.color || '#CD7F32';
-  badge.style.color = '#fff';
 
   // Member info
   document.getElementById('member-number').textContent = 'Miembro #' + String(club.member_number || 1).padStart(3,'0');
@@ -777,12 +589,11 @@ function renderCard(card, club) {
   // Reward box
   const awardsBalance = club.award_balance || 0;
   const toNextReward = club.stamps_to_next_reward || stampsPerReward;
-  document.getElementById('reward-emoji').textContent = tier.premio_emoji || '🍪';
   document.getElementById('reward-name').textContent = tier.premio_nombre || 'Premio';
   document.getElementById('reward-desc').textContent = tier.premio_descripcion || '';
   const rewardBadge = document.getElementById('reward-badge');
   if (awardsBalance > 0) {
-    rewardBadge.textContent = '🎉 ¡' + awardsBalance + ' disponible' + (awardsBalance > 1 ? 's' : '') + '!';
+    rewardBadge.textContent = '¡' + awardsBalance + ' disponible' + (awardsBalance > 1 ? 's' : '') + '!';
     rewardBadge.classList.add('has-reward');
   } else {
     rewardBadge.textContent = toNextReward + ' más';
@@ -791,38 +602,6 @@ function renderCard(card, club) {
   // Stats
   document.getElementById('total-stamps').textContent = club.total_stamps || 0;
   document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
-
-  // Tier progression
-  if (nextTier) {
-    const fromStamps = tier.min_sellos_totales || 0;
-    const toStamps = nextTier.min_sellos_totales || 999;
-    const progress = Math.min(100, Math.round(((club.total_stamps - fromStamps) / (toStamps - fromStamps)) * 100));
-    document.getElementById('tier-bar').style.width = progress + '%';
-    document.getElementById('tier-bar').style.background = tier.color || '#ffca48';
-    document.getElementById('tier-from-label').textContent = (tier.emoji || '🥉') + ' ' + (tier.nombre || 'Bronce');
-    document.getElementById('tier-to-label').textContent = (nextTier.emoji || '🥈') + ' ' + (nextTier.nombre || 'Plata');
-    document.getElementById('tier-prog-info').textContent = 'Faltan ' + club.stamps_to_next_tier + ' sellos para nivel ' + nextTier.nombre;
-
-    // Next tier card
-    document.getElementById('next-tier-emoji').textContent = nextTier.emoji || '🥈';
-    document.getElementById('next-tier-name').textContent = nextTier.nombre || 'Plata';
-    document.getElementById('next-tier-reward').textContent = (nextTier.premio_emoji || '') + ' ' + (nextTier.premio_nombre || '');
-    document.getElementById('next-tier-stamps').textContent = club.stamps_to_next_tier + ' sellos más';
-  } else {
-    document.getElementById('tier-progression-box').style.display = 'none';
-    document.getElementById('next-tier-box').style.display = 'none';
-  }
-
-  // Benefits
-  const benefits = tier.beneficios || [];
-  document.getElementById('benefits-title').textContent = (tier.emoji || '🏆') + ' Tus beneficios ' + (tier.nombre || 'Bronce');
-  const bList = document.getElementById('benefits-list');
-  bList.innerHTML = benefits.map(b => `
-    <div class="benefit-item">
-      <div class="benefit-check">✓</div>
-      <span>${b}</span>
-    </div>
-  `).join('');
 
   // Google Review banner
   maybeShowReviewBanner(club.total_stamps || 0, club.stamps_on_card || 0, awardsBalance);
