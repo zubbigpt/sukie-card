@@ -3160,16 +3160,68 @@ def get_push_sub_count(slug: str, pin: str = "", db: Session = Depends(get_db)):
     return {"count": row[0] if row else 0}
 
 
+def _photon_to_nominatim(features: list) -> list:
+    """Convert Photon GeoJSON features to Nominatim-style dicts."""
+    results = []
+    for f in features:
+        props = f.get("properties", {})
+        coords = f.get("geometry", {}).get("coordinates", [None, None])
+        if not coords[0]:
+            continue
+        parts = []
+        if props.get("name"):      parts.append(props["name"])
+        if props.get("housenumber"): parts.append(props["housenumber"])
+        if props.get("street"):    parts.append(props["street"])
+        if props.get("postcode"):  parts.append(props["postcode"])
+        if props.get("city"):      parts.append(props["city"])
+        if props.get("state"):     parts.append(props["state"])
+        if props.get("country"):   parts.append(props["country"])
+        display = ", ".join(p for p in parts if p)
+        results.append({
+            "lat": str(coords[1]),
+            "lon": str(coords[0]),
+            "display_name": display,
+        })
+    return results
+
+
 @app.get("/api/geo/search")
-async def geo_search(q: str = "", limit: int = 1):
-    """Proxy geocoding search to Nominatim (server-side, with proper User-Agent)."""
+async def geo_search(q: str = "", limit: int = 5):
+    """Proxy geocoding search — uses Photon (better Spain coverage) with Nominatim fallback."""
     if not q.strip():
         raise HTTPException(status_code=400, detail="q is required")
-    url = f"https://nominatim.openstreetmap.org/search?format=json&q={q}&limit={limit}"
+    headers_nominatim = {"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"}
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(url, headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"})
-            return r.json()
+        async with httpx.AsyncClient(timeout=12) as client:
+            # 1st try: Photon (komoot) — great street-level coverage in Spain
+            r1 = await client.get(
+                "https://photon.komoot.io/api/",
+                params={"q": q, "limit": limit, "bbox": "-9.5,35.5,4.5,44.0"},
+                headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)"},
+            )
+            if r1.status_code == 200:
+                geojson = r1.json()
+                features = geojson.get("features", [])
+                if features:
+                    return _photon_to_nominatim(features)
+
+            # Fallback: Nominatim with countrycodes=es
+            r2 = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"format": "json", "q": q, "limit": limit, "countrycodes": "es"},
+                headers=headers_nominatim,
+            )
+            data = r2.json()
+            if data:
+                return data
+
+            # Last resort: Nominatim worldwide
+            r3 = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"format": "json", "q": q, "limit": limit},
+                headers=headers_nominatim,
+            )
+            return r3.json()
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Geocoding error: {e}")
 
