@@ -116,6 +116,11 @@ def generate_google_wallet_url(
     stamps_per_reward: int,
     card_url: str,
     primary_color: str = "#3A3426",
+    accent_color: str = "#ffca48",
+    reward_name: str = "Premio",
+    logo_url: str = "",
+    award_balance: int = 0,
+    card_name: str = "",
 ) -> str | None:
     """Generate a signed Google Wallet 'Save to Wallet' URL for a loyalty pass.
     Returns None if Google Wallet env vars are not configured."""
@@ -128,18 +133,57 @@ def generate_google_wallet_url(
         class_suffix = biz_slug.replace("-", "_")
         class_id  = f"{issuer_id}.{class_suffix}"
         object_id = f"{issuer_id}.{card_id.replace('-', '_')}"
-        hex_color = primary_color if primary_color.startswith("#") else "#3A3426"
+
+        hex_bg     = primary_color if primary_color.startswith("#") else "#3A3426"
         stamps_left = max(0, stamps_per_reward - stamps)
-        header_val = f"{stamps}/{stamps_per_reward} sellos"
-        if stamps_left == 0:
-            header_val = "🎉 ¡Premio disponible!"
+
+        # Visual progress bar using filled/empty blocks
+        filled  = min(stamps, stamps_per_reward)
+        empty   = stamps_per_reward - filled
+        bar     = "█" * filled + "░" * empty
+        pct     = int((filled / stamps_per_reward) * 100) if stamps_per_reward else 0
+
+        # Status line
+        if award_balance > 0:
+            status_val = f"Premio listo x{award_balance}" if award_balance > 1 else "Premio listo"
+        elif stamps_left == 0:
+            status_val = "Premio disponible"
+        else:
+            status_val = f"Faltan {stamps_left} sello{'s' if stamps_left != 1 else ''}"
+
+        program_title = card_name or biz_name
+
+        text_modules = [
+            {
+                "id": "progress_bar",
+                "header": f"Sellos  {stamps}/{stamps_per_reward}  ({pct}%)",
+                "body": bar,
+            },
+            {
+                "id": "status",
+                "header": "Estado",
+                "body": status_val,
+            },
+            {
+                "id": "reward_info",
+                "header": "Premio",
+                "body": reward_name,
+            },
+        ]
+        if award_balance > 0:
+            text_modules.append({
+                "id": "awards",
+                "header": "Premios disponibles",
+                "body": str(award_balance),
+            })
+
         generic_object = {
             "id": object_id,
             "classId": class_id,
             "genericType": "GENERIC_TYPE_UNSPECIFIED",
-            "hexBackgroundColor": hex_color,
+            "hexBackgroundColor": hex_bg,
             "cardTitle": {
-                "defaultValue": {"language": "es", "value": biz_name}
+                "defaultValue": {"language": "es", "value": program_title}
             },
             "subheader": {
                 "defaultValue": {"language": "es", "value": "Tarjeta de Fidelidad"}
@@ -147,20 +191,31 @@ def generate_google_wallet_url(
             "header": {
                 "defaultValue": {"language": "es", "value": customer_name}
             },
-            "textModulesData": [
-                {
-                    "id": "stamps",
-                    "header": "Sellos",
-                    "body": header_val
-                }
-            ],
+            "textModulesData": text_modules,
+            "linksModuleData": {
+                "uris": [
+                    {
+                        "uri": card_url,
+                        "description": "Ver tarjeta web",
+                        "id": "card_link",
+                    }
+                ]
+            },
             "barcode": {
                 "type": "QR_CODE",
                 "value": card_url,
-                "alternateText": card_id[:8].upper()
+                "alternateText": card_id[:8].upper(),
             },
             "state": "ACTIVE",
         }
+
+        # Add logo image if available
+        if logo_url:
+            generic_object["logo"] = {
+                "sourceUri": {"uri": logo_url},
+                "contentDescription": {"defaultValue": {"language": "es", "value": biz_name}},
+            }
+
         claims = {
             "iss": sa["client_email"],
             "aud": "google",
@@ -1400,6 +1455,9 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
 
     # Generate Google Wallet URL
     card_url = f"{BASE_URL}/card/{card_id}"
+    _gw_reward = (_show_prog.reward_name if _show_prog and _show_prog.reward_name else None) or "Premio"
+    _gw_logo   = (biz.logo_url if biz and biz.logo_url else "") or ""
+    _gw_cname  = (_show_prog.name if _show_prog and _show_prog.name else None) or biz_name
     google_wallet_url = generate_google_wallet_url(
         card_id=card_id,
         biz_slug=biz_slug,
@@ -1409,6 +1467,11 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
         stamps_per_reward=stamps_per_reward_val,
         card_url=card_url,
         primary_color=primary_color,
+        accent_color=accent_color,
+        reward_name=_gw_reward,
+        logo_url=_gw_logo,
+        award_balance=card.award_balance or 0,
+        card_name=_gw_cname,
     ) if biz_slug else None
 
     return templates.TemplateResponse("card.html", {
@@ -1576,8 +1639,12 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
             _gw_biz_slug = slug or (biz.slug if biz else "")
             _gw_biz_name = biz.name if biz else ""
             _gw_prog = _prog_for_email
-            _gw_color = _gw_prog.bg_color if _gw_prog else "#26170c"
-            _gw_spr   = _gw_prog.stamps_per_reward if _gw_prog else 10
+            _gw_color   = _gw_prog.bg_color       if _gw_prog else "#26170c"
+            _gw_accent  = _gw_prog.accent_color   if _gw_prog else "#ffca48"
+            _gw_spr     = _gw_prog.stamps_per_reward if _gw_prog else 10
+            _gw_reward  = (_gw_prog.reward_name   if _gw_prog and _gw_prog.reward_name else None) or "Premio"
+            _gw_logo2   = (biz.logo_url           if biz and biz.logo_url else "") or ""
+            _gw_cname2  = (_gw_prog.name          if _gw_prog and _gw_prog.name else None) or _gw_biz_name
             if _gw_biz_slug:
                 _gw_url = generate_google_wallet_url(
                     card_id=str(card.id),
@@ -1588,6 +1655,11 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
                     stamps_per_reward=_gw_spr,
                     card_url=card_url,
                     primary_color=_gw_color,
+                    accent_color=_gw_accent,
+                    reward_name=_gw_reward,
+                    logo_url=_gw_logo2,
+                    award_balance=card.award_balance or 0,
+                    card_name=_gw_cname2,
                 ) or ""
         except Exception:
             _gw_url = ""
@@ -3984,6 +4056,9 @@ async def biz_card(slug: str, card_id: str, request: Request, db: Session = Depe
     primary_color = (_biz_card_prog.bg_color     if _biz_card_prog and _biz_card_prog.bg_color     else None) or biz.primary_color or "#26170c"
     accent_color  = (_biz_card_prog.accent_color if _biz_card_prog and _biz_card_prog.accent_color else None) or biz.accent_color  or "#ffca48"
     # Generate Google Wallet URL (None if not configured)
+    _biz_reward = (_biz_card_prog.reward_name if _biz_card_prog and _biz_card_prog.reward_name else None) or "Premio"
+    _biz_logo   = (biz.logo_url if biz.logo_url else "") or ""
+    _biz_cname  = (_biz_card_prog.name if _biz_card_prog and _biz_card_prog.name else None) or biz.name
     google_wallet_url = generate_google_wallet_url(
         card_id=card_id,
         biz_slug=slug,
@@ -3993,6 +4068,11 @@ async def biz_card(slug: str, card_id: str, request: Request, db: Session = Depe
         stamps_per_reward=biz.stamps_per_reward or STAMPS_PER_REWARD,
         card_url=card_url,
         primary_color=primary_color,
+        accent_color=accent_color,
+        reward_name=_biz_reward,
+        logo_url=_biz_logo,
+        award_balance=card.award_balance or 0,
+        card_name=_biz_cname,
     )
     return templates.TemplateResponse("card.html", {
         "request":            request,
