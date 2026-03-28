@@ -3428,7 +3428,7 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
                     "trial_period_days": 14,
                 },
                 allow_promotion_codes=True,
-                customer_update={"name": "auto"},
+                customer_update={"name": "auto", "address": "auto"},
                 tax_id_collection={"enabled": True},
                 billing_address_collection="required",
                 locale="es",
@@ -4942,7 +4942,7 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
             cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
             subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}, "trial_period_days": 14},
             allow_promotion_codes=True,
-            customer_update={"name": "auto"},   # required when tax_id_collection is enabled for existing customers
+            customer_update={"name": "auto", "address": "auto"},   # required when tax_id_collection is enabled for existing customers
             tax_id_collection={"enabled": True},
             billing_address_collection="required",
             locale="es",
