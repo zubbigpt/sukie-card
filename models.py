@@ -151,6 +151,8 @@ class Business(Base):
     email_smtp_port  = Column(Integer, nullable=True)  # custom SMTP port
     email_smtp_user  = Column(String, nullable=True)   # custom SMTP user
     email_smtp_pass  = Column(String, nullable=True)   # custom SMTP password
+    # ── Campaign push (promo message shown via Wallet changeMessage) ───────────
+    promo_message   = Column(String, nullable=True, default="")
     # ── Stripe billing ─────────────────────────────────────────────────────────
     stripe_customer_id        = Column(String, nullable=True)   # cus_xxx
     stripe_subscription_id    = Column(String, nullable=True)   # sub_xxx
