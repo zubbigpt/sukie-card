@@ -3405,7 +3405,39 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     ), {"bid": str(business.id)})
     db.commit()
 
-    # Send confirmation email
+    # ── Stripe checkout inmediato (14-day trial, tarjeta requerida) ──────────
+    checkout_url = None
+    if STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO:
+        try:
+            stripe_customer = _stripe_sdk.Customer.create(
+                email=email,
+                name=name,
+                metadata={"biz_id": str(business.id), "biz_slug": slug},
+            )
+            db.execute(text("UPDATE businesses SET stripe_customer_id=:cid WHERE id=:bid"),
+                       {"cid": stripe_customer.id, "bid": str(business.id)})
+            db.commit()
+            stripe_session = _stripe_sdk.checkout.Session.create(
+                customer=stripe_customer.id,
+                mode="subscription",
+                line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
+                success_url=f"{BASE_URL}/api/app/checkout-success?token={confirm_token}&slug={slug}",
+                cancel_url=f"{BASE_URL}/app/register?checkout_cancelled=1&email={email}",
+                subscription_data={
+                    "metadata": {"biz_id": str(business.id), "biz_slug": slug},
+                    "trial_period_days": 14,
+                },
+                allow_promotion_codes=True,
+                customer_update={"name": "auto"},
+                tax_id_collection={"enabled": True},
+                billing_address_collection="required",
+                locale="es",
+            )
+            checkout_url = stripe_session.url
+        except Exception as e:
+            print(f"⚠️ Stripe checkout creation failed at registration: {e}")
+
+    # ── Email de confirmación (backup si el usuario no completa el pago) ────
     confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
     try:
         email_sent = send_email(
@@ -3430,10 +3462,11 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
         email_sent = False
 
     return {
-        "message":    "Cuenta creada. Revisa tu email para confirmarla.",
-        "email_sent": email_sent,
-        "slug":       slug,
-        "name":       name,
+        "message":     "Cuenta creada. Completa tu prueba gratuita de 14 días.",
+        "email_sent":  email_sent,
+        "slug":        slug,
+        "name":        name,
+        "checkout_url": checkout_url,   # frontend redirige aquí inmediatamente
     }
 
 
@@ -3468,6 +3501,36 @@ async def confirm_email(token: str = "", db: Session = Depends(get_db)):
         httponly=False,      # JS must read it to auto-login
         samesite="strict",
         path=f"/biz/{biz.slug}/dashboard",
+    )
+    return response
+
+
+@app.get("/api/app/checkout-success")
+async def checkout_success_redirect(token: str = "", slug: str = "", db: Session = Depends(get_db)):
+    """After Stripe checkout completes: confirm email + auto-login to dashboard."""
+    biz = None
+    if token:
+        biz = db.query(models.Business).filter(
+            models.Business.email_confirm_token == token
+        ).first()
+        if biz:
+            db.execute(text(
+                "UPDATE businesses SET email_confirmed=TRUE, email_confirm_token=NULL WHERE id=:bid"
+            ), {"bid": str(biz.id)})
+            db.commit()
+    if not biz and slug:
+        biz = get_business_by_slug(slug, db)
+    if not biz:
+        return RedirectResponse("/app/login?checkout_ok=1", status_code=302)
+    target_slug = biz.slug
+    response = RedirectResponse(f"/biz/{target_slug}/dashboard?stripe_success=1", status_code=302)
+    response.set_cookie(
+        "_zc_boot",
+        biz.admin_pin,
+        max_age=90,
+        httponly=False,
+        samesite="strict",
+        path=f"/biz/{target_slug}/dashboard",
     )
     return response
 
@@ -4978,17 +5041,18 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 
     try:
         if etype == "checkout.session.completed":
-            # Solo marcamos pro — el período exacto llega en subscription.created/updated
+            # Marca pro y confirma email (por si registró y pagó en el mismo flow)
             cid = data.get("customer")
             sid = data.get("subscription")
             biz_row = _biz_by_customer(cid)
             if biz_row and sid:
                 db.execute(text(
                     "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
-                    "stripe_subscription_status='active' WHERE id=:bid"
+                    "stripe_subscription_status='active', email_confirmed=TRUE, "
+                    "email_confirm_token=NULL WHERE id=:bid"
                 ), {"sid": sid, "bid": str(biz_row[0])})
                 db.commit()
-                print(f"✅ checkout.session.completed — biz {biz_row[0]} → pro")
+                print(f"✅ checkout.session.completed — biz {biz_row[0]} → pro + email confirmed")
 
         elif etype in ("customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"):
             cid    = data.get("customer")

@@ -425,7 +425,7 @@
       <h2>¡Revisa tu email!</h2>
       <p>Te hemos enviado un enlace de confirmación a:</p>
       <div class="email-chip" id="successEmail"></div>
-      <p style="font-size:.82rem">Haz clic en el enlace del email para activar tu cuenta y acceder a tu panel.</p>
+      <p style="font-size:.82rem">Haz clic en el enlace del email para activar tu cuenta y empezar tu prueba gratuita de 14 días.</p>
       <div class="resend-link">¿No lo ves? Revisa la carpeta de spam.<br><a onclick="resendConfirm()">Reenviar email de confirmación</a></div>
     </div>
 
@@ -638,7 +638,12 @@
         const d = await r.json();
 
         if (r.ok) {
-          // Show success screen — user must confirm email
+          // Si Stripe está configurado, redirigir directamente al checkout
+          if (d.checkout_url) {
+            window.location.href = d.checkout_url;
+            return;
+          }
+          // Fallback: mostrar pantalla de confirmación de email
           document.getElementById('step3').classList.remove('active');
           document.getElementById('stepDots').style.display = 'none';
           document.getElementById('successPanel').style.display = 'block';
