@@ -256,6 +256,7 @@ def build_pass_json(
     geo_radius_m: int = 300,
     logo_url: str = "",
     award_balance: int = 0,
+    promo_message: str = "",
 ) -> dict:
     """Build the pass.json dict for a loyalty card."""
     pass_type_id = os.environ.get("APPLE_PASS_TYPE_ID", "pass.com.zubiecard.loyalty")
@@ -320,6 +321,13 @@ def build_pass_json(
                     "label": "PREMIO",
                     "value": reward_name or "Premio",
                     "textAlignment": "PKTextAlignmentLeft",
+                },
+                {
+                    "key": "promo",
+                    "label": "MENSAJE",
+                    "value": promo_message or "",
+                    "changeMessage": "%@",
+                    "textAlignment": "PKTextAlignmentRight",
                 },
             ],
             "backFields": [
@@ -397,6 +405,7 @@ def generate_pkpass(
     strip_bg_url: str = "",
     logo_url: str = "",
     award_balance: int = 0,
+    promo_message: str = "",
 ) -> bytes:
     """
     Generate a signed .pkpass file and return it as bytes.
@@ -424,6 +433,7 @@ def generate_pkpass(
         geo_radius_m=geo_radius_m,
         logo_url=logo_url,
         award_balance=award_balance,
+        promo_message=promo_message,
     )
     pass_json_bytes = json.dumps(pass_data, ensure_ascii=False, indent=2).encode("utf-8")
 

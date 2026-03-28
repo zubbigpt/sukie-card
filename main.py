@@ -355,6 +355,8 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_status VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_current_period_end TIMESTAMPTZ",
+        # ── Campaign promo message (shown on Wallet pass via changeMessage) ─────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS promo_message VARCHAR DEFAULT ''",
         # ── Google Reviews ─────────────────────────────────────────────────────────
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS google_review_url VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS review_trigger_stamps INTEGER DEFAULT 0",
@@ -1285,6 +1287,12 @@ def wallet_get_updated_pass(
             accent_color = prog.accent_color or accent_color
 
     auth_token = getattr(card, "wallet_auth_token", "") or ""
+    # Promo message from business (shown as Wallet changeMessage notification)
+    biz_promo_msg = ""
+    if customer and customer.business_id:
+        _pm_biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+        if _pm_biz:
+            biz_promo_msg = getattr(_pm_biz, "promo_message", None) or ""
 
     try:
         from wallet_pass import generate_pkpass
@@ -1307,6 +1315,7 @@ def wallet_get_updated_pass(
             logo_url=biz_logo_url,
             auth_token=auth_token,
             award_balance=card.award_balance or 0,
+            promo_message=biz_promo_msg,
         )
         return FResponse(
             content=pkpass_bytes,
@@ -1385,6 +1394,12 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
 
     # Generate or reuse per-card wallet auth token for live update web service
     auth_token = _wallet_get_or_create_token(card, db)
+    # Promo message
+    _dl_promo = ""
+    if customer and customer.business_id:
+        _dl_biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+        if _dl_biz:
+            _dl_promo = getattr(_dl_biz, "promo_message", None) or ""
 
     try:
         from wallet_pass import generate_pkpass
@@ -1407,6 +1422,7 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
             logo_url=biz_logo_url,
             auth_token=auth_token,
             award_balance=card.award_balance or 0,
+            promo_message=_dl_promo,
         )
         return FResponse(
             content=pkpass_bytes,
@@ -2995,7 +3011,22 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
 
 
 async def _send_apns_campaign(db: Session, business_id: str, title: str, message: str, segment: str = "all") -> dict:
-    """Send APNs alert notifications to all wallet-registered devices for a business."""
+    """Send APNs push campaign to all wallet-registered devices for a business.
+    Strategy: save the campaign message in businesses.promo_message, then send
+    a silent background push. When Wallet wakes up it fetches the updated pass
+    which now contains the new promo_message in a field with changeMessage set.
+    iOS then shows the notification: '[biz] [message]'.
+    """
+    # 1. Store the campaign message so the pass update endpoint can embed it
+    combined = f"{title}: {message}" if title and message else (title or message)
+    try:
+        db.execute(text(
+            "UPDATE businesses SET promo_message=:msg WHERE id=:bid"
+        ), {"msg": combined[:120], "bid": str(business_id)})
+        db.commit()
+    except Exception as e:
+        print(f"Could not save promo_message: {e}")
+
     q = (
         "SELECT wd.push_token, c.first_name FROM wallet_devices wd "
         "JOIN loyalty_cards lc ON lc.id = wd.card_id "
@@ -3020,11 +3051,10 @@ async def _send_apns_campaign(db: Session, business_id: str, title: str, message
     rows = db.execute(text(q), params).fetchall()
     sent = failed = 0
     for row in rows:
-        push_token, first_name = row[0], row[1] or ""
-        personalised_title = title.replace("{nombre}", first_name)
-        personalised_body  = message.replace("{nombre}", first_name)
+        push_token = row[0]
         try:
-            ok = await _push_apple_alert(push_token, personalised_title, personalised_body)
+            # Background push → Wallet fetches updated pass → changeMessage shown
+            ok = await _push_apple_wallet(push_token)
             if ok:
                 sent += 1
             else:
@@ -3032,7 +3062,7 @@ async def _send_apns_campaign(db: Session, business_id: str, title: str, message
         except Exception as ex:
             print(f"Campaign APNs error: {ex}")
             failed += 1
-    print(f"Campaign APNs: {sent} sent, {failed} failed out of {len(rows)} wallet devices")
+    print(f"Campaign APNs (background/changeMessage): {sent} sent, {failed} failed out of {len(rows)} wallet devices")
     return {"sent": sent, "failed": failed, "total_wallet_devices": len(rows)}
 
 
