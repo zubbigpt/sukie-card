@@ -257,6 +257,7 @@ def build_pass_json(
     logo_url: str = "",
     award_balance: int = 0,
     promo_message: str = "",
+    extra_locations: list | None = None,  # [{lat, lng, radius, msg}] for multi-store geo
 ) -> dict:
     """Build the pass.json dict for a loyalty card."""
     pass_type_id = os.environ.get("APPLE_PASS_TYPE_ID", "pass.com.zubiecard.loyalty")
@@ -370,18 +371,28 @@ def build_pass_json(
     # When the pass holder comes within ~100m (or geo_radius_m, max 1000m per
     # Apple spec) of these coordinates, iOS shows a lock-screen notification
     # with the relevantText — no server, no push certificate needed.
+    # Build locations list: primary + extra_locations (up to 10 per Apple spec)
+    all_locations = []
     if latitude is not None and longitude is not None:
         relevant_text = geo_push_msg.strip() if geo_push_msg else f"¡Estás cerca de {biz_name}! Visítanos y acumula sellos 🎉"
-        # Apple Wallet maxDistance max is ~1000m; clamp to that
         max_dist = min(int(geo_radius_m) if geo_radius_m else 300, 1000)
-        pass_dict["locations"] = [
-            {
-                "latitude":     float(latitude),
-                "longitude":    float(longitude),
-                "relevantText": relevant_text,
-                "maxDistance":  max_dist,
-            }
-        ]
+        all_locations.append({
+            "latitude":     float(latitude),
+            "longitude":    float(longitude),
+            "relevantText": relevant_text,
+            "maxDistance":  max_dist,
+        })
+    for loc in (extra_locations or []):
+        if loc.get("lat") is not None and loc.get("lng") is not None:
+            txt = (loc.get("msg") or "").strip() or f"¡Estás cerca de {biz_name}! Visítanos y acumula sellos 🎉"
+            all_locations.append({
+                "latitude":     float(loc["lat"]),
+                "longitude":    float(loc["lng"]),
+                "relevantText": txt,
+                "maxDistance":  min(int(loc.get("radius") or 300), 1000),
+            })
+    if all_locations:
+        pass_dict["locations"] = all_locations[:10]  # Apple max is 10
 
     return pass_dict
 
@@ -406,6 +417,7 @@ def generate_pkpass(
     logo_url: str = "",
     award_balance: int = 0,
     promo_message: str = "",
+    extra_locations: list | None = None,
 ) -> bytes:
     """
     Generate a signed .pkpass file and return it as bytes.
@@ -434,6 +446,7 @@ def generate_pkpass(
         logo_url=logo_url,
         award_balance=award_balance,
         promo_message=promo_message,
+        extra_locations=extra_locations,
     )
     pass_json_bytes = json.dumps(pass_data, ensure_ascii=False, indent=2).encode("utf-8")
 

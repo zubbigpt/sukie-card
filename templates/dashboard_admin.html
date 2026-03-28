@@ -2819,12 +2819,34 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
         </div>
         <!-- add/edit store form -->
-        <div id="store-form" style="display:none;max-width:480px" class="card-box">
+        <div id="store-form" style="display:none;max-width:560px" class="card-box">
           <h3 id="store-form-title" style="margin-bottom:16px;color:#0a0a0a">Añadir local</h3>
           <input type="hidden" id="store-edit-id">
           <div class="form-group" style="margin-bottom:12px"><label>Nombre del local *</label><input id="store-name" placeholder="ej. Cafetería Centro"></div>
           <div class="form-group" style="margin-bottom:12px"><label>PIN de acceso (4-6 dígitos) *</label><input id="store-pin" type="number" placeholder="1234" maxlength="6"></div>
           <div class="form-group" style="margin-bottom:16px"><label>Notas internas</label><input id="store-notes" placeholder="ej. Calle Mayor 1, Madrid"></div>
+
+          <!-- Geo location per store -->
+          <div style="border-top:1px solid var(--cream-border);margin:16px 0 12px;padding-top:14px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span class="material-symbols-outlined" style="font-size:1rem;color:var(--honey-dark);font-variation-settings:'FILL' 1">location_on</span>
+              <span style="font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--brown)">Geo-notificación (opcional)</span>
+            </div>
+            <p style="font-size:.75rem;color:var(--brown-light);margin-bottom:10px">Si configuras la ubicación, tus clientes recibirán una notificación en el Wallet cuando estén cerca de este local.</p>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input id="store-geo-search" type="text" placeholder="Buscar dirección…" style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream)" oninput="storeGeoAutocomplete(this.value)">
+              <button onclick="searchStoreGeo()" class="btn-sm btn-primary" style="padding:8px 14px"><span class="material-symbols-outlined" style="font-size:.9rem">search</span></button>
+              <button onclick="detectStoreLocation()" class="btn-sm btn-ghost" style="padding:8px 12px" title="Usar ubicación actual"><span class="material-symbols-outlined" style="font-size:.9rem">my_location</span></button>
+            </div>
+            <div id="store-geo-autocomplete" style="display:none;position:relative;z-index:999;background:#fff;border:1.5px solid var(--cream-border);border-radius:0 0 6px 6px;box-shadow:0 4px 16px rgba(0,0,0,.1);max-height:160px;overflow-y:auto;margin-bottom:6px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group"><label style="font-size:.72rem">Latitud</label><input id="store-lat" type="number" step="any" placeholder="40.4168" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
+              <div class="form-group"><label style="font-size:.72rem">Longitud</label><input id="store-lng" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
+              <div class="form-group"><label style="font-size:.72rem">Radio (metros)</label><input id="store-radius" type="number" value="300" min="50" max="1000" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
+              <div class="form-group"><label style="font-size:.72rem">Mensaje</label><input id="store-geo-msg" placeholder="¡Estás cerca! Visítanos 🎉" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
+            </div>
+          </div>
+
           <div id="store-msg" style="font-size:.82rem;margin-bottom:10px;min-height:16px"></div>
           <div style="display:flex;gap:8px">
             <button class="btn-sm btn-primary" onclick="saveStore()" style="flex:1">Guardar</button>
@@ -3344,7 +3366,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
   </div><!-- /main -->
 
 <!-- UPGRADE MODAL ───────────────────────────────────────────── -->
-<div id="upgrade-overlay" style="display:none;position:fixed;inset:0;background:rgba(38,23,12,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box" onclick="if(event.target===this)closeUpgradeModal()">
+<div id="upgrade-overlay" style="display:none;position:fixed;inset:0;background:rgba(38,23,12,.65);z-index:9999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box" onclick="if(event.target===this)closeUpgradeModal()">
   <div style="background:white;border-radius:8px;max-width:440px;width:100%;padding:32px;position:relative">
     <button onclick="closeUpgradeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--brown-light)">✕</button>
     <div style="text-align:center;margin-bottom:20px">
@@ -6028,8 +6050,8 @@ function renderStores(stores){
     <tr style="border-bottom:1px solid var(--cream-border)">
       <td style="padding:12px 16px;font-weight:600">${s.name}</td>
       <td style="padding:12px 16px;font-family:monospace;font-size:.85rem;letter-spacing:1px">${s.pin||'—'}</td>
-      <td style="padding:12px 16px"><span style="padding:2px 8px;border-radius:2px;font-size:.72rem;font-weight:700;background:${s.active!==false?'#e8f5e9':'#fbe9e7'};color:${s.active!==false?'#2e7d32':'#c62828'}">${s.active!==false?'Activo':'Inactivo'}</span></td>
-      <td style="padding:12px 16px;color:var(--brown-light);font-size:.82rem">${s.notes||'—'}</td>
+      <td style="padding:12px 16px"><span style="padding:2px 8px;border-radius:2px;font-size:.72rem;font-weight:700;background:${s.active!==false?'#e8f5e9':'#fbe9e7'};color:${s.active!==false?'#2e7d32':'#c62828'}">${s.active!==false?'Activo':'Inactivo'}</span>${s.latitude?'<span style="margin-left:6px;font-size:.7rem;background:var(--honey-light);color:var(--honey-dark);padding:2px 7px;border-radius:10px;font-weight:700">📍 Geo</span>':''}</td>
+      <td style="padding:12px 16px;color:var(--brown-light);font-size:.82rem">${s.notes||s.address||'—'}</td>
       <td style="padding:12px 16px;text-align:center">
         <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick='editStore(${JSON.stringify(s)})'>✏ Editar</button>
         <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteStore('${s.id}')">🗑</button>
@@ -6043,8 +6065,14 @@ function showAddStore(){
   document.getElementById('store-name').value='';
   document.getElementById('store-pin').value='';
   document.getElementById('store-notes').value='';
+  document.getElementById('store-lat').value='';
+  document.getElementById('store-lng').value='';
+  document.getElementById('store-radius').value='300';
+  document.getElementById('store-geo-msg').value='';
+  document.getElementById('store-geo-search').value='';
   document.getElementById('store-msg').textContent='';
   document.getElementById('store-form').style.display='block';
+  document.getElementById('store-form').scrollIntoView({behavior:'smooth'});
 }
 
 function editStore(s){
@@ -6054,6 +6082,11 @@ function editStore(s){
   document.getElementById('store-name').value=s.name||'';
   document.getElementById('store-pin').value=s.pin||'';
   document.getElementById('store-notes').value=s.notes||'';
+  document.getElementById('store-lat').value=s.latitude||'';
+  document.getElementById('store-lng').value=s.longitude||'';
+  document.getElementById('store-radius').value=s.geo_radius_m||300;
+  document.getElementById('store-geo-msg').value=s.geo_push_msg||'';
+  document.getElementById('store-geo-search').value=s.address||'';
   document.getElementById('store-msg').textContent='';
   document.getElementById('store-form').style.display='block';
   document.getElementById('store-form').scrollIntoView({behavior:'smooth'});
@@ -6064,18 +6097,56 @@ async function saveStore(){
   const name=document.getElementById('store-name')?.value.trim();
   const pin=document.getElementById('store-pin')?.value.trim();
   const notes=document.getElementById('store-notes')?.value.trim()||'';
+  const lat=parseFloat(document.getElementById('store-lat')?.value)||null;
+  const lng=parseFloat(document.getElementById('store-lng')?.value)||null;
+  const radius=parseInt(document.getElementById('store-radius')?.value)||300;
+  const geoMsg=document.getElementById('store-geo-msg')?.value.trim()||'';
+  const address=document.getElementById('store-geo-search')?.value.trim()||'';
   const msgEl=document.getElementById('store-msg');
   if(!name){if(msgEl){msgEl.textContent='⚠ Introduce el nombre del local';msgEl.style.color='#c62828';}return;}
   if(!pin||pin.length<4){if(msgEl){msgEl.textContent='⚠ El PIN debe tener al menos 4 dígitos';msgEl.style.color='#c62828';}return;}
   try{
     const method=id?'PUT':'POST';
     const url=id?`${BASE}/api/biz/${BIZ_SLUG}/stores/${id}?pin=${PIN}`:`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`;
-    const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pin,notes,active:true})});
+    const body={name,pin,notes,active:true,latitude:lat,longitude:lng,geo_radius_m:radius,geo_push_msg:geoMsg,address};
+    const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!r.ok){const d=await r.json();throw new Error(d.detail||'Error');}
     document.getElementById('store-form').style.display='none';
     await loadStores();
     showToast(id?'Local actualizado ✓':'Local añadido ✓','success');
   }catch(e){if(msgEl){msgEl.textContent='Error: '+e.message;msgEl.style.color='#c62828';}}
+}
+
+// Geo search for store form
+async function storeGeoAutocomplete(q){
+  const box=document.getElementById('store-geo-autocomplete');
+  if(!q||q.length<3){box.style.display='none';return;}
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`,{headers:{'Accept-Language':'es'}});
+    const results=await r.json();
+    if(!results.length){box.style.display='none';return;}
+    box.style.display='block';
+    box.innerHTML=results.map(p=>`<div style="padding:8px 12px;cursor:pointer;font-size:.82rem;border-bottom:1px solid #eee;line-height:1.4" onmousedown="selectStoreGeo(${p.lat},${p.lon},'${(p.display_name||'').replace(/'/g,'&#39;')}')">${p.display_name}</div>`).join('');
+  }catch(e){box.style.display='none';}
+}
+function selectStoreGeo(lat,lng,name){
+  document.getElementById('store-lat').value=parseFloat(lat).toFixed(6);
+  document.getElementById('store-lng').value=parseFloat(lng).toFixed(6);
+  document.getElementById('store-geo-search').value=name;
+  document.getElementById('store-geo-autocomplete').style.display='none';
+}
+async function searchStoreGeo(){
+  const q=document.getElementById('store-geo-search').value.trim();
+  if(!q) return;
+  await storeGeoAutocomplete(q);
+}
+function detectStoreLocation(){
+  if(!navigator.geolocation){showToast('Geolocalización no soportada','error');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById('store-lat').value=pos.coords.latitude.toFixed(6);
+    document.getElementById('store-lng').value=pos.coords.longitude.toFixed(6);
+    showToast('Ubicación detectada ✓','success');
+  },()=>showToast('No se pudo detectar la ubicación','error'));
 }
 
 async function deleteStore(id){
