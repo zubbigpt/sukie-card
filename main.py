@@ -4870,18 +4870,22 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
                    {"cid": customer_id, "bid": str(biz.id)})
         db.commit()
 
-    session = _stripe_sdk.checkout.Session.create(
-        customer=customer_id,
-        mode="subscription",
-        line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
-        success_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_success=1",
-        cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
-        subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}, "trial_period_days": 14},
-        allow_promotion_codes=True,
-        tax_id_collection={"enabled": True},   # piden NIF/CIF en el checkout
-        billing_address_collection="required",  # dirección completa obligatoria
-        locale="es",
-    )
+    try:
+        session = _stripe_sdk.checkout.Session.create(
+            customer=customer_id,
+            mode="subscription",
+            line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
+            success_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_success=1",
+            cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
+            subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}, "trial_period_days": 14},
+            allow_promotion_codes=True,
+            customer_update={"name": "auto"},   # required when tax_id_collection is enabled for existing customers
+            tax_id_collection={"enabled": True},
+            billing_address_collection="required",
+            locale="es",
+        )
+    except Exception as stripe_err:
+        raise HTTPException(status_code=400, detail=str(stripe_err))
     return {"checkout_url": session.url, "session_id": session.id}
 
 
