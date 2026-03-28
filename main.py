@@ -3038,12 +3038,17 @@ async def _send_apns_campaign(db: Session, business_id: str, title: str, message
     iOS then shows the notification: '[biz] [message]'.
     """
     # 1. Store the campaign message so the pass update endpoint can embed it
-    combined = f"{title}: {message}" if title and message else (title or message)
+    # Append a short timestamp to ensure the value ALWAYS changes (so changeMessage fires every time)
+    from datetime import datetime as _dt
+    combined_raw = f"{title}: {message}" if title and message else (title or message)
+    ts_suffix = _dt.now().strftime(" · %d/%m %H:%M")
+    combined = (combined_raw + ts_suffix)[:120]
     try:
         db.execute(text(
             "UPDATE businesses SET promo_message=:msg WHERE id=:bid"
-        ), {"msg": combined[:120], "bid": str(business_id)})
+        ), {"msg": combined, "bid": str(business_id)})
         db.commit()
+        print(f"✅ promo_message saved: '{combined}' for business {business_id}")
     except Exception as e:
         print(f"Could not save promo_message: {e}")
 
@@ -3069,20 +3074,23 @@ async def _send_apns_campaign(db: Session, business_id: str, title: str, message
         except Exception:
             pass
     rows = db.execute(text(q), params).fetchall()
+    print(f"Campaign: found {len(rows)} wallet device(s) to notify for business {business_id}")
     sent = failed = 0
     for row in rows:
         push_token = row[0]
         try:
-            # Background push → Wallet fetches updated pass → changeMessage shown
-            ok = await _push_apple_wallet(push_token)
+            # Use priority=10 for campaign pushes so iOS delivers immediately (not throttled)
+            ok = await _apns_send(push_token, payload={}, push_type="background", priority=10)
             if ok:
                 sent += 1
+                print(f"  ✅ APNs accepted for token ...{push_token[-8:]}")
             else:
                 failed += 1
+                print(f"  ❌ APNs rejected for token ...{push_token[-8:]}")
         except Exception as ex:
             print(f"Campaign APNs error: {ex}")
             failed += 1
-    print(f"Campaign APNs (background/changeMessage): {sent} sent, {failed} failed out of {len(rows)} wallet devices")
+    print(f"Campaign APNs result: {sent} sent, {failed} failed out of {len(rows)} wallet devices")
     return {"sent": sent, "failed": failed, "total_wallet_devices": len(rows)}
 
 
