@@ -2599,7 +2599,13 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div id="geo-saved-address" style="font-size:.88rem;font-weight:700;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
             <div id="geo-saved-details" style="font-size:.76rem;color:var(--brown-light);margin-top:2px"></div>
           </div>
-          <span style="font-size:.7rem;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">✓ Activa</span>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+            <span style="font-size:.7rem;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">✓ Activa</span>
+            <div style="display:flex;gap:6px">
+              <button onclick="editGeoConfig()" style="font-size:.72rem;padding:3px 10px;border:1.5px solid var(--honey);border-radius:6px;background:white;color:var(--brown);cursor:pointer;font-weight:700;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:.85rem">edit</span> Editar</button>
+              <button onclick="deleteGeoConfig()" style="font-size:.72rem;padding:3px 10px;border:1.5px solid #f44336;border-radius:6px;background:white;color:#c62828;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:.85rem">delete</span> Eliminar</button>
+            </div>
+          </div>
         </div>
 
         <div class="card-box">
@@ -5926,6 +5932,38 @@ async function saveGeoConfig2(){
   }catch(e){
     if(status) status.textContent='Error: '+e.message;
     showToast('Error al guardar: '+e.message,'error');
+  }
+}
+
+function editGeoConfig(){
+  // Scroll down to the geo form so user can edit the fields
+  const form=document.getElementById('geo-address2');
+  if(form){ form.scrollIntoView({behavior:'smooth',block:'center'}); form.focus(); }
+}
+
+async function deleteGeoConfig(){
+  if(!confirm('¿Eliminar la ubicación guardada? Los clientes dejarán de recibir notificaciones de proximidad.')) return;
+  const status=document.getElementById('geo-status2');
+  if(status) status.textContent='Eliminando…';
+  try{
+    const body={pin:PIN,address:'',latitude:null,longitude:null,geo_radius_m:300,geo_push_msg:''};
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error((await r.json()).detail||'Error');
+    // Hide banner and clear fields
+    const banner=document.getElementById('geo-saved-banner');
+    if(banner) banner.style.display='none';
+    if(document.getElementById('geo-address2')) document.getElementById('geo-address2').value='';
+    if(document.getElementById('geo-lat2'))     document.getElementById('geo-lat2').value='';
+    if(document.getElementById('geo-lng2'))     document.getElementById('geo-lng2').value='';
+    if(document.getElementById('geo-radius2'))  document.getElementById('geo-radius2').value='300';
+    if(document.getElementById('geo-msg2'))     document.getElementById('geo-msg2').value='';
+    if(status){status.textContent='';};
+    showToast('Ubicación eliminada','success');
+  }catch(e){
+    if(status) status.textContent='Error: '+e.message;
+    showToast('Error al eliminar: '+e.message,'error');
   }
 }
 
