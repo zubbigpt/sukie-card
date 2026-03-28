@@ -2591,6 +2591,17 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </p>
         </div>
 
+        <!-- Ubicación guardada — resumen visible -->
+        <div id="geo-saved-banner" style="display:none;background:var(--honey-light);border:1.5px solid var(--honey);border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--honey-dark);font-variation-settings:'FILL' 1;flex-shrink:0">location_on</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);margin-bottom:2px">Ubicación guardada</div>
+            <div id="geo-saved-address" style="font-size:.88rem;font-weight:700;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="geo-saved-details" style="font-size:.76rem;color:var(--brown-light);margin-top:2px"></div>
+          </div>
+          <span style="font-size:.7rem;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">✓ Activa</span>
+        </div>
+
         <div class="card-box">
           <h3 style="margin-bottom:16px;color:#0a0a0a">Ubicación del local</h3>
 
@@ -5869,6 +5880,17 @@ async function loadGeoSection(){
     if(document.getElementById('geo-lng2'))     document.getElementById('geo-lng2').value=d.longitude||'';
     if(document.getElementById('geo-radius2'))  document.getElementById('geo-radius2').value=d.geo_radius_m||300;
     if(document.getElementById('geo-msg2'))     document.getElementById('geo-msg2').value=d.geo_push_msg||'';
+    // Show saved banner if location exists
+    const banner=document.getElementById('geo-saved-banner');
+    if(banner && d.latitude && d.longitude){
+      banner.style.display='flex';
+      const addrEl=document.getElementById('geo-saved-address');
+      const detailEl=document.getElementById('geo-saved-details');
+      if(addrEl) addrEl.textContent=d.address||`${d.latitude.toFixed(5)}, ${d.longitude.toFixed(5)}`;
+      if(detailEl) detailEl.textContent=`Radio: ${d.geo_radius_m||300}m · "${d.geo_push_msg||'¡Estás cerca!'}"`;
+    } else if(banner){
+      banner.style.display='none';
+    }
     // Init map after populating fields
     setTimeout(()=>{ initGeoMap(d.latitude, d.longitude); }, 50);
   }catch(e){}
@@ -5892,6 +5914,15 @@ async function saveGeoConfig2(){
     if(!r.ok) throw new Error((await r.json()).detail||'Error');
     if(status){status.textContent='✅ Ubicación guardada';setTimeout(()=>{status.textContent='';},3000);}
     showToast('Ubicación guardada — el próximo .pkpass incluirá la notificación de proximidad','success');
+    // Refresh saved banner
+    const banner=document.getElementById('geo-saved-banner');
+    if(banner && body.latitude){
+      banner.style.display='flex';
+      const addrEl=document.getElementById('geo-saved-address');
+      const detailEl=document.getElementById('geo-saved-details');
+      if(addrEl) addrEl.textContent=body.address||`${body.latitude.toFixed(5)}, ${body.longitude.toFixed(5)}`;
+      if(detailEl) detailEl.textContent=`Radio: ${body.geo_radius_m||300}m · "${body.geo_push_msg||'¡Estás cerca!'}"`;
+    }
   }catch(e){
     if(status) status.textContent='Error: '+e.message;
     showToast('Error al guardar: '+e.message,'error');
