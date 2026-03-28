@@ -298,6 +298,8 @@ def run_migrations():
         # Upgrade Café Luna demo account to pro
         "UPDATE businesses SET plan='pro' WHERE slug='cafeluna'",
         "UPDATE businesses SET plan='pro' WHERE slug='sukiecookie'",
+        # Upgrade suculentsc — pagó trial el 2026-03-28
+        "UPDATE businesses SET plan='pro', stripe_customer_id='cus_UDxsFla6trS5Pi', stripe_subscription_id='sub_1TG1Ue0H5uUch7uMgmjd8Ygj', stripe_subscription_status='active' WHERE slug='suculentsc'",
         # ── Tiendas / Locales ──────────────────────────────────────────────────────
         "CREATE TABLE IF NOT EXISTS stores (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), name VARCHAR NOT NULL, pin VARCHAR NOT NULL DEFAULT '', notes TEXT DEFAULT '', active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW())",
         # ── PassCodes ─────────────────────────────────────────────────────────────
@@ -5044,13 +5046,22 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             # Marca pro y confirma email (por si registró y pagó en el mismo flow)
             cid = data.get("customer")
             sid = data.get("subscription")
+            # Try by stripe_customer_id first, fallback to metadata biz_id/biz_slug
             biz_row = _biz_by_customer(cid)
+            if not biz_row:
+                meta = data.get("metadata") or {}
+                biz_slug = (data.get("subscription_data") or {}).get("metadata", {}).get("biz_slug") or meta.get("biz_slug")
+                biz_id   = (data.get("subscription_data") or {}).get("metadata", {}).get("biz_id") or meta.get("biz_id")
+                if biz_id:
+                    biz_row = db.execute(text("SELECT id FROM businesses WHERE id=:bid"), {"bid": biz_id}).fetchone()
+                elif biz_slug:
+                    biz_row = db.execute(text("SELECT id FROM businesses WHERE slug=:s"), {"s": biz_slug}).fetchone()
             if biz_row and sid:
                 db.execute(text(
-                    "UPDATE businesses SET plan='pro', stripe_subscription_id=:sid, "
+                    "UPDATE businesses SET plan='pro', stripe_customer_id=:cid, stripe_subscription_id=:sid, "
                     "stripe_subscription_status='active', email_confirmed=TRUE, "
                     "email_confirm_token=NULL WHERE id=:bid"
-                ), {"sid": sid, "bid": str(biz_row[0])})
+                ), {"cid": cid, "sid": sid, "bid": str(biz_row[0])})
                 db.commit()
                 print(f"✅ checkout.session.completed — biz {biz_row[0]} → pro + email confirmed")
 
