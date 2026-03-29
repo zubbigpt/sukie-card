@@ -3054,6 +3054,12 @@ async def _send_apns_campaign(db: Session, business_id: str, title: str, message
         db.execute(text(
             "UPDATE businesses SET promo_message=:msg WHERE id=:bid"
         ), {"msg": combined, "bid": str(business_id)})
+        # Touch updated_at on ALL loyalty_cards for this business so that
+        # wallet_list_updatable_passes returns them when Wallet polls with passesUpdatedSince
+        db.execute(text(
+            "UPDATE loyalty_cards SET updated_at = NOW() "
+            "WHERE customer_id IN (SELECT id FROM customers WHERE business_id = :bid)"
+        ), {"bid": str(business_id)})
         db.commit()
         print(f"✅ promo_message saved: '{combined}' for business {business_id}")
     except Exception as e:
