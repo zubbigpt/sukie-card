@@ -323,13 +323,6 @@ def build_pass_json(
                     "value": reward_name or "Premio",
                     "textAlignment": "PKTextAlignmentLeft",
                 },
-                {
-                    "key": "promo",
-                    "label": "MENSAJE",
-                    "value": promo_message or "",
-                    "changeMessage": "%@",
-                    "textAlignment": "PKTextAlignmentRight",
-                },
             ],
             "backFields": [
                 {
@@ -343,6 +336,12 @@ def build_pass_json(
                     "label": "Información",
                     "value": f"Por cada {stamps_per_reward} sellos obtienes {reward_name}. "
                              "Presenta esta tarjeta en caja en tu próxima visita.",
+                },
+                {
+                    "key": "promo",
+                    "label": "Mensaje",
+                    "value": promo_message or "",
+                    "changeMessage": "%@",
                 },
             ],
         },
