@@ -1149,10 +1149,17 @@ async def wallet_register_device(
 ):
     """Apple calls this when a pass is added to Wallet — register device/push token."""
     auth_header = request.headers.get("Authorization", "")
-    card_id = _wallet_verify_auth(serial_number, auth_header, db)
+    print(f"📲 Wallet registration: serial={serial_number} device={device_library_id[:12]}... passType={pass_type_id}")
+    try:
+        card_id = _wallet_verify_auth(serial_number, auth_header, db)
+        print(f"  ✅ Auth OK → card_id={card_id}")
+    except Exception as auth_err:
+        print(f"  ❌ Auth FAILED for serial={serial_number}: {auth_err}")
+        raise
 
     body = await request.json()
     push_token = body.get("pushToken", "")
+    print(f"  push_token={push_token[:12]}... (len={len(push_token)})")
     if not push_token:
         raise HTTPException(status_code=400, detail="pushToken required")
 
