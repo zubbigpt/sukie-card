@@ -5159,17 +5159,44 @@ function copyRegLink(){
 }
 
 function downloadQR(){
-  const qrContainer = document.getElementById('main-qr-code');
-  if(!qrContainer) return;
-  const canvas = qrContainer.querySelector('canvas');
-  const img = qrContainer.querySelector('img');
-  let src = '';
-  if(canvas) src = canvas.toDataURL('image/png');
-  else if(img) src = img.src;
-  if(!src){ showToast('Error al generar QR','error'); return; }
-  const a = document.createElement('a');
-  a.href=src; a.download=`qr-${BIZ_SLUG}-registro.png`; a.click();
-  showToast('QR descargado ✓','success');
+  const regUrl = `${BASE}/biz/${BIZ_SLUG}/register`;
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
+  document.body.appendChild(tempDiv);
+  try {
+    new QRCode(tempDiv, {text:regUrl, width:1200, height:1200, colorDark:'#0a0a0a', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.H});
+    setTimeout(() => {
+      const canvas = tempDiv.querySelector('canvas');
+      if(canvas){
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `qr-${BIZ_SLUG}-registro.png`;
+        a.click();
+        showToast('QR descargado en alta resolución ✓','success');
+      } else { showToast('Error al generar QR','error'); }
+      document.body.removeChild(tempDiv);
+    }, 250);
+  } catch(e) { document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); }
+}
+
+function downloadCustomQR(url, canal){
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
+  document.body.appendChild(tempDiv);
+  try {
+    new QRCode(tempDiv, {text:url, width:1200, height:1200, colorDark:'#0a0a0a', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.H});
+    setTimeout(() => {
+      const canvas = tempDiv.querySelector('canvas');
+      if(canvas){
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `qr-${BIZ_SLUG}-${canal.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.png`;
+        a.click();
+        showToast('QR descargado en alta resolución ✓','success');
+      } else { showToast('Error al generar QR','error'); }
+      document.body.removeChild(tempDiv);
+    }, 250);
+  } catch(e) { document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); }
 }
 
 function addCustomQR(){
@@ -5219,6 +5246,7 @@ function renderCustomQRs(qrs){
       <td style="padding:10px 12px;text-align:center"><div id="mini-qr-${q.id}" style="display:inline-block"></div></td>
       <td style="padding:10px 12px;text-align:center">
         <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick="copyQRLink('${url}')"><span class="material-symbols-outlined" style="font-size:.85rem">content_copy</span></button>
+        <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" title="Descargar QR alta resolución" onclick="downloadCustomQR('${url}','${q.canal}')"><span class="material-symbols-outlined" style="font-size:.85rem">download</span></button>
         <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteCustomQR('${q.id}')"><span class="material-symbols-outlined" style="font-size:.85rem">delete</span></button>
       </td>
     </tr>`;
