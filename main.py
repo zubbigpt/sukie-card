@@ -2293,18 +2293,31 @@ def admin_activity(pin: str = "", days: int = 30, slug: str = "", db: Session = 
     verify_pin(pin, db)
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
-    txs_q = (db.query(models.StampTransaction)
-             .filter(models.StampTransaction.created_at >= cutoff))
-
-    # Filter by business when slug provided
+    biz_card_ids = None
+    biz_customer_ids = None
     if slug:
         biz = get_business_by_slug(slug, db)
         if biz:
-            biz_card_ids = [c.id for c in db.query(models.LoyaltyCard)
-                            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-                            .filter(models.Customer.business_id == biz.id).all()]
-            if biz_card_ids:
-                txs_q = txs_q.filter(models.StampTransaction.card_id.in_(biz_card_ids))
+            cards = (db.query(models.LoyaltyCard)
+                     .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+                     .filter(models.Customer.business_id == biz.id).all())
+            biz_card_ids = [c.id for c in cards]
+            # Also get customer IDs for new_clients count
+            custs = db.query(models.Customer).filter(
+                models.Customer.business_id == biz.id,
+                models.Customer.created_at >= cutoff,
+                models.Customer.email != "PLACEHOLDER@sukie.internal"
+            ).all()
+            biz_customer_ids = [(c.id, c.created_at) for c in custs]
+
+    txs_q = (db.query(models.StampTransaction)
+             .filter(models.StampTransaction.created_at >= cutoff))
+
+    if biz_card_ids is not None:
+        if biz_card_ids:
+            txs_q = txs_q.filter(models.StampTransaction.card_id.in_(biz_card_ids))
+        else:
+            txs_q = txs_q.filter(False)  # no cards → no transactions
 
     txs = txs_q.order_by(models.StampTransaction.created_at.asc()).all()
 
@@ -2320,8 +2333,23 @@ def admin_activity(pin: str = "", days: int = 30, slug: str = "", db: Session = 
             by_day[day]["stamps"] += t.stamps_added
         if t.transaction_type == "redeem":
             by_day[day]["redeems"] += 1
-        if t.transaction_type == "register":
+
+    # Count new clients by their actual created_at date (not transaction type)
+    if biz_customer_ids is not None:
+        for cust_id, created_at in biz_customer_ids:
+            if not created_at:
+                continue
+            day = created_at.strftime("%Y-%m-%d")
+            if day not in by_day:
+                by_day[day] = {"date": day, "stamps": 0, "redeems": 0, "new_clients": 0}
             by_day[day]["new_clients"] += 1
+    else:
+        # Global: count from transactions with type register
+        for t in txs:
+            if t.transaction_type == "register" and t.created_at:
+                day = t.created_at.strftime("%Y-%m-%d")
+                if day in by_day:
+                    by_day[day]["new_clients"] += 1
 
     # Fill gaps
     result = []
