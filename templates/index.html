@@ -311,6 +311,29 @@
   .pricing-wrap {
     margin-top: 60px; display: flex; justify-content: flex-start;
   }
+  .billing-toggle {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 36px;
+  }
+  .billing-toggle span { font-size: .9rem; font-weight: 600; color: var(--gray-4); transition: color .2s; }
+  .billing-toggle span.active { color: var(--black); }
+  .toggle-track {
+    width: 52px; height: 28px; border-radius: 100px; background: var(--gray-2);
+    position: relative; cursor: pointer; transition: background .3s; border: none;
+    padding: 0; flex-shrink: 0;
+  }
+  .toggle-track.on { background: var(--black); }
+  .toggle-knob {
+    position: absolute; top: 4px; left: 4px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--white); box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    transition: transform .3s var(--ease);
+  }
+  .toggle-track.on .toggle-knob { transform: translateX(24px); }
+  .billing-badge {
+    background: var(--gold-lt); color: var(--brown-md);
+    font-size: .72rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 100px; border: 1px solid rgba(201,168,76,.3);
+  }
   .price-card {
     padding: 48px 44px; border-radius: 20px;
     background: var(--black); color: var(--white);
@@ -332,6 +355,7 @@
   }
   .price-amount sup { font-size: 1.6rem; vertical-align: top; margin-top: 10px; }
   .price-period { font-size: .88rem; color: rgba(255,255,255,.4); margin-bottom: 12px; }
+  .price-sub { font-size: .8rem; color: rgba(255,255,255,.3); margin-bottom: 28px; }
   .price-trial {
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.25);
@@ -460,24 +484,6 @@
   .footer-bottom a { color: rgba(255,255,255,.35); text-decoration: none; }
   .footer-bottom a:hover { color: var(--white); }
 
-  /* ── COOKIE BANNER ── */
-  #cookie-banner {
-    position: fixed; bottom: 24px; left: 24px; right: 24px;
-    max-width: 520px; background: var(--white);
-    border: 1px solid var(--gray-2); border-radius: 14px;
-    padding: 20px 24px; box-shadow: 0 12px 40px rgba(0,0,0,.12);
-    display: flex; align-items: center; gap: 16px; z-index: 999;
-    font-size: .85rem; line-height: 1.5; color: var(--gray-4);
-    transform: translateY(0); transition: transform .4s, opacity .4s;
-  }
-  #cookie-banner.hidden { transform: translateY(120%); opacity: 0; pointer-events: none; }
-  #cookie-banner button {
-    flex-shrink: 0; background: var(--black); color: var(--white);
-    border: none; border-radius: 8px; padding: 9px 18px;
-    font-family: var(--font); font-weight: 600; font-size: .82rem;
-    cursor: pointer; transition: background .2s;
-  }
-  #cookie-banner button:hover { background: #333; }
 
   /* ── REVEAL ANIMATIONS ── */
   .reveal {
@@ -789,12 +795,21 @@
     <h2 class="section-h2 reveal">Simple y <em>transparente.</em></h2>
     <p class="section-p reveal">Un solo plan. Todo incluido. 14 días de prueba sin coste.</p>
   </div>
+  <div class="billing-toggle reveal">
+    <span id="toggle-monthly-label" class="active">Mensual</span>
+    <button class="toggle-track" id="billing-toggle-btn" onclick="toggleBilling()" aria-label="Cambiar ciclo de facturación">
+      <span class="toggle-knob" id="billing-knob"></span>
+    </button>
+    <span id="toggle-annual-label" style="color:var(--gray-4)">Anual</span>
+    <span class="billing-badge">2 meses gratis</span>
+  </div>
   <div class="pricing-wrap">
     <div class="price-card reveal">
       <span class="price-badge">Todo incluido</span>
       <p class="price-name">Plan Pro</p>
-      <div class="price-amount"><sup>€</sup>39</div>
-      <p class="price-period">por mes · sin límites · cancela cuando quieras</p>
+      <div class="price-amount"><sup>€</sup><span id="pro-price">39</span></div>
+      <p class="price-period"><span id="pro-period">/mes</span></p>
+      <p class="price-sub" id="pro-sub">facturado mensualmente</p>
       <div class="price-trial">
         <svg viewBox="0 0 14 14"><path d="M7 1v6l3 2"/><circle cx="7" cy="7" r="6"/></svg>
         14 días gratis · tarjeta requerida
@@ -885,9 +900,26 @@
 </footer>
 
 <!-- COOKIE BANNER -->
-<div id="cookie-banner">
-  <p>Usamos cookies para mejorar tu experiencia. <a href="/cookies" style="color:var(--black);font-weight:600;">Más info</a></p>
-  <button onclick="document.getElementById('cookie-banner').classList.add('hidden'); localStorage.setItem('cc','1');">Aceptar</button>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:#1a0f08;border-top:1px solid rgba(201,168,76,.25);
+  padding:16px 24px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;font-family:'Inter',sans-serif;">
+  <p style="margin:0;color:#d4b896;font-size:13px;max-width:600px;line-height:1.5">
+    Usamos cookies esenciales para que la app funcione correctamente.
+    <a href="/cookies" style="color:#c9a84c;text-decoration:underline">Más info</a>
+  </p>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="cookieConsent('essential')" style="
+      background:transparent;border:1px solid rgba(201,168,76,.4);color:#d4b896;
+      padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif">
+      Solo esenciales
+    </button>
+    <button onclick="cookieConsent('all')" style="
+      background:#c9a84c;border:none;color:#0a0a0a;
+      padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">
+      Aceptar todo
+    </button>
+  </div>
 </div>
 
 <script>
@@ -948,10 +980,45 @@ var io = new IntersectionObserver(function(entries) {
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 revealEls.forEach(function(el) { io.observe(el); });
 
-// Cookie banner
-if (localStorage.getItem('cc')) {
-  document.getElementById('cookie-banner').classList.add('hidden');
+// ── Billing toggle ────────────────────────────────────────────
+var billingAnnual = false;
+function toggleBilling() {
+  billingAnnual = !billingAnnual;
+  var track = document.getElementById('billing-toggle-btn');
+  var monthLabel = document.getElementById('toggle-monthly-label');
+  var annualLabel = document.getElementById('toggle-annual-label');
+  var proPrice = document.getElementById('pro-price');
+  var proPeriod = document.getElementById('pro-period');
+  var proSub = document.getElementById('pro-sub');
+  if (billingAnnual) {
+    track.classList.add('on');
+    monthLabel.classList.remove('active'); monthLabel.style.color = 'var(--gray-4)';
+    annualLabel.classList.add('active'); annualLabel.style.color = 'var(--black)';
+    proPrice.textContent = '33';
+    proPeriod.textContent = '/mes';
+    proSub.textContent = 'facturado €390/año — 2 meses gratis';
+  } else {
+    track.classList.remove('on');
+    monthLabel.classList.add('active'); monthLabel.style.color = 'var(--black)';
+    annualLabel.classList.remove('active'); annualLabel.style.color = 'var(--gray-4)';
+    proPrice.textContent = '39';
+    proPeriod.textContent = '/mes';
+    proSub.textContent = 'facturado mensualmente';
+  }
 }
+
+// ── Cookie consent ─────────────────────────────────────────────
+(function() {
+  var COOKIE_KEY = 'zubcard_cookie_consent';
+  function cookieConsent(choice) {
+    localStorage.setItem(COOKIE_KEY, choice);
+    document.getElementById('cookie-banner').style.display = 'none';
+  }
+  window.cookieConsent = cookieConsent;
+  if (!localStorage.getItem(COOKIE_KEY)) {
+    document.getElementById('cookie-banner').style.display = 'flex';
+  }
+})();
 </script>
 </body>
 </html>
