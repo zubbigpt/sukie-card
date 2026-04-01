@@ -2424,6 +2424,7 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
     body = await request.json()
     customer_id  = body.get("customer_id")   # single customer, or None = all today
     discount_pct = int(body.get("discount_pct", 20))
+    force        = bool(body.get("force", False))  # skip birthday date check (test mode)
     gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
     gift_product = getattr(biz, "birthday_gift_product", "") or ""
     email_intro  = getattr(biz, "birthday_email_intro", "") or ""
@@ -2454,7 +2455,7 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
             "SELECT id FROM birthday_vouchers WHERE customer_id=:cid AND business_id=:bid "
             "AND created_at >= CURRENT_DATE"
         ), {"cid": str(cust.id), "bid": str(biz.id)}).fetchone()
-        if existing:
+        if existing and not force:
             continue
 
         # Create voucher token
