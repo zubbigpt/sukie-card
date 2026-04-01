@@ -4271,20 +4271,24 @@ async def update_birthday_config(slug: str, request: Request, db: Session = Depe
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    gift_type    = (body.get("birthday_gift_type") or "discount").strip()
-    gift_product = (body.get("birthday_gift_product") or "").strip()
-    email_intro  = (body.get("birthday_email_intro") or "").strip()
-    header_color = (body.get("birthday_email_header_color") or "").strip()
-    accent_color = (body.get("birthday_email_accent_color") or "").strip()
-    banner_url   = (body.get("birthday_email_banner_url") or "").strip()
-    footer_text  = (body.get("birthday_email_footer_text") or "").strip()
-    db.execute(text(
-        "UPDATE businesses SET birthday_gift_type=:gt, birthday_gift_product=:gp, birthday_email_intro=:ei, "
-        "birthday_email_header_color=:hc, birthday_email_accent_color=:ac, "
-        "birthday_email_banner_url=:bu, birthday_email_footer_text=:ft WHERE slug=:slug"
-    ), {"gt": gift_type, "gp": gift_product, "ei": email_intro,
-        "hc": header_color, "ac": accent_color, "bu": banner_url, "ft": footer_text, "slug": slug})
+    # Use ORM directly to avoid SQLAlchemy raw-SQL/session transaction conflicts
+    if body.get("birthday_gift_type") is not None:
+        biz.birthday_gift_type = (body.get("birthday_gift_type") or "discount").strip()
+    if body.get("birthday_gift_product") is not None:
+        biz.birthday_gift_product = (body.get("birthday_gift_product") or "").strip()
+    if body.get("birthday_email_intro") is not None:
+        biz.birthday_email_intro = (body.get("birthday_email_intro") or "").strip()
+    if body.get("birthday_email_header_color") is not None:
+        biz.birthday_email_header_color = (body.get("birthday_email_header_color") or "").strip()
+    if body.get("birthday_email_accent_color") is not None:
+        biz.birthday_email_accent_color = (body.get("birthday_email_accent_color") or "").strip()
+    if body.get("birthday_email_banner_url") is not None:
+        biz.birthday_email_banner_url = (body.get("birthday_email_banner_url") or "").strip()
+    if body.get("birthday_email_footer_text") is not None:
+        biz.birthday_email_footer_text = (body.get("birthday_email_footer_text") or "").strip()
+    db.add(biz)
     db.commit()
+    db.refresh(biz)
     return {"status": "updated"}
 
 
