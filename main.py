@@ -4502,7 +4502,11 @@ def debug_db(pin: str = "", db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Acceso denegado")
     try:
         rows = db.execute(text("SELECT id, name, slug, email, admin_pin, plan, active FROM businesses")).fetchall()
-        return {"count": len(rows), "rows": [dict(r._mapping) for r in rows]}
+        # Also check columns exist
+        cols = db.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='businesses' ORDER BY column_name"
+        )).fetchall()
+        return {"count": len(rows), "columns": [r[0] for r in cols], "rows": [dict(r._mapping) for r in rows]}
     except Exception as e:
         return {"error": str(e)}
 
