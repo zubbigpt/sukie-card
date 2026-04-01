@@ -5493,6 +5493,79 @@ async def save_email_settings(slug: str, request: Request, pin: str = "", db: Se
     return {"status": "ok", "email_from_name": biz.email_from_name, "email_reply_to": biz.email_reply_to}
 
 
+@app.post("/api/biz/{slug}/birthday-voucher/send-test")
+async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
+    """Send a test birthday voucher email to any given email address (no date/DB restrictions)."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    body = await request.json()
+    to_email     = (body.get("to_email") or "").strip()
+    name         = (body.get("name") or "Cliente").strip()
+    discount_pct = int(body.get("discount_pct", 20))
+    if not to_email:
+        raise HTTPException(status_code=400, detail="to_email es obligatorio")
+
+    gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
+    gift_product = getattr(biz, "birthday_gift_product", "") or ""
+    email_intro  = getattr(biz, "birthday_email_intro", "") or ""
+
+    # Create a test token (not stored in DB)
+    import io, base64
+    token = "TEST-" + str(uuid.uuid4()).replace("-", "")[:16]
+    voucher_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview"
+    qr_img = qrcode.make(voucher_url)
+    buf = io.BytesIO(); qr_img.save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    if gift_type == "product" and gift_product:
+        gift_block = f"""
+    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
+      <div style="font-size:2rem;margin-bottom:6px">🎁</div>
+      <div style="font-size:1.3rem;font-weight:900;color:#e65100">{gift_product}</div>
+      <div style="font-size:.85rem;font-weight:700;color:#555;margin-top:4px">REGALO GRATIS</div>
+      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
+    </div>
+    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
+      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y recibirás tu regalo."}
+    </p>"""
+        subtitle = "Hoy te regalamos algo especial 🎁"
+    else:
+        gift_block = f"""
+    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
+      <div style="font-size:2.8rem;font-weight:900;color:#e65100">{discount_pct}%</div>
+      <div style="font-size:1rem;font-weight:700;color:#555;margin-top:4px">DE DESCUENTO</div>
+      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
+    </div>
+    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
+      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y se aplicará tu descuento."}
+    </p>"""
+        subtitle = "Hoy te regalamos un descuento especial"
+
+    html = f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);padding:36px 28px;text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">🎂</div>
+    <h1 style="color:#fff;font-size:1.6rem;margin:0;font-weight:800">¡Feliz Cumpleaños, {name}!</h1>
+    <p style="color:rgba(255,255,255,.85);margin-top:8px;font-size:.95rem">{subtitle}</p>
+  </div>
+  <div style="padding:32px 28px;text-align:center">
+    {gift_block}
+    <img src="data:image/png;base64,{qr_b64}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
+    <p style="color:#aaa;font-size:.75rem;margin-top:16px">⚠️ Este es un email de prueba — el QR no es válido para canjear</p>
+  </div>
+  <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
+    <p style="color:#999;font-size:.78rem;margin:0">Con cariño, el equipo de {biz.name}</p>
+  </div>
+</div>"""
+
+    sent = send_email(to_email=to_email, subject=f"🎂 [TEST] ¡Feliz Cumpleaños, {name}! Tu regalo te espera", html_body=html)
+    if sent:
+        return {"status": "sent", "to": to_email}
+    raise HTTPException(status_code=503, detail="No se pudo enviar el email de prueba")
+
+
 @app.post("/api/biz/{slug}/email-settings/test")
 async def test_email_settings(slug: str, request: Request, pin: str = "", db: Session = Depends(get_db)):
     """Send a test email using the business email config to verify it works."""
