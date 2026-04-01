@@ -369,6 +369,10 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_gift_type VARCHAR DEFAULT 'discount'",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_gift_product VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_intro VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_header_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_accent_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_banner_url VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_footer_text VARCHAR DEFAULT ''",
         # ── Apple Wallet live update web service ──────────────────────────────────
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS wallet_auth_token VARCHAR",
         """CREATE TABLE IF NOT EXISTS wallet_devices (
@@ -2409,6 +2413,107 @@ def admin_birthdays(pin: str = "", slug: str = "", db: Session = Depends(get_db)
     }
 
 
+def _build_birthday_email_html(
+    name: str, biz_name: str, qr_url: str,
+    gift_type: str = "discount", gift_product: str = "", discount_pct: int = 20,
+    hdr_color: str = "#1a1a1a", acc_color: str = "#c8a96e", banner_url: str = "",
+    logo_url: str = "", email_intro: str = "", footer_text: str = "",
+    is_test: bool = False
+) -> str:
+    """Build a premium, fully branded birthday email HTML."""
+    # Fallback footer
+    if not footer_text:
+        footer_text = f"Con cariño, el equipo de {biz_name}"
+
+    # Header: banner image OR solid brand color
+    if banner_url:
+        header_style = f"background:url('{banner_url}') center/cover no-repeat;position:relative"
+        header_overlay = f"<div style='position:absolute;inset:0;background:{hdr_color};opacity:.55;border-radius:12px 12px 0 0'></div>"
+        header_pos = "position:relative;z-index:1"
+    else:
+        header_style = f"background:{hdr_color}"
+        header_overlay = ""
+        header_pos = ""
+
+    # Logo block
+    logo_html = ""
+    if logo_url:
+        logo_html = f"""<div style="margin-bottom:16px">
+          <img src="{logo_url}" alt="{biz_name}" style="height:44px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1)">
+        </div>"""
+
+    # Gift block
+    gift_badge_color = acc_color
+    if gift_type == "product" and gift_product:
+        intro_text = email_intro or f"Muestra este QR al llegar a <strong>{biz_name}</strong>. El empleado lo escaneará y recibirás tu regalo."
+        gift_html = f"""
+        <div style="background:#fff;border-radius:12px;padding:24px 20px;margin-bottom:20px;border:2px solid {acc_color};text-align:center">
+          <div style="font-size:2.2rem;margin-bottom:6px">🎁</div>
+          <div style="font-family:Georgia,serif;font-size:1.4rem;font-weight:700;color:{hdr_color};letter-spacing:-.01em">{gift_product}</div>
+          <div style="display:inline-block;margin-top:8px;background:{acc_color};color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:100px">Regalo exclusivo</div>
+          <div style="color:#999;font-size:.75rem;margin-top:10px;letter-spacing:.03em">Válido solo hoy · Un solo uso</div>
+        </div>
+        <p style="color:#555;font-size:.88rem;margin:0 0 24px;line-height:1.7;text-align:center">{intro_text}</p>"""
+    else:
+        intro_text = email_intro or f"Muestra este QR al llegar a <strong>{biz_name}</strong>. El empleado lo escaneará y aplicará tu descuento."
+        gift_html = f"""
+        <div style="background:#fff;border-radius:12px;padding:24px 20px;margin-bottom:20px;border:2px solid {acc_color};text-align:center">
+          <div style="font-family:Georgia,serif;font-size:3.2rem;font-weight:900;color:{hdr_color};line-height:1">{discount_pct}%</div>
+          <div style="display:inline-block;margin-top:6px;background:{acc_color};color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:100px">de descuento</div>
+          <div style="color:#999;font-size:.75rem;margin-top:10px;letter-spacing:.03em">Válido solo hoy · Un solo uso</div>
+        </div>
+        <p style="color:#555;font-size:.88rem;margin:0 0 24px;line-height:1.7;text-align:center">{intro_text}</p>"""
+
+    test_banner = f"""<div style="background:#f59e0b;color:#fff;font-size:.7rem;font-weight:700;text-align:center;padding:6px;letter-spacing:.05em">
+      ⚠ EMAIL DE PRUEBA — QR no válido para canjear
+    </div>""" if is_test else ""
+
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
+</head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased">
+{test_banner}
+<div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,.08)">
+
+  <!-- HEADER -->
+  <div style="{header_style};padding:44px 32px 36px;text-align:center;border-radius:12px 12px 0 0;overflow:hidden">
+    {header_overlay}
+    <div style="{header_pos}">
+      {logo_html}
+      <div style="display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:100px;padding:5px 16px;margin-bottom:14px">
+        <span style="color:rgba(255,255,255,.95);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase">🎂 Cumpleaños</span>
+      </div>
+      <h1 style="color:#fff;font-size:1.75rem;font-weight:800;margin:0 0 6px;letter-spacing:-.02em;text-shadow:0 1px 4px rgba(0,0,0,.2)">¡Feliz Cumpleaños, {name}!</h1>
+      <p style="color:rgba(255,255,255,.85);font-size:.9rem;margin:0;font-weight:400">Hoy es tu día especial — tenemos algo para ti</p>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div style="padding:32px 32px 24px">
+    {gift_html}
+
+    <!-- QR -->
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="display:inline-block;background:#fff;border:1.5px solid #e8e8e8;border-radius:14px;padding:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+        <img src="{qr_url}" alt="QR de regalo" width="160" height="160" style="display:block;border-radius:6px">
+      </div>
+      <p style="color:#bbb;font-size:.72rem;margin:10px 0 0;letter-spacing:.03em">Un solo uso · Expira hoy a las 23:59</p>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div style="height:1px;background:linear-gradient(90deg,transparent,#e8e8e8,transparent);margin:0 32px"></div>
+
+  <!-- FOOTER -->
+  <div style="padding:20px 32px 28px;text-align:center">
+    <p style="color:#aaa;font-size:.78rem;margin:0;line-height:1.6">{footer_text}</p>
+  </div>
+
+</div>
+</body></html>"""
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # BIRTHDAY VOUCHERS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -2428,6 +2533,11 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
     gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
     gift_product = getattr(biz, "birthday_gift_product", "") or ""
     email_intro  = getattr(biz, "birthday_email_intro", "") or ""
+    hdr_color    = getattr(biz, "birthday_email_header_color", "") or getattr(biz, "primary_color", "") or "#1a1a1a"
+    acc_color    = getattr(biz, "birthday_email_accent_color", "") or getattr(biz, "accent_color", "") or "#c8a96e"
+    banner_url   = getattr(biz, "birthday_email_banner_url", "") or ""
+    footer_text  = getattr(biz, "birthday_email_footer_text", "") or f"Con cariño, el equipo de {biz.name}"
+    logo_url     = getattr(biz, "logo_url", "") or ""
 
     today = datetime.now().strftime("%m-%d")
     expires_at = datetime.now().replace(hour=23, minute=59, second=59)
@@ -2474,47 +2584,13 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
         name = (cust.first_name or "Cliente").strip()
         subject = f"¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera"
 
-        # Build gift block based on type
-        if gift_type == "product" and gift_product:
-            gift_block = f"""
-    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
-      <div style="font-size:2rem;margin-bottom:6px">🎁</div>
-      <div style="font-size:1.3rem;font-weight:900;color:#e65100">{gift_product}</div>
-      <div style="font-size:.85rem;font-weight:700;color:#555;margin-top:4px">REGALO GRATIS</div>
-      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
-    </div>
-    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
-      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y recibirás tu regalo."}
-    </p>"""
-            subtitle = "Hoy te regalamos algo especial 🎁"
-        else:
-            gift_block = f"""
-    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
-      <div style="font-size:2.8rem;font-weight:900;color:#e65100">{discount_pct}%</div>
-      <div style="font-size:1rem;font-weight:700;color:#555;margin-top:4px">DE DESCUENTO</div>
-      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
-    </div>
-    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
-      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y se aplicará tu descuento."}
-    </p>"""
-            subtitle = "Hoy te regalamos un descuento especial"
-
-        html = f"""
-<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
-  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);padding:36px 28px;text-align:center">
-    <div style="font-size:3rem;margin-bottom:8px">🎂</div>
-    <h1 style="color:#fff;font-size:1.6rem;margin:0;font-weight:800">¡Feliz Cumpleaños, {name}!</h1>
-    <p style="color:rgba(255,255,255,.85);margin-top:8px;font-size:.95rem">{subtitle}</p>
-  </div>
-  <div style="padding:32px 28px;text-align:center">
-    {gift_block}
-    <img src="{qr_url}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
-    <p style="color:#aaa;font-size:.75rem;margin-top:16px">Este QR es de un solo uso y expira hoy a las 23:59</p>
-  </div>
-  <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
-    <p style="color:#999;font-size:.78rem;margin:0">Con cariño, el equipo de {biz.name}</p>
-  </div>
-</div>"""
+        html = _build_birthday_email_html(
+            name=name, biz_name=biz.name, qr_url=qr_url,
+            gift_type=gift_type, gift_product=gift_product, discount_pct=discount_pct,
+            hdr_color=hdr_color, acc_color=acc_color, banner_url=banner_url,
+            logo_url=logo_url, email_intro=email_intro, footer_text=footer_text,
+            is_test=False
+        )
         try:
             if send_email(to_email=cust.email, subject=subject, html_body=html):
                 sent += 1
@@ -4157,10 +4233,18 @@ def get_birthday_config(slug: str, pin: str = "", db: Session = Depends(get_db))
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     return {
-        "birthday_gift_type":    getattr(biz, "birthday_gift_type", "discount") or "discount",
-        "birthday_gift_product": getattr(biz, "birthday_gift_product", "") or "",
-        "birthday_discount_pct": 20,  # default, comes from voucher table
-        "birthday_email_intro":  getattr(biz, "birthday_email_intro", "") or "",
+        "birthday_gift_type":         getattr(biz, "birthday_gift_type", "discount") or "discount",
+        "birthday_gift_product":      getattr(biz, "birthday_gift_product", "") or "",
+        "birthday_discount_pct":      20,
+        "birthday_email_intro":       getattr(biz, "birthday_email_intro", "") or "",
+        "birthday_email_header_color":getattr(biz, "birthday_email_header_color", "") or "",
+        "birthday_email_accent_color":getattr(biz, "birthday_email_accent_color", "") or "",
+        "birthday_email_banner_url":  getattr(biz, "birthday_email_banner_url", "") or "",
+        "birthday_email_footer_text": getattr(biz, "birthday_email_footer_text", "") or "",
+        "biz_primary_color":          getattr(biz, "primary_color", "#26170c") or "#26170c",
+        "biz_accent_color":           getattr(biz, "accent_color", "#ffca48") or "#ffca48",
+        "biz_logo_url":               getattr(biz, "logo_url", "") or "",
+        "biz_name":                   biz.name or "",
     }
 
 
@@ -4176,9 +4260,16 @@ async def update_birthday_config(slug: str, request: Request, db: Session = Depe
     gift_type    = (body.get("birthday_gift_type") or "discount").strip()
     gift_product = (body.get("birthday_gift_product") or "").strip()
     email_intro  = (body.get("birthday_email_intro") or "").strip()
+    header_color = (body.get("birthday_email_header_color") or "").strip()
+    accent_color = (body.get("birthday_email_accent_color") or "").strip()
+    banner_url   = (body.get("birthday_email_banner_url") or "").strip()
+    footer_text  = (body.get("birthday_email_footer_text") or "").strip()
     db.execute(text(
-        "UPDATE businesses SET birthday_gift_type=:gt, birthday_gift_product=:gp, birthday_email_intro=:ei WHERE slug=:slug"
-    ), {"gt": gift_type, "gp": gift_product, "ei": email_intro, "slug": slug})
+        "UPDATE businesses SET birthday_gift_type=:gt, birthday_gift_product=:gp, birthday_email_intro=:ei, "
+        "birthday_email_header_color=:hc, birthday_email_accent_color=:ac, "
+        "birthday_email_banner_url=:bu, birthday_email_footer_text=:ft WHERE slug=:slug"
+    ), {"gt": gift_type, "gp": gift_product, "ei": email_intro,
+        "hc": header_color, "ac": accent_color, "bu": banner_url, "ft": footer_text, "slug": slug})
     db.commit()
     return {"status": "updated"}
 
@@ -5543,50 +5634,21 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
     gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
     gift_product = getattr(biz, "birthday_gift_product", "") or ""
     email_intro  = getattr(biz, "birthday_email_intro", "") or ""
+    hdr_color    = getattr(biz, "birthday_email_header_color", "") or getattr(biz, "primary_color", "") or "#1a1a1a"
+    acc_color    = getattr(biz, "birthday_email_accent_color", "") or getattr(biz, "accent_color", "") or "#c8a96e"
+    banner_url   = getattr(biz, "birthday_email_banner_url", "") or ""
+    footer_text  = getattr(biz, "birthday_email_footer_text", "") or ""
+    logo_url     = getattr(biz, "logo_url", "") or ""
 
-    # QR served as URL (Gmail blocks data: base64 URIs in emails)
     qr_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview/qr.png"
 
-    if gift_type == "product" and gift_product:
-        gift_block = f"""
-    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
-      <div style="font-size:2rem;margin-bottom:6px">🎁</div>
-      <div style="font-size:1.3rem;font-weight:900;color:#e65100">{gift_product}</div>
-      <div style="font-size:.85rem;font-weight:700;color:#555;margin-top:4px">REGALO GRATIS</div>
-      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
-    </div>
-    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
-      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y recibirás tu regalo."}
-    </p>"""
-        subtitle = "Hoy te regalamos algo especial 🎁"
-    else:
-        gift_block = f"""
-    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
-      <div style="font-size:2.8rem;font-weight:900;color:#e65100">{discount_pct}%</div>
-      <div style="font-size:1rem;font-weight:700;color:#555;margin-top:4px">DE DESCUENTO</div>
-      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
-    </div>
-    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
-      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y se aplicará tu descuento."}
-    </p>"""
-        subtitle = "Hoy te regalamos un descuento especial"
-
-    html = f"""
-<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
-  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);padding:36px 28px;text-align:center">
-    <div style="font-size:3rem;margin-bottom:8px">🎂</div>
-    <h1 style="color:#fff;font-size:1.6rem;margin:0;font-weight:800">¡Feliz Cumpleaños, {name}!</h1>
-    <p style="color:rgba(255,255,255,.85);margin-top:8px;font-size:.95rem">{subtitle}</p>
-  </div>
-  <div style="padding:32px 28px;text-align:center">
-    {gift_block}
-    <img src="{qr_url}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
-    <p style="color:#ccc;font-size:.72rem;margin-top:16px">(Email de prueba — QR no válido)</p>
-  </div>
-  <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
-    <p style="color:#999;font-size:.78rem;margin:0">Con cariño, el equipo de {biz.name}</p>
-  </div>
-</div>"""
+    html = _build_birthday_email_html(
+        name=name, biz_name=biz.name, qr_url=qr_url,
+        gift_type=gift_type, gift_product=gift_product, discount_pct=discount_pct,
+        hdr_color=hdr_color, acc_color=acc_color, banner_url=banner_url,
+        logo_url=logo_url, email_intro=email_intro, footer_text=footer_text,
+        is_test=True
+    )
 
     sent = send_email(to_email=to_email, subject=f"[TEST] ¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera", html_body=html)
     if sent:
