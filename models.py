@@ -158,5 +158,13 @@ class Business(Base):
     stripe_subscription_id    = Column(String, nullable=True)   # sub_xxx
     stripe_subscription_status = Column(String, nullable=True)  # active | past_due | canceled | trialing
     stripe_current_period_end = Column(DateTime(timezone=True), nullable=True)
+    # ── Birthday voucher config ────────────────────────────────────────────────
+    birthday_gift_type          = Column(String, default="discount")  # discount | product
+    birthday_gift_product       = Column(String, nullable=True, default="")
+    birthday_email_intro        = Column(String, nullable=True, default="")
+    birthday_email_header_color = Column(String, nullable=True, default="")
+    birthday_email_accent_color = Column(String, nullable=True, default="")
+    birthday_email_banner_url   = Column(String, nullable=True, default="")
+    birthday_email_footer_text  = Column(String, nullable=True, default="")
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
