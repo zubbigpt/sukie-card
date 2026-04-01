@@ -2468,12 +2468,8 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
 
         # Build voucher URL (for scanner to scan)
         voucher_url = f"{BASE_URL}/biz/{slug}/birthday/{token}"
-        # Generate QR as base64
-        import io, base64
-        qr_img = qrcode.make(voucher_url)
-        buf = io.BytesIO()
-        qr_img.save(buf, format="PNG")
-        qr_b64 = base64.b64encode(buf.getvalue()).decode()
+        # QR served as URL (not base64 — Gmail blocks data: URIs)
+        qr_url = f"{BASE_URL}/biz/{slug}/birthday/{token}/qr.png"
 
         name = (cust.first_name or "Cliente").strip()
         subject = f"¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera"
@@ -2512,7 +2508,7 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
   </div>
   <div style="padding:32px 28px;text-align:center">
     {gift_block}
-    <img src="data:image/png;base64,{qr_b64}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
+    <img src="{qr_url}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
     <p style="color:#aaa;font-size:.75rem;margin-top:16px">Este QR es de un solo uso y expira hoy a las 23:59</p>
   </div>
   <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
@@ -2568,6 +2564,43 @@ async def redeem_birthday_voucher(slug: str, request: Request, pin: str = "", db
         "discount_pct": row.discount_pct,
         "message": f"🎂 {(row.first_name or 'Cliente')} tiene un {row.discount_pct}% de descuento hoy por su cumpleaños"
     }
+
+
+@app.get("/biz/{slug}/birthday/test-preview/qr.png")
+def birthday_test_qr(slug: str):
+    """Return a test QR PNG for birthday email previews."""
+    import io as _io
+    try:
+        import qrcode as _qrcode
+        img = _qrcode.make(f"{BASE_URL}/biz/{slug}/birthday/TEST")
+        buf = _io.BytesIO(); img.save(buf, format="PNG"); buf.seek(0)
+        return StreamingResponse(buf, media_type="image/png", headers={"Cache-Control": "public, max-age=3600"})
+    except Exception:
+        from PIL import Image as _PILImage
+        img = _PILImage.new("RGB", (180, 180), color=(255, 255, 255)); buf = _io.BytesIO()
+        img.save(buf, format="PNG"); buf.seek(0)
+        return StreamingResponse(buf, media_type="image/png")
+
+
+@app.get("/biz/{slug}/birthday/{token}/qr.png")
+def birthday_voucher_qr(slug: str, token: str, db: Session = Depends(get_db)):
+    """Return QR code as PNG image — safe for email embedding via URL."""
+    import io as _io
+    try:
+        import qrcode as _qrcode
+        voucher_url = f"{BASE_URL}/biz/{slug}/birthday/{token}"
+        qr_img = _qrcode.make(voucher_url)
+        buf = _io.BytesIO()
+        qr_img.save(buf, format="PNG")
+        buf.seek(0)
+        return StreamingResponse(buf, media_type="image/png", headers={"Cache-Control": "public, max-age=86400"})
+    except Exception:
+        from PIL import Image as _PILImage
+        img = _PILImage.new("RGB", (180, 180), color=(255, 255, 255))
+        buf = _io.BytesIO()
+        img.save(buf, format="PNG")
+        buf.seek(0)
+        return StreamingResponse(buf, media_type="image/png")
 
 
 @app.get("/biz/{slug}/birthday/{token}", response_class=HTMLResponse)
@@ -5511,17 +5544,8 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
     gift_product = getattr(biz, "birthday_gift_product", "") or ""
     email_intro  = getattr(biz, "birthday_email_intro", "") or ""
 
-    # Create a test token (not stored in DB)
-    import io, base64
-    try:
-        import qrcode as _qrcode
-        voucher_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview"
-        qr_img = _qrcode.make(voucher_url)
-        buf = io.BytesIO(); qr_img.save(buf, format="PNG")
-        qr_b64 = base64.b64encode(buf.getvalue()).decode()
-    except Exception:
-        # Fallback: simple placeholder QR image (1x1 white pixel)
-        qr_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg=="
+    # QR served as URL (Gmail blocks data: base64 URIs in emails)
+    qr_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview/qr.png"
 
     if gift_type == "product" and gift_product:
         gift_block = f"""
@@ -5556,7 +5580,7 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
   </div>
   <div style="padding:32px 28px;text-align:center">
     {gift_block}
-    <img src="data:image/png;base64,{qr_b64}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
+    <img src="{qr_url}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
     <p style="color:#ccc;font-size:.72rem;margin-top:16px">(Email de prueba — QR no válido)</p>
   </div>
   <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
