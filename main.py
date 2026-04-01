@@ -2418,7 +2418,7 @@ def _build_birthday_email_html(
     gift_type: str = "discount", gift_product: str = "", discount_pct: int = 20,
     hdr_color: str = "#1a1a1a", acc_color: str = "#c8a96e", banner_url: str = "",
     logo_url: str = "", email_intro: str = "", footer_text: str = "",
-    is_test: bool = False
+    is_test: bool = False, slug: str = ""
 ) -> str:
     """Build a premium, fully branded birthday email HTML."""
     # Fallback footer
@@ -2426,8 +2426,19 @@ def _build_birthday_email_html(
         footer_text = f"Con cariño, el equipo de {biz_name}"
 
     # Header: banner image OR solid brand color
+    # banner_url may be a data URI (stored in DB) or a slug hint — always serve via /birthday-banner.jpg
+    # We detect slug from banner_url pattern and build a real HTTP URL
+    effective_banner = ""
     if banner_url:
-        header_style = f"background:url('{banner_url}') center/cover no-repeat;position:relative"
+        if banner_url.startswith("data:"):
+            # Extract slug from context — caller must pass slug separately; use __slug hint
+            # We'll use a sentinel: caller sets banner_url to the real serving URL before calling
+            effective_banner = banner_url  # already resolved by caller
+        else:
+            effective_banner = banner_url
+
+    if effective_banner:
+        header_style = f"background:url('{effective_banner}') center/cover no-repeat;position:relative"
         header_overlay = f"<div style='position:absolute;inset:0;background:{hdr_color};opacity:.55;border-radius:12px 12px 0 0'></div>"
         header_pos = "position:relative;z-index:1"
     else:
@@ -2435,11 +2446,12 @@ def _build_birthday_email_html(
         header_overlay = ""
         header_pos = ""
 
-    # Logo block
+    # Logo block — use served URL if it's a data URI
     logo_html = ""
     if logo_url:
+        served_logo = f"{BASE_URL}/biz/{slug}/logo.png" if (logo_url.startswith("data:") and slug) else logo_url
         logo_html = f"""<div style="margin-bottom:16px">
-          <img src="{logo_url}" alt="{biz_name}" style="height:44px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1)">
+          <img src="{served_logo}" alt="{biz_name}" style="height:44px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1)">
         </div>"""
 
     # Gift block
@@ -2584,12 +2596,14 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
         name = (cust.first_name or "Cliente").strip()
         subject = f"¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera"
 
+        # Use served URL for banner (Gmail blocks data: URIs)
+        served_banner = f"{BASE_URL}/biz/{slug}/birthday-banner.jpg" if banner_url else ""
         html = _build_birthday_email_html(
             name=name, biz_name=biz.name, qr_url=qr_url,
             gift_type=gift_type, gift_product=gift_product, discount_pct=discount_pct,
-            hdr_color=hdr_color, acc_color=acc_color, banner_url=banner_url,
+            hdr_color=hdr_color, acc_color=acc_color, banner_url=served_banner,
             logo_url=logo_url, email_intro=email_intro, footer_text=footer_text,
-            is_test=False
+            is_test=False, slug=slug
         )
         try:
             if send_email(to_email=cust.email, subject=subject, html_body=html):
@@ -5493,6 +5507,39 @@ async def update_card_program(slug: str, program_id: str, request: Request, pin:
     return {"status": "updated"}
 
 
+@app.get("/biz/{slug}/logo.png")
+def serve_biz_logo(slug: str, db: Session = Depends(get_db)):
+    """Serve business logo as PNG — for use in emails where data: URIs are blocked."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404)
+    logo = getattr(biz, "logo_url", "") or ""
+    if not logo or not logo.startswith("data:image"):
+        raise HTTPException(status_code=404)
+    import base64 as _b64, io as _io
+    _, b64data = logo.split(",", 1)
+    raw = _b64.b64decode(b64data)
+    return StreamingResponse(_io.BytesIO(raw), media_type="image/png",
+        headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/biz/{slug}/birthday-banner.jpg")
+def serve_birthday_banner(slug: str, db: Session = Depends(get_db)):
+    """Serve birthday email banner image as JPEG — needed because Gmail blocks data: URIs."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404)
+    banner = getattr(biz, "birthday_email_banner_url", "") or ""
+    if not banner or not banner.startswith("data:image"):
+        raise HTTPException(status_code=404)
+    import base64 as _b64, io as _io
+    # Strip the data URL prefix
+    _, b64data = banner.split(",", 1)
+    raw = _b64.b64decode(b64data)
+    return StreamingResponse(_io.BytesIO(raw), media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400"})
+
+
 @app.post("/api/biz/{slug}/birthday-email-banner")
 async def upload_birthday_banner(
     slug: str,
@@ -5686,13 +5733,15 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
     logo_url     = getattr(biz, "logo_url", "") or ""
 
     qr_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview/qr.png"
+    # Serve banner as real URL — Gmail blocks data: URIs
+    served_banner = f"{BASE_URL}/biz/{slug}/birthday-banner.jpg" if banner_url else ""
 
     html = _build_birthday_email_html(
         name=name, biz_name=biz.name, qr_url=qr_url,
         gift_type=gift_type, gift_product=gift_product, discount_pct=discount_pct,
-        hdr_color=hdr_color, acc_color=acc_color, banner_url=banner_url,
+        hdr_color=hdr_color, acc_color=acc_color, banner_url=served_banner,
         logo_url=logo_url, email_intro=email_intro, footer_text=footer_text,
-        is_test=True
+        is_test=True, slug=slug
     )
 
     sent = send_email(to_email=to_email, subject=f"[TEST] ¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera", html_body=html)

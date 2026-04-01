@@ -1328,7 +1328,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                   <div>
                     <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Color de cabecera</label>
                     <div style="display:flex;align-items:center;gap:8px">
-                      <input type="color" id="bday-hdr-color" value="#26170c" oninput="bdayUpdateEmailPreview()"
+                      <input type="color" id="bday-hdr-color" value="#26170c" oninput="bdayUpdateEmailPreview();bdayScheduleAutoSave()"
                         style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none">
                       <input type="text" id="bday-hdr-color-txt" value="#26170c" maxlength="7"
                         style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.82rem;font-family:monospace"
@@ -1338,7 +1338,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                   <div>
                     <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Color de acento</label>
                     <div style="display:flex;align-items:center;gap:8px">
-                      <input type="color" id="bday-acc-color" value="#c8a96e" oninput="bdayUpdateEmailPreview()"
+                      <input type="color" id="bday-acc-color" value="#c8a96e" oninput="bdayUpdateEmailPreview();bdayScheduleAutoSave()"
                         style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none">
                       <input type="text" id="bday-acc-color-txt" value="#c8a96e" maxlength="7"
                         style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.82rem;font-family:monospace"
@@ -1387,13 +1387,13 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                   <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Instrucción para el cliente</label>
                   <textarea id="bday-email-intro" rows="2" placeholder="Ej: Muestra este QR al llegar y te daremos tu regalo. ¡Te esperamos!"
                     style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box;resize:none;line-height:1.5"
-                    oninput="bdayUpdateEmailPreview()"></textarea>
+                    oninput="bdayUpdateEmailPreview();bdayScheduleAutoSave()"></textarea>
                 </div>
                 <div>
                   <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Texto del footer</label>
                   <input type="text" id="bday-footer-text" placeholder="Ej: Con cariño, el equipo de Sukie Cookie 🍪"
                     style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box"
-                    oninput="bdayUpdateEmailPreview()">
+                    oninput="bdayUpdateEmailPreview();bdayScheduleAutoSave()">
                 </div>
               </div>
 
@@ -4417,9 +4417,21 @@ function bdayUpdateEmailPreview() {
     </div>`;
 }
 
-async function bdaySaveEmailConfig() {
+// ── AUTOSAVE (debounce 8s) ───────────────────────────────────────────────────
+let _bdayAutoSaveTimer = null;
+function bdayScheduleAutoSave() {
+  clearTimeout(_bdayAutoSaveTimer);
   const status = document.getElementById('bday-email-status');
-  if (status) status.textContent = 'Guardando…';
+  if (status && !status.textContent.includes('✓')) {
+    status.textContent = 'Guardando en breve…';
+    status.style.color = 'var(--brown-light)';
+  }
+  _bdayAutoSaveTimer = setTimeout(() => bdaySaveEmailConfig(true), 8000);
+}
+
+async function bdaySaveEmailConfig(isAuto = false) {
+  const status = document.getElementById('bday-email-status');
+  if (!isAuto && status) status.textContent = 'Guardando…';
   try {
     const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/birthday-config`, {
       method: 'PUT', headers: {'Content-Type':'application/json'},
@@ -4433,8 +4445,8 @@ async function bdaySaveEmailConfig() {
       })
     });
     if (r.ok) {
-      if (status) { status.textContent = 'Guardado ✓'; status.style.color = 'var(--green)'; setTimeout(()=>{ status.textContent=''; status.style.color=''; }, 3000); }
-      showToast('Diseño del email guardado', 'success');
+      if (status) { status.textContent = isAuto ? '✓ Guardado automáticamente' : 'Guardado ✓'; status.style.color = 'var(--green)'; setTimeout(()=>{ status.textContent=''; status.style.color=''; }, 3000); }
+      if (!isAuto) showToast('Diseño del email guardado', 'success');
     } else {
       if (status) { status.textContent = 'Error al guardar'; status.style.color = '#c62828'; }
     }
