@@ -9,281 +9,569 @@
 <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
+
 <style>
-:root{
-  --surface:#fff8f5;
-  --surface-low:#fff1ea;
-  --surface-mid:#ffeade;
-  --primary:#26170c;
-  --primary-mid:#3d2b1f;
-  --on-primary:#ffffff;
-  --honey:#ffca48;
-  --honey-dark:#785a00;
-  --honey-light:#fff3d0;
-  --outline:#a08d83;
-  --outline-var:#e2cfc8;
-  --green:#2e7d32;
-  --red:#c62828;
-  --r:0.75rem;
-  --r-sm:0.375rem;
-  --r-lg:1.25rem;
-  --shadow-sm:0 2px 12px rgba(38,23,12,0.06);
-  --shadow:0 4px 24px rgba(38,23,12,0.10);
-  --shadow-lg:0 8px 40px rgba(38,23,12,0.14);
-  --accent:{{ primary_color or '#ffca48' }};
-  --accent2:{{ accent_color or '#fff3d0' }};
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #fdf8f3;
+  --bg2:       #f5ede3;
+  --surface:   #ffffff;
+  --primary:   {{ lp_text_color or '#1a0f00' }};
+  --mid:       #4a3520;
+  --muted:     #8a7060;
+  --accent:    {{ lp_button_color or '#1a0f00' }};
+  --gold:      #f5a623;
+  --gold-lt:   #fff3d0;
+  --gold-dk:   #7a5000;
+  --green:     #2e7d32;
+  --red:       #c62828;
+  --r:         1rem;
+  --r-sm:      .5rem;
+  --r-lg:      1.5rem;
+  --r-xl:      2rem;
+  --sh-sm:     0 2px 12px rgba(26,15,0,.07);
+  --sh:        0 6px 28px rgba(26,15,0,.11);
+  --sh-lg:     0 16px 56px rgba(26,15,0,.16);
 }
+{% if lp_bg_color %}:root{--bg:{{ lp_bg_color }};--bg2:{{ lp_bg_color }}}{% endif %}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--primary);min-height:100vh;overflow-x:hidden}
-.page{max-width:480px;margin:0 auto;padding:2rem 1.5rem 5rem}
+html{scroll-behavior:smooth}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);overflow-x:hidden}
 
-/* HEADER */
-.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.5rem;padding-bottom:1.25rem}
-.biz-logo{display:flex;align-items:center;gap:.85rem}
-.biz-logo img{width:44px;height:44px;border-radius:var(--r-sm);object-fit:cover}
-.biz-initial{width:44px;height:44px;border-radius:var(--r-sm);background:var(--honey);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--honey-dark)}
-.biz-name{font-size:.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--primary)}
-.biz-tag{font-size:.62rem;color:var(--outline);letter-spacing:.5px;margin-top:2px}
-.header-badge{background:var(--honey);color:var(--honey-dark);font-size:.6rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:.28rem .75rem;border-radius:var(--r-sm)}
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+@keyframes float {
+  0%,100%{transform:translateY(0) rotate(-1.5deg)}
+  50%    {transform:translateY(-12px) rotate(1.5deg)}
+}
+@keyframes fade-up {
+  from{opacity:0;transform:translateY(28px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+@keyframes fade-in {
+  from{opacity:0}to{opacity:1}
+}
+@keyframes shimmer {
+  0%  {background-position:200% center}
+  100%{background-position:-200% center}
+}
+@keyframes pulse-ring {
+  0%  {transform:scale(1);opacity:.6}
+  70% {transform:scale(1.35);opacity:0}
+  100%{transform:scale(1.35);opacity:0}
+}
+@keyframes dot-bounce {
+  0%,80%,100%{transform:scale(0)}
+  40%        {transform:scale(1)}
+}
+@keyframes spin-slow {
+  from{transform:rotate(0deg)}
+  to  {transform:rotate(360deg)}
+}
 
-/* HERO */
-.hero{margin-bottom:2rem}
-.hero-eyebrow{font-size:.62rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--outline);margin-bottom:.85rem;display:flex;align-items:center;gap:.6rem}
-.hero-eyebrow::before{content:'';width:22px;height:2px;background:var(--honey);flex-shrink:0}
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,14vw,5.5rem);line-height:.88;letter-spacing:-1px;color:var(--primary);margin-bottom:1rem}
-.hero h1 .accent{color:var(--honey-dark)}
-.hero-sub{font-size:.92rem;color:var(--outline);line-height:1.8;max-width:380px}
+.reveal {
+  opacity:0;transform:translateY(32px);
+  transition:opacity .65s ease, transform .65s ease;
+}
+.reveal.visible {
+  opacity:1;transform:translateY(0);
+}
 
-/* CARD MOCK — Apple Wallet canvas */
-.card-mock-wrap{margin:2rem 0}
-.aw-pass-reg{border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.28);color:#fff}
-.aw-pass-reg-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;gap:6px}
-.aw-pass-reg-footer{display:flex;justify-content:space-between;padding:10px 14px 13px}
-.aw-fld{display:flex;flex-direction:column;gap:2px}
-.aw-fld-lbl{font-size:.5rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.55}
-.aw-fld-val{font-size:.8rem;font-weight:800;letter-spacing:.3px}
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.page     {max-width:540px;margin:0 auto;padding:0 1.25rem 6rem}
+.section  {padding:3.5rem 0}
+.section + .section{padding-top:0}
 
-/* BENEFITS */
-.benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;margin-bottom:2rem}
-.benefit{background:var(--on-primary);border-radius:var(--r);padding:1.1rem .8rem;text-align:center;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
-.benefit:hover{box-shadow:var(--shadow)}
-.benefit .icon{width:40px;height:40px;border-radius:10px;background:var(--honey-light);display:flex;align-items:center;justify-content:center;margin:0 auto .6rem}
-.benefit .icon .material-symbols-outlined{font-size:1.25rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
-.benefit .txt{font-size:.72rem;color:var(--outline);line-height:1.6;font-weight:600}
+/* ═══════════════════════════════════════════
+   TOP NAV BAR
+═══════════════════════════════════════════ */
+.topbar {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.25rem;
+  background:var(--bg);
+  position:sticky;top:0;z-index:100;
+  border-bottom:1.5px solid rgba(26,15,0,.06);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.topbar-logo{display:flex;align-items:center;gap:.65rem}
+.topbar-logo img{width:34px;height:34px;border-radius:8px;object-fit:cover}
+.topbar-initial{width:34px;height:34px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold-dk)}
+.topbar-name{font-size:.78rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+.topbar-badge{background:var(--primary);color:#fff;font-size:.58rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:.3rem .85rem;border-radius:99px}
 
-/* FORM */
-.form-wrap{background:var(--on-primary);border-radius:var(--r-lg);padding:2rem 1.75rem;box-shadow:var(--shadow)}
-.form-title{font-family:'Bebas Neue',sans-serif;font-size:2.1rem;letter-spacing:-.5px;color:var(--primary);margin-bottom:.3rem}
-.form-sub{font-size:.8rem;color:var(--outline);margin-bottom:1.75rem}
-.field{margin-bottom:1.15rem}
-.field label{display:block;font-size:.62rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--outline);margin-bottom:.45rem}
-.req{color:var(--honey-dark);font-weight:900}
-.row-2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
-.field input{width:100%;padding:.8rem 1rem;border:none;border-radius:var(--r-sm);font-size:.92rem;font-family:'Manrope',sans-serif;background:var(--surface);color:var(--primary);outline:none;transition:box-shadow .18s}
-.field input:focus{box-shadow:0 0 0 2.5px var(--honey),var(--shadow-sm)}
-.field input::placeholder{color:var(--outline)}
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero {
+  padding:3rem 0 1.5rem;
+  position:relative;overflow:hidden;
+}
+.hero-eyebrow {
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--gold-lt);border:1.5px solid rgba(245,166,35,.3);
+  padding:.35rem .9rem;border-radius:99px;
+  font-size:.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dk);
+  margin-bottom:1.25rem;
+  animation:fade-in .5s ease both;
+}
+.hero-eyebrow .dot {
+  width:6px;height:6px;border-radius:50%;background:var(--gold);
+  position:relative;
+}
+.hero-eyebrow .dot::before {
+  content:'';position:absolute;inset:0;border-radius:50%;background:var(--gold);
+  animation:pulse-ring 1.8s ease-out infinite;
+}
+.hero h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3.8rem,16vw,6.5rem);
+  line-height:.88;letter-spacing:-1px;
+  color:var(--primary);
+  margin-bottom:1.1rem;
+  animation:fade-up .6s .1s ease both;
+}
+.hero h1 .accent {
+  background:linear-gradient(135deg,var(--gold) 0%,#e07b00 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  display:inline-block;
+}
+.hero-sub {
+  font-size:1rem;color:var(--muted);line-height:1.8;
+  max-width:380px;margin-bottom:1.75rem;
+  animation:fade-up .6s .2s ease both;
+}
+
+/* TRUST PILLS */
+.trust-row {
+  display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2rem;
+  animation:fade-up .6s .3s ease both;
+}
+.trust-pill {
+  display:inline-flex;align-items:center;gap:.45rem;
+  background:var(--surface);border:1.5px solid rgba(26,15,0,.09);
+  padding:.35rem .85rem;border-radius:99px;
+  font-size:.72rem;font-weight:700;color:var(--mid);
+  box-shadow:var(--sh-sm);
+}
+.trust-pill .material-symbols-outlined{font-size:.9rem;color:var(--gold-dk);font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 20}
+
+/* CARD MOCK — floating */
+.card-float-wrap {
+  margin:2.5rem 0 2rem;
+  animation:fade-up .7s .25s ease both;
+}
+.card-float {
+  animation:float 5s ease-in-out infinite;
+  transform-origin:center;
+  filter:drop-shadow(0 20px 40px rgba(26,15,0,.22));
+}
+.aw-pass {
+  border-radius:16px;overflow:hidden;
+  background:{{ primary_color or '#1a0f00' }};
+  color:#fff;
+}
+.aw-pass-header {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 16px 8px;gap:8px;
+}
+.aw-pass-footer {
+  display:flex;justify-content:space-between;padding:10px 16px 15px;
+}
+.aw-fld{display:flex;flex-direction:column;gap:3px}
+.aw-fld-lbl{font-size:.48rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.5}
+.aw-fld-val{font-size:.82rem;font-weight:800;letter-spacing:.3px}
+
+/* ═══════════════════════════════════════════
+   STEPS — HOW IT WORKS
+═══════════════════════════════════════════ */
+.steps-section {
+  background:var(--primary);
+  border-radius:var(--r-xl);
+  padding:2.25rem 1.75rem;
+  margin-bottom:1.5rem;
+  color:#fff;
+}
+.steps-label {
+  font-size:.6rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(255,255,255,.4);margin-bottom:1rem;
+}
+.steps-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:2.2rem;line-height:1;letter-spacing:-.5px;
+  color:#fff;margin-bottom:1.75rem;
+}
+.steps-title span{color:var(--gold)}
+.step {
+  display:flex;align-items:flex-start;gap:1rem;
+  padding:.85rem 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.step:last-child{border-bottom:none;padding-bottom:0}
+.step-num {
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(245,166,35,.15);border:1.5px solid rgba(245,166,35,.25);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold);
+}
+.step-body h4{font-size:.92rem;font-weight:800;color:#fff;margin-bottom:.2rem}
+.step-body p{font-size:.78rem;color:rgba(255,255,255,.5);line-height:1.6}
+
+/* ═══════════════════════════════════════════
+   BENEFITS GRID
+═══════════════════════════════════════════ */
+.benefits-grid {
+  display:grid;gap:.75rem;
+  grid-template-columns:1fr 1fr;
+  margin-bottom:1.5rem;
+}
+.benefit-card {
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:1.35rem 1.1rem;
+  box-shadow:var(--sh-sm);
+  border:1.5px solid rgba(26,15,0,.07);
+  transition:transform .2s, box-shadow .2s;
+}
+.benefit-card:hover{transform:translateY(-3px);box-shadow:var(--sh)}
+.benefit-card.wide{grid-column:1/-1}
+.benefit-icon {
+  width:44px;height:44px;border-radius:12px;
+  background:var(--gold-lt);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:.85rem;
+}
+.benefit-icon .material-symbols-outlined{
+  font-size:1.4rem;color:var(--gold-dk);
+  font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24;
+}
+.benefit-card h4{font-size:.88rem;font-weight:800;color:var(--primary);margin-bottom:.3rem}
+.benefit-card p{font-size:.75rem;color:var(--muted);line-height:1.6}
+
+/* ═══════════════════════════════════════════
+   SOCIAL PROOF TICKER
+═══════════════════════════════════════════ */
+.proof-bar {
+  background:var(--bg2);
+  border-radius:var(--r-lg);
+  padding:1.25rem 1.5rem;
+  display:flex;align-items:center;gap:1rem;
+  margin-bottom:1.5rem;
+  border:1.5px solid rgba(26,15,0,.07);
+}
+.proof-avatars{display:flex;margin-right:.25rem}
+.proof-avatar {
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#e07b00);
+  border:2px solid var(--bg);
+  margin-left:-8px;display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;font-weight:800;color:#fff;
+  font-family:'Bebas Neue',sans-serif;
+}
+.proof-avatar:first-child{margin-left:0}
+.proof-text{flex:1}
+.proof-text strong{display:block;font-size:.82rem;font-weight:800;color:var(--primary)}
+.proof-text span{font-size:.72rem;color:var(--muted)}
+.proof-stars{color:var(--gold);font-size:.85rem;letter-spacing:1px}
+
+/* ═══════════════════════════════════════════
+   FORM SECTION
+═══════════════════════════════════════════ */
+.form-section-label {
+  font-size:.6rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;
+}
+.form-section-label::before{content:'';flex:1;height:1.5px;background:rgba(26,15,0,.08)}
+.form-section-label::after {content:'';flex:1;height:1.5px;background:rgba(26,15,0,.08)}
+
+.form-wrap {
+  background:var(--surface);
+  border-radius:var(--r-xl);
+  padding:2rem 1.75rem;
+  box-shadow:var(--sh);
+  border:1.5px solid rgba(26,15,0,.07);
+}
+.form-head{margin-bottom:1.75rem}
+.form-title{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1;letter-spacing:-.5px;color:var(--primary);margin-bottom:.3rem}
+.form-sub{font-size:.8rem;color:var(--muted)}
+
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:.6rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem}
+.req{color:var(--gold-dk);font-weight:900}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.field input{
+  width:100%;padding:.85rem 1rem;
+  border:1.5px solid rgba(26,15,0,.1);
+  border-radius:var(--r-sm);
+  font-size:.92rem;font-family:'Manrope',sans-serif;
+  background:var(--bg);color:var(--primary);
+  outline:none;transition:border-color .18s, box-shadow .18s;
+}
+.field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,166,35,.18)}
+.field input::placeholder{color:var(--muted)}
 .field input[type=date]{color-scheme:light}
-.error-msg{background:#fbe9e7;border-left:3px solid var(--red);color:var(--red);font-size:.82rem;padding:.75rem 1rem;border-radius:var(--r-sm);margin-bottom:1rem;display:none}
+
+.error-msg{
+  background:#fbe9e7;border-left:3px solid var(--red);
+  color:var(--red);font-size:.82rem;padding:.75rem 1rem;
+  border-radius:var(--r-sm);margin-bottom:1rem;display:none;
+}
 
 /* OPTIN */
-.optin-block{background:var(--surface);border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1.4rem}
-.optin-title{font-size:.58rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--outline);margin-bottom:.85rem}
+.optin-block{
+  background:var(--bg);border-radius:var(--r);
+  padding:1rem 1.1rem;margin-bottom:1.4rem;
+  border:1.5px solid rgba(26,15,0,.07);
+}
+.optin-title{font-size:.57rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem}
 .optin-row{display:flex;align-items:flex-start;gap:.85rem;margin-bottom:.75rem}
 .optin-row:last-child{margin-bottom:0}
 .toggle{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0;margin-top:2px}
 .toggle input{opacity:0;width:0;height:0}
-.slider{position:absolute;inset:0;background:var(--outline-var);border-radius:22px;cursor:pointer;transition:background .2s}
+.slider{position:absolute;inset:0;background:rgba(26,15,0,.15);border-radius:22px;cursor:pointer;transition:background .2s}
 .slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
-.toggle input:checked+.slider{background:var(--honey)}
+.toggle input:checked+.slider{background:var(--gold)}
 .toggle input:checked+.slider::before{transform:translateX(16px)}
-.optin-label{font-size:.82rem;font-weight:700;color:var(--primary)}
-.optin-desc{font-size:.72rem;color:var(--outline);margin-top:2px}
+.optin-label{font-size:.82rem;font-weight:800;color:var(--primary)}
+.optin-desc{font-size:.72rem;color:var(--muted);margin-top:2px}
 
 /* CTA */
-.btn-cta{width:100%;padding:1rem;background:var(--primary);color:var(--on-primary);border:none;border-radius:var(--r-sm);font-size:.88rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;font-family:'Manrope',sans-serif;cursor:pointer;transition:background .18s;margin-bottom:1rem}
-.btn-cta:hover{background:var(--primary-mid)}
-.btn-cta:disabled{background:var(--outline);cursor:not-allowed}
-.legal{font-size:.72rem;color:var(--outline);line-height:1.7;text-align:center}
+.btn-cta {
+  width:100%;padding:1.05rem;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--r-sm);
+  font-size:.9rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  font-family:'Manrope',sans-serif;cursor:pointer;
+  transition:filter .18s, transform .15s;
+  margin-bottom:1rem;
+  position:relative;overflow:hidden;
+}
+.btn-cta::after {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%);
+  background-size:200% 100%;
+  animation:shimmer 2.5s linear infinite;
+}
+.btn-cta:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn-cta:active{transform:translateY(0)}
+.btn-cta:disabled{background:var(--muted);cursor:not-allowed;animation:none}
+.btn-cta:disabled::after{display:none}
+
+.legal{font-size:.7rem;color:var(--muted);line-height:1.7;text-align:center}
 .legal a{color:var(--primary);font-weight:700;text-decoration:none}
 
-/* SUCCESS */
-.success-screen{display:none;text-align:center;padding:2rem 0;animation:fade-up .5s ease both}
-.success-icon{width:76px;height:76px;border-radius:50%;background:var(--honey);display:flex;align-items:center;justify-content:center;margin:0 auto 1.35rem;box-shadow:var(--shadow)}
-.success-icon .material-symbols-outlined{font-size:2rem;color:var(--honey-dark);font-variation-settings:'FILL' 1,'wght' 700,'GRAD' 0,'opsz' 48}
-.success-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:-.5px;color:var(--primary);margin-bottom:.5rem}
-.success-screen p{font-size:.9rem;color:var(--outline);line-height:1.8;margin-bottom:1.75rem}
-.btn-view-card{display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;background:var(--primary);color:var(--on-primary);font-size:.8rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border-radius:var(--r-sm);transition:background .18s}
-.btn-view-card:hover{background:var(--primary-mid)}
+/* LOADING DOTS */
+.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin:0 2px;animation:dot-bounce 1.4s ease-in-out infinite both}
+.dots span:nth-child(1){animation-delay:-.32s}
+.dots span:nth-child(2){animation-delay:-.16s}
 
-@keyframes fade-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* SUCCESS */
+.success-screen{display:none;text-align:center;padding:2.5rem 0;animation:fade-up .5s ease both}
+.success-icon{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#e07b00);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.35rem;box-shadow:var(--sh);
+}
+.success-icon .material-symbols-outlined{font-size:2.2rem;color:#fff;font-variation-settings:'FILL' 1,'wght' 700,'GRAD' 0,'opsz' 48}
+.success-screen h2{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:-.5px;color:var(--primary);margin-bottom:.5rem}
+.success-screen p{font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:1.75rem}
+.btn-view-card{
+  display:inline-flex;align-items:center;gap:.6rem;
+  padding:.95rem 2.25rem;background:var(--primary);color:#fff;
+  font-size:.82rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  text-decoration:none;border-radius:var(--r-sm);
+  transition:filter .18s;
+}
+.btn-view-card:hover{filter:brightness(1.15)}
+
+/* ═══════════════════════════════════════════
+   FOOTER NOTE
+═══════════════════════════════════════════ */
+.footer-note{
+  text-align:center;padding:2.5rem 0 0;
+  font-size:.7rem;color:var(--muted);line-height:1.7;
+}
+.footer-note a{color:var(--mid);font-weight:700;text-decoration:none}
 </style>
-{% if lp_bg_color or lp_button_color or lp_text_color or lp_link_color %}
+
+{% if lp_bg_color or lp_button_color or lp_text_color %}
 <style>
-  :root {
-    {% if lp_bg_color %}--surface: {{ lp_bg_color }};--surface-low: {{ lp_bg_color }};{% endif %}
-    {% if lp_text_color %}--primary: {{ lp_text_color }};--primary-mid: {{ lp_text_color }};{% endif %}
-    {% if lp_link_color %}--honey-dark: {{ lp_link_color }};{% endif %}
-  }
-  {% if lp_button_color %}.btn-cta { background: {{ lp_button_color }} !important; }
-  .btn-cta:hover { background: {{ lp_button_color }} !important; filter: brightness(.88); }{% endif %}
+  .btn-cta { background: {{ lp_button_color or '#1a0f00' }} !important; }
 </style>
 {% endif %}
 </head>
 <body>
+
+<!-- ══ TOP BAR ══════════════════════════════ -->
+<nav class="topbar">
+  <div class="topbar-logo">
+    {% if logo_url %}
+      <img src="{{ logo_url }}" alt="{{ biz_name }}">
+    {% else %}
+      <div class="topbar-initial">{{ (biz_name or 'L')[0].upper() }}</div>
+    {% endif %}
+    <span class="topbar-name">{{ biz_name or card_title or 'Tu negocio' }}</span>
+  </div>
+  <div class="topbar-badge">Fidelización</div>
+</nav>
+
 <div class="page">
 
-  <!-- HEADER -->
-  <div class="page-header">
-    <div class="biz-logo">
-      {% if logo_url %}
-        <img src="{{ logo_url }}" alt="{{ biz_name or card_title }}">
-      {% else %}
-        <div class="biz-initial">{{ (biz_name or card_title or 'L')[0].upper() }}</div>
-      {% endif %}
-      <div>
-        <div class="biz-name">{{ biz_name or card_title or 'Tu Negocio' }}</div>
-        <div class="biz-tag">Programa de fidelización</div>
-      </div>
+  <!-- ══ HERO ═══════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Programa de sellos · gratis
     </div>
-    <div class="header-badge">ACTIVO</div>
-  </div>
 
-  <!-- HERO -->
-  <div class="hero">
-    <div class="hero-eyebrow">Tarjeta de sellos</div>
     {% if form_title %}
       <h1 style="white-space:pre-line">{{ form_title }}</h1>
     {% else %}
-      <h1>ÚNETE.<br>SELLA.<br><span class="accent">GANA.</span></h1>
+      <h1>SELLA.<br>GANA.<br><span class="accent">REPITE.</span></h1>
     {% endif %}
-    <p class="hero-sub">{{ header_text or 'Acumula sellos con cada compra y consigue tu premio. Gratis, sin app, en 30 segundos.' }}</p>
+
+    <p class="hero-sub">
+      {{ header_text or 'Acumula sellos con cada visita y consigue tu premio. Sin app, sin esperas, en 30 segundos.' }}
+    </p>
+
+    <!-- Trust pills -->
+    <div class="trust-row">
+      <span class="trust-pill">
+        <span class="material-symbols-outlined">smartphone</span>
+        En tu Wallet
+      </span>
+      <span class="trust-pill">
+        <span class="material-symbols-outlined">lock</span>
+        Sin contraseña
+      </span>
+      <span class="trust-pill">
+        <span class="material-symbols-outlined">bolt</span>
+        30 segundos
+      </span>
+    </div>
+
+    <!-- Animated card mock -->
+    <div class="card-float-wrap">
+      <div class="card-float">
+        <div class="aw-pass" id="reg-aw-pass">
+          <div class="aw-pass-header">
+            {% if logo_url %}<img src="{{ logo_url }}" style="width:22px;height:22px;border-radius:5px;object-fit:contain;flex-shrink:0">{% endif %}
+            <span style="font-size:.68rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#fff;opacity:.9;flex:1">{{ card_title or biz_name or 'MI TARJETA' }}</span>
+            <span style="font-size:.52rem;font-weight:700;letter-spacing:.8px;color:{{ accent_color or '#f5a623' }};opacity:.8">0 / {{ stamps_per_reward or 10 }} <span style="font-size:.4rem;opacity:.7">SELLOS</span></span>
+          </div>
+          <div id="reg-strip-wrap" style="width:100%;line-height:0"></div>
+          <div class="aw-pass-footer">
+            <div class="aw-fld">
+              <span class="aw-fld-lbl" style="color:{{ accent_color or '#f5a623' }}">Titular</span>
+              <span class="aw-fld-val" style="color:#fff">TU NOMBRE</span>
+            </div>
+            <div class="aw-fld" style="text-align:right">
+              <span class="aw-fld-lbl" style="color:{{ accent_color or '#f5a623' }}">Premio</span>
+              <span class="aw-fld-val" style="color:#fff">{{ reward_name or 'Premio' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SOCIAL PROOF ══════════════════════ -->
+  <div class="proof-bar reveal">
+    <div class="proof-avatars">
+      <div class="proof-avatar">YL</div>
+      <div class="proof-avatar" style="background:linear-gradient(135deg,#a0d4b0,#2e7d32)">RL</div>
+      <div class="proof-avatar" style="background:linear-gradient(135deg,#b0c4de,#3a5a8a)">AG</div>
+      <div class="proof-avatar" style="background:linear-gradient(135deg,#f0c080,#c07030)">+</div>
+    </div>
+    <div class="proof-text">
+      <strong>Ya somos varios clientes fieles</strong>
+      <span>Únete y empieza a ganar desde hoy</span>
+    </div>
+    <div class="proof-stars">★★★★★</div>
   </div>
 
-  <!-- CARD MOCK — Apple Wallet canvas -->
-  <div class="card-mock-wrap">
-    <div class="aw-pass-reg" id="reg-aw-pass" style="background:{{ primary_color or '#26170c' }}">
-      <div class="aw-pass-reg-header">
-        {% if logo_url %}<img src="{{ logo_url }}" style="width:20px;height:20px;border-radius:4px;object-fit:contain;flex-shrink:0">{% endif %}
-        <span style="font-size:.65rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:{{ text_color or '#ffffff' }};opacity:.9;flex:1">{{ card_title or biz_name or 'MI TARJETA' }}</span>
-        <span style="font-size:.5rem;font-weight:600;letter-spacing:.8px;color:{{ accent_color or '#ffca48' }};opacity:.75">0/{{ stamps_per_reward or 10 }} <span style="font-size:.4rem;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
+  <!-- ══ HOW IT WORKS ═══════════════════════ -->
+  <div class="steps-section reveal">
+    <div class="steps-label">Cómo funciona</div>
+    <div class="steps-title">3 pasos,<br><span>sin complicaciones</span></div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Regístrate aquí abajo</h4>
+        <p>Rellena el formulario en 30 segundos. Sin contraseña, sin app.</p>
       </div>
-      <div id="reg-strip-wrap" style="width:100%;line-height:0"></div>
-      <div class="aw-pass-reg-footer">
-        <div class="aw-fld">
-          <span class="aw-fld-lbl" style="color:{{ accent_color or '#ffca48' }};opacity:.6">Titular</span>
-          <span class="aw-fld-val" style="color:{{ text_color or '#ffffff' }}">TU NOMBRE</span>
-        </div>
-        <div class="aw-fld" style="text-align:right">
-          <span class="aw-fld-lbl" style="color:{{ accent_color or '#ffca48' }};opacity:.6">Premio</span>
-          <span class="aw-fld-val" style="color:{{ text_color or '#ffffff' }}">{{ reward_name or 'Premio' }}</span>
-        </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Añade tu tarjeta al Wallet</h4>
+        <p>Se guarda en Apple Wallet o Google Wallet directamente en tu teléfono.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Muéstrala en caja y sella</h4>
+        <p>Cada visita suma un sello. Al llegar a {{ stamps_per_reward or 10 }} — ¡tu {{ reward_name or 'premio' }} es tuyo!</p>
       </div>
     </div>
   </div>
-  <script>
-  (function(){
-    /* ── Strip canvas — mirrors _buildStripCanvas in dashboard (circles only) ── */
-    function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
-    function darken(c,a){return[Math.round(c[0]*(1-a)),Math.round(c[1]*(1-a)),Math.round(c[2]*(1-a))];}
-    function lighten(c,a){return[Math.min(255,Math.round(c[0]+(255-c[0])*a)),Math.min(255,Math.round(c[1]+(255-c[1])*a)),Math.min(255,Math.round(c[2]+(255-c[2])*a))];}
-    function rgba(c,al){return'rgba('+c[0]+','+c[1]+','+c[2]+','+(al==null?1:al)+')';}
 
-    function buildStrip(card, w, h) {
-      var DPR=2, canvas=document.createElement('canvas');
-      canvas.width=w*DPR; canvas.height=h*DPR;
-      var ctx=canvas.getContext('2d'); ctx.scale(DPR,DPR);
-      var BG=hexRgb(card.bg), ACCENT=hexRgb(card.accent);
-      var EBORD=lighten(BG,.40), FICO=darken(ACCENT,.55);
-      var spr=card.spr, filled=0, hasBg=!!(card.bgUrl);
-
-      // ── Background ────────────────────────────────────────────────────────────
-      if(hasBg && card._bgImg && card._bgImg.complete){
-        var img=card._bgImg;
-        var sf=Math.max(w/img.naturalWidth,h/img.naturalHeight);
-        var nw=img.naturalWidth*sf,nh=img.naturalHeight*sf;
-        ctx.drawImage(img,(w-nw)/2,(h-nh)/2,nw,nh);
-        ctx.fillStyle=rgba(BG,0.40); ctx.fillRect(0,0,w,h);
-      } else {
-        ctx.fillStyle=rgba(BG); ctx.fillRect(0,0,w,h);
-        if(hasBg && !card._bgImg){
-          card._bgImg=new Image();
-          card._bgImg.onload=function(){
-            var wrap=document.getElementById('reg-strip-wrap');
-            if(wrap){wrap.innerHTML='';var c=buildStrip(card,w,h);c.style.cssText='width:100%;display:block';wrap.appendChild(c);}
-          };
-          card._bgImg.src=card.bgUrl;
-        }
-      }
-
-      // ── Circles (full-strip, no text) ─────────────────────────────────────────
-      var PAD_H=Math.round(w*0.045), PAD_V=Math.round(h*0.12);
-      var availW=w-2*PAD_H, availH=h-2*PAD_V;
-      var COLS=spr<=5?spr:Math.ceil(spr/2), ROWS=Math.ceil(spr/COLS);
-      var GAP_C=Math.round(availW*0.040), GAP_R=ROWS>1?Math.round(availH*0.14):0;
-      var DOT_D=Math.min(Math.floor((availW-GAP_C*(COLS-1))/COLS),Math.floor((availH-GAP_R*(ROWS-1))/Math.max(ROWS,1)));
-      var DOT_R=Math.floor(DOT_D/2);
-      var gridW=COLS*DOT_D+GAP_C*(COLS-1), gridH=ROWS*DOT_D+GAP_R*(ROWS-1);
-      var gx0=PAD_H+Math.floor((availW-gridW)/2), gy0=PAD_V+Math.floor((availH-gridH)/2);
-      var EMPTY_ALPHA=hasBg?0.65:0.52;
-      for(var i=0;i<spr;i++){
-        var col=i%COLS,row=Math.floor(i/COLS);
-        var cx=gx0+col*(DOT_D+GAP_C)+DOT_R, cy=gy0+row*(DOT_D+GAP_R)+DOT_R;
-        ctx.beginPath(); ctx.arc(cx,cy,DOT_R,0,Math.PI*2);
-        if(i<filled){
-          ctx.fillStyle=rgba(ACCENT); ctx.fill();
-          var lw=Math.max(1.5,DOT_R*0.16);
-          ctx.strokeStyle=rgba(FICO,0.95); ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
-          ctx.beginPath();
-          ctx.moveTo(cx-DOT_R*0.30,cy+DOT_R*0.06); ctx.lineTo(cx-DOT_R*0.02,cy+DOT_R*0.36); ctx.lineTo(cx+DOT_R*0.38,cy-DOT_R*0.26);
-          ctx.stroke();
-        } else {
-          ctx.strokeStyle=rgba(hasBg?[255,255,255]:EBORD,EMPTY_ALPHA);
-          ctx.lineWidth=Math.max(1.5,w/320); ctx.stroke();
-        }
-      }
-      return canvas;
-    }
-
-    document.addEventListener('DOMContentLoaded',function(){
-      var wrap=document.getElementById('reg-strip-wrap');
-      if(!wrap)return;
-      var card={
-        bg:'{{ primary_color or "#26170c" }}',
-        accent:'{{ accent_color or "#ffca48" }}',
-        spr:{{ stamps_per_reward or 10 }},
-        bgUrl:'{{ strip_bg_url or "" }}'
-      };
-      var w=wrap.offsetWidth||300, h=Math.round(w*0.328);  /* 375x123 ratio */
-      var canvas=buildStrip(card,w,h);
-      canvas.style.cssText='width:100%;display:block';
-      wrap.appendChild(canvas);
-    });
-  })();
-  </script>
-
-  <!-- BENEFITS -->
-  <div class="benefits" style="grid-template-columns:{% if birthday_enabled %}repeat(3,1fr){% else %}repeat(2,1fr){% endif %}">
-    <div class="benefit">
-      <div class="icon"><span class="material-symbols-outlined">toll</span></div>
-      <div class="txt">1 sello<br>por compra</div>
+  <!-- ══ BENEFITS ══════════════════════════ -->
+  <div class="benefits-grid">
+    <div class="benefit-card reveal">
+      <div class="benefit-icon"><span class="material-symbols-outlined">toll</span></div>
+      <h4>1 sello por visita</h4>
+      <p>Cada vez que vengas, acumulas. Sin mínimos ni condiciones.</p>
     </div>
-    <div class="benefit">
-      <div class="icon"><span class="material-symbols-outlined">card_giftcard</span></div>
-      <div class="txt">Premio cada<br>{{ stamps_per_reward }} sellos</div>
+
+    <div class="benefit-card reveal" style="transition-delay:.1s">
+      <div class="benefit-icon"><span class="material-symbols-outlined">card_giftcard</span></div>
+      <h4>Premio a los {{ stamps_per_reward or 10 }}</h4>
+      <p>{{ reward_name or 'Tu premio' }} gratis al completar tu tarjeta.</p>
     </div>
+
     {% if birthday_enabled %}
-    <div class="benefit">
-      <div class="icon"><span class="material-symbols-outlined">cake</span></div>
-      <div class="txt">Sorpresa en<br>tu cumple</div>
+    <div class="benefit-card reveal" style="transition-delay:.15s">
+      <div class="benefit-icon" style="background:#fce4ec"><span class="material-symbols-outlined" style="color:#c62828">cake</span></div>
+      <h4>Sorpresa de cumple 🎂</h4>
+      <p>El día de tu cumpleaños recibes un regalo especial de nuestra parte.</p>
     </div>
     {% endif %}
+
+    <div class="benefit-card reveal" style="transition-delay:.2s{% if not birthday_enabled %};grid-column:1/-1{% endif %}">
+      <div class="benefit-icon" style="background:#e8f5e9"><span class="material-symbols-outlined" style="color:#2e7d32">notifications_active</span></div>
+      <h4>Notificaciones Wallet</h4>
+      <p>Te avisamos de novedades y ofertas sin salir de tu teléfono.</p>
+    </div>
+
+    <div class="benefit-card wide reveal" style="transition-delay:.25s">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="benefit-icon" style="margin-bottom:0;flex-shrink:0"><span class="material-symbols-outlined">no_accounts</span></div>
+        <div>
+          <h4>Sin app · Sin contraseña</h4>
+          <p>Tu tarjeta vive en el Wallet de tu móvil. Siempre a mano, sin instalar nada.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- FORM -->
-  <div class="form-wrap" id="form-wrap">
+  <!-- ══ FORM ══════════════════════════════ -->
+  <div class="form-section-label reveal">Únete ahora</div>
+
+  <div class="form-wrap reveal" id="form-wrap">
     <div id="form-content">
-      <div class="form-title">CREA TU<br>TARJETA.</div>
-      <div class="form-sub">30 segundos · completamente gratis</div>
+      <div class="form-head">
+        <div class="form-title">CREA TU<br>TARJETA.</div>
+        <div class="form-sub">Gratis · 30 segundos · sin app</div>
+      </div>
 
       <div class="error-msg" id="error-msg"></div>
 
@@ -297,17 +585,17 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 
       <div class="field">
         <label>Email <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="Email" autocomplete="email">
+        <input type="email" id="email" placeholder="tu@email.com" autocomplete="email">
       </div>
 
       <div class="field">
         <label>Teléfono</label>
-        <input type="tel" id="phone" placeholder="Teléfono" autocomplete="tel">
+        <input type="tel" id="phone" placeholder="600 000 000" autocomplete="tel">
       </div>
 
       {% if birthday_enabled %}
       <div class="field">
-        <label>Fecha de nacimiento <span style="font-size:.65rem;font-weight:400;letter-spacing:0;text-transform:none;color:var(--outline)">— para tu sorpresa 🎂</span></label>
+        <label>Fecha de nacimiento <span style="font-size:.65rem;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted)">— para tu sorpresa 🎂</span></label>
         <input type="date" id="birth_date">
       </div>
       {% else %}
@@ -329,7 +617,8 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
       </div>
 
       <button class="btn-cta" id="reg-btn" onclick="doRegister()">
-        {{ button_text or 'Crear mi tarjeta gratis →' }}
+        <span id="btn-text">{{ button_text or 'Crear mi tarjeta gratis →' }}</span>
+        <span id="btn-loading" class="dots" style="display:none"><span></span><span></span><span></span></span>
       </button>
 
       <p class="legal">
@@ -343,55 +632,157 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
       <div class="success-icon"><span class="material-symbols-outlined">check</span></div>
       <h2>¡BIENVENIDO!</h2>
       <p id="success-text">Tu tarjeta está lista. Muéstrala en caja en tu próxima visita para empezar a acumular sellos.</p>
-      <a href="#" id="view-card-btn" class="btn-view-card">Ver mi tarjeta →</a>
+      <a href="#" id="view-card-btn" class="btn-view-card">
+        <span class="material-symbols-outlined" style="font-size:1rem">open_in_new</span>
+        Ver mi tarjeta
+      </a>
     </div>
+  </div>
+
+  <div class="footer-note">
+    Programa de fidelización gestionado con <strong>ZubCard</strong><br>
+    <a href="/privacidad">Privacidad</a> · <a href="/legal">Términos</a>
   </div>
 
 </div><!-- /page -->
 
+<!-- ══ STRIP CANVAS ════════════════════════ -->
 <script>
-const BIZ_SLUG = '{{ biz_slug or "" }}';
-const API_BASE = '{{ api_base or "" }}' || window.location.origin;
-const REF_CODE = '{{ ref or "" }}';
+(function(){
+  function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  function darken(c,a){return[Math.round(c[0]*(1-a)),Math.round(c[1]*(1-a)),Math.round(c[2]*(1-a))];}
+  function lighten(c,a){return[Math.min(255,Math.round(c[0]+(255-c[0])*a)),Math.min(255,Math.round(c[1]+(255-c[1])*a)),Math.min(255,Math.round(c[2]+(255-c[2])*a))];}
+  function rgba(c,al){return'rgba('+c[0]+','+c[1]+','+c[2]+','+(al==null?1:al)+')';}
+
+  function buildStrip(card, w, h) {
+    var DPR=2, canvas=document.createElement('canvas');
+    canvas.width=w*DPR; canvas.height=h*DPR;
+    var ctx=canvas.getContext('2d'); ctx.scale(DPR,DPR);
+    var BG=hexRgb(card.bg), ACCENT=hexRgb(card.accent);
+    var EBORD=lighten(BG,.40), FICO=darken(ACCENT,.55);
+    var spr=card.spr, filled=0, hasBg=!!(card.bgUrl);
+    if(hasBg && card._bgImg && card._bgImg.complete){
+      var img=card._bgImg;
+      var sf=Math.max(w/img.naturalWidth,h/img.naturalHeight);
+      var nw=img.naturalWidth*sf,nh=img.naturalHeight*sf;
+      ctx.drawImage(img,(w-nw)/2,(h-nh)/2,nw,nh);
+      ctx.fillStyle=rgba(BG,0.40); ctx.fillRect(0,0,w,h);
+    } else {
+      ctx.fillStyle=rgba(BG); ctx.fillRect(0,0,w,h);
+      if(hasBg && !card._bgImg){
+        card._bgImg=new Image();
+        card._bgImg.onload=function(){
+          var wrap=document.getElementById('reg-strip-wrap');
+          if(wrap){wrap.innerHTML='';var c=buildStrip(card,w,h);c.style.cssText='width:100%;display:block';wrap.appendChild(c);}
+        };
+        card._bgImg.src=card.bgUrl;
+      }
+    }
+    var PAD_H=Math.round(w*0.045), PAD_V=Math.round(h*0.12);
+    var availW=w-2*PAD_H, availH=h-2*PAD_V;
+    var COLS=spr<=5?spr:Math.ceil(spr/2), ROWS=Math.ceil(spr/COLS);
+    var GAP_C=Math.round(availW*0.040), GAP_R=ROWS>1?Math.round(availH*0.14):0;
+    var DOT_D=Math.min(Math.floor((availW-GAP_C*(COLS-1))/COLS),Math.floor((availH-GAP_R*(ROWS-1))/Math.max(ROWS,1)));
+    var DOT_R=Math.floor(DOT_D/2);
+    var gridW=COLS*DOT_D+GAP_C*(COLS-1), gridH=ROWS*DOT_D+GAP_R*(ROWS-1);
+    var gx0=PAD_H+Math.floor((availW-gridW)/2), gy0=PAD_V+Math.floor((availH-gridH)/2);
+    var EMPTY_ALPHA=hasBg?0.65:0.52;
+    for(var i=0;i<spr;i++){
+      var col=i%COLS,row=Math.floor(i/COLS);
+      var cx=gx0+col*(DOT_D+GAP_C)+DOT_R, cy=gy0+row*(DOT_D+GAP_R)+DOT_R;
+      ctx.beginPath(); ctx.arc(cx,cy,DOT_R,0,Math.PI*2);
+      if(i<filled){
+        ctx.fillStyle=rgba(ACCENT); ctx.fill();
+        var lw=Math.max(1.5,DOT_R*0.16);
+        ctx.strokeStyle=rgba(FICO,0.95); ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+        ctx.beginPath();
+        ctx.moveTo(cx-DOT_R*0.30,cy+DOT_R*0.06); ctx.lineTo(cx-DOT_R*0.02,cy+DOT_R*0.36); ctx.lineTo(cx+DOT_R*0.38,cy-DOT_R*0.26);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle=rgba(hasBg?[255,255,255]:EBORD,EMPTY_ALPHA);
+        ctx.lineWidth=Math.max(1.5,w/320); ctx.stroke();
+      }
+    }
+    return canvas;
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var wrap=document.getElementById('reg-strip-wrap');
+    if(!wrap)return;
+    var card={
+      bg:'{{ primary_color or "#1a0f00" }}',
+      accent:'{{ accent_color or "#f5a623" }}',
+      spr:{{ stamps_per_reward or 10 }},
+      bgUrl:'{{ strip_bg_url or "" }}'
+    };
+    var w=wrap.offsetWidth||300, h=Math.round(w*0.328);
+    var canvas=buildStrip(card,w,h);
+    canvas.style.cssText='width:100%;display:block';
+    wrap.appendChild(canvas);
+  });
+})();
+</script>
+
+<!-- ══ SCROLL REVEAL ══════════════════════ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if(e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, {threshold: 0.12});
+  els.forEach(function(el){ io.observe(el); });
+});
+</script>
+
+<!-- ══ FORM LOGIC ═════════════════════════ -->
+<script>
+const BIZ_SLUG   = '{{ biz_slug or "" }}';
+const API_BASE   = '{{ api_base or "" }}' || window.location.origin;
+const REF_CODE   = '{{ ref or "" }}';
 const STAMPS_REWARD = {{ stamps_per_reward }};
 
 async function doRegister() {
-  const btn    = document.getElementById('reg-btn');
-  const errEl  = document.getElementById('error-msg');
+  const btn      = document.getElementById('reg-btn');
+  const btnText  = document.getElementById('btn-text');
+  const btnLoad  = document.getElementById('btn-loading');
+  const errEl    = document.getElementById('error-msg');
   errEl.style.display = 'none';
 
   const first_name   = document.getElementById('first_name').value.trim();
   const last_name    = document.getElementById('last_name').value.trim();
   const email        = document.getElementById('email').value.trim();
   const phone        = document.getElementById('phone').value.trim();
-  const birth_date   = document.getElementById('birth_date').value;
+  const birth_date   = document.getElementById('birth_date')?.value || '';
   const opt_in_email = document.getElementById('opt_in_email').checked;
-  const opt_in_sms   = document.getElementById('opt_in_sms').checked;
 
   if (!first_name) { showErr('Por favor introduce tu nombre'); return; }
   if (!email || !email.includes('@')) { showErr('Por favor introduce un email válido'); return; }
 
   btn.disabled = true;
-  btn.textContent = 'Creando tu tarjeta…';
-
-  const endpoint = BIZ_SLUG ? `${API_BASE}/api/register` : `${API_BASE}/api/register`;
+  btnText.style.display = 'none';
+  btnLoad.style.display = 'inline';
 
   try {
-    const r = await fetch(endpoint, {
+    const r = await fetch(`${API_BASE}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ first_name, last_name, email, phone, birth_date,
-        opt_in_email, opt_in_sms, opt_in: opt_in_email,
+      body: JSON.stringify({
+        first_name, last_name, email, phone, birth_date,
+        opt_in_email, opt_in_sms: false, opt_in: opt_in_email,
         origin: 'Landing', channel: 'Landing',
         slug: BIZ_SLUG || undefined,
-        ref: REF_CODE || undefined })
+        ref: REF_CODE || undefined
+      })
     });
     const d = await r.json();
 
     if (!r.ok) {
       showErr(d.detail || 'Error al registrar. Inténtalo de nuevo.');
       btn.disabled = false;
-      btn.textContent = 'Crear mi tarjeta gratis →';
+      btnText.style.display = 'inline';
+      btnLoad.style.display = 'none';
       return;
     }
 
@@ -399,13 +790,14 @@ async function doRegister() {
     const ss = document.getElementById('success-screen');
     ss.style.display = 'block';
     document.getElementById('success-text').textContent =
-      `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Por cada ${STAMPS_REWARD} compras, ¡premio!`;
+      `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Cada ${STAMPS_REWARD} sellos — ¡premio!`;
     document.getElementById('view-card-btn').href = d.card_url || (API_BASE + '/card/' + d.card_id);
 
   } catch(e) {
     showErr('Error de conexión. Inténtalo de nuevo.');
     btn.disabled = false;
-    btn.textContent = 'Crear mi tarjeta gratis →';
+    btnText.style.display = 'inline';
+    btnLoad.style.display = 'none';
   }
 }
 
