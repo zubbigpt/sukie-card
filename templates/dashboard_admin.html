@@ -7003,7 +7003,7 @@ async function deleteAccount() {
 // ── EMAIL SETTINGS ──────────────────────────────────────────────────────────
 async function loadEmailSettings(){
   try {
-    const r = await fetch(`${API}/api/biz/${BIZ_SLUG}/email-settings?pin=${PIN}`);
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/email-settings?pin=${PIN}`);
     const d = await r.json();
     document.getElementById('email-from-name').value = d.email_from_name || '';
     document.getElementById('email-reply-to').value  = d.email_reply_to  || '';
@@ -7038,7 +7038,7 @@ async function saveEmailSettings(){
       email_smtp_user: document.getElementById('email-smtp-user').value.trim(),
       email_smtp_pass: document.getElementById('email-smtp-pass').value,
     };
-    const r = await fetch(`${API}/api/biz/${BIZ_SLUG}/email-settings?pin=${PIN}`, {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/email-settings?pin=${PIN}`, {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
     });
     const d = await r.json();
@@ -7060,7 +7060,7 @@ async function sendTestEmail(){
   if(!toEmail) return;
   if(status){ status.textContent = 'Enviando…'; status.style.color='var(--brown-light)'; }
   try {
-    const r = await fetch(`${API}/api/biz/${BIZ_SLUG}/email-settings/test?pin=${PIN}`, {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/email-settings/test?pin=${PIN}`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ to_email: toEmail })
     });
