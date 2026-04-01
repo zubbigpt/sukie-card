@@ -1,765 +1,903 @@
 <!DOCTYPE html>
-<html class="light" lang="es">
+<html lang="es">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>ZubCard · Fidelización Digital de Lujo</title>
-<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;700;800&family=Manrope:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script>
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        colors: {
-          "primary":                  "#26170c",
-          "on-primary":               "#ffffff",
-          "primary-container":        "#3d2b1f",
-          "on-primary-container":     "#ac9181",
-          "primary-fixed":            "#fbddca",
-          "primary-fixed-dim":        "#dec1af",
-          "on-primary-fixed":         "#28180d",
-          "on-primary-fixed-variant": "#574335",
-          "secondary":                "#785a00",
-          "on-secondary":             "#ffffff",
-          "secondary-container":      "#ffca48",
-          "on-secondary-container":   "#725500",
-          "secondary-fixed":          "#ffdf9b",
-          "secondary-fixed-dim":      "#f3bf3e",
-          "on-secondary-fixed":       "#251a00",
-          "on-secondary-fixed-variant":"#5b4300",
-          "tertiary":                 "#1b1b05",
-          "on-tertiary":              "#ffffff",
-          "tertiary-container":       "#303016",
-          "on-tertiary-container":    "#999876",
-          "tertiary-fixed":           "#e6e4bf",
-          "tertiary-fixed-dim":       "#cac8a4",
-          "on-tertiary-fixed":        "#1c1d06",
-          "on-tertiary-fixed-variant":"#48482c",
-          "surface":                  "#fff8f5",
-          "surface-bright":           "#fff8f5",
-          "surface-dim":              "#f2d4c2",
-          "surface-variant":          "#fbddca",
-          "surface-container-lowest": "#ffffff",
-          "surface-container-low":    "#fff1ea",
-          "surface-container":        "#ffeade",
-          "surface-container-high":   "#ffe3d2",
-          "surface-container-highest":"#fbddca",
-          "on-surface":               "#28180d",
-          "on-surface-variant":       "#4f453f",
-          "background":               "#fff8f5",
-          "on-background":            "#28180d",
-          "outline":                  "#81756e",
-          "outline-variant":          "#d2c4bc",
-          "inverse-surface":          "#3f2c20",
-          "inverse-on-surface":       "#ffede4",
-          "inverse-primary":          "#dec1af",
-          "surface-tint":             "#705a4c",
-          "error":                    "#ba1a1a",
-          "on-error":                 "#ffffff",
-          "error-container":          "#ffdad6",
-          "on-error-container":       "#93000a",
-        },
-        fontFamily: {
-          "headline": ["Epilogue", "sans-serif"],
-          "body":     ["Manrope",  "sans-serif"],
-          "label":    ["Manrope",  "sans-serif"],
-          "brand":    ["Bebas Neue","cursive"],
-        },
-        borderRadius: {
-          "DEFAULT": "0.125rem",
-          "lg":      "0.25rem",
-          "xl":      "0.5rem",
-          "2xl":     "0.75rem",
-          "3xl":     "1rem",
-          "full":    "9999px",
-        },
-      },
-    },
-  }
-</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZubCard · Fidelización Digital para Negocios</title>
+<meta name="description" content="Lanza tu programa de lealtad digital en 5 minutos. Tarjetas digitales Apple & Google Wallet. Sin apps, sin papel."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
-  body { font-family: 'Manrope', sans-serif; background-color: #fff8f5; color: #28180d; }
-  .font-headline { font-family: 'Epilogue', sans-serif; }
-  .font-brand    { font-family: 'Bebas Neue', cursive; }
-  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
-  .glass-nav {
-    background: rgba(255, 248, 245, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(210, 196, 188, 0.15);
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:   #0a0a0a;
+    --white:   #ffffff;
+    --gray-1:  #f5f5f5;
+    --gray-2:  #e8e8e8;
+    --gray-3:  #a0a0a0;
+    --gray-4:  #555555;
+    --gold:    #c9a84c;
+    --gold-lt: #f5e9cc;
+    --radius:  12px;
+    --font:    'Inter', system-ui, sans-serif;
+    --ease:    cubic-bezier(.25,.46,.45,.94);
   }
-  /* Ticker */
-  .ticker-wrap { overflow: hidden; white-space: nowrap; }
-  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  .ticker-content { display: inline-flex; animation: ticker 28s linear infinite; }
-  /* Stamp interactive */
-  .stamp-cell { transition: transform .15s, background .15s; }
-  .stamp-cell:hover { transform: scale(1.08); }
-  /* Smooth reveal */
-  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s ease; }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font); color: var(--black); background: var(--white); overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5vw; height: 68px;
+    background: rgba(10,10,10,.85); backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo svg { width: 30px; height: 30px; }
+  .nav-logo span { font-size: 1.1rem; font-weight: 700; color: var(--white); letter-spacing: -.02em; }
+  .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+  .nav-links a { color: rgba(255,255,255,.7); text-decoration: none; font-size: .88rem; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: var(--gold); color: var(--black); font-weight: 700;
+    font-size: .85rem; padding: 10px 22px; border-radius: 100px;
+    text-decoration: none; transition: opacity .2s, transform .2s;
+    white-space: nowrap;
+  }
+  .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
+  .nav-mobile-toggle { display: none; background: none; border: none; cursor: pointer; }
+  .nav-mobile-toggle span { display: block; width: 22px; height: 2px; background: var(--white); margin: 5px 0; transition: .3s; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; height: 100vh; min-height: 640px;
+    display: flex; align-items: center; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1800&q=80');
+    background-size: cover; background-position: center;
+    animation: hero-zoom 8s var(--ease) forwards;
+    transform-origin: center;
+  }
+  @keyframes hero-zoom {
+    from { transform: scale(1.08); }
+    to   { transform: scale(1.00); }
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.38) 60%, rgba(0,0,0,.55) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    padding: 0 5vw; max-width: 780px;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201,168,76,.18); border: 1px solid rgba(201,168,76,.4);
+    color: var(--gold); font-size: .78rem; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 100px; margin-bottom: 24px;
+    opacity: 0; animation: fade-up .7s .3s var(--ease) forwards;
+  }
+  .hero-h1 {
+    font-size: clamp(2.6rem, 6vw, 5rem); font-weight: 900;
+    line-height: 1.03; letter-spacing: -.04em; color: var(--white);
+    opacity: 0; animation: fade-up .7s .5s var(--ease) forwards;
+  }
+  .hero-h1 em { font-style: normal; color: var(--gold); }
+  .hero-sub {
+    margin-top: 22px; font-size: clamp(1rem, 2vw, 1.18rem);
+    font-weight: 400; line-height: 1.65; color: rgba(255,255,255,.82);
+    max-width: 520px;
+    opacity: 0; animation: fade-up .7s .7s var(--ease) forwards;
+  }
+  .hero-actions {
+    margin-top: 40px; display: flex; gap: 14px; flex-wrap: wrap;
+    opacity: 0; animation: fade-up .7s .9s var(--ease) forwards;
+  }
+  .btn-primary {
+    background: var(--gold); color: var(--black);
+    font-weight: 800; font-size: .95rem;
+    padding: 16px 36px; border-radius: 100px;
+    text-decoration: none; transition: all .25s;
+    border: none; cursor: pointer; display: inline-block;
+  }
+  .btn-primary:hover { background: #d4b060; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(201,168,76,.35); }
+  .btn-ghost {
+    background: transparent; color: var(--white);
+    font-weight: 600; font-size: .95rem;
+    padding: 16px 36px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,.45);
+    text-decoration: none; transition: all .25s;
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--white); background: rgba(255,255,255,.08); }
+  .hero-scroll {
+    position: absolute; bottom: 36px; left: 5vw; z-index: 2;
+    display: flex; align-items: center; gap: 10px;
+    color: rgba(255,255,255,.5); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+    opacity: 0; animation: fade-up .7s 1.2s var(--ease) forwards;
+  }
+  .hero-scroll::before {
+    content: ''; display: block; width: 30px; height: 1px; background: rgba(255,255,255,.35);
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--black); overflow: hidden; padding: 14px 0;
+    border-top: 1px solid #1a1a1a;
+  }
+  .ticker-track {
+    display: flex; gap: 0; white-space: nowrap;
+    animation: ticker-scroll 28s linear infinite;
+  }
+  .ticker-track:hover { animation-play-state: paused; }
+  .ticker-item {
+    flex-shrink: 0; padding: 0 40px;
+    font-size: .78rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+    color: rgba(255,255,255,.5);
+  }
+  .ticker-item em { color: var(--gold); font-style: normal; }
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── SECTION BASE ── */
+  section { padding: 100px 5vw; }
+  .section-eyebrow {
+    font-size: .72rem; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 14px;
+  }
+  .section-h2 {
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+    line-height: 1.1; letter-spacing: -.03em; color: var(--black);
+    max-width: 640px;
+  }
+  .section-h2 em { font-style: normal; color: var(--gold); }
+  .section-p {
+    margin-top: 18px; font-size: 1.05rem; line-height: 1.7;
+    color: var(--gray-4); max-width: 540px;
+  }
+
+  /* ── STATS ── */
+  .stats {
+    background: var(--gray-1); padding: 70px 5vw;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0; border-top: 1px solid var(--gray-2); border-bottom: 1px solid var(--gray-2);
+  }
+  .stat-item {
+    padding: 30px 40px; text-align: center;
+    border-right: 1px solid var(--gray-2);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900;
+    letter-spacing: -.04em; color: var(--black); line-height: 1;
+  }
+  .stat-num span { color: var(--gold); }
+  .stat-label {
+    margin-top: 8px; font-size: .88rem; font-weight: 500;
+    color: var(--gray-4); line-height: 1.4;
+  }
+
+  /* ── SPLIT SECTIONS ── */
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .split.reverse { direction: rtl; }
+  .split.reverse > * { direction: ltr; }
+  .split-img {
+    aspect-ratio: 4/3; border-radius: var(--radius);
+    overflow: hidden; background: var(--gray-2);
+  }
+  .split-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .7s var(--ease);
+    display: block;
+  }
+  .split-img:hover img { transform: scale(1.04); }
+  .split-text { padding: 20px 0; }
+  .split-text ul { margin-top: 24px; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .split-text ul li {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: .95rem; line-height: 1.5; color: var(--gray-4);
+  }
+  .split-text ul li::before {
+    content: '✓'; color: var(--gold); font-weight: 800;
+    font-size: 1rem; flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* ── QUOTE BANNER ── */
+  .quote-banner {
+    position: relative; height: 480px;
+    display: flex; align-items: center; overflow: hidden;
+    padding: 0 5vw;
+  }
+  .quote-bg {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1800&q=80');
+    background-size: cover; background-position: center;
+    transition: transform .7s var(--ease);
+  }
+  .quote-banner:hover .quote-bg { transform: scale(1.03); }
+  .quote-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.62); }
+  .quote-content {
+    position: relative; z-index: 2; max-width: 720px;
+  }
+  .quote-content blockquote {
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 700;
+    line-height: 1.25; color: var(--white); letter-spacing: -.02em;
+  }
+  .quote-content cite {
+    display: block; margin-top: 20px;
+    font-style: normal; font-size: .88rem; font-weight: 500;
+    color: var(--gold); letter-spacing: .05em;
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px; margin-top: 60px;
+  }
+  .feat-card {
+    padding: 36px 32px; border: 1px solid var(--gray-2);
+    border-radius: var(--radius); transition: all .3s var(--ease);
+    cursor: default;
+  }
+  .feat-card:hover {
+    border-color: var(--gold); background: var(--gold-lt);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(201,168,76,.12);
+  }
+  .feat-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--gold-lt); display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 20px;
+    transition: background .3s;
+  }
+  .feat-card:hover .feat-icon { background: var(--white); }
+  .feat-title { font-size: 1rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: 10px; }
+  .feat-desc { font-size: .9rem; line-height: 1.65; color: var(--gray-4); }
+
+  /* ── HOW IT WORKS ── */
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 40px; margin-top: 60px; position: relative;
+  }
+  .steps-grid::before {
+    content: ''; position: absolute; top: 28px; left: 16.66%; right: 16.66%;
+    height: 1px; background: var(--gray-2); z-index: 0;
+  }
+  .step-item { text-align: center; position: relative; z-index: 1; }
+  .step-num {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--black); color: var(--gold);
+    font-size: 1.1rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; border: 3px solid var(--gold);
+  }
+  .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+  .step-desc { font-size: .9rem; line-height: 1.65; color: var(--gray-4); }
+
+  /* ── PRICING ── */
+  .pricing-cards {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; margin-top: 60px; max-width: 860px;
+  }
+  .price-card {
+    padding: 44px 40px; border-radius: 16px;
+    border: 1px solid var(--gray-2);
+    transition: transform .3s var(--ease), box-shadow .3s;
+  }
+  .price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.08); }
+  .price-card.featured {
+    background: var(--black); color: var(--white);
+    border-color: var(--black);
+    box-shadow: 0 24px 60px rgba(0,0,0,.18);
+  }
+  .price-badge {
+    display: inline-block; background: var(--gold);
+    color: var(--black); font-size: .7rem; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 100px; margin-bottom: 20px;
+  }
+  .price-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+  .price-card.featured .price-name { color: var(--white); }
+  .price-amount {
+    font-size: 3rem; font-weight: 900; letter-spacing: -.04em;
+    line-height: 1; margin: 16px 0 6px;
+  }
+  .price-card.featured .price-amount { color: var(--gold); }
+  .price-period { font-size: .85rem; color: var(--gray-3); margin-bottom: 28px; }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+  .price-features li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: .9rem; line-height: 1.5;
+  }
+  .price-features li .check { color: var(--gold); font-weight: 800; flex-shrink: 0; }
+  .price-card.featured .price-features li { color: rgba(255,255,255,.75); }
+  .price-cta {
+    display: block; text-align: center; text-decoration: none;
+    padding: 14px 0; border-radius: 100px; font-weight: 700; font-size: .92rem;
+    transition: all .25s;
+  }
+  .price-card:not(.featured) .price-cta {
+    background: var(--black); color: var(--white);
+  }
+  .price-card:not(.featured) .price-cta:hover { background: #222; transform: translateY(-1px); }
+  .price-card.featured .price-cta {
+    background: var(--gold); color: var(--black);
+  }
+  .price-card.featured .price-cta:hover { background: #d4b060; transform: translateY(-1px); }
+
+  /* ── GALLERY STRIP ── */
+  .gallery-strip {
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px; margin-top: 60px; height: 440px;
+  }
+  .gallery-photo { border-radius: var(--radius); overflow: hidden; }
+  .gallery-photo img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .7s var(--ease); display: block;
+  }
+  .gallery-photo:hover img { transform: scale(1.06); }
+  .gallery-right { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; }
+
+  /* ── FAQ ── */
+  .faq-list { margin-top: 50px; max-width: 720px; }
+  .faq-item { border-bottom: 1px solid var(--gray-2); }
+  .faq-q {
+    width: 100%; background: none; border: none; text-align: left;
+    padding: 22px 0; display: flex; justify-content: space-between;
+    align-items: center; gap: 20px; cursor: pointer;
+    font-family: var(--font); font-size: 1rem; font-weight: 600;
+    color: var(--black); transition: color .2s;
+  }
+  .faq-q:hover { color: var(--gold); }
+  .faq-q .icon { flex-shrink: 0; font-size: 1.3rem; transition: transform .3s; line-height: 1; }
+  .faq-q.open .icon { transform: rotate(45deg); color: var(--gold); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    transition: max-height .4s var(--ease), padding .3s;
+    font-size: .95rem; line-height: 1.7; color: var(--gray-4);
+  }
+  .faq-a.open { max-height: 300px; padding-bottom: 22px; }
+
+  /* ── CTA BANNER ── */
+  .cta-banner {
+    position: relative; padding: 120px 5vw;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; overflow: hidden;
+  }
+  .cta-bg {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1800&q=80');
+    background-size: cover; background-position: center;
+    transition: transform .7s var(--ease);
+  }
+  .cta-banner:hover .cta-bg { transform: scale(1.03); }
+  .cta-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.68); }
+  .cta-content { position: relative; z-index: 2; max-width: 700px; }
+  .cta-content h2 {
+    font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 900;
+    letter-spacing: -.04em; color: var(--white); line-height: 1.05;
+  }
+  .cta-content h2 em { font-style: normal; color: var(--gold); }
+  .cta-content p {
+    margin: 20px auto 0; font-size: 1.1rem; line-height: 1.65;
+    color: rgba(255,255,255,.8); max-width: 500px;
+  }
+  .cta-content .actions { margin-top: 40px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .cta-fine {
+    position: relative; z-index: 2; margin-top: 18px;
+    font-size: .78rem; color: rgba(255,255,255,.4);
+    letter-spacing: .04em;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--black); color: rgba(255,255,255,.55);
+    padding: 60px 5vw 36px;
+  }
+  .footer-top {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px; padding-bottom: 48px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .footer-brand p { margin-top: 14px; font-size: .88rem; line-height: 1.65; max-width: 260px; }
+  .footer-col h4 {
+    font-size: .78rem; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 16px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col ul a { color: rgba(255,255,255,.55); text-decoration: none; font-size: .9rem; transition: color .2s; }
+  .footer-col ul a:hover { color: var(--white); }
+  .footer-bottom {
+    padding-top: 28px; display: flex;
+    justify-content: space-between; align-items: center;
+    font-size: .8rem;
+  }
+  .footer-bottom a { color: rgba(255,255,255,.35); text-decoration: none; }
+  .footer-bottom a:hover { color: var(--white); }
+
+  /* ── COOKIE BANNER ── */
+  #cookie-banner {
+    position: fixed; bottom: 24px; left: 24px; right: 24px;
+    max-width: 520px; background: var(--white);
+    border: 1px solid var(--gray-2); border-radius: 14px;
+    padding: 20px 24px; box-shadow: 0 12px 40px rgba(0,0,0,.12);
+    display: flex; align-items: center; gap: 16px; z-index: 999;
+    font-size: .85rem; line-height: 1.5; color: var(--gray-4);
+    transform: translateY(0); transition: transform .4s, opacity .4s;
+  }
+  #cookie-banner.hidden { transform: translateY(120%); opacity: 0; pointer-events: none; }
+  #cookie-banner button {
+    flex-shrink: 0; background: var(--black); color: var(--white);
+    border: none; border-radius: 8px; padding: 9px 18px;
+    font-family: var(--font); font-weight: 600; font-size: .82rem;
+    cursor: pointer; transition: background .2s;
+  }
+  #cookie-banner button:hover { background: #333; }
+
+  /* ── REVEAL ANIMATIONS ── */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity .7s var(--ease), transform .7s var(--ease);
+  }
   .reveal.visible { opacity: 1; transform: translateY(0); }
-  .rd1 { transition-delay: .1s; } .rd2 { transition-delay: .2s; } .rd3 { transition-delay: .3s; }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .nav-mobile-toggle { display: block; }
+    .nav-links.open {
+      display: flex; flex-direction: column; position: fixed;
+      top: 68px; left: 0; right: 0; background: rgba(10,10,10,.97);
+      padding: 24px 5vw 40px; gap: 20px;
+    }
+    .split { grid-template-columns: 1fr; gap: 40px; }
+    .split.reverse { direction: ltr; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .steps-grid { grid-template-columns: 1fr; gap: 32px; }
+    .steps-grid::before { display: none; }
+    .stats { grid-template-columns: 1fr; gap: 0; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--gray-2); }
+    .stat-item:last-child { border-bottom: none; }
+    .pricing-cards { grid-template-columns: 1fr; }
+    .gallery-strip { grid-template-columns: 1fr 1fr; height: auto; }
+    .gallery-right { grid-template-rows: auto; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .gallery-photo { height: 220px; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  @media (max-width: 600px) {
+    section { padding: 72px 5vw; }
+    .features-grid { grid-template-columns: 1fr; }
+    .gallery-strip { grid-template-columns: 1fr; }
+    .gallery-right { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+    .hero-actions { flex-direction: column; }
+    .btn-primary, .btn-ghost { text-align: center; }
+  }
 </style>
 </head>
-<body class="bg-background text-on-background selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<body>
 
-<!-- ═══════════════════════════════════════════════════════════
-     NAV
-═══════════════════════════════════════════════════════════ -->
-<nav class="fixed top-0 w-full z-50 glass-nav">
-  <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-primary rounded flex items-center justify-center flex-shrink-0">
-        <span class="material-symbols-outlined text-on-primary" style="font-variation-settings:'FILL' 1;">bakery_dining</span>
-      </div>
-      <div>
-        <span class="font-brand text-3xl leading-none tracking-wider text-primary">ZubCard</span>
-        <p class="text-[10px] uppercase tracking-[0.2em] text-outline leading-none hidden sm:block">Luxury Loyalty Solutions</p>
-      </div>
-    </div>
-    <div class="hidden md:flex items-center gap-10 font-medium text-sm">
-      <a class="hover:text-secondary transition-colors" href="#features">Features</a>
-      <a class="hover:text-secondary transition-colors" href="#pricing">Precios</a>
-      <a class="hover:text-secondary transition-colors" href="#faq">FAQ</a>
-      <a class="hover:text-secondary transition-colors text-outline" href="/app/login">Acceder</a>
-      <a class="bg-primary text-on-primary px-6 py-2.5 rounded text-xs font-bold tracking-widest uppercase hover:bg-primary-container transition-all" href="/app/register">Empieza gratis</a>
-    </div>
-    <a class="md:hidden bg-primary text-on-primary px-4 py-2 rounded text-xs font-bold tracking-wider uppercase" href="/app/register">Empezar</a>
-  </div>
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="/" class="nav-logo">
+    <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="30" height="30" rx="8" fill="#c9a84c"/>
+      <path d="M8 10h14M8 15h10M8 20h12" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <span>ZubCard</span>
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#como-funciona">Cómo funciona</a></li>
+    <li><a href="#funcionalidades">Funcionalidades</a></li>
+    <li><a href="#precios">Precios</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="/register" class="nav-cta">Empezar gratis</a>
+  <button class="nav-mobile-toggle" id="mobile-toggle" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HERO
-═══════════════════════════════════════════════════════════ -->
-<section class="pt-40 pb-24 px-6">
-  <div class="max-w-7xl mx-auto">
-    <div class="grid lg:grid-cols-2 gap-16 items-center">
-
-      <!-- Left: copy -->
-      <div class="space-y-8">
-        <div class="inline-flex items-center gap-2 px-3 py-1 bg-tertiary-fixed rounded-full">
-          <span class="material-symbols-outlined text-sm text-on-tertiary-fixed-variant" style="font-variation-settings:'FILL' 1;">star</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-on-tertiary-fixed-variant">Digital Loyalty Reinvented</span>
-        </div>
-        <h1 class="font-headline text-7xl md:text-8xl font-extrabold leading-[1.05] tracking-tight text-primary">
-          ESCANEA.<br/>SELLA.<br/><span class="text-secondary">PREMIA.</span>
-        </h1>
-        <p class="text-lg md:text-xl text-on-surface-variant max-w-lg leading-relaxed">
-          Transforma la fidelidad de tus clientes con tarjetas digitales de lujo. La precisión de una pastelería artesanal aplicada a tu estrategia de retención.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 pt-2">
-          <a class="bg-primary text-on-primary px-10 py-5 rounded-lg text-sm font-bold tracking-widest uppercase hover:bg-primary-container hover:shadow-xl transition-all text-center" href="/app/register">Empieza gratis</a>
-          <a class="border border-outline-variant text-primary px-10 py-5 rounded-lg text-sm font-bold tracking-widest uppercase hover:bg-surface-container-low transition-all text-center" href="/app/login">Acceder →</a>
-        </div>
-        <div class="flex flex-wrap gap-6 pt-2">
-          <span class="text-sm text-on-surface-variant flex items-center gap-2">
-            <span class="material-symbols-outlined text-secondary text-base" style="font-variation-settings:'FILL' 1;">check_circle</span> Sin tarjeta de crédito
-          </span>
-          <span class="text-sm text-on-surface-variant flex items-center gap-2">
-            <span class="material-symbols-outlined text-secondary text-base" style="font-variation-settings:'FILL' 1;">check_circle</span> Configura en 5 min
-          </span>
-          <span class="text-sm text-on-surface-variant flex items-center gap-2">
-            <span class="material-symbols-outlined text-secondary text-base" style="font-variation-settings:'FILL' 1;">check_circle</span> Apple Wallet &amp; Google Wallet
-          </span>
-        </div>
-      </div>
-
-      <!-- Right: card demo visual -->
-      <div class="relative flex justify-center">
-        <!-- Glow blobs -->
-        <div class="absolute -top-16 -right-16 w-72 h-72 bg-secondary-fixed/30 rounded-full blur-3xl -z-0 pointer-events-none"></div>
-        <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-tertiary-fixed/40 rounded-full blur-2xl -z-0 pointer-events-none"></div>
-
-        <div class="relative z-10 w-full max-w-sm">
-          <!-- Photo card -->
-          <div class="aspect-[4/5] bg-surface-container rounded-3xl overflow-hidden shadow-2xl relative cursor-pointer group" onclick="addDemoStamp()" title="¡Haz clic para sellar!">
-            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                 src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80"
-                 onerror="this.style.display='none'"
-                 alt="Panadería artesanal"/>
-            <!-- Fallback gradient if img fails -->
-            <div class="absolute inset-0 bg-gradient-to-br from-surface-container via-surface-container-high to-surface-dim -z-10"></div>
-            <!-- Overlay card -->
-            <div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/20 to-transparent flex items-end p-8">
-              <div class="w-full bg-surface/90 backdrop-blur-md p-6 rounded-2xl border border-white/20">
-                <div class="flex items-center justify-between mb-5">
-                  <span class="font-brand text-2xl tracking-wider text-primary">ZubCard</span>
-                  <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1;">verified</span>
-                </div>
-                <!-- Stamps grid -->
-                <div id="hero-stamps" class="grid grid-cols-5 gap-2 mb-4"></div>
-                <p id="hero-reward-label" class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-                  Próximo premio: Café + Croissant
-                </p>
-              </div>
-            </div>
-            <!-- "SELLA" badge -->
-            <div class="absolute top-5 right-5 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest group-hover:scale-110 transition-transform">
-              ¡Toca para sellar!
-            </div>
-          </div>
-        </div>
-      </div>
-
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">🏆 Loyalty digital para negocios físicos</div>
+    <h1 class="hero-h1">Tu programa de<br/><em>fidelización</em><br/>en 5 minutos.</h1>
+    <p class="hero-sub">Tarjetas digitales para Apple &amp; Google Wallet. Sin apps que descargar, sin papel que perder. Tus clientes regresan más.</p>
+    <div class="hero-actions">
+      <a href="/register" class="btn-primary">Crea tu tarjeta gratis</a>
+      <a href="#como-funciona" class="btn-ghost">Ver cómo funciona</a>
     </div>
   </div>
+  <div class="hero-scroll">Scroll para explorar</div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     TICKER
-═══════════════════════════════════════════════════════════ -->
-<div class="bg-primary py-5 ticker-wrap">
-  <div class="ticker-content gap-12 items-center">
-    <span class="font-brand text-4xl text-secondary-container px-8">FIDELIZA SIN ESFUERZO</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">star</span>
-    <span class="font-brand text-4xl text-on-primary px-8">MÁS QUE UNA TARJETA</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">bolt</span>
-    <span class="font-brand text-4xl text-secondary-container px-8">68% MÁS RECURRENCIA</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">trending_up</span>
-    <span class="font-brand text-4xl text-on-primary px-8">CONFIGURA EN 5 MINUTOS</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">timer</span>
-    <span class="font-brand text-4xl text-secondary-container px-8">GOOGLE WALLET READY</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">wallet</span>
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item">Apple Wallet</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Google Wallet</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Sin apps</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Notificaciones geo</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Sellos digitales</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Dashboard admin</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Multi-negocio</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Premio automático</span>
+    <span class="ticker-item"><em>·</em></span>
     <!-- duplicate for seamless loop -->
-    <span class="font-brand text-4xl text-secondary-container px-8">FIDELIZA SIN ESFUERZO</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">star</span>
-    <span class="font-brand text-4xl text-on-primary px-8">MÁS QUE UNA TARJETA</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">bolt</span>
-    <span class="font-brand text-4xl text-secondary-container px-8">68% MÁS RECURRENCIA</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">trending_up</span>
-    <span class="font-brand text-4xl text-on-primary px-8">CONFIGURA EN 5 MINUTOS</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">timer</span>
-    <span class="font-brand text-4xl text-secondary-container px-8">GOOGLE WALLET READY</span>
-    <span class="material-symbols-outlined text-secondary px-2" style="font-variation-settings:'FILL' 1;">wallet</span>
+    <span class="ticker-item">Apple Wallet</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Google Wallet</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Sin apps</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Notificaciones geo</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Sellos digitales</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Dashboard admin</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Multi-negocio</span>
+    <span class="ticker-item"><em>·</em></span>
+    <span class="ticker-item">Premio automático</span>
+    <span class="ticker-item"><em>·</em></span>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     MISSION STATS
-═══════════════════════════════════════════════════════════ -->
-<section class="py-32 px-6 bg-surface">
-  <div class="max-w-7xl mx-auto">
-    <div class="grid md:grid-cols-2 gap-20 items-end">
-      <div class="reveal">
-        <span class="font-brand text-secondary text-xl tracking-widest mb-4 block">NUESTRA MISIÓN</span>
-        <h2 class="font-headline text-5xl md:text-6xl font-bold text-primary leading-tight">
-          Digitalizamos la<br/>lealtad artesanal.
-        </h2>
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item reveal">
+    <div class="stat-num">68<span>%</span></div>
+    <div class="stat-label">más visitas de repetición<br/>con programa de sellos</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-1">
+    <div class="stat-num">5<span>min</span></div>
+    <div class="stat-label">para lanzar tu programa<br/>desde cero</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-2">
+    <div class="stat-num">0</div>
+    <div class="stat-label">apps que instalar<br/>para tus clientes</div>
+  </div>
+</div>
+
+<!-- SPLIT 1: La tarjeta digital -->
+<section id="producto">
+  <div class="split reveal">
+    <div class="split-img">
+      <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80" alt="Cliente usando tarjeta digital en cafetería" loading="lazy"/>
+    </div>
+    <div class="split-text">
+      <p class="section-eyebrow">La tarjeta</p>
+      <h2 class="section-h2">Vive en el <em>teléfono</em> de tus clientes.</h2>
+      <p class="section-p">Se añade a Apple Wallet o Google Wallet con un clic. Siempre visible, sin contraseñas ni cuentas. Cuando un cliente se acerca a tu negocio, su tarjeta aparece automáticamente en pantalla.</p>
+      <ul>
+        <li>Se añade desde el móvil en segundos</li>
+        <li>Notificaciones push cuando están cerca</li>
+        <li>Sellos y premios en tiempo real</li>
+        <li>Diseño con tu logo y colores de marca</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SPLIT 2: El dashboard -->
+<section style="padding-top: 0;" id="dashboard">
+  <div class="split reverse reveal">
+    <div class="split-img">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80" alt="Dashboard de administración ZubCard" loading="lazy"/>
+    </div>
+    <div class="split-text">
+      <p class="section-eyebrow">El dashboard</p>
+      <h2 class="section-h2">Control total desde <em>un lugar.</em></h2>
+      <p class="section-p">Gestiona clientes, añade sellos manualmente, configura premios y envía notificaciones a todos o a un segmento. Sin complicaciones técnicas.</p>
+      <ul>
+        <li>Añade sellos con escáner QR o búsqueda por nombre</li>
+        <li>Historial completo por cliente</li>
+        <li>Notificaciones push masivas o individuales</li>
+        <li>Configura premios, fecha de nacimiento y más</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY STRIP -->
+<section style="padding-top: 0; padding-bottom: 0;">
+  <div class="gallery-strip reveal">
+    <div class="gallery-photo">
+      <img src="https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=900&q=80" alt="Interior de cafetería" loading="lazy"/>
+    </div>
+    <div class="gallery-right">
+      <div class="gallery-photo">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="Barista preparando café" loading="lazy"/>
       </div>
-      <div class="space-y-6 reveal rd1">
-        <p class="text-xl text-on-surface-variant font-light leading-relaxed">
-          Olvídate de las tarjetas de cartón perdidas. ZubCard ofrece una solución digital robusta que vive en el teléfono de tu cliente, sin necesidad de descargar aplicaciones pesadas.
-        </p>
-        <div class="grid grid-cols-2 gap-8 border-t border-outline-variant/30 pt-8">
-          <div>
-            <div class="text-5xl font-headline font-bold text-primary">68%</div>
-            <div class="text-sm uppercase tracking-widest font-bold text-on-surface-variant mt-2">Tasa de retorno</div>
-          </div>
-          <div>
-            <div class="text-5xl font-headline font-bold text-primary">5min</div>
-            <div class="text-sm uppercase tracking-widest font-bold text-on-surface-variant mt-2">Setup inicial</div>
-          </div>
-        </div>
+      <div class="gallery-photo">
+        <img src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=600&q=80" alt="Cliente satisfecho en restaurante" loading="lazy"/>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     FEATURES BENTO GRID
-═══════════════════════════════════════════════════════════ -->
-<section class="py-24 px-6 bg-surface-container-low" id="features">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-20 reveal">
-      <h2 class="font-headline text-4xl md:text-5xl font-bold text-primary mb-4">Diseñado para la Excelencia</h2>
-      <p class="text-on-surface-variant max-w-2xl mx-auto">Herramientas sofisticadas para negocios que valoran la calidad en cada detalle.</p>
+<!-- QUOTE BANNER -->
+<div class="quote-banner" style="margin-top: 0;">
+  <div class="quote-bg"></div>
+  <div class="quote-overlay"></div>
+  <div class="quote-content reveal">
+    <blockquote>"Mis clientes habituales volvieron más seguido desde el primer mes. La tarjeta digital fue el mejor cambio que hice en mi negocio."</blockquote>
+    <cite>— Propietaria de cafetería, cliente ZubCard</cite>
+  </div>
+</div>
+
+<!-- COMO FUNCIONA -->
+<section id="como-funciona">
+  <div style="text-align:center; max-width: 600px; margin: 0 auto;">
+    <p class="section-eyebrow reveal">Cómo funciona</p>
+    <h2 class="section-h2 reveal" style="max-width: 100%; text-align: center;">Tan simple como <em>1, 2, 3.</em></h2>
+  </div>
+  <div class="steps-grid">
+    <div class="step-item reveal">
+      <div class="step-num">1</div>
+      <h3 class="step-title">Crea tu cuenta</h3>
+      <p class="step-desc">Registra tu negocio, sube tu logo y configura tu programa de fidelización en menos de 5 minutos. Sin tarjeta de crédito.</p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:grid-rows-2">
-
-      <!-- Large: Escaneo (spans 2 cols 2 rows) -->
-      <div class="md:col-span-2 md:row-span-2 bg-surface-container-lowest p-10 rounded-3xl flex flex-col justify-between group overflow-hidden relative reveal">
-        <div class="z-10">
-          <span class="material-symbols-outlined text-5xl text-secondary mb-6 block" style="font-variation-settings:'FILL' 1;">qr_code_2</span>
-          <h3 class="font-headline text-3xl font-bold text-primary mb-4">Escaneo Instantáneo</h3>
-          <p class="text-on-surface-variant max-w-sm leading-relaxed">Sin aplicaciones pesadas. Un simple escaneo QR desde la cámara del cliente es todo lo que necesitas para sellar su fidelidad. Funciona en cualquier smartphone.</p>
-        </div>
-        <div class="absolute bottom-0 right-0 w-1/2 translate-y-8 translate-x-8 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-500 pointer-events-none">
-          <img class="rounded-tl-3xl shadow-2xl object-cover"
-               src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&q=80"
-               onerror="this.remove()"
-               alt="Cliente escaneando QR"/>
-        </div>
-      </div>
-
-      <!-- BI & Insights -->
-      <div class="bg-secondary-container p-8 rounded-3xl flex flex-col justify-center reveal rd1">
-        <span class="material-symbols-outlined text-3xl text-on-secondary-container mb-4 block">analytics</span>
-        <h3 class="font-headline text-xl font-bold text-on-secondary-container mb-2">BI &amp; Insights</h3>
-        <p class="text-on-secondary-container/80 text-sm leading-relaxed">Entiende el comportamiento de tus clientes más fieles con datos precisos en tiempo real.</p>
-      </div>
-
-      <!-- Seguridad PassCodes -->
-      <div class="bg-primary p-8 rounded-3xl flex flex-col justify-center reveal rd2">
-        <span class="material-symbols-outlined text-3xl text-secondary mb-4 block">lock</span>
-        <h3 class="font-headline text-xl font-bold text-surface mb-2">Seguridad PassCodes</h3>
-        <p class="text-surface-variant text-sm leading-relaxed">Protección avanzada contra fraude mediante códigos dinámicos y validación segura en tiempo real.</p>
-      </div>
-
-      <!-- Menús digitales de lujo (spans 3 cols) -->
-      <div class="md:col-span-3 bg-tertiary-fixed p-10 rounded-3xl flex flex-col md:flex-row items-center gap-10 reveal">
-        <div class="flex-1">
-          <h3 class="font-headline text-2xl font-bold text-primary mb-4">Menús Digitales de Lujo</h3>
-          <p class="text-on-surface-variant leading-relaxed">Integra tus Digital Menus directamente con tu programa de recompensas para una experiencia fluida y premium que sorprende a tus clientes en cada visita.</p>
-        </div>
-        <div class="flex-1 flex gap-4">
-          <div class="h-40 flex-1 bg-surface-container-highest rounded-2xl flex items-center justify-center">
-            <span class="material-symbols-outlined text-4xl text-outline" style="font-variation-settings:'FILL' 1;">restaurant_menu</span>
-          </div>
-          <div class="h-40 flex-1 bg-surface-container-highest rounded-2xl flex items-center justify-center">
-            <span class="material-symbols-outlined text-4xl text-outline" style="font-variation-settings:'FILL' 1;">credit_card</span>
-          </div>
-        </div>
-      </div>
-
+    <div class="step-item reveal reveal-delay-1">
+      <div class="step-num">2</div>
+      <h3 class="step-title">Comparte el enlace</h3>
+      <p class="step-desc">Tus clientes escanean un QR en caja o hacen clic en un enlace y añaden la tarjeta digital a su Wallet al instante.</p>
+    </div>
+    <div class="step-item reveal reveal-delay-2">
+      <div class="step-num">3</div>
+      <h3 class="step-title">Fideliza y retén</h3>
+      <p class="step-desc">Añade sellos con un clic desde tu dashboard. Los premios se activan solos. Tus clientes regresan más y más seguido.</p>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HOW IT WORKS
-═══════════════════════════════════════════════════════════ -->
-<section class="py-32 px-6 bg-inverse-surface text-on-primary">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-20">
-      <h2 class="font-headline text-4xl md:text-5xl font-bold text-surface">Tres Pasos. Infinita Fidelidad.</h2>
+<!-- FEATURES -->
+<section id="funcionalidades" style="background: var(--gray-1); border-top: 1px solid var(--gray-2); border-bottom: 1px solid var(--gray-2);">
+  <div>
+    <p class="section-eyebrow reveal">Funcionalidades</p>
+    <h2 class="section-h2 reveal">Todo lo que necesita <em>tu negocio.</em></h2>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card reveal">
+      <div class="feat-icon">💳</div>
+      <h3 class="feat-title">Tarjeta digital Wallet</h3>
+      <p class="feat-desc">Compatible con Apple Wallet y Google Wallet. Sin apps adicionales, sin fricción para el cliente.</p>
     </div>
-    <div class="grid md:grid-cols-3 gap-16">
-      <div class="space-y-6">
-        <div class="font-brand text-8xl text-secondary/30 leading-none">01</div>
-        <h3 class="text-3xl font-headline font-bold text-surface">Configura</h3>
-        <p class="text-surface-dim leading-relaxed">Regístrate, personaliza tu tarjeta con tus colores y logo, y define los premios que quieres ofrecer a tus mejores clientes.</p>
-      </div>
-      <div class="space-y-6">
-        <div class="font-brand text-8xl text-secondary/30 leading-none">02</div>
-        <h3 class="text-3xl font-headline font-bold text-surface">Comparte</h3>
-        <p class="text-surface-dim leading-relaxed">Coloca tu QR en la caja, en las mesas o compártelo en redes. Tus clientes se registran en segundos sin descargar ninguna app.</p>
-      </div>
-      <div class="space-y-6">
-        <div class="font-brand text-8xl text-secondary/30 leading-none">03</div>
-        <h3 class="text-3xl font-headline font-bold text-surface">Premia</h3>
-        <p class="text-surface-dim leading-relaxed">Escanea el código del cliente al pagar. Cuando completa la tarjeta, canjea su premio con un solo toque desde tu panel de control.</p>
-      </div>
+    <div class="feat-card reveal reveal-delay-1">
+      <div class="feat-icon">⭐</div>
+      <h3 class="feat-title">Sellos y premios</h3>
+      <p class="feat-desc">Configura cuántos sellos se necesitan para el premio. Los sellos se actualizan en tiempo real en la tarjeta.</p>
+    </div>
+    <div class="feat-card reveal reveal-delay-2">
+      <div class="feat-icon">📍</div>
+      <h3 class="feat-title">Notificaciones geo</h3>
+      <p class="feat-desc">Cuando un cliente se acerca a tu local, su teléfono muestra la tarjeta automáticamente. Sin ninguna acción extra.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">📊</div>
+      <h3 class="feat-title">Dashboard admin</h3>
+      <p class="feat-desc">Visualiza tus clientes, historial de visitas, premios canjeados y métricas clave desde un panel intuitivo.</p>
+    </div>
+    <div class="feat-card reveal reveal-delay-1">
+      <div class="feat-icon">🔔</div>
+      <h3 class="feat-title">Notificaciones push</h3>
+      <p class="feat-desc">Envía mensajes personalizados a todos tus clientes o a uno en particular. Directo a la pantalla de bloqueo.</p>
+    </div>
+    <div class="feat-card reveal reveal-delay-2">
+      <div class="feat-icon">🎂</div>
+      <h3 class="feat-title">Premio de cumpleaños</h3>
+      <p class="feat-desc">Activa un beneficio especial en el mes de cumpleaños de cada cliente. Personaliza el mensaje y el regalo.</p>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     PRICING
-═══════════════════════════════════════════════════════════ -->
-<section class="py-32 px-6 bg-surface" id="pricing">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-14 reveal">
-      <span class="inline-block bg-secondary-container text-on-secondary-container text-[10px] font-black px-4 py-1.5 uppercase tracking-widest mb-6">Precio único · Todo incluido</span>
-      <h2 class="font-headline text-4xl md:text-6xl font-bold text-primary mb-4">Simple.<br/>Sin sorpresas.</h2>
-      <p class="text-on-surface-variant text-lg max-w-xl mx-auto">Un plan con todo lo que necesitas. Sin contratos. Sin letra pequeña.</p>
-    </div>
-
-    <!-- Single plan card -->
-    <div class="flex justify-center mb-12 reveal rd2">
-      <div class="relative rounded-3xl bg-primary text-surface overflow-hidden shadow-2xl w-full max-w-2xl">
-        <div class="absolute top-6 right-8">
-          <span class="bg-secondary-container text-on-secondary-container text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tight">14 días gratis</span>
-        </div>
-        <div class="p-10 md:p-14">
-          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-10">
-            <!-- Left: price + CTA -->
-            <div class="shrink-0">
-              <p class="text-xs font-bold uppercase tracking-widest text-primary-fixed-dim mb-4">Plan único · Todo incluido</p>
-              <div class="flex items-baseline gap-2 mb-1">
-                <span class="text-7xl font-headline font-bold text-surface" id="pro-price">€39</span>
-                <span class="text-primary-fixed-dim text-xl" id="pro-period">/mes</span>
-              </div>
-              <p class="text-primary-fixed-dim text-sm mb-8" id="pro-sub">facturado mensualmente</p>
-              <div class="flex flex-col gap-3">
-                <a href="/app/register" class="block text-center py-4 px-8 rounded-xl bg-secondary-container text-on-secondary-container text-sm font-bold tracking-widest uppercase hover:bg-secondary-fixed transition-all">Empezar gratis 14 días →</a>
-                <a href="/app/login" class="block text-center py-3 px-8 rounded-xl border border-surface/30 text-surface text-xs font-bold tracking-widest uppercase hover:bg-surface/10 transition-all">Ya tengo cuenta</a>
-              </div>
-            </div>
-            <!-- Right: features -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3">
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span><strong>Negocios ilimitados</strong></span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span><strong>Clientes ilimitados</strong></span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Campañas email + SMS + PUSH</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Hasta 5.000 emails/mes</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Notificaciones PUSH geolocalizadas</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Business intelligence avanzado</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Programa cumpleaños / aniversario</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Apple Wallet + Google Wallet</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Sellos, puntos, cashback, cupones</span></div>
-              <div class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span><span>Soporte chat / email prioritario</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-surface/10 px-10 md:px-14 py-5 flex flex-wrap items-center gap-6 text-xs text-primary-fixed-dim">
-          <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">verified</span> Sin permanencia</span>
-          <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">credit_card_off</span> Sin tarjeta en el trial</span>
-          <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">cancel</span> Cancela cuando quieras</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Keep old hidden div for JS compat, remove old card -->
-    <div style="display:none">
-      <div class="relative rounded-3xl bg-primary text-surface overflow-hidden shadow-2xl">
-
-        <!-- Top badge -->
-        <div class="absolute top-6 right-8">
-          <span class="bg-secondary-container text-on-secondary-container text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-tight">14 días gratis</span>
-        </div>
-
-        <div class="p-10 md:p-14">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-10">
-
-            <!-- Left: price -->
-            <div class="shrink-0">
-              <p class="text-xs font-bold uppercase tracking-widest text-primary-fixed-dim mb-4">Plan único</p>
-              <div class="flex items-baseline gap-2 mb-2">
-                <span class="text-7xl font-headline font-bold text-surface">€39</span>
-                <span class="text-primary-fixed-dim text-xl">/mes</span>
-              </div>
-              <p class="text-primary-fixed-dim text-sm mb-1">o <strong class="text-surface">€390/año</strong> — 2 meses gratis</p>
-              <p class="text-primary-fixed-dim text-xs">Sin límite de negocios · Sin límite de clientes</p>
-              <div class="mt-8 flex flex-col gap-3">
-                <a class="block text-center py-4 px-8 rounded-xl bg-secondary-container text-on-secondary-container text-sm font-bold tracking-widest uppercase hover:bg-secondary-fixed transition-all" href="/app/register">Empezar gratis 14 días →</a>
-                <a class="block text-center py-3 px-8 rounded-xl border border-surface/30 text-surface text-xs font-bold tracking-widest uppercase hover:bg-surface/10 transition-all" href="/app/login">Ya tengo cuenta</a>
-              </div>
-            </div>
-
-            <!-- Right: features grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3">
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Programa de sellos, puntos, cashback y acreditaciones</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Hasta 4 modelos de tarjetas wallet</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Módulo avanzado de fidelización (onboarding, 2FA, aceleración)</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Programa de cumpleaños y aniversario de afiliación</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Catálogo de premios</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Módulo de campañas, email, sms, PUSH (hasta 5.000 emails)</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Módulo de cupones</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Módulo de gestión de clientes</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Notificaciones PUSH personalizadas</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Notificaciones PUSH geolocalizadas</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Business intelligence: analítica avanzada e informes de seguimiento</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <span class="material-symbols-outlined text-secondary-container text-lg shrink-0" style="font-variation-settings:'FILL' 1;">check_circle</span>
-                <span>Soporte chat / email</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Bottom strip -->
-        <div class="bg-surface/10 px-10 md:px-14 py-5 flex flex-wrap items-center gap-6 text-xs text-primary-fixed-dim">
-          <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">verified</span> Sin contrato de permanencia</span>
-          <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">credit_card_off</span> Sin tarjeta para el periodo de prueba</span>
-          <span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">cancel</span> Cancela cuando quieras</span>
-        </div>
-
-      </div>
-    </div>
-
+<!-- PRICING -->
+<section id="precios">
+  <div>
+    <p class="section-eyebrow reveal">Precios</p>
+    <h2 class="section-h2 reveal">Simple y <em>transparente.</em></h2>
+    <p class="section-p reveal">Empieza gratis. Actualiza cuando lo necesites. Sin contratos, sin sorpresas.</p>
   </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════
-     TESTIMONIALS
-═══════════════════════════════════════════════════════════ -->
-<section class="py-24 px-6 bg-surface-container-low overflow-hidden">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-20 reveal">
-      <h2 class="font-headline text-4xl font-bold text-primary">Lo Dicen Nuestros Clientes</h2>
+  <div class="pricing-cards">
+    <div class="price-card reveal">
+      <p class="price-name">Gratis</p>
+      <div class="price-amount">$0</div>
+      <p class="price-period">para siempre</p>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Hasta 50 clientes</li>
+        <li><span class="check">✓</span> Tarjeta digital Wallet</li>
+        <li><span class="check">✓</span> Sellos y premios básicos</li>
+        <li><span class="check">✓</span> Dashboard admin</li>
+        <li><span class="check">✓</span> QR de registro</li>
+      </ul>
+      <a href="/register" class="price-cta">Empezar gratis</a>
     </div>
-    <div class="grid md:grid-cols-3 gap-12">
-      <div class="bg-surface-container-lowest p-10 rounded-3xl relative reveal">
-        <span class="material-symbols-outlined text-5xl text-secondary-container absolute -top-5 left-8" style="font-variation-settings:'FILL' 1;">format_quote</span>
-        <div class="flex gap-1 mb-4 text-secondary">★★★★★</div>
-        <p class="text-lg italic mb-8 text-on-surface-variant leading-relaxed">"En 3 semanas ya tenía 80 clientes registrados. La gente escanea el QR sin que tengamos que explicar nada. Increíble."</p>
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-on-primary font-bold flex-shrink-0">MG</div>
-          <div>
-            <div class="font-bold text-sm text-primary">María González</div>
-            <div class="text-xs text-on-surface-variant uppercase tracking-widest">Café La Mañana, Madrid</div>
-          </div>
-        </div>
-      </div>
-      <div class="bg-surface-container-lowest p-10 rounded-3xl relative reveal rd1">
-        <span class="material-symbols-outlined text-5xl text-secondary-container absolute -top-5 left-8" style="font-variation-settings:'FILL' 1;">format_quote</span>
-        <div class="flex gap-1 mb-4 text-secondary">★★★★★</div>
-        <p class="text-lg italic mb-8 text-on-surface-variant leading-relaxed">"Antes usábamos tarjetas de papel que se perdían. Ahora todo está en el móvil del cliente. Y repiten mucho más."</p>
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-on-primary font-bold flex-shrink-0">CR</div>
-          <div>
-            <div class="font-bold text-sm text-primary">Carlos Ruiz</div>
-            <div class="text-xs text-on-surface-variant uppercase tracking-widest">Bistró 42, Barcelona</div>
-          </div>
-        </div>
-      </div>
-      <div class="bg-surface-container-lowest p-10 rounded-3xl relative reveal rd2">
-        <span class="material-symbols-outlined text-5xl text-secondary-container absolute -top-5 left-8" style="font-variation-settings:'FILL' 1;">format_quote</span>
-        <div class="flex gap-1 mb-4 text-secondary">★★★★★</div>
-        <p class="text-lg italic mb-8 text-on-surface-variant leading-relaxed">"Gestiono 4 locales desde el mismo panel. Ahorro tiempo y tengo visibilidad total de mis clientes en cada local."</p>
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-on-primary font-bold flex-shrink-0">AM</div>
-          <div>
-            <div class="font-bold text-sm text-primary">Ana Martínez</div>
-            <div class="text-xs text-on-surface-variant uppercase tracking-widest">Grupo La Tasca, Valencia</div>
-          </div>
-        </div>
-      </div>
+    <div class="price-card featured reveal reveal-delay-1">
+      <span class="price-badge">Más popular</span>
+      <p class="price-name">Pro</p>
+      <div class="price-amount">$29</div>
+      <p class="price-period">por mes · sin límites</p>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Clientes ilimitados</li>
+        <li><span class="check">✓</span> Notificaciones geo automáticas</li>
+        <li><span class="check">✓</span> Push notifications masivas</li>
+        <li><span class="check">✓</span> Premio de cumpleaños</li>
+        <li><span class="check">✓</span> Múltiples canales QR</li>
+        <li><span class="check">✓</span> Soporte prioritario</li>
+      </ul>
+      <a href="/register" class="price-cta">Probar Pro gratis 14 días</a>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     FAQ
-═══════════════════════════════════════════════════════════ -->
-<section class="py-32 px-6 bg-surface-container" id="faq">
-  <div class="max-w-3xl mx-auto">
-    <h2 class="font-headline text-4xl font-bold text-primary mb-12 text-center reveal">Preguntas Frecuentes</h2>
-    <div class="space-y-4" id="faq-list"></div>
+<!-- FAQ -->
+<section id="faq" style="background: var(--gray-1); border-top: 1px solid var(--gray-2);">
+  <div>
+    <p class="section-eyebrow reveal">Preguntas frecuentes</p>
+    <h2 class="section-h2 reveal">¿Tienes dudas? <em>Las respondemos.</em></h2>
   </div>
+  <div class="faq-list reveal" id="faq-list"></div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════
-     FINAL CTA
-═══════════════════════════════════════════════════════════ -->
-<section class="py-32 px-6 bg-secondary-container">
-  <div class="max-w-7xl mx-auto text-center">
-    <h2 class="font-headline text-7xl md:text-9xl font-extrabold text-primary leading-none mb-8 reveal">EMPIEZA<br/>HOY.</h2>
-    <p class="text-on-secondary-container text-lg mb-12 reveal rd1">Sin tarjeta de crédito. Sin compromiso.<br/>Tu primer negocio, para siempre gratis.</p>
-    <a class="inline-block bg-primary text-on-primary px-14 py-6 rounded-xl font-headline text-xl font-bold tracking-widest uppercase hover:bg-primary-container hover:shadow-2xl transition-all reveal rd2" href="/app/register">
-      Crear cuenta gratis →
-    </a>
+<!-- CTA BANNER -->
+<div class="cta-banner">
+  <div class="cta-bg"></div>
+  <div class="cta-overlay"></div>
+  <div class="cta-content reveal">
+    <h2>Empieza hoy.<br/><em>Gratis.</em></h2>
+    <p>Configura tu programa de fidelización en 5 minutos y dale a tus clientes una razón para volver.</p>
+    <div class="actions">
+      <a href="/register" class="btn-primary">Crear mi tarjeta gratis</a>
+      <a href="mailto:hola@zubcard.com" class="btn-ghost">Hablar con ventas</a>
+    </div>
   </div>
-</section>
+  <p class="cta-fine">Sin tarjeta de crédito · Cancela cuando quieras</p>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     FOOTER
-═══════════════════════════════════════════════════════════ -->
-<footer class="bg-primary text-surface pt-20 pb-10 px-6">
-  <div class="max-w-7xl mx-auto">
-    <div class="grid md:grid-cols-4 gap-12 pb-16 border-b border-primary-container">
-      <div class="col-span-2 space-y-6">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-secondary-container rounded flex items-center justify-center flex-shrink-0">
-            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">bakery_dining</span>
-          </div>
-          <span class="font-brand text-3xl tracking-wider">ZubCard</span>
-        </div>
-        <p class="text-primary-fixed-dim max-w-xs leading-relaxed">
-          Redefiniendo la lealtad digital para los negocios más exigentes. La elegancia y la tecnología unidas en un solo producto.
-        </p>
-      </div>
-      <div>
-        <h4 class="font-bold mb-6 text-secondary-container uppercase text-[10px] tracking-widest">Producto</h4>
-        <ul class="space-y-4 text-sm text-primary-fixed-dim">
-          <li><a class="hover:text-secondary-container transition-colors" href="#features">Features</a></li>
-          <li><a class="hover:text-secondary-container transition-colors" href="#pricing">Precios</a></li>
-          <li><a class="hover:text-secondary-container transition-colors" href="#faq">FAQ</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-bold mb-6 text-secondary-container uppercase text-[10px] tracking-widest">Legal</h4>
-        <ul class="space-y-4 text-sm text-primary-fixed-dim">
-          <li><a class="hover:text-secondary-container transition-colors" href="/privacidad">Privacidad</a></li>
-          <li><a class="hover:text-secondary-container transition-colors" href="/terminos">Términos</a></li>
-          <li><a class="hover:text-secondary-container transition-colors" href="/cookies">Cookies</a></li>
-          <li><a class="hover:text-secondary-container transition-colors" href="mailto:hola@zubcard.com">Contacto</a></li>
-        </ul>
-      </div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="/" class="nav-logo" style="display:inline-flex;">
+        <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="30" height="30" rx="8" fill="#c9a84c"/>
+          <path d="M8 10h14M8 15h10M8 20h12" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <span>ZubCard</span>
+      </a>
+      <p>Fidelización digital para negocios físicos. Apple &amp; Google Wallet.</p>
     </div>
-    <div class="pt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-      <p class="text-[10px] uppercase tracking-widest text-primary-fixed-dim">© 2026 ZubCard. Luxury Loyalty Solutions.</p>
-      <div class="flex gap-8 text-[10px] uppercase tracking-widest text-primary-fixed-dim">
-        <a class="hover:text-secondary-container transition-colors" href="#">Instagram</a>
-        <a class="hover:text-secondary-container transition-colors" href="#">LinkedIn</a>
-        <a class="hover:text-secondary-container transition-colors" href="mailto:hola@zubcard.com">Email</a>
-      </div>
+    <div class="footer-col">
+      <h4>Producto</h4>
+      <ul>
+        <li><a href="#como-funciona">Cómo funciona</a></li>
+        <li><a href="#funcionalidades">Funcionalidades</a></li>
+        <li><a href="#precios">Precios</a></li>
+      </ul>
     </div>
+    <div class="footer-col">
+      <h4>Empresa</h4>
+      <ul>
+        <li><a href="#">Sobre nosotros</a></li>
+        <li><a href="mailto:hola@zubcard.com">Contacto</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacidad</a></li>
+        <li><a href="#">Términos</a></li>
+        <li><a href="#">Cookies</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 ZubCard. Todos los derechos reservados.</span>
+    <span>Hecho con ❤️ para negocios reales.</span>
   </div>
 </footer>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SCRIPTS
-═══════════════════════════════════════════════════════════ -->
+<!-- COOKIE BANNER -->
+<div id="cookie-banner">
+  <p>Usamos cookies para mejorar tu experiencia. Consulta nuestra <a href="#" style="color:var(--black);font-weight:600;">política de privacidad</a>.</p>
+  <button onclick="document.getElementById('cookie-banner').classList.add('hidden'); localStorage.setItem('cc','1');">Aceptar</button>
+</div>
+
 <script>
-// ── Hero interactive stamps ───────────────────────────────────
-const DEMO_MAX = 10;
-let demoStamps = 3;
+// Mobile nav toggle
+document.getElementById('mobile-toggle').addEventListener('click', function() {
+  document.getElementById('nav-links').classList.toggle('open');
+});
 
-function renderHeroStamps() {
-  const grid = document.getElementById('hero-stamps');
-  const label = document.getElementById('hero-reward-label');
-  if (!grid) return;
-  grid.innerHTML = '';
-  for (let i = 0; i < DEMO_MAX; i++) {
-    const div = document.createElement('div');
-    const filled = i < demoStamps;
-    div.className = 'aspect-square rounded-full flex items-center justify-center stamp-cell ' +
-      (filled ? 'bg-secondary-container' : 'bg-surface-dim/40');
-    div.innerHTML = filled
-      ? `<span class="material-symbols-outlined text-on-secondary-container" style="font-size:14px;font-variation-settings:'FILL' 1;">check</span>`
-      : `<span class="material-symbols-outlined text-outline/30" style="font-size:12px;">circle</span>`;
-    grid.appendChild(div);
-  }
-  if (demoStamps >= DEMO_MAX) {
-    label.textContent = '🎉 ¡Premio conseguido! Café + Croissant gratis';
-    label.style.color = '#785a00';
-  } else {
-    label.textContent = `Sellos: ${demoStamps}/${DEMO_MAX} · Próximo premio: Café + Croissant`;
-    label.style.color = '';
-  }
-}
+// Close mobile nav on link click
+document.querySelectorAll('#nav-links a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('nav-links').classList.remove('open'));
+});
 
-function addDemoStamp() {
-  demoStamps = demoStamps < DEMO_MAX ? demoStamps + 1 : 0;
-  renderHeroStamps();
-}
-renderHeroStamps();
-
-// ── FAQ accordion ─────────────────────────────────────────────
+// FAQ data
 const faqs = [
-  { q: '¿Cómo funciona el sellado digital?',
-    a: 'El cliente escanea un código QR único en tu establecimiento. Al hacerlo, su tarjeta digital se actualiza automáticamente con un nuevo sello sin necesidad de descargar ninguna app.' },
-  { q: '¿Necesitan mis clientes una app?',
-    a: 'No. Los clientes acceden a su tarjeta vía navegador móvil o pueden guardarla directamente en Apple Wallet o Google Wallet para tenerla siempre a mano.' },
-  { q: '¿Funciona con varios locales?',
-    a: 'Sí, los planes Pro y Business permiten gestionar múltiples negocios desde el mismo panel. Cada negocio tiene su propia tarjeta, QR único y programa de fidelización independiente.' },
-  { q: '¿Puedo personalizar el diseño de mis tarjetas?',
-    a: 'Absolutamente. Puedes subir tu logo, elegir tus colores corporativos, definir emojis y el número de sellos necesarios para el premio.' },
-  { q: '¿Puedo migrar mis datos actuales?',
-    a: 'Sí, ofrecemos herramientas de importación CSV para que no pierdas ni un solo cliente en la transición.' },
-  { q: '¿Hay contrato de permanencia?',
-    a: 'No. ZubCard es mes a mes, sin compromisos. Puedes cancelar en cualquier momento desde tu panel de control.' },
+  { q: "¿Mis clientes necesitan descargar alguna app?", a: "No. Las tarjetas ZubCard son nativas de Apple Wallet y Google Wallet, que vienen preinstalados en todos los iPhones y la mayoría de teléfonos Android. Solo necesitan hacer clic en el enlace o escanear el QR." },
+  { q: "¿Cómo añado sellos a la tarjeta de un cliente?", a: "Desde el dashboard admin puedes buscar al cliente por nombre o escanear su QR personal. Con un clic añades el sello y la tarjeta se actualiza en tiempo real en su teléfono." },
+  { q: "¿Las notificaciones geográficas funcionan automáticamente?", a: "Sí. Cuando configuras la dirección de tu negocio, iOS natively la registra en la tarjeta Wallet. Cuando el cliente se acerca a menos de 100 metros, su teléfono muestra la tarjeta en pantalla de bloqueo automáticamente. Esto requiere que el cliente haya descargado la tarjeta y tenga permisos de ubicación activados." },
+  { q: "¿Puedo personalizar el diseño de la tarjeta con mi marca?", a: "Sí. Puedes subir tu logo, elegir el color de fondo y configurar el texto de la tarjeta. La tarjeta refleja la identidad visual de tu negocio." },
+  { q: "¿Qué pasa si un cliente pierde el móvil o cambia de teléfono?", a: "Pueden volver a registrarse con el mismo correo electrónico y recuperar su tarjeta y sellos acumulados. También puedes buscarlos en el dashboard por nombre para vincularlos manualmente." },
+  { q: "¿Hay contrato de permanencia?", a: "No. Puedes cancelar en cualquier momento sin penalizaciones. El plan Pro se factura mensualmente y puedes volver al plan Gratis cuando quieras." }
 ];
 
 const faqList = document.getElementById('faq-list');
-faqs.forEach(({ q, a }) => {
-  const el = document.createElement('details');
-  el.className = 'group bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 cursor-pointer';
-  el.innerHTML = `
-    <summary class="flex justify-between items-center font-bold text-primary list-none select-none">
-      ${q}
-      <span class="material-symbols-outlined group-open:rotate-180 transition-transform flex-shrink-0 ml-4">expand_more</span>
-    </summary>
-    <p class="mt-4 text-on-surface-variant leading-relaxed text-sm">${a}</p>`;
-  faqList.appendChild(el);
+faqs.forEach((item, i) => {
+  const div = document.createElement('div');
+  div.className = 'faq-item';
+  div.innerHTML = `
+    <button class="faq-q" data-i="${i}" aria-expanded="false">
+      ${item.q} <span class="icon">+</span>
+    </button>
+    <div class="faq-a" id="faq-a-${i}">${item.a}</div>
+  `;
+  faqList.appendChild(div);
 });
 
-// ── Billing toggle ────────────────────────────────────────────
-let billingAnnual = false;
-function toggleBilling() {
-  billingAnnual = !billingAnnual;
-  const knob = document.getElementById('billing-knob');
-  const monthLabel = document.getElementById('toggle-monthly-label');
-  const annualLabel = document.getElementById('toggle-annual-label');
-  const proPrice = document.getElementById('pro-price');
-  const proPeriod = document.getElementById('pro-period');
-  const proSub = document.getElementById('pro-sub');
-  if (billingAnnual) {
-    knob.style.transform = 'translateX(28px)';
-    monthLabel.classList.replace('text-primary','text-on-surface-variant');
-    annualLabel.classList.replace('text-on-surface-variant','text-primary');
-    proPrice.textContent = '€33';
-    proPeriod.textContent = '/mes';
-    proSub.textContent = 'facturado €390/año — 2 meses gratis';
-  } else {
-    knob.style.transform = 'translateX(0)';
-    monthLabel.classList.replace('text-on-surface-variant','text-primary');
-    annualLabel.classList.replace('text-primary','text-on-surface-variant');
-    proPrice.textContent = '€39';
-    proPeriod.textContent = '/mes';
-    proSub.textContent = 'facturado mensualmente';
+faqList.addEventListener('click', e => {
+  const btn = e.target.closest('.faq-q');
+  if (!btn) return;
+  const idx = btn.dataset.i;
+  const ans = document.getElementById(`faq-a-${idx}`);
+  const isOpen = btn.classList.contains('open');
+  // close all
+  document.querySelectorAll('.faq-q').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+  if (!isOpen) {
+    btn.classList.add('open');
+    ans.classList.add('open');
   }
-}
+});
 
-// ── Scroll reveal ─────────────────────────────────────────────
-const revealObserver = new IntersectionObserver(entries => {
+// Intersection Observer for reveal animations
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('visible'); }
+    if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
   });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-</script>
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+revealEls.forEach(el => io.observe(el));
 
-<!-- ── Cookie Consent Banner ─────────────────────────────────── -->
-<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;
-  background:#1a0f08;border-top:1px solid rgba(255,202,72,0.25);
-  padding:16px 24px;display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:12px;font-family:'Manrope',sans-serif;">
-  <p style="margin:0;color:#d4b896;font-size:13px;max-width:600px;line-height:1.5">
-    🍪 Usamos cookies esenciales para que la app funcione correctamente.
-    <a href="/cookies" target="_blank" style="color:#ffca48;text-decoration:underline">Más info</a>
-  </p>
-  <div style="display:flex;gap:10px;flex-shrink:0">
-    <button onclick="cookieConsent('essential')" style="
-      background:transparent;border:1px solid rgba(255,202,72,0.4);color:#d4b896;
-      padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Manrope',sans-serif">
-      Solo esenciales
-    </button>
-    <button onclick="cookieConsent('all')" style="
-      background:#ffca48;border:none;color:#26170c;
-      padding:8px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif">
-      Aceptar todo
-    </button>
-  </div>
-</div>
-<script>
-(function() {
-  const COOKIE_KEY = 'zubcard_cookie_consent';
-  function cookieConsent(choice) {
-    localStorage.setItem(COOKIE_KEY, choice);
-    document.getElementById('cookie-banner').style.display = 'none';
-  }
-  window.cookieConsent = cookieConsent;
-  if (!localStorage.getItem(COOKIE_KEY)) {
-    document.getElementById('cookie-banner').style.display = 'flex';
-  }
-})();
+// Cookie banner
+if (localStorage.getItem('cc')) {
+  document.getElementById('cookie-banner').classList.add('hidden');
+}
 </script>
 </body>
 </html>
