@@ -365,6 +365,10 @@ def run_migrations():
         # ── Google Reviews ─────────────────────────────────────────────────────────
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS google_review_url VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS review_trigger_stamps INTEGER DEFAULT 0",
+        # ── Birthday gift config ───────────────────────────────────────────────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_gift_type VARCHAR DEFAULT 'discount'",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_gift_product VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_intro VARCHAR DEFAULT ''",
         # ── Apple Wallet live update web service ──────────────────────────────────
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS wallet_auth_token VARCHAR",
         """CREATE TABLE IF NOT EXISTS wallet_devices (
@@ -2420,6 +2424,9 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
     body = await request.json()
     customer_id  = body.get("customer_id")   # single customer, or None = all today
     discount_pct = int(body.get("discount_pct", 20))
+    gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
+    gift_product = getattr(biz, "birthday_gift_product", "") or ""
+    email_intro  = getattr(biz, "birthday_email_intro", "") or ""
 
     today = datetime.now().strftime("%m-%d")
     expires_at = datetime.now().replace(hour=23, minute=59, second=59)
@@ -2469,23 +2476,41 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
 
         name = (cust.first_name or "Cliente").strip()
         subject = f"🎂 ¡Feliz Cumpleaños, {name}! Tu regalo te espera"
-        html = f"""
-<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
-  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);padding:36px 28px;text-align:center">
-    <div style="font-size:3rem;margin-bottom:8px">🎂</div>
-    <h1 style="color:#fff;font-size:1.6rem;margin:0;font-weight:800">¡Feliz Cumpleaños, {name}!</h1>
-    <p style="color:rgba(255,255,255,.85);margin-top:8px;font-size:.95rem">Hoy te regalamos un descuento especial</p>
-  </div>
-  <div style="padding:32px 28px;text-align:center">
+
+        # Build gift block based on type
+        if gift_type == "product" and gift_product:
+            gift_block = f"""
+    <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
+      <div style="font-size:2rem;margin-bottom:6px">🎁</div>
+      <div style="font-size:1.3rem;font-weight:900;color:#e65100">{gift_product}</div>
+      <div style="font-size:.85rem;font-weight:700;color:#555;margin-top:4px">REGALO GRATIS</div>
+      <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
+    </div>
+    <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
+      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y recibirás tu regalo."}
+    </p>"""
+            subtitle = "Hoy te regalamos algo especial 🎁"
+        else:
+            gift_block = f"""
     <div style="background:#fff8e1;border-radius:12px;padding:20px;margin-bottom:24px;border:2px solid #ffe082">
       <div style="font-size:2.8rem;font-weight:900;color:#e65100">{discount_pct}%</div>
       <div style="font-size:1rem;font-weight:700;color:#555;margin-top:4px">DE DESCUENTO</div>
       <div style="font-size:.8rem;color:#999;margin-top:6px">Válido solo hoy · Un solo uso</div>
     </div>
     <p style="color:#555;font-size:.9rem;margin-bottom:20px;line-height:1.6">
-      Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>
-      El empleado lo escaneará y se aplicará tu descuento.
-    </p>
+      {email_intro if email_intro else f"Muestra este QR al llegar a <strong>{biz.name}</strong>.<br>El empleado lo escaneará y se aplicará tu descuento."}
+    </p>"""
+            subtitle = "Hoy te regalamos un descuento especial"
+
+        html = f"""
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);padding:36px 28px;text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">🎂</div>
+    <h1 style="color:#fff;font-size:1.6rem;margin:0;font-weight:800">¡Feliz Cumpleaños, {name}!</h1>
+    <p style="color:rgba(255,255,255,.85);margin-top:8px;font-size:.95rem">{subtitle}</p>
+  </div>
+  <div style="padding:32px 28px;text-align:center">
+    {gift_block}
     <img src="data:image/png;base64,{qr_b64}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
     <p style="color:#aaa;font-size:.75rem;margin-top:16px">Este QR es de un solo uso y expira hoy a las 23:59</p>
   </div>
@@ -2576,6 +2601,22 @@ def birthday_voucher_page(slug: str, token: str, db: Session = Depends(get_db)):
     qr_img.save(buf, format="PNG")
     qr_b64 = base64.b64encode(buf.getvalue()).decode()
 
+    biz_gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
+    biz_gift_product = getattr(biz, "birthday_gift_product", "") or ""
+    if biz_gift_type == "product" and biz_gift_product:
+        gift_display = f"""
+  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);border-radius:14px;padding:20px;margin-bottom:20px">
+    <div style="font-size:2rem;margin-bottom:4px">🎁</div>
+    <div style="font-size:1.4rem;font-weight:900;color:#fff">{biz_gift_product}</div>
+    <div style="color:rgba(255,255,255,.9);font-weight:700;font-size:.9rem;margin-top:4px">REGALO GRATIS</div>
+  </div>"""
+    else:
+        gift_display = f"""
+  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);border-radius:14px;padding:20px;margin-bottom:20px">
+    <div style="font-size:3.5rem;font-weight:900;color:#fff">{row.discount_pct}%</div>
+    <div style="color:rgba(255,255,255,.9);font-weight:700">DE DESCUENTO</div>
+  </div>"""
+
     return HTMLResponse(f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>🎂 Regalo Cumpleaños · {biz.name}</title>
@@ -2587,10 +2628,7 @@ def birthday_voucher_page(slug: str, token: str, db: Session = Depends(get_db)):
   <h1 style="font-size:1.4rem;color:#e65100;margin:8px 0">¡Feliz Cumpleaños, {row.first_name or 'Cliente'}!</h1>
   <p style="color:#888;font-size:.85rem;margin-bottom:20px">Tu regalo de <strong>{biz.name}</strong></p>
   {status_html}
-  <div style="background:linear-gradient(135deg,#ff6b6b,#ffa07a);border-radius:14px;padding:20px;margin-bottom:20px">
-    <div style="font-size:3.5rem;font-weight:900;color:#fff">{row.discount_pct}%</div>
-    <div style="color:rgba(255,255,255,.9);font-weight:700">DE DESCUENTO</div>
-  </div>
+  {gift_display}
   <p style="color:#555;font-size:.82rem;margin-bottom:16px">Muestra este QR al empleado para canjear tu regalo</p>
   <img src="data:image/png;base64,{qr_b64}" style="width:200px;height:200px;border-radius:10px;border:2px solid #f0f0f0;padding:6px">
   <p style="color:#bbb;font-size:.72rem;margin-top:16px">Un solo uso · Válido solo hoy</p>
@@ -4073,6 +4111,40 @@ async def update_reviews_config(slug: str, request: Request, db: Session = Depen
         "trigger": int(body.get("review_trigger_stamps") or 0),
         "slug":    slug,
     })
+    db.commit()
+    return {"status": "updated"}
+
+
+@app.get("/api/biz/{slug}/birthday-config")
+def get_birthday_config(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Get birthday gift configuration for this business"""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return {
+        "birthday_gift_type":    getattr(biz, "birthday_gift_type", "discount") or "discount",
+        "birthday_gift_product": getattr(biz, "birthday_gift_product", "") or "",
+        "birthday_discount_pct": 20,  # default, comes from voucher table
+        "birthday_email_intro":  getattr(biz, "birthday_email_intro", "") or "",
+    }
+
+
+@app.put("/api/biz/{slug}/birthday-config")
+async def update_birthday_config(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Update birthday gift configuration"""
+    body = await request.json()
+    pin  = str(body.get("pin", "")).strip()
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    gift_type    = (body.get("birthday_gift_type") or "discount").strip()
+    gift_product = (body.get("birthday_gift_product") or "").strip()
+    email_intro  = (body.get("birthday_email_intro") or "").strip()
+    db.execute(text(
+        "UPDATE businesses SET birthday_gift_type=:gt, birthday_gift_product=:gp, birthday_email_intro=:ei WHERE slug=:slug"
+    ), {"gt": gift_type, "gp": gift_product, "ei": email_intro, "slug": slug})
     db.commit()
     return {"status": "updated"}
 
