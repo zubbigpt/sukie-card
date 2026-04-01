@@ -2476,7 +2476,7 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
         qr_b64 = base64.b64encode(buf.getvalue()).decode()
 
         name = (cust.first_name or "Cliente").strip()
-        subject = f"🎂 ¡Feliz Cumpleaños, {name}! Tu regalo te espera"
+        subject = f"¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera"
 
         # Build gift block based on type
         if gift_type == "product" and gift_product:
@@ -5557,14 +5557,14 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
   <div style="padding:32px 28px;text-align:center">
     {gift_block}
     <img src="data:image/png;base64,{qr_b64}" alt="QR Regalo Cumpleaños" style="width:180px;height:180px;border:3px solid #f0f0f0;border-radius:12px;padding:8px">
-    <p style="color:#aaa;font-size:.75rem;margin-top:16px">⚠️ Este es un email de prueba — el QR no es válido para canjear</p>
+    <p style="color:#ccc;font-size:.72rem;margin-top:16px">(Email de prueba — QR no válido)</p>
   </div>
   <div style="background:#fafafa;padding:16px 28px;text-align:center;border-top:1px solid #f0f0f0">
     <p style="color:#999;font-size:.78rem;margin:0">Con cariño, el equipo de {biz.name}</p>
   </div>
 </div>"""
 
-    sent = send_email(to_email=to_email, subject=f"🎂 [TEST] ¡Feliz Cumpleaños, {name}! Tu regalo te espera", html_body=html)
+    sent = send_email(to_email=to_email, subject=f"[TEST] ¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera", html_body=html)
     if sent:
         return {"status": "sent", "to": to_email}
     raise HTTPException(status_code=503, detail="No se pudo enviar el email de prueba")
