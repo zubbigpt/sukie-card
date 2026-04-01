@@ -12,17 +12,20 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --black:   #0a0a0a;
-    --white:   #ffffff;
-    --gray-1:  #f5f5f5;
-    --gray-2:  #e8e8e8;
-    --gray-3:  #a0a0a0;
-    --gray-4:  #555555;
-    --gold:    #c9a84c;
-    --gold-lt: #f5e9cc;
-    --radius:  12px;
-    --font:    'Inter', system-ui, sans-serif;
-    --ease:    cubic-bezier(.25,.46,.45,.94);
+    --black:    #0a0a0a;
+    --white:    #ffffff;
+    --brown:    #3d1f0d;
+    --brown-md: #6b3a1f;
+    --brown-lt: #f5ede4;
+    --gray-1:   #f5f5f5;
+    --gray-2:   #e8e8e8;
+    --gray-3:   #a0a0a0;
+    --gray-4:   #555555;
+    --gold:     #c9a84c;
+    --gold-lt:  #f5e9cc;
+    --radius:   12px;
+    --font:     'Inter', system-ui, sans-serif;
+    --ease:     cubic-bezier(.25,.46,.45,.94);
   }
 
   html { scroll-behavior: smooth; }
@@ -33,16 +36,23 @@
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 5vw; height: 68px;
-    background: rgba(10,10,10,.85); backdrop-filter: blur(14px);
+    background: rgba(10,10,10,.88); backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid rgba(255,255,255,.06);
   }
   .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
   .nav-logo svg { width: 30px; height: 30px; }
   .nav-logo span { font-size: 1.1rem; font-weight: 700; color: var(--white); letter-spacing: -.02em; }
-  .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
   .nav-links a { color: rgba(255,255,255,.7); text-decoration: none; font-size: .88rem; font-weight: 500; transition: color .2s; }
   .nav-links a:hover { color: var(--white); }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-login {
+    color: rgba(255,255,255,.75); text-decoration: none; font-size: .85rem;
+    font-weight: 600; padding: 9px 18px; border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,.2); transition: all .2s;
+  }
+  .nav-login:hover { border-color: rgba(255,255,255,.5); color: var(--white); }
   .nav-cta {
     background: var(--gold); color: var(--black); font-weight: 700;
     font-size: .85rem; padding: 10px 22px; border-radius: 100px;
@@ -50,7 +60,7 @@
     white-space: nowrap;
   }
   .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
-  .nav-mobile-toggle { display: none; background: none; border: none; cursor: pointer; }
+  .nav-mobile-toggle { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
   .nav-mobile-toggle span { display: block; width: 22px; height: 2px; background: var(--white); margin: 5px 0; transition: .3s; }
 
   /* ── HERO ── */
@@ -243,29 +253,39 @@
   }
 
   /* ── FEATURES ── */
+  .features-section {
+    background: var(--brown-lt);
+    border-top: 1px solid rgba(61,31,13,.1);
+    border-bottom: 1px solid rgba(61,31,13,.1);
+  }
   .features-grid {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 24px; margin-top: 60px;
+    gap: 2px; margin-top: 60px;
+    border: 1px solid rgba(61,31,13,.1); border-radius: 16px;
+    overflow: hidden; background: rgba(61,31,13,.08);
   }
   .feat-card {
-    padding: 36px 32px; border: 1px solid var(--gray-2);
-    border-radius: var(--radius); transition: all .3s var(--ease);
+    padding: 36px 32px;
+    background: var(--brown-lt);
+    transition: all .3s var(--ease);
     cursor: default;
   }
   .feat-card:hover {
-    border-color: var(--gold); background: var(--gold-lt);
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(201,168,76,.12);
+    background: var(--white);
+    transform: scale(1.01);
+    box-shadow: 0 8px 32px rgba(61,31,13,.1);
+    z-index: 1; position: relative;
   }
   .feat-icon {
     width: 48px; height: 48px; border-radius: 12px;
-    background: var(--gold-lt); display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; margin-bottom: 20px;
-    transition: background .3s;
+    background: rgba(61,31,13,.08); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px; transition: background .3s;
   }
-  .feat-card:hover .feat-icon { background: var(--white); }
-  .feat-title { font-size: 1rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: 10px; }
-  .feat-desc { font-size: .9rem; line-height: 1.65; color: var(--gray-4); }
+  .feat-icon svg { width: 24px; height: 24px; stroke: var(--brown); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .feat-card:hover .feat-icon { background: var(--gold-lt); }
+  .feat-card:hover .feat-icon svg { stroke: var(--brown-md); }
+  .feat-title { font-size: 1rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: 10px; color: var(--brown); }
+  .feat-desc { font-size: .9rem; line-height: 1.65; color: var(--brown-md); opacity: .8; }
 
   /* ── HOW IT WORKS ── */
   .steps-grid {
@@ -288,55 +308,61 @@
   .step-desc { font-size: .9rem; line-height: 1.65; color: var(--gray-4); }
 
   /* ── PRICING ── */
-  .pricing-cards {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 24px; margin-top: 60px; max-width: 860px;
+  .pricing-wrap {
+    margin-top: 60px; display: flex; justify-content: flex-start;
   }
   .price-card {
-    padding: 44px 40px; border-radius: 16px;
-    border: 1px solid var(--gray-2);
-    transition: transform .3s var(--ease), box-shadow .3s;
-  }
-  .price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.08); }
-  .price-card.featured {
+    padding: 48px 44px; border-radius: 20px;
     background: var(--black); color: var(--white);
-    border-color: var(--black);
     box-shadow: 0 24px 60px rgba(0,0,0,.18);
+    max-width: 480px; width: 100%;
+    transition: transform .3s var(--ease);
   }
+  .price-card:hover { transform: translateY(-4px); }
   .price-badge {
     display: inline-block; background: var(--gold);
     color: var(--black); font-size: .7rem; font-weight: 800;
     letter-spacing: .1em; text-transform: uppercase;
-    padding: 4px 12px; border-radius: 100px; margin-bottom: 20px;
+    padding: 5px 14px; border-radius: 100px; margin-bottom: 24px;
   }
-  .price-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-  .price-card.featured .price-name { color: var(--white); }
+  .price-name { font-size: 1rem; font-weight: 600; color: rgba(255,255,255,.65); margin-bottom: 4px; }
   .price-amount {
-    font-size: 3rem; font-weight: 900; letter-spacing: -.04em;
-    line-height: 1; margin: 16px 0 6px;
+    font-size: 3.6rem; font-weight: 900; letter-spacing: -.04em;
+    line-height: 1; color: var(--gold); margin: 8px 0 4px;
   }
-  .price-card.featured .price-amount { color: var(--gold); }
-  .price-period { font-size: .85rem; color: var(--gray-3); margin-bottom: 28px; }
-  .price-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+  .price-amount sup { font-size: 1.6rem; vertical-align: top; margin-top: 10px; }
+  .price-period { font-size: .88rem; color: rgba(255,255,255,.4); margin-bottom: 12px; }
+  .price-trial {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.25);
+    color: var(--gold); font-size: .78rem; font-weight: 600;
+    padding: 5px 12px; border-radius: 100px; margin-bottom: 32px;
+  }
+  .price-trial svg { width: 14px; height: 14px; stroke: var(--gold); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 13px; margin-bottom: 36px; }
   .price-features li {
     display: flex; gap: 10px; align-items: flex-start;
-    font-size: .9rem; line-height: 1.5;
+    font-size: .92rem; line-height: 1.5; color: rgba(255,255,255,.75);
   }
-  .price-features li .check { color: var(--gold); font-weight: 800; flex-shrink: 0; }
-  .price-card.featured .price-features li { color: rgba(255,255,255,.75); }
+  .price-features li .check { color: var(--gold); font-weight: 800; flex-shrink: 0; margin-top: 1px; }
   .price-cta {
     display: block; text-align: center; text-decoration: none;
-    padding: 14px 0; border-radius: 100px; font-weight: 700; font-size: .92rem;
+    padding: 16px 0; border-radius: 100px; font-weight: 800; font-size: .95rem;
+    background: var(--gold); color: var(--black);
     transition: all .25s;
   }
-  .price-card:not(.featured) .price-cta {
-    background: var(--black); color: var(--white);
+  .price-cta:hover { background: #d4b060; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,.3); }
+  .price-cta-sub {
+    text-align: center; margin-top: 14px;
+    font-size: .78rem; color: rgba(255,255,255,.35);
+    letter-spacing: .03em;
   }
-  .price-card:not(.featured) .price-cta:hover { background: #222; transform: translateY(-1px); }
-  .price-card.featured .price-cta {
-    background: var(--gold); color: var(--black);
+  .price-login-link {
+    display: block; text-align: center; margin-top: 18px;
+    color: rgba(255,255,255,.4); font-size: .85rem; text-decoration: none;
+    transition: color .2s;
   }
-  .price-card.featured .price-cta:hover { background: #d4b060; transform: translateY(-1px); }
+  .price-login-link:hover { color: rgba(255,255,255,.75); }
 
   /* ── GALLERY STRIP ── */
   .gallery-strip {
@@ -362,8 +388,14 @@
     color: var(--black); transition: color .2s;
   }
   .faq-q:hover { color: var(--gold); }
-  .faq-q .icon { flex-shrink: 0; font-size: 1.3rem; transition: transform .3s; line-height: 1; }
-  .faq-q.open .icon { transform: rotate(45deg); color: var(--gold); }
+  .faq-icon {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--gray-1); display: flex; align-items: center; justify-content: center;
+    transition: background .3s, transform .3s;
+  }
+  .faq-icon svg { width: 14px; height: 14px; stroke: var(--gray-4); fill: none; stroke-width: 2.5; stroke-linecap: round; transition: stroke .3s; }
+  .faq-q.open .faq-icon { background: var(--gold); transform: rotate(45deg); }
+  .faq-q.open .faq-icon svg { stroke: var(--black); }
   .faq-a {
     max-height: 0; overflow: hidden;
     transition: max-height .4s var(--ease), padding .3s;
@@ -479,7 +511,6 @@
     .stats { grid-template-columns: 1fr; gap: 0; }
     .stat-item { border-right: none; border-bottom: 1px solid var(--gray-2); }
     .stat-item:last-child { border-bottom: none; }
-    .pricing-cards { grid-template-columns: 1fr; }
     .gallery-strip { grid-template-columns: 1fr 1fr; height: auto; }
     .gallery-right { grid-template-rows: auto; grid-template-columns: 1fr 1fr; gap: 16px; }
     .gallery-photo { height: 220px; }
@@ -494,6 +525,7 @@
     .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
     .hero-actions { flex-direction: column; }
     .btn-primary, .btn-ghost { text-align: center; }
+    .nav-login { display: none; }
   }
 </style>
 </head>
@@ -514,7 +546,10 @@
     <li><a href="#precios">Precios</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ul>
-  <a href="/register" class="nav-cta">Empezar gratis</a>
+  <div class="nav-right">
+    <a href="/app/login" class="nav-login">Acceder</a>
+    <a href="/app/register" class="nav-cta">Empezar gratis</a>
+  </div>
   <button class="nav-mobile-toggle" id="mobile-toggle" aria-label="Menú">
     <span></span><span></span><span></span>
   </button>
@@ -525,12 +560,12 @@
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <div class="hero-eyebrow">🏆 Loyalty digital para negocios físicos</div>
+    <div class="hero-eyebrow">Loyalty digital para negocios físicos</div>
     <h1 class="hero-h1">Tu programa de<br/><em>fidelización</em><br/>en 5 minutos.</h1>
     <p class="hero-sub">Tarjetas digitales para Apple &amp; Google Wallet. Sin apps que descargar, sin papel que perder. Tus clientes regresan más.</p>
     <div class="hero-actions">
-      <a href="/register" class="btn-primary">Crea tu tarjeta gratis</a>
-      <a href="#como-funciona" class="btn-ghost">Ver cómo funciona</a>
+      <a href="/app/register" class="btn-primary">Empieza gratis 14 días</a>
+      <a href="/app/login" class="btn-ghost">Acceder →</a>
     </div>
   </div>
   <div class="hero-scroll">Scroll para explorar</div>
@@ -555,7 +590,6 @@
     <span class="ticker-item"><em>·</em></span>
     <span class="ticker-item">Premio automático</span>
     <span class="ticker-item"><em>·</em></span>
-    <!-- duplicate for seamless loop -->
     <span class="ticker-item">Apple Wallet</span>
     <span class="ticker-item"><em>·</em></span>
     <span class="ticker-item">Google Wallet</span>
@@ -615,7 +649,7 @@
 <section style="padding-top: 0;" id="dashboard">
   <div class="split reverse reveal">
     <div class="split-img">
-      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80" alt="Dashboard de administración ZubCard" loading="lazy"/>
+      <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80" alt="Dashboard de administración ZubCard" loading="lazy"/>
     </div>
     <div class="split-text">
       <p class="section-eyebrow">El dashboard</p>
@@ -649,7 +683,7 @@
 </section>
 
 <!-- QUOTE BANNER -->
-<div class="quote-banner" style="margin-top: 0;">
+<div class="quote-banner">
   <div class="quote-bg"></div>
   <div class="quote-overlay"></div>
   <div class="quote-content reveal">
@@ -668,7 +702,7 @@
     <div class="step-item reveal">
       <div class="step-num">1</div>
       <h3 class="step-title">Crea tu cuenta</h3>
-      <p class="step-desc">Registra tu negocio, sube tu logo y configura tu programa de fidelización en menos de 5 minutos. Sin tarjeta de crédito.</p>
+      <p class="step-desc">Registra tu negocio, sube tu logo y configura tu programa de fidelización en menos de 5 minutos. 14 días gratis.</p>
     </div>
     <div class="step-item reveal reveal-delay-1">
       <div class="step-num">2</div>
@@ -684,42 +718,67 @@
 </section>
 
 <!-- FEATURES -->
-<section id="funcionalidades" style="background: var(--gray-1); border-top: 1px solid var(--gray-2); border-bottom: 1px solid var(--gray-2);">
+<section id="funcionalidades" class="features-section">
   <div>
     <p class="section-eyebrow reveal">Funcionalidades</p>
-    <h2 class="section-h2 reveal">Todo lo que necesita <em>tu negocio.</em></h2>
+    <h2 class="section-h2 reveal" style="color: var(--brown);">Todo lo que necesita <em>tu negocio.</em></h2>
   </div>
   <div class="features-grid">
+
     <div class="feat-card reveal">
-      <div class="feat-icon">💳</div>
+      <div class="feat-icon">
+        <!-- Card / Wallet icon -->
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+      </div>
       <h3 class="feat-title">Tarjeta digital Wallet</h3>
       <p class="feat-desc">Compatible con Apple Wallet y Google Wallet. Sin apps adicionales, sin fricción para el cliente.</p>
     </div>
+
     <div class="feat-card reveal reveal-delay-1">
-      <div class="feat-icon">⭐</div>
+      <div class="feat-icon">
+        <!-- Stamp / Star icon -->
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      </div>
       <h3 class="feat-title">Sellos y premios</h3>
       <p class="feat-desc">Configura cuántos sellos se necesitan para el premio. Los sellos se actualizan en tiempo real en la tarjeta.</p>
     </div>
+
     <div class="feat-card reveal reveal-delay-2">
-      <div class="feat-icon">📍</div>
+      <div class="feat-icon">
+        <!-- Location icon -->
+        <svg viewBox="0 0 24 24"><path d="M12 21s-8-7.5-8-12a8 8 0 0 1 16 0c0 4.5-8 12-8 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      </div>
       <h3 class="feat-title">Notificaciones geo</h3>
       <p class="feat-desc">Cuando un cliente se acerca a tu local, su teléfono muestra la tarjeta automáticamente. Sin ninguna acción extra.</p>
     </div>
+
     <div class="feat-card reveal">
-      <div class="feat-icon">📊</div>
+      <div class="feat-icon">
+        <!-- Chart / Dashboard icon -->
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V9M12 17v-5M15 17v-3"/></svg>
+      </div>
       <h3 class="feat-title">Dashboard admin</h3>
       <p class="feat-desc">Visualiza tus clientes, historial de visitas, premios canjeados y métricas clave desde un panel intuitivo.</p>
     </div>
+
     <div class="feat-card reveal reveal-delay-1">
-      <div class="feat-icon">🔔</div>
+      <div class="feat-icon">
+        <!-- Bell / Notification icon -->
+        <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
       <h3 class="feat-title">Notificaciones push</h3>
-      <p class="feat-desc">Envía mensajes personalizados a todos tus clientes o a uno en particular. Directo a la pantalla de bloqueo.</p>
+      <p class="feat-desc">Envía mensajes a todos tus clientes o a uno en particular. Directo a la pantalla de bloqueo.</p>
     </div>
+
     <div class="feat-card reveal reveal-delay-2">
-      <div class="feat-icon">🎂</div>
+      <div class="feat-icon">
+        <!-- Gift / Birthday icon -->
+        <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8V21M5 12v9h14v-9"/><path d="M12 8c0-2 1.5-4 3-4s2 1.5 0 4M12 8c0-2-1.5-4-3-4s-2 1.5 0 4"/></svg>
+      </div>
       <h3 class="feat-title">Premio de cumpleaños</h3>
       <p class="feat-desc">Activa un beneficio especial en el mes de cumpleaños de cada cliente. Personaliza el mensaje y el regalo.</p>
     </div>
+
   </div>
 </section>
 
@@ -728,36 +787,31 @@
   <div>
     <p class="section-eyebrow reveal">Precios</p>
     <h2 class="section-h2 reveal">Simple y <em>transparente.</em></h2>
-    <p class="section-p reveal">Empieza gratis. Actualiza cuando lo necesites. Sin contratos, sin sorpresas.</p>
+    <p class="section-p reveal">Un solo plan. Todo incluido. 14 días de prueba sin coste.</p>
   </div>
-  <div class="pricing-cards">
+  <div class="pricing-wrap">
     <div class="price-card reveal">
-      <p class="price-name">Gratis</p>
-      <div class="price-amount">$0</div>
-      <p class="price-period">para siempre</p>
-      <ul class="price-features">
-        <li><span class="check">✓</span> Hasta 50 clientes</li>
-        <li><span class="check">✓</span> Tarjeta digital Wallet</li>
-        <li><span class="check">✓</span> Sellos y premios básicos</li>
-        <li><span class="check">✓</span> Dashboard admin</li>
-        <li><span class="check">✓</span> QR de registro</li>
-      </ul>
-      <a href="/register" class="price-cta">Empezar gratis</a>
-    </div>
-    <div class="price-card featured reveal reveal-delay-1">
-      <span class="price-badge">Más popular</span>
-      <p class="price-name">Pro</p>
-      <div class="price-amount">$29</div>
-      <p class="price-period">por mes · sin límites</p>
+      <span class="price-badge">Todo incluido</span>
+      <p class="price-name">Plan Pro</p>
+      <div class="price-amount"><sup>€</sup>39</div>
+      <p class="price-period">por mes · sin límites · cancela cuando quieras</p>
+      <div class="price-trial">
+        <svg viewBox="0 0 14 14"><path d="M7 1v6l3 2"/><circle cx="7" cy="7" r="6"/></svg>
+        14 días gratis · tarjeta requerida
+      </div>
       <ul class="price-features">
         <li><span class="check">✓</span> Clientes ilimitados</li>
+        <li><span class="check">✓</span> Tarjeta digital Apple &amp; Google Wallet</li>
         <li><span class="check">✓</span> Notificaciones geo automáticas</li>
-        <li><span class="check">✓</span> Push notifications masivas</li>
+        <li><span class="check">✓</span> Push notifications masivas e individuales</li>
         <li><span class="check">✓</span> Premio de cumpleaños</li>
         <li><span class="check">✓</span> Múltiples canales QR</li>
+        <li><span class="check">✓</span> Dashboard admin completo</li>
         <li><span class="check">✓</span> Soporte prioritario</li>
       </ul>
-      <a href="/register" class="price-cta">Probar Pro gratis 14 días</a>
+      <a href="/app/register" class="price-cta">Empezar 14 días gratis →</a>
+      <p class="price-cta-sub">No se cobra nada durante el período de prueba</p>
+      <a href="/app/login" class="price-login-link">Ya tengo cuenta</a>
     </div>
   </div>
 </section>
@@ -776,14 +830,14 @@
   <div class="cta-bg"></div>
   <div class="cta-overlay"></div>
   <div class="cta-content reveal">
-    <h2>Empieza hoy.<br/><em>Gratis.</em></h2>
+    <h2>Empieza hoy.<br/><em>14 días gratis.</em></h2>
     <p>Configura tu programa de fidelización en 5 minutos y dale a tus clientes una razón para volver.</p>
     <div class="actions">
-      <a href="/register" class="btn-primary">Crear mi tarjeta gratis</a>
-      <a href="mailto:hola@zubcard.com" class="btn-ghost">Hablar con ventas</a>
+      <a href="/app/register" class="btn-primary">Crear mi tarjeta gratis</a>
+      <a href="/app/login" class="btn-ghost">Ya tengo cuenta →</a>
     </div>
   </div>
-  <p class="cta-fine">Sin tarjeta de crédito · Cancela cuando quieras</p>
+  <p class="cta-fine">14 días gratis · Sin coste hasta que acabe el período de prueba</p>
 </div>
 
 <!-- FOOTER -->
@@ -808,31 +862,31 @@
       </ul>
     </div>
     <div class="footer-col">
-      <h4>Empresa</h4>
+      <h4>Cuenta</h4>
       <ul>
-        <li><a href="#">Sobre nosotros</a></li>
+        <li><a href="/app/register">Registrarse</a></li>
+        <li><a href="/app/login">Acceder</a></li>
         <li><a href="mailto:hola@zubcard.com">Contacto</a></li>
-        <li><a href="#">Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Legal</h4>
       <ul>
-        <li><a href="#">Privacidad</a></li>
-        <li><a href="#">Términos</a></li>
-        <li><a href="#">Cookies</a></li>
+        <li><a href="/privacidad">Privacidad</a></li>
+        <li><a href="/terminos">Términos</a></li>
+        <li><a href="/cookies">Cookies</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
     <span>© 2025 ZubCard. Todos los derechos reservados.</span>
-    <span>Hecho con ❤️ para negocios reales.</span>
+    <span>Hecho con cariño para negocios reales.</span>
   </div>
 </footer>
 
 <!-- COOKIE BANNER -->
 <div id="cookie-banner">
-  <p>Usamos cookies para mejorar tu experiencia. Consulta nuestra <a href="#" style="color:var(--black);font-weight:600;">política de privacidad</a>.</p>
+  <p>Usamos cookies para mejorar tu experiencia. <a href="/cookies" style="color:var(--black);font-weight:600;">Más info</a></p>
   <button onclick="document.getElementById('cookie-banner').classList.add('hidden'); localStorage.setItem('cc','1');">Aceptar</button>
 </div>
 
@@ -843,56 +897,56 @@ document.getElementById('mobile-toggle').addEventListener('click', function() {
 });
 
 // Close mobile nav on link click
-document.querySelectorAll('#nav-links a').forEach(a => {
-  a.addEventListener('click', () => document.getElementById('nav-links').classList.remove('open'));
+document.querySelectorAll('#nav-links a').forEach(function(a) {
+  a.addEventListener('click', function() { document.getElementById('nav-links').classList.remove('open'); });
 });
 
 // FAQ data
-const faqs = [
+var faqs = [
   { q: "¿Mis clientes necesitan descargar alguna app?", a: "No. Las tarjetas ZubCard son nativas de Apple Wallet y Google Wallet, que vienen preinstalados en todos los iPhones y la mayoría de teléfonos Android. Solo necesitan hacer clic en el enlace o escanear el QR." },
   { q: "¿Cómo añado sellos a la tarjeta de un cliente?", a: "Desde el dashboard admin puedes buscar al cliente por nombre o escanear su QR personal. Con un clic añades el sello y la tarjeta se actualiza en tiempo real en su teléfono." },
-  { q: "¿Las notificaciones geográficas funcionan automáticamente?", a: "Sí. Cuando configuras la dirección de tu negocio, iOS natively la registra en la tarjeta Wallet. Cuando el cliente se acerca a menos de 100 metros, su teléfono muestra la tarjeta en pantalla de bloqueo automáticamente. Esto requiere que el cliente haya descargado la tarjeta y tenga permisos de ubicación activados." },
+  { q: "¿Las notificaciones geográficas funcionan automáticamente?", a: "Sí. Cuando configuras la dirección de tu negocio, iOS la registra en la tarjeta Wallet. Cuando el cliente se acerca a menos de 100 metros, su teléfono muestra la tarjeta en pantalla de bloqueo automáticamente. Requiere que el cliente haya descargado la tarjeta y tenga permisos de ubicación activados." },
   { q: "¿Puedo personalizar el diseño de la tarjeta con mi marca?", a: "Sí. Puedes subir tu logo, elegir el color de fondo y configurar el texto de la tarjeta. La tarjeta refleja la identidad visual de tu negocio." },
   { q: "¿Qué pasa si un cliente pierde el móvil o cambia de teléfono?", a: "Pueden volver a registrarse con el mismo correo electrónico y recuperar su tarjeta y sellos acumulados. También puedes buscarlos en el dashboard por nombre para vincularlos manualmente." },
-  { q: "¿Hay contrato de permanencia?", a: "No. Puedes cancelar en cualquier momento sin penalizaciones. El plan Pro se factura mensualmente y puedes volver al plan Gratis cuando quieras." }
+  { q: "¿Hay permanencia o contrato mínimo?", a: "No. Puedes cancelar en cualquier momento sin penalizaciones. Se factura mensualmente y si cancelas antes del próximo ciclo no se realiza ningún cobro adicional." }
 ];
 
-const faqList = document.getElementById('faq-list');
-faqs.forEach((item, i) => {
-  const div = document.createElement('div');
+var faqList = document.getElementById('faq-list');
+faqs.forEach(function(item, i) {
+  var div = document.createElement('div');
   div.className = 'faq-item';
-  div.innerHTML = `
-    <button class="faq-q" data-i="${i}" aria-expanded="false">
-      ${item.q} <span class="icon">+</span>
-    </button>
-    <div class="faq-a" id="faq-a-${i}">${item.a}</div>
-  `;
+  div.innerHTML =
+    '<button class="faq-q" data-i="' + i + '" aria-expanded="false">' +
+      item.q +
+      '<span class="faq-icon"><svg viewBox="0 0 14 14"><path d="M7 2v10M2 7h10"/></svg></span>' +
+    '</button>' +
+    '<div class="faq-a" id="faq-a-' + i + '">' + item.a + '</div>';
   faqList.appendChild(div);
 });
 
-faqList.addEventListener('click', e => {
-  const btn = e.target.closest('.faq-q');
+faqList.addEventListener('click', function(e) {
+  var btn = e.target.closest('.faq-q');
   if (!btn) return;
-  const idx = btn.dataset.i;
-  const ans = document.getElementById(`faq-a-${idx}`);
-  const isOpen = btn.classList.contains('open');
-  // close all
-  document.querySelectorAll('.faq-q').forEach(b => b.classList.remove('open'));
-  document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+  var idx = btn.dataset.i;
+  var ans = document.getElementById('faq-a-' + idx);
+  var isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.faq-q').forEach(function(b) { b.classList.remove('open'); b.setAttribute('aria-expanded','false'); });
+  document.querySelectorAll('.faq-a').forEach(function(a) { a.classList.remove('open'); });
   if (!isOpen) {
     btn.classList.add('open');
+    btn.setAttribute('aria-expanded','true');
     ans.classList.add('open');
   }
 });
 
 // Intersection Observer for reveal animations
-const revealEls = document.querySelectorAll('.reveal');
-const io = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
+var revealEls = document.querySelectorAll('.reveal');
+var io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
     if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-revealEls.forEach(el => io.observe(el));
+revealEls.forEach(function(el) { io.observe(el); });
 
 // Cookie banner
 if (localStorage.getItem('cc')) {
