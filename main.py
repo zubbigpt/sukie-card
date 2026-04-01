@@ -5513,11 +5513,15 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
 
     # Create a test token (not stored in DB)
     import io, base64
-    token = "TEST-" + str(uuid.uuid4()).replace("-", "")[:16]
-    voucher_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview"
-    qr_img = qrcode.make(voucher_url)
-    buf = io.BytesIO(); qr_img.save(buf, format="PNG")
-    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+    try:
+        import qrcode as _qrcode
+        voucher_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview"
+        qr_img = _qrcode.make(voucher_url)
+        buf = io.BytesIO(); qr_img.save(buf, format="PNG")
+        qr_b64 = base64.b64encode(buf.getvalue()).decode()
+    except Exception:
+        # Fallback: simple placeholder QR image (1x1 white pixel)
+        qr_b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg=="
 
     if gift_type == "product" and gift_product:
         gift_block = f"""
