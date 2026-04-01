@@ -5493,6 +5493,51 @@ async def update_card_program(slug: str, program_id: str, request: Request, pin:
     return {"status": "updated"}
 
 
+@app.post("/api/biz/{slug}/birthday-email-banner")
+async def upload_birthday_banner(
+    slug: str,
+    pin: str = "",
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload banner image for birthday email header. Stores as base64 data URL."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    ct = file.content_type or ""
+    if not ct.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Solo se permiten imágenes (JPG, PNG, WEBP)")
+    raw = await file.read()
+    if len(raw) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Imagen demasiado grande (máx 10 MB)")
+    try:
+        from PIL import Image as _PILImg
+        import io as _io
+        import base64 as _b64
+        img = _PILImg.open(_io.BytesIO(raw)).convert("RGB")
+        # Resize to 1200×480 (email header @2x) — cover crop
+        TW, TH = 1200, 480
+        iw, ih = img.size
+        scale_f = max(TW / iw, TH / ih)
+        nw, nh = round(iw * scale_f), round(ih * scale_f)
+        img = img.resize((nw, nh), _PILImg.LANCZOS)
+        left = (nw - TW) // 2
+        top  = (nh - TH) // 2
+        img  = img.crop((left, top, left + TW, top + TH))
+        buf = _io.BytesIO()
+        img.save(buf, format="JPEG", quality=85, optimize=True)
+        data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Error procesando imagen: {e}")
+    db.execute(
+        text("UPDATE businesses SET birthday_email_banner_url=:url WHERE slug=:slug"),
+        {"url": data_url, "slug": slug}
+    )
+    db.commit()
+    return {"status": "ok", "banner_url": data_url}
+
+
 @app.post("/api/biz/{slug}/card-programs/{program_id}/strip-bg")
 async def upload_strip_bg(
     slug: str, program_id: str,

@@ -1351,10 +1351,33 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               <!-- Imagen de cabecera -->
               <div class="card-box" style="margin-bottom:16px">
                 <div class="card-title" style="margin-bottom:6px">🖼 Imagen de cabecera</div>
-                <p style="font-size:.8rem;color:var(--brown-light);margin-bottom:10px;line-height:1.5">URL de una foto de tu local, producto o branding. Se muestra como fondo de la cabecera con overlay de color.</p>
-                <input type="url" id="bday-banner-url" placeholder="https://ejemplo.com/tu-foto.jpg"
-                  style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box"
-                  oninput="bdayUpdateEmailPreview()">
+                <p style="font-size:.8rem;color:var(--brown-light);margin-bottom:12px;line-height:1.5">Foto de tu local, producto o branding. Se muestra como fondo de la cabecera con overlay de color.</p>
+
+                <!-- Upload zone -->
+                <div id="bday-banner-dropzone"
+                  onclick="document.getElementById('bday-banner-file').click()"
+                  ondragover="event.preventDefault();this.style.borderColor='var(--brown)'"
+                  ondragleave="this.style.borderColor='var(--cream-border)'"
+                  ondrop="event.preventDefault();this.style.borderColor='var(--cream-border)';bdayHandleBannerFile(event.dataTransfer.files[0])"
+                  style="border:2px dashed var(--cream-border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--cream);position:relative">
+                  <input type="file" id="bday-banner-file" accept="image/*" style="display:none"
+                    onchange="bdayHandleBannerFile(this.files[0])">
+                  <div id="bday-banner-preview-wrap" style="display:none;margin-bottom:10px">
+                    <img id="bday-banner-preview-img" src="" style="width:100%;max-height:100px;object-fit:cover;border-radius:6px">
+                  </div>
+                  <div id="bday-banner-placeholder">
+                    <span class="material-symbols-outlined" style="font-size:2rem;color:var(--brown-light);display:block;margin-bottom:6px">add_photo_alternate</span>
+                    <span style="font-size:.82rem;color:var(--brown-light);font-weight:600">Haz clic o arrastra una foto</span><br>
+                    <span style="font-size:.72rem;color:#bbb">JPG, PNG, WEBP · máx 10 MB</span>
+                  </div>
+                  <span id="bday-banner-uploading" style="display:none;font-size:.8rem;color:var(--brown-light)">Subiendo imagen...</span>
+                </div>
+                <!-- Remove button -->
+                <div id="bday-banner-remove-wrap" style="display:none;margin-top:8px">
+                  <button onclick="bdayRemoveBanner()" style="background:none;border:none;color:#c62828;font-size:.78rem;cursor:pointer;font-weight:600;padding:0">✕ Quitar imagen</button>
+                </div>
+                <!-- Hidden: stores the data URL after upload -->
+                <input type="hidden" id="bday-banner-url" value="">
               </div>
 
               <!-- Texto del email -->
@@ -4217,8 +4240,19 @@ async function loadBdayConfig() {
     if (accEl) accEl.value = accColor;
     if (accTxt) accTxt.value = accColor;
 
+    const bannerUrl = d.birthday_email_banner_url || '';
     const bannerInput = document.getElementById('bday-banner-url');
-    if (bannerInput) bannerInput.value = d.birthday_email_banner_url || '';
+    if (bannerInput) bannerInput.value = bannerUrl;
+    if (bannerUrl) {
+      const previewImg  = document.getElementById('bday-banner-preview-img');
+      const previewWrap = document.getElementById('bday-banner-preview-wrap');
+      const placeholder = document.getElementById('bday-banner-placeholder');
+      const removeWrap  = document.getElementById('bday-banner-remove-wrap');
+      if (previewImg)  previewImg.src = bannerUrl;
+      if (previewWrap) previewWrap.style.display = '';
+      if (placeholder) placeholder.style.display = 'none';
+      if (removeWrap)  removeWrap.style.display = '';
+    }
     const introInput = document.getElementById('bday-email-intro');
     if (introInput) introInput.value = d.birthday_email_intro || '';
     const footerInput = document.getElementById('bday-footer-text');
@@ -4249,6 +4283,58 @@ async function bdaySaveConfig() {
   } catch(e) {
     if (status) { status.textContent = 'Error de conexión'; status.style.color = '#c62828'; }
   }
+}
+
+async function bdayHandleBannerFile(file) {
+  if (!file) return;
+  const uploading = document.getElementById('bday-banner-uploading');
+  const placeholder = document.getElementById('bday-banner-placeholder');
+  const previewWrap = document.getElementById('bday-banner-preview-wrap');
+  const previewImg  = document.getElementById('bday-banner-preview-img');
+  const removeWrap  = document.getElementById('bday-banner-remove-wrap');
+  const hiddenUrl   = document.getElementById('bday-banner-url');
+
+  if (placeholder) placeholder.style.display = 'none';
+  if (uploading) uploading.style.display = '';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/birthday-email-banner?pin=${PIN}`, {
+      method: 'POST', body: fd
+    });
+    const d = await r.json();
+    if (r.ok && d.banner_url) {
+      if (hiddenUrl) hiddenUrl.value = d.banner_url;
+      if (previewImg) previewImg.src = d.banner_url;
+      if (previewWrap) previewWrap.style.display = '';
+      if (removeWrap) removeWrap.style.display = '';
+      if (uploading) uploading.style.display = 'none';
+      bdayUpdateEmailPreview();
+      showToast('Imagen subida ✓', 'success');
+    } else {
+      throw new Error(d.detail || 'Error al subir');
+    }
+  } catch(e) {
+    if (uploading) uploading.style.display = 'none';
+    if (placeholder) placeholder.style.display = '';
+    showToast('Error al subir la imagen: ' + e.message, 'error');
+  }
+}
+
+function bdayRemoveBanner() {
+  document.getElementById('bday-banner-url').value = '';
+  document.getElementById('bday-banner-preview-img').src = '';
+  document.getElementById('bday-banner-preview-wrap').style.display = 'none';
+  document.getElementById('bday-banner-remove-wrap').style.display = 'none';
+  document.getElementById('bday-banner-placeholder').style.display = '';
+  document.getElementById('bday-banner-file').value = '';
+  // Save removal to DB
+  fetch(`${BASE}/api/biz/${BIZ_SLUG}/birthday-config`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ pin: PIN, birthday_email_banner_url: '' })
+  });
+  bdayUpdateEmailPreview();
 }
 
 function bdayUpdateEmailPreview() {
