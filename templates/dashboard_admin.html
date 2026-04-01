@@ -2758,7 +2758,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               Para obtener tu link: abre <strong>Google Maps</strong> → busca tu negocio → <em>Obtener más reseñas</em> → copia el enlace.
             </p>
             <!-- Link activo guardado -->
-            <div id="review-saved-url-box" style="display:none;margin-top:10px;background:#e6f4ea;border:1.5px solid #a8d5b5;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div id="review-saved-url-box" style="display:none;margin-top:10px;background:#e6f4ea;border:1.5px solid #a8d5b5;border-radius:8px;padding:10px 14px;align-items:center;gap:10px;flex-wrap:wrap">
               <span class="material-symbols-outlined" style="font-size:1.1rem;color:#1a6a3a;flex-shrink:0;font-variation-settings:'FILL' 1">check_circle</span>
               <div style="flex:1;min-width:0">
                 <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#1a6a3a;margin-bottom:2px">Link activo guardado</div>
@@ -6050,6 +6050,7 @@ function _showReviewSavedUrl(url){
   if(!box) return;
   if(url){
     box.style.display='flex';
+    box.style.flexWrap='wrap';
     if(txt) txt.textContent=url;
     if(link) link.href=url;
   } else {

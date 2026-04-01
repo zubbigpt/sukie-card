@@ -4047,11 +4047,10 @@ async def geo_push_nearby(slug: str, pin: str = "", db: Session = Depends(get_db
 @app.get("/api/biz/{slug}/reviews-config")
 def get_reviews_config(slug: str, pin: str = "", db: Session = Depends(get_db)):
     """Get Google Reviews configuration for this business"""
+    verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    if pin != str(biz.admin_pin):
-        raise HTTPException(status_code=403, detail="PIN incorrecto")
     return {
         "google_review_url":    getattr(biz, "google_review_url", "") or "",
         "review_trigger_stamps": getattr(biz, "review_trigger_stamps", 0) or 0,
@@ -4063,11 +4062,10 @@ async def update_reviews_config(slug: str, request: Request, db: Session = Depen
     """Update Google Reviews configuration"""
     body = await request.json()
     pin  = str(body.get("pin", "")).strip()
+    verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    if pin != str(biz.admin_pin):
-        raise HTTPException(status_code=403, detail="PIN incorrecto")
     db.execute(text(
         "UPDATE businesses SET google_review_url=:url, review_trigger_stamps=:trigger WHERE slug=:slug"
     ), {
