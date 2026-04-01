@@ -262,7 +262,7 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
   </script>
 
   <!-- BENEFITS -->
-  <div class="benefits">
+  <div class="benefits" style="grid-template-columns:{% if birthday_enabled %}repeat(3,1fr){% else %}repeat(2,1fr){% endif %}">
     <div class="benefit">
       <div class="icon"><span class="material-symbols-outlined">toll</span></div>
       <div class="txt">1 sello<br>por compra</div>
@@ -271,10 +271,12 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
       <div class="icon"><span class="material-symbols-outlined">card_giftcard</span></div>
       <div class="txt">Premio cada<br>{{ stamps_per_reward }} sellos</div>
     </div>
+    {% if birthday_enabled %}
     <div class="benefit">
       <div class="icon"><span class="material-symbols-outlined">cake</span></div>
       <div class="txt">Sorpresa en<br>tu cumple</div>
     </div>
+    {% endif %}
   </div>
 
   <!-- FORM -->
@@ -303,10 +305,17 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
         <input type="tel" id="phone" placeholder="Teléfono" autocomplete="tel">
       </div>
 
+      {% if birthday_enabled %}
       <div class="field">
         <label>Fecha de nacimiento <span style="font-size:.65rem;font-weight:400;letter-spacing:0;text-transform:none;color:var(--outline)">— para tu sorpresa 🎂</span></label>
         <input type="date" id="birth_date">
       </div>
+      {% else %}
+      <div class="field">
+        <label>Fecha de nacimiento</label>
+        <input type="date" id="birth_date">
+      </div>
+      {% endif %}
 
       <div class="optin-block">
         <div class="optin-title">Comunicaciones</div>
@@ -314,14 +323,7 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
           <label class="toggle"><input type="checkbox" id="opt_in_email" checked><span class="slider"></span></label>
           <div class="optin-text">
             <div class="optin-label">Emails exclusivos</div>
-            <div class="optin-desc">Ofertas, novedades y tu regalo de cumpleaños</div>
-          </div>
-        </div>
-        <div class="optin-row">
-          <label class="toggle"><input type="checkbox" id="opt_in_sms"><span class="slider"></span></label>
-          <div class="optin-text">
-            <div class="optin-label">SMS / WhatsApp</div>
-            <div class="optin-desc">Recordatorios y promociones puntuales</div>
+            <div class="optin-desc">Ofertas, novedades{% if birthday_enabled %} y tu regalo de cumpleaños{% endif %}</div>
           </div>
         </div>
       </div>

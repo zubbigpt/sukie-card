@@ -4361,6 +4361,7 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     # Load landing config for this business
     landing_cfg = {}
+    programa_cfg = {}
     try:
         row = db.execute(text(
             "SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"
@@ -4370,6 +4371,7 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
         if row:
             stored = json.loads(row[0])
             landing_cfg = stored.get("landing", {})
+            programa_cfg = stored.get("programa", {})
     except Exception:
         pass
     # Fetch first card program for this business to sync visual design
@@ -4387,6 +4389,7 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
     _reg_strip   = (_reg_prog.strip_bg_url if _reg_prog else None) or ""
     _reg_spr     = (_reg_prog.stamps_per_reward if _reg_prog and _reg_prog.stamps_per_reward else None) or biz.stamps_per_reward or STAMPS_PER_REWARD
     _reg_reward  = landing_cfg.get("reward_name") or (_reg_prog.reward_name if _reg_prog else None) or "Premio"
+    _birthday_enabled = programa_cfg.get("birthday_enabled", True)
     return templates.TemplateResponse("register.html", {
         "request":           request,
         "card_title":        (_reg_prog.name if _reg_prog else None) or biz.card_title or biz.name,
@@ -4401,6 +4404,7 @@ async def biz_register_page(slug: str, request: Request, ref: str = "", db: Sess
         "reward_name":       _reg_reward,
         "biz_slug":          slug,
         "ref":               ref,
+        "birthday_enabled":  _birthday_enabled,
         # Landing customization from config
         "form_title":        landing_cfg.get("form_title", ""),
         "header_text":       landing_cfg.get("header_text", ""),
