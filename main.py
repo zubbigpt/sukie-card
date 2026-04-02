@@ -58,6 +58,11 @@ app.add_middleware(
 STAMPS_PER_REWARD = int(os.environ.get("STAMPS_PER_REWARD", "10"))
 ADMIN_PIN         = os.environ.get("ADMIN_PIN", "1234")
 BASE_URL          = os.environ.get("BASE_URL", "http://localhost:8000")
+
+# ── ZUBADMIN ─────────────────────────────────────────────────────────────────
+ZUBADMIN_USER   = "zubcard"
+ZUBADMIN_PIN    = "0605"
+ZUBADMIN_COOKIE = "_zc_master"
 API_KEY           = os.environ.get("API_KEY", "zubcard-api-key")
 CARD_TITLE        = os.environ.get("CARD_TITLE", "Tarjeta de Fidelización")
 REWARD_NAME       = os.environ.get("REWARD_NAME", "Premio")
@@ -6076,4 +6081,115 @@ async def auth_google_callback(
         samesite="strict",
         path=f"/biz/{biz.slug}/dashboard",
     )
+    return response
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ZUBADMIN — Panel de control maestro ZubCard
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _zubadmin_authenticated(request: Request) -> bool:
+    """Check if the request has a valid ZubAdmin session cookie."""
+    return request.cookies.get(ZUBADMIN_COOKIE) == "authenticated"
+
+
+@app.get("/zubadmin", response_class=HTMLResponse)
+async def zubadmin_page(request: Request):
+    """ZubAdmin master control panel — shows login or dashboard based on auth."""
+    return templates.TemplateResponse("zubadmin.html", {"request": request})
+
+
+@app.post("/api/zubadmin/login")
+async def zubadmin_login(request: Request):
+    """Validate ZubAdmin credentials and set session cookie."""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido")
+    user = str(body.get("user", "")).strip()
+    pin  = str(body.get("pin",  "")).strip()
+    if user != ZUBADMIN_USER or pin != ZUBADMIN_PIN:
+        raise HTTPException(status_code=403, detail="Credenciales incorrectas")
+    response = JSONResponse({"ok": True})
+    response.set_cookie(
+        ZUBADMIN_COOKIE,
+        "authenticated",
+        max_age=60 * 60 * 8,   # 8 horas
+        httponly=True,
+        samesite="strict",
+        path="/",
+    )
+    return response
+
+
+@app.get("/api/zubadmin/businesses")
+async def zubadmin_businesses(request: Request, db: Session = Depends(get_db)):
+    """Return list of all businesses with key stats for ZubAdmin panel."""
+    if not _zubadmin_authenticated(request):
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    rows = db.execute(text("""
+        SELECT
+            b.id, b.name, b.slug, b.email, b.plan,
+            b.logo_url, b.created_at,
+            COUNT(DISTINCT lc.id)          AS customers,
+            COALESCE(SUM(lc.total_stamps), 0) AS stamps_given,
+            COALESCE(SUM(lc.rewards_redeemed), 0) AS rewards
+        FROM businesses b
+        LEFT JOIN loyalty_cards lc ON lc.business_id = b.id
+        GROUP BY b.id, b.name, b.slug, b.email, b.plan, b.logo_url, b.created_at
+        ORDER BY b.created_at DESC
+    """)).fetchall()
+
+    return JSONResponse([{
+        "id":          str(r[0]),
+        "name":        r[1],
+        "slug":        r[2],
+        "email":       r[3],
+        "plan":        r[4] or "free",
+        "logo_url":    r[5] or "",
+        "created_at":  r[6].isoformat() if r[6] else None,
+        "customers":   int(r[7] or 0),
+        "stamps_given": int(r[8] or 0),
+        "rewards":     int(r[9] or 0),
+    } for r in rows])
+
+
+@app.get("/zubadmin/access/{slug}")
+async def zubadmin_access(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Impersonate a business: set _zc_boot + _zc_admin_mode cookies, redirect to dashboard."""
+    if not _zubadmin_authenticated(request):
+        return RedirectResponse("/zubadmin", status_code=302)
+
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    response = RedirectResponse(f"/biz/{slug}/dashboard", status_code=302)
+    # Auto-login cookie (JS reads this and submits the PIN)
+    response.set_cookie(
+        "_zc_boot",
+        biz.admin_pin,
+        max_age=90,
+        httponly=False,
+        samesite="strict",
+        path=f"/biz/{slug}/dashboard",
+    )
+    # Admin banner cookie (persistent for this session on this biz)
+    response.set_cookie(
+        "_zc_admin_mode",
+        biz.name,
+        max_age=60 * 60 * 8,
+        httponly=False,
+        samesite="strict",
+        path=f"/biz/{slug}/dashboard",
+    )
+    return response
+
+
+@app.get("/zubadmin/logout")
+async def zubadmin_logout():
+    """Clear ZubAdmin session and redirect to login."""
+    response = RedirectResponse("/zubadmin", status_code=302)
+    response.delete_cookie(ZUBADMIN_COOKIE, path="/")
     return response

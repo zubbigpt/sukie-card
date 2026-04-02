@@ -589,6 +589,12 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 </head>
 <body>
 
+<!-- ZUBADMIN BANNER — visible solo cuando se accede como super admin -->
+<div id="zubadmin-banner" style="display:none;position:sticky;top:0;z-index:9999;background:#26170c;color:#ffca48;padding:9px 20px;align-items:center;justify-content:space-between;font-family:'Manrope',sans-serif;font-size:.82rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+  <span>⚡ <strong>ZubCard Admin</strong> — Gestionando: <span id="zubadmin-biz-name"></span></span>
+  <a href="/zubadmin" style="background:#ffca48;color:#26170c;padding:5px 14px;border-radius:6px;text-decoration:none;font-weight:800;font-size:.78rem;letter-spacing:.05em">← Volver a mis negocios</a>
+</div>
+
 <!-- LOGIN (solo visible si no hay PIN en URL/session — redirige al login principal) -->
 <div id="login-screen" style="display:none">
   <div class="login-box">
@@ -3970,6 +3976,20 @@ setTimeout(function() {
   // No PIN found — redirect to login page
   window.location.href = '/app/login?next=' + encodeURIComponent(window.location.pathname);
 }, 300);
+
+// ── ZUBADMIN BANNER ──────────────────────────────────────────────────────────
+(function() {
+  const adminCookie = document.cookie.match(/(?:^|;\s*)_zc_admin_mode=([^;]+)/);
+  if (adminCookie) {
+    const bizName = decodeURIComponent(adminCookie[1]);
+    const banner = document.getElementById('zubadmin-banner');
+    document.getElementById('zubadmin-biz-name').textContent = bizName;
+    banner.style.display = 'flex';
+    // Adjust top of sidebar/app to account for banner
+    const app = document.getElementById('app');
+    if (app) app.style.paddingTop = '0';
+  }
+})();
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
 const sectionTitles = {
