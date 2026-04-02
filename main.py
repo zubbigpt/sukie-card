@@ -689,6 +689,7 @@ def render_welcome_email(
     card_name: str = "",
     card_biz_name: str = "ZubCard",
     card_logo_url: str = "",
+    card_strip_bg_url: str = "",
     welcome_greeting: str = "",
     welcome_footer: str = "",
     wel_hdr_color: str = "",
@@ -717,6 +718,7 @@ def render_welcome_email(
         card_name=card_name,
         card_biz_name=card_biz_name,
         card_logo_url=card_logo_url,
+        card_strip_bg_url=card_strip_bg_url,
         welcome_greeting=welcome_greeting or f"¡Bienvenida/o, {name}! {card_emoji}",
         welcome_footer=welcome_footer or f"Tarjeta de Fidelización © 2026",
         wel_hdr_color=wel_hdr_color,
@@ -741,6 +743,7 @@ def _prog_email_kwargs(prog, biz=None) -> dict:
         card_name=prog.name or "",
         card_biz_name=(biz.name if biz else "") or (prog.name or ""),
         card_logo_url=(biz.logo_url if biz else "") or "",
+        card_strip_bg_url=getattr(prog, "strip_bg_url", None) or "",
     )
 
 
@@ -6138,6 +6141,10 @@ def get_welcome_email_config(slug: str, pin: str = "", db: Session = Depends(get
         "biz_primary_color":           biz.primary_color or "#26170c",
         "biz_accent_color":            biz.accent_color  or "#ffca48",
         "biz_logo_url":                biz.logo_url or "",
+        "card_emoji":                  (prog.emoji if prog else "") or "⭐",
+        "card_stamps_per_reward":      (prog.stamps_per_reward if prog else None) or 10,
+        "card_reward_name":            (prog.reward_name if prog else "") or "Premio",
+        "card_strip_bg_url":           (getattr(prog, "strip_bg_url", None) if prog else "") or "",
     }
 
 

@@ -5453,6 +5453,16 @@ function welUpdatePreview() {
   const greeting     = document.getElementById('wel-greeting')?.value?.trim() || '';
   const footer       = document.getElementById('wel-footer')?.value?.trim() || '';
   const bizName      = d.biz_name || 'Tu Negocio';
+  const logoUrl      = d.biz_logo_url || '';
+  const stripBg      = d.card_strip_bg_url || '';
+  const emoji        = d.card_emoji || '⭐';
+  const spr          = d.card_stamps_per_reward || 10;
+  const rewardName   = d.card_reward_name || 'Premio';
+
+  // Build stamp circles (Apple Wallet style)
+  const stampCircles = Array.from({length: spr}).map((_, i) =>
+    `<span style="display:inline-block;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.25);line-height:26px;font-size:11px;text-align:center;color:${hdrTextColor}"></span>`
+  ).join('');
 
   frame.innerHTML = `<div style="font-family:-apple-system,sans-serif;background:${bgColor};padding:16px">
     <div style="max-width:460px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
@@ -5475,23 +5485,48 @@ function welUpdatePreview() {
              <div style="font-size:.75rem;color:${hdrTextColor};opacity:.7">Tu tarjeta de fidelidad está lista</div>
            </div>`
       }
-      <!-- Card visual simplified -->
+      <!-- Card visual — Apple Wallet style -->
       <div style="padding:20px 24px;background:#f9f9f9">
-        <div style="background:${hdrColor};border-radius:12px;padding:12px 16px;">
-          <div style="font-size:.6rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${hdrTextColor};margin-bottom:10px">MI TARJETA</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-            ${Array.from({length:10}).map((_,i) => `<span style="display:inline-block;width:24px;height:24px;border-radius:50%;${i<1 ? `background:${accColor}` : 'background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3)'};"></span>`).join('')}
+        <div style="max-width:300px;margin:0 auto;background:${hdrColor};border-radius:20px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,0.26)">
+          <!-- Strip / header row -->
+          <div style="${stripBg ? `background-image:url('${stripBg}');background-size:cover;background-position:center;` : ''}background-color:${hdrColor};padding:12px 14px 10px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              ${logoUrl
+                ? `<img src="${logoUrl}" style="width:42px;height:42px;border-radius:9px;object-fit:contain;background:rgba(255,255,255,0.08)">`
+                : `<span style="font-size:1.8rem;line-height:1">${emoji}</span>`
+              }
+              <div style="text-align:right">
+                <div style="font-size:7px;font-weight:700;color:${accColor};letter-spacing:1.5px;text-transform:uppercase;opacity:.8;margin-bottom:1px">SELLOS</div>
+                <div style="font-size:26px;font-weight:900;color:${hdrTextColor};line-height:1;letter-spacing:-1px">0<span style="font-size:12px;font-weight:500;opacity:.45">/${spr}</span></div>
+              </div>
+            </div>
           </div>
-          <div style="font-size:.65rem;font-weight:700;color:${hdrTextColor};opacity:.6">MARÍA LÓPEZ · PREMIO</div>
+          <!-- Card name label -->
+          <div style="padding:5px 14px 0;border-top:1px solid rgba(255,255,255,0.10)">
+            <div style="font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${hdrTextColor};opacity:.4">${bizName.toUpperCase()}</div>
+          </div>
+          <!-- Stamp grid -->
+          <div style="padding:8px 14px 10px;display:flex;flex-wrap:wrap;gap:4px">
+            ${stampCircles}
+          </div>
+          <!-- Footer fields -->
+          <div style="padding:8px 14px 12px;border-top:1px solid rgba(255,255,255,0.12);display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${accColor};opacity:.65">TITULAR</div>
+              <div style="font-size:11px;font-weight:800;color:${hdrTextColor};margin-top:2px">MARÍA LÓPEZ</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${accColor};opacity:.65">PREMIO</div>
+              <div style="font-size:11px;font-weight:800;color:${hdrTextColor};margin-top:2px">${rewardName}</div>
+            </div>
+          </div>
         </div>
-        <div style="font-size:.65rem;color:#888;text-align:center;margin-top:8px">0/10 sellos · Premio al completar</div>
+        <div style="font-size:.62rem;color:#888;text-align:center;margin-top:8px">0/${spr} sellos · ${rewardName} al completar</div>
       </div>
       <!-- CTA -->
       <div style="padding:16px 24px;text-align:center;background:#fff">
         <div style="display:inline-block;background:#000;color:#fff;padding:10px 24px;border-radius:8px;font-size:.75rem;font-weight:700">🍎 Añadir a Apple Wallet</div>
       </div>
-      <!-- Divider -->
-      <div style="height:1px;background:linear-gradient(90deg,transparent,#e8e8e8,transparent);margin:0 24px"></div>
       <!-- Footer -->
       <div style="padding:14px 24px 20px;text-align:center;background:#333">
         <div style="font-size:.7rem;font-weight:800;color:#fff;margin-bottom:2px">${bizName.toUpperCase()}</div>

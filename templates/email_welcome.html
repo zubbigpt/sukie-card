@@ -46,27 +46,42 @@
 </td></tr>
 {% endif %}
 
-<!-- CARD VISUAL -->
+<!-- CARD VISUAL — Apple Wallet style -->
 <tr><td style="padding:28px 24px;background:#f9f9f9">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:{{ bg }};border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15)">
-  <tr><td style="padding:14px 18px 10px">
-    <!-- Card header row -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:320px;margin:0 auto;background:{{ bg }};border-radius:22px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.28)">
+
+  <!-- STRIP / HEADER (like Apple Wallet top strip) -->
+  <tr><td style="{% if card_strip_bg_url %}background-image:url('{{ card_strip_bg_url }}');background-size:cover;background-position:center;{% endif %}background-color:{{ bg }};padding:14px 16px 12px">
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
-      <td style="font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:{{ tc }}">{{ card_name or card_biz_name or 'MI TARJETA' }}</td>
-      <td style="text-align:right;font-size:10px;font-weight:700;color:{{ accent }}">{{ stamps }}/{{ spr }} <span style="font-size:8px;letter-spacing:.8px;opacity:.7">SELLOS</span></td>
+      <td style="vertical-align:middle;width:52px">
+        {% if card_logo_url %}
+        <img src="{{ card_logo_url }}" style="width:46px;height:46px;border-radius:10px;object-fit:contain;display:block">
+        {% else %}
+        <span style="font-size:2.2rem;line-height:1;display:block">{{ emoji }}</span>
+        {% endif %}
+      </td>
+      <td style="text-align:right;vertical-align:top;padding-top:2px">
+        <div style="font-size:8px;font-weight:700;color:{{ accent }};letter-spacing:1.5px;text-transform:uppercase;opacity:.8;margin-bottom:2px">SELLOS</div>
+        <div style="font-size:30px;font-weight:900;color:{{ tc }};line-height:1;letter-spacing:-1px">{{ stamps }}<span style="font-size:14px;font-weight:600;opacity:.45">/{{ spr }}</span></div>
+      </td>
     </tr>
     </table>
   </td></tr>
 
+  <!-- CARD NAME -->
+  <tr><td style="padding:5px 16px 0;border-top:1px solid rgba(255,255,255,0.10)">
+    <div style="font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:{{ tc }};opacity:.4">{{ card_name or card_biz_name or 'MI TARJETA' }}</div>
+  </td></tr>
+
   <!-- STAMP GRID -->
-  <tr><td style="padding:8px 18px 14px">
+  <tr><td style="padding:10px 16px 14px">
     <table cellpadding="0" cellspacing="0" style="margin:0 auto">
     {% for row_start in range(0, spr, cols) %}
     <tr>
       {% for i in range(row_start, [row_start + cols, spr]|min) %}
       <td style="padding:3px">
-        <span style="display:inline-block;width:32px;height:32px;border-radius:50%;{% if (i+1) <= stamps %}background:{{ accent }};{% else %}background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);{% endif %}line-height:32px;font-size:15px;text-align:center;color:{{ tc }}">{% if (i+1) <= stamps %}{{ emoji }}{% endif %}</span>
+        <span style="display:inline-block;width:30px;height:30px;border-radius:50%;{% if (i+1) <= stamps %}background:{{ accent }};box-shadow:0 0 8px {{ accent }}88;{% else %}background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.25);{% endif %}line-height:30px;font-size:14px;text-align:center;color:{{ tc }}">{% if (i+1) <= stamps %}{{ emoji }}{% endif %}</span>
       </td>
       {% endfor %}
     </tr>
@@ -74,16 +89,16 @@
     </table>
   </td></tr>
 
-  <!-- Card footer -->
-  <tr><td style="padding:8px 18px 14px">
+  <!-- FOOTER (Apple Wallet bottom fields) -->
+  <tr><td style="padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.12)">
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
-      <td style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:{{ accent }};opacity:.6">TITULAR</td>
-      <td style="text-align:right;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:{{ accent }};opacity:.6">PREMIO</td>
+      <td style="font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:{{ accent }};opacity:.65">TITULAR</td>
+      <td style="text-align:right;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:{{ accent }};opacity:.65">PREMIO</td>
     </tr>
     <tr>
-      <td style="font-size:13px;font-weight:800;color:{{ tc }};padding-top:2px">{{ name | upper }}</td>
-      <td style="text-align:right;font-size:13px;font-weight:800;color:{{ tc }};padding-top:2px">{{ card_reward_name or 'Premio' }}</td>
+      <td style="font-size:12px;font-weight:800;color:{{ tc }};padding-top:3px;letter-spacing:.5px">{{ name | upper }}</td>
+      <td style="text-align:right;font-size:12px;font-weight:800;color:{{ tc }};padding-top:3px">{{ card_reward_name or 'Premio' }}</td>
     </tr>
     </table>
   </td></tr>
