@@ -2955,6 +2955,10 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 style="flex-shrink:0;padding:6px 12px;background:#1a6a3a;color:#fff;border-radius:6px;font-size:.75rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px">
                 <span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Probar link
               </a>
+              <button onclick="deleteReviewUrl()"
+                style="flex-shrink:0;padding:6px 12px;background:none;border:1.5px solid #c62828;color:#c62828;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">
+                <span class="material-symbols-outlined" style="font-size:.85rem">delete</span> Eliminar
+              </button>
             </div>
           </div>
 
@@ -6881,6 +6885,21 @@ async function loadReviewsSection(){
     }
     _showReviewSavedUrl(d.google_review_url||'');
   }catch(e){ console.warn('loadReviewsSection error',e); }
+}
+
+async function deleteReviewUrl(){
+  if(!confirm('¿Eliminar el link de reseñas de Google?')) return;
+  const urlInput=document.getElementById('review-url-input');
+  if(urlInput) urlInput.value='';
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/reviews-config`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:PIN, google_review_url:'', review_trigger_stamps:0})
+    });
+    _showReviewSavedUrl('');
+    showToast('Link de reseñas eliminado','success');
+  }catch(e){ showToast('Error al eliminar','error'); }
 }
 
 async function saveReviewsConfig(){

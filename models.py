@@ -151,6 +151,9 @@ class Business(Base):
     email_smtp_port  = Column(Integer, nullable=True)  # custom SMTP port
     email_smtp_user  = Column(String, nullable=True)   # custom SMTP user
     email_smtp_pass  = Column(String, nullable=True)   # custom SMTP password
+    # ── Google Reviews ─────────────────────────────────────────────────────────
+    google_review_url     = Column(String, nullable=True, default="")
+    review_trigger_stamps = Column(Integer, default=0)
     # ── Campaign push (promo message shown via Wallet changeMessage) ───────────
     promo_message   = Column(String, nullable=True, default="")
     # ── Stripe billing ─────────────────────────────────────────────────────────
