@@ -6132,11 +6132,12 @@ async def zubadmin_businesses(request: Request, db: Session = Depends(get_db)):
         SELECT
             b.id, b.name, b.slug, b.email, b.plan,
             b.logo_url, b.created_at,
-            COUNT(DISTINCT lc.id)          AS customers,
-            COALESCE(SUM(lc.total_stamps), 0) AS stamps_given,
-            COALESCE(SUM(lc.rewards_redeemed), 0) AS rewards
+            COUNT(DISTINCT c.id)                     AS customers,
+            COALESCE(SUM(lc.total_stamps), 0)        AS stamps_given,
+            COALESCE(SUM(lc.rewards_redeemed), 0)    AS rewards
         FROM businesses b
-        LEFT JOIN loyalty_cards lc ON lc.business_id = b.id
+        LEFT JOIN customers c  ON c.business_id  = b.id
+        LEFT JOIN loyalty_cards lc ON lc.customer_id = c.id
         GROUP BY b.id, b.name, b.slug, b.email, b.plan, b.logo_url, b.created_at
         ORDER BY b.created_at DESC
     """)).fetchall()
