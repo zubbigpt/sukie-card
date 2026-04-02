@@ -366,7 +366,7 @@ async function doRegister() {
   const phone        = document.getElementById('phone').value.trim();
   const birth_date   = document.getElementById('birth_date').value;
   const opt_in_email = document.getElementById('opt_in_email').checked;
-  const opt_in_sms   = document.getElementById('opt_in_sms').checked;
+  const opt_in_sms   = document.getElementById('opt_in_sms')?.checked || false;
 
   if (!first_name) { showErr('Por favor introduce tu nombre'); return; }
   if (!email || !email.includes('@')) { showErr('Por favor introduce un email válido'); return; }
