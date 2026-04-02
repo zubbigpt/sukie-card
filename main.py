@@ -2903,26 +2903,8 @@ def export_csv(pin: str = "", slug: str = "", db: Session = Depends(get_db)):
 # ADMIN (HTML legado)
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_legacy(request: Request, pin: str = "", db: Session = Depends(get_db)):
-    if pin != ADMIN_PIN:
-        return templates.TemplateResponse("admin_login.html", {"request": request})
-    rows = (db.query(models.LoyaltyCard, models.Customer)
-            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-            .filter(models.Customer.email != "PLACEHOLDER@sukie.internal")
-            .order_by(models.Customer.created_at.desc()).all())
-    cards_data = [{
-        "card_id": str(card.id),
-        "name": f"{cust.first_name} {cust.last_name or ''}".strip(),
-        "email": cust.email, "stamps": card.stamps,
-        "total_stamps": card.total_stamps or 0,
-        "award_balance": card.award_balance or 0,
-        "redeemed": card.rewards_redeemed,
-        "card_url": f"{BASE_URL}/card/{card.id}",
-    } for card, cust in rows]
-    return templates.TemplateResponse("admin_dashboard.html", {
-        "request": request, "cards": cards_data,
-        "total": len(cards_data), "pin": pin,
-    })
+async def admin_legacy(request: Request):
+    return RedirectResponse("/zubadmin", status_code=301)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
