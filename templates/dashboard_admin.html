@@ -3426,141 +3426,84 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <!-- ──────────── TAB: EMAILS ──────────── -->
         <div id="fid-panel-emails" style="display:none">
 
-          <div class="card-box">
-            <div class="card-title" style="margin-bottom:14px">Email de Bienvenida</div>
-            <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:14px">Se envía al cliente cuando se registra. Incluye el link a su tarjeta de fidelización.</p>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px">
-              <input type="checkbox" id="cfg-welcome_email_enabled"> <span style="font-size:.88rem;font-weight:500">Activar email de bienvenida</span>
-            </label>
-            <label class="field-label">Asunto<input type="text" id="cfg-welcome_email_subject" class="field-input" placeholder="¡Bienvenido/a a nuestra familia!"></label>
-            <!-- hidden textarea keeps save/load compatibility -->
-            <textarea id="cfg-welcome_email_body" style="display:none"></textarea>
-            <div class="field-label" style="margin-top:12px">
-              Cuerpo del email
-              <div class="camp-toolbar" style="margin-top:6px;border-radius:var(--r-sm) var(--r-sm) 0 0">
-                <button title="Negrita" onclick="emailExec('wel','bold')"><b>B</b></button>
-                <button title="Cursiva" onclick="emailExec('wel','italic')"><i>I</i></button>
-                <button title="Subrayar" onclick="emailExec('wel','underline')"><u>U</u></button>
-                <div class="tsep"></div>
-                <select onchange="emailExec('wel','fontSize',this.value)" title="Tamaño de fuente">
-                  <option value="1">Mini</option>
-                  <option value="2">Pequeño</option>
-                  <option value="3" selected>Normal</option>
-                  <option value="4">Grande</option>
-                  <option value="5">Muy grande</option>
-                </select>
-                <select onchange="emailExecFont('wel',this.value)" title="Fuente">
-                  <option value="Manrope">Manrope</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="'Times New Roman'">Times New Roman</option>
-                  <option value="Arial">Arial</option>
-                  <option value="'Courier New'">Courier New</option>
-                </select>
-                <div class="tsep"></div>
-                <button title="Alinear izquierda" onclick="emailExec('wel','justifyLeft')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_left</span></button>
-                <button title="Centrar" onclick="emailExec('wel','justifyCenter')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_center</span></button>
-                <button title="Alinear derecha" onclick="emailExec('wel','justifyRight')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_right</span></button>
-                <div class="tsep"></div>
-                <button title="Insertar enlace" onclick="emailExecLink('wel')"><span class="material-symbols-outlined" style="font-size:1rem">link</span></button>
-                <button title="Subir imagen desde dispositivo" onclick="document.getElementById('wel-img-upload').click()"><span class="material-symbols-outlined" style="font-size:1rem">upload</span></button>
-                <input type="file" id="wel-img-upload" accept="image/*" style="display:none" onchange="emailExecImgFile('wel',this)">
-                <button title="Insertar imagen por URL" onclick="emailExecImg('wel')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
-                <button title="Color de texto" onclick="document.getElementById('wel-color-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_text</span></button>
-                <input type="color" id="wel-color-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('wel','foreColor',this.value)">
-                <button title="Color de fondo del texto" onclick="document.getElementById('wel-bg-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_fill</span></button>
-                <input type="color" id="wel-bg-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('wel','hiliteColor',this.value)">
-                <div class="tsep"></div>
-                <button title="Lista" onclick="emailExec('wel','insertUnorderedList')"><span class="material-symbols-outlined" style="font-size:1rem">format_list_bulleted</span></button>
-              </div>
-              <div id="cfg-welcome_email_body_editor" class="camp-editor-body" contenteditable="true"
-                   oninput="emailSyncToHidden('wel')" onkeydown="emailHandleKey(event,'wel')"
-                   style="min-height:180px;border-radius:0 0 var(--r-sm) var(--r-sm);border-top:none">
-                <p>Hola <strong>{nombre}</strong>, bienvenido/a a nuestra familia. 🎉</p><p>Aquí tienes el link a tu tarjeta de fidelización: <a href="{link_tarjeta}">{link_tarjeta}</a></p>
-              </div>
-              <small style="color:var(--brown-light);margin-top:4px;display:block">Variables: <code>{nombre}</code>, <code>{link_tarjeta}</code></small>
-            </div>
-          </div>
+          <!-- 2-col layout: editor + preview -->
+          <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start">
 
-          <div class="card-box">
-            <div class="card-title" style="margin-bottom:14px">Email de Cumpleaños</div>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px">
-              <input type="checkbox" id="cfg-birthday_email_enabled"> <span style="font-size:.88rem;font-weight:500">Activar email de cumpleaños</span>
-            </label>
-            <label class="field-label">Asunto<input type="text" id="cfg-birthday_email_subject" class="field-input" placeholder="¡Feliz Cumpleaños! 🎂"></label>
-            <!-- hidden textarea keeps save/load compatibility -->
-            <textarea id="cfg-birthday_email_body" style="display:none"></textarea>
-            <div class="field-label" style="margin-top:12px">
-              Cuerpo del email
-              <div class="camp-toolbar" style="margin-top:6px;border-radius:var(--r-sm) var(--r-sm) 0 0">
-                <button title="Negrita" onclick="emailExec('bday','bold')"><b>B</b></button>
-                <button title="Cursiva" onclick="emailExec('bday','italic')"><i>I</i></button>
-                <button title="Subrayar" onclick="emailExec('bday','underline')"><u>U</u></button>
-                <div class="tsep"></div>
-                <select onchange="emailExec('bday','fontSize',this.value)" title="Tamaño de fuente">
-                  <option value="1">Mini</option>
-                  <option value="2">Pequeño</option>
-                  <option value="3" selected>Normal</option>
-                  <option value="4">Grande</option>
-                  <option value="5">Muy grande</option>
-                </select>
-                <select onchange="emailExecFont('bday',this.value)" title="Fuente">
-                  <option value="Manrope">Manrope</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="'Times New Roman'">Times New Roman</option>
-                  <option value="Arial">Arial</option>
-                  <option value="'Courier New'">Courier New</option>
-                </select>
-                <div class="tsep"></div>
-                <button title="Alinear izquierda" onclick="emailExec('bday','justifyLeft')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_left</span></button>
-                <button title="Centrar" onclick="emailExec('bday','justifyCenter')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_center</span></button>
-                <button title="Alinear derecha" onclick="emailExec('bday','justifyRight')"><span class="material-symbols-outlined" style="font-size:1rem">format_align_right</span></button>
-                <div class="tsep"></div>
-                <button title="Insertar enlace" onclick="emailExecLink('bday')"><span class="material-symbols-outlined" style="font-size:1rem">link</span></button>
-                <button title="Subir imagen desde dispositivo" onclick="document.getElementById('bday-img-upload').click()"><span class="material-symbols-outlined" style="font-size:1rem">upload</span></button>
-                <input type="file" id="bday-img-upload" accept="image/*" style="display:none" onchange="emailExecImgFile('bday',this)">
-                <button title="Insertar imagen por URL" onclick="emailExecImg('bday')"><span class="material-symbols-outlined" style="font-size:1rem">image</span></button>
-                <button title="Color de texto" onclick="document.getElementById('bday-color-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_text</span></button>
-                <input type="color" id="bday-color-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('bday','foreColor',this.value)">
-                <button title="Color de fondo del texto" onclick="document.getElementById('bday-bg-pick').click()"><span class="material-symbols-outlined" style="font-size:1rem">format_color_fill</span></button>
-                <input type="color" id="bday-bg-pick" style="display:none;width:0;height:0;position:absolute" onchange="emailExec('bday','hiliteColor',this.value)">
-                <div class="tsep"></div>
-                <button title="Lista" onclick="emailExec('bday','insertUnorderedList')"><span class="material-symbols-outlined" style="font-size:1rem">format_list_bulleted</span></button>
+            <!-- LEFT: editor -->
+            <div>
+              <!-- Asunto y ajustes -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:14px">✉️ Email de Bienvenida</div>
+                <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Se envía automáticamente cuando un cliente se registra. Incluye su tarjeta y el link para añadirla al Wallet.</p>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px">
+                  <input type="checkbox" id="cfg-welcome_email_enabled" checked> <span style="font-size:.88rem;font-weight:500">Activar email de bienvenida</span>
+                </label>
+                <div style="margin-bottom:12px">
+                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Asunto del email</label>
+                  <input type="text" id="cfg-welcome_email_subject" class="field-input" placeholder="¡Bienvenido/a a nuestra familia! 🎉"
+                    style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.88rem;background:var(--cream);box-sizing:border-box"
+                    oninput="welScheduleAutoSave()">
+                </div>
               </div>
-              <div id="cfg-birthday_email_body_editor" class="camp-editor-body" contenteditable="true"
-                   oninput="emailSyncToHidden('bday')" onkeydown="emailHandleKey(event,'bday')"
-                   style="min-height:180px;border-radius:0 0 var(--r-sm) var(--r-sm);border-top:none">
-                <p>¡Hola <strong>{nombre}</strong>! 🎂 Hoy es tu día especial.</p><p>Queremos celebrarlo contigo. ¡Ven a visitarnos y recibe tu regalo de cumpleaños!</p>
+
+              <!-- Textos editables -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:6px">✍️ Textos del email</div>
+                <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Los colores del email se heredan del diseño de tu tarjeta.</p>
+                <div style="margin-bottom:14px">
+                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Saludo principal (cabecera)</label>
+                  <input type="text" id="wel-greeting" placeholder="¡Bienvenida/o! 🎉 — dejar vacío para saludo automático"
+                    style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box"
+                    oninput="welScheduleAutoSave()">
+                  <small style="color:var(--brown-light);font-size:.72rem">Si lo dejas vacío se genera automáticamente con el nombre del cliente.</small>
+                </div>
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Texto del footer</label>
+                  <input type="text" id="wel-footer" placeholder="Ej: Con cariño, el equipo de Sukie Cookie 🍪"
+                    style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box"
+                    oninput="welScheduleAutoSave()">
+                </div>
               </div>
-              <small style="color:var(--brown-light);margin-top:4px;display:block">Variables: <code>{nombre}</code></small>
-            </div>
-          </div>
 
-          <div class="card-box">
-            <div class="card-title" style="margin-bottom:12px">Distribución masiva</div>
-            <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:16px">Envía la tarjeta por email a tus clientes usando la plantilla de bienvenida.</p>
-            <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem"><input type="radio" name="dist-target" value="new" checked id="dist-new"> Solo nuevos (sin email enviado)</label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem"><input type="radio" name="dist-target" value="all" id="dist-all"> Todos los clientes</label>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button onclick="sendDistribution()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600">📨 Enviar distribución</button>
-              <button onclick="previewEmail()" style="background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600;display:inline-flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:1rem">visibility</span> Preview bienvenida</button>
-              <button onclick="previewBirthdayEmail()" style="background:var(--cream-dark);border:2px solid var(--cream-border);color:var(--brown);padding:10px 20px;border-radius:2px;cursor:pointer;font-size:.88rem;font-weight:600">🎂 Preview cumpleaños</button>
-            </div>
-            <div id="dist-result" style="margin-top:12px;display:none"></div>
-          </div>
+              <!-- Distribución masiva -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:12px">📨 Distribución masiva</div>
+                <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:16px">Envía la tarjeta por email a tus clientes usando la plantilla de bienvenida.</p>
+                <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem"><input type="radio" name="dist-target" value="new" checked id="dist-new"> Solo nuevos (sin email enviado)</label>
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem"><input type="radio" name="dist-target" value="all" id="dist-all"> Todos los clientes</label>
+                </div>
+                <button onclick="sendDistribution()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:.88rem;font-weight:600">Enviar distribución</button>
+                <div id="dist-result" style="margin-top:12px;display:none"></div>
+              </div>
 
-          <div class="card-box" style="background:var(--cream)">
-            <div style="font-size:.78rem;font-weight:700;margin-bottom:8px;color:var(--brown)">Configuración SMTP</div>
-            <p style="color:var(--brown-light);font-size:.75em;margin-bottom:10px">Añade estas variables en Railway → Variables de entorno:</p>
-            <div style="background:var(--white);border-radius:4px;padding:12px;font-family:monospace;font-size:.75em;color:#333;border:1px solid var(--cream-border)">
-              SMTP_HOST=smtp.gmail.com<br>SMTP_PORT=587<br>SMTP_USER=tu@gmail.com<br>SMTP_PASS=tu-app-password<br>SMTP_FROM=noreply@tudominio.com
-            </div>
-          </div>
+              <!-- Acciones -->
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <button onclick="welSaveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+                  Guardar cambios
+                </button>
+                <span id="wel-save-status" style="font-size:.82rem;color:var(--brown-light)"></span>
+              </div>
 
-          <div style="display:flex;gap:12px;align-items:center;margin-top:20px">
-            <button onclick="saveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:12px 32px;border-radius:2px;cursor:pointer;font-size:.9rem;font-weight:700;letter-spacing:1px;display:inline-flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">save</span> GUARDAR EMAILS</button>
-            <span id="email-save-msg" style="font-size:.78rem;font-weight:600;display:none"></span>
+              <!-- Hidden fields for backward compatibility -->
+              <textarea id="cfg-welcome_email_body" style="display:none"></textarea>
+              <textarea id="cfg-birthday_email_body" style="display:none"></textarea>
+              <input type="checkbox" id="cfg-birthday_email_enabled" style="display:none">
+              <input type="text" id="cfg-birthday_email_subject" style="display:none">
+            </div>
+
+            <!-- RIGHT: live preview iframe -->
+            <div style="position:sticky;top:20px">
+              <div style="font-size:.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+                <span>Vista previa</span>
+                <button onclick="welRefreshPreview()" style="background:none;border:1.5px solid var(--cream-border);border-radius:6px;padding:4px 10px;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--brown)">⟳ Actualizar</button>
+              </div>
+              <div style="border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;background:#f5f5f5;box-shadow:0 4px 20px rgba(0,0,0,.08)">
+                <iframe id="wel-preview-iframe" src="about:blank" style="width:100%;height:580px;border:none;display:block" title="Preview email bienvenida"></iframe>
+              </div>
+              <p style="font-size:.68rem;color:#aaa;text-align:center;margin-top:6px">Preview con datos de ejemplo · Guarda para ver cambios</p>
+            </div>
+
           </div>
         </div><!-- /fid-panel-emails -->
 
@@ -5371,6 +5314,66 @@ async function sendDistribution() {
   el.innerHTML = `<span style="color:#2e7d32">✅ Distribución programada para clientes (${target === 'new' ? 'nuevos' : 'todos'}). Esta función requiere integración de email.</span>`;
 }
 
+// ── WELCOME EMAIL CONFIG ──────────────────────────────────────────────────────
+let _welAutoSaveTimer = null;
+
+async function loadWelcomeEmailConfig() {
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-config?pin=${PIN}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const subj = document.getElementById('cfg-welcome_email_subject');
+    const greet = document.getElementById('wel-greeting');
+    const foot  = document.getElementById('wel-footer');
+    if (subj)  subj.value  = d.welcome_email_subject  || '';
+    if (greet) greet.value = d.welcome_email_greeting || '';
+    if (foot)  foot.value  = d.welcome_email_footer   || '';
+    welRefreshPreview();
+  } catch(e) { /* silent */ }
+}
+
+async function welRefreshPreview() {
+  const iframe = document.getElementById('wel-preview-iframe');
+  if (!iframe) return;
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-preview?pin=${PIN}`);
+    if (!r.ok) return;
+    const html = await r.text();
+    iframe.srcdoc = html;
+  } catch(e) { /* silent */ }
+}
+
+function welScheduleAutoSave() {
+  clearTimeout(_welAutoSaveTimer);
+  const st = document.getElementById('wel-save-status');
+  if (st) { st.textContent = 'Guardando en breve…'; st.style.color = 'var(--brown-light)'; }
+  _welAutoSaveTimer = setTimeout(() => welSaveConfig(true), 8000);
+}
+
+async function welSaveConfig(isAuto = false) {
+  const st = document.getElementById('wel-save-status');
+  if (!isAuto && st) st.textContent = 'Guardando…';
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-config`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        pin: PIN,
+        welcome_email_subject:  document.getElementById('cfg-welcome_email_subject')?.value?.trim() || '',
+        welcome_email_greeting: document.getElementById('wel-greeting')?.value?.trim() || '',
+        welcome_email_footer:   document.getElementById('wel-footer')?.value?.trim() || '',
+      })
+    });
+    if (r.ok) {
+      if (st) { st.textContent = isAuto ? '✓ Guardado automáticamente' : 'Guardado ✓'; st.style.color = 'var(--green)'; setTimeout(() => { st.textContent=''; st.style.color=''; }, 3000); }
+      if (!isAuto) { welRefreshPreview(); showToast('Email de bienvenida guardado', 'success'); }
+    } else {
+      if (st) { st.textContent = 'Error al guardar'; st.style.color = '#c62828'; }
+    }
+  } catch(e) {
+    if (st) { st.textContent = 'Error de conexión'; st.style.color = '#c62828'; }
+  }
+}
+
 async function previewEmail() {
   // Get first customer card
   try {
@@ -6882,6 +6885,7 @@ function showFidTab(tab) {
   });
   if (tab === 'diseno') { loadDesign(); }
   if (tab === 'landing') { initFidLandingQR(); }
+  if (tab === 'emails') { loadWelcomeEmailConfig(); }
 }
 
 function initFidLandingQR() {

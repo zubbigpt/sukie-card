@@ -380,6 +380,8 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_footer_text VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_text_color VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_bg_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_greeting VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_footer VARCHAR DEFAULT ''",
         # ── Apple Wallet live update web service ──────────────────────────────────
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS wallet_auth_token VARCHAR",
         """CREATE TABLE IF NOT EXISTS wallet_devices (
@@ -682,6 +684,8 @@ def render_welcome_email(
     card_name: str = "",
     card_biz_name: str = "ZubCard",
     card_logo_url: str = "",
+    welcome_greeting: str = "",
+    welcome_footer: str = "",
 ) -> str:
     """Render welcome email HTML with card branding"""
     template = templates.get_template("email_welcome.html")
@@ -703,6 +707,8 @@ def render_welcome_email(
         card_name=card_name,
         card_biz_name=card_biz_name,
         card_logo_url=card_logo_url,
+        welcome_greeting=welcome_greeting or f"¡Bienvenida/o, {name}! {card_emoji}",
+        welcome_footer=welcome_footer or f"Tarjeta de Fidelización © 2026",
     )
 
 
@@ -6107,6 +6113,75 @@ async def auth_google_callback(
         path=f"/biz/{biz.slug}/dashboard",
     )
     return response
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# WELCOME EMAIL CONFIG
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/biz/{slug}/welcome-email-config")
+def get_welcome_email_config(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Get welcome email configuration for this business."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+    return {
+        "welcome_email_enabled":  True,
+        "welcome_email_subject":  (prog.welcome_email_subject if prog else "") or "",
+        "welcome_email_greeting": getattr(biz, "welcome_email_greeting", "") or "",
+        "welcome_email_footer":   getattr(biz, "welcome_email_footer", "") or "",
+        "biz_name":               biz.name or "",
+        "biz_primary_color":      biz.primary_color or "#26170c",
+        "biz_accent_color":       biz.accent_color  or "#ffca48",
+    }
+
+
+@app.put("/api/biz/{slug}/welcome-email-config")
+async def update_welcome_email_config(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Update welcome email configuration."""
+    body = await request.json()
+    pin  = str(body.get("pin", "")).strip()
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if body.get("welcome_email_greeting") is not None:
+        biz.welcome_email_greeting = (body.get("welcome_email_greeting") or "").strip()
+    if body.get("welcome_email_footer") is not None:
+        biz.welcome_email_footer = (body.get("welcome_email_footer") or "").strip()
+    # Subject is stored per card program
+    subject = (body.get("welcome_email_subject") or "").strip()
+    if subject:
+        prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+        if prog:
+            prog.welcome_email_subject = subject
+            db.add(prog)
+    db.add(biz)
+    db.commit()
+    return {"status": "updated"}
+
+
+@app.get("/api/biz/{slug}/welcome-email-preview", response_class=HTMLResponse)
+def welcome_email_preview(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Return rendered welcome email HTML for in-dashboard preview."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+    greeting = getattr(biz, "welcome_email_greeting", "") or ""
+    footer   = getattr(biz, "welcome_email_footer", "") or ""
+    html = render_welcome_email(
+        name="María",
+        card_url=f"{BASE_URL}/biz/{slug}/register",
+        stamps=0,
+        welcome_greeting=greeting,
+        welcome_footer=footer,
+        **_prog_email_kwargs(prog, biz),
+    )
+    return HTMLResponse(content=html)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

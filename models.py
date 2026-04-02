@@ -168,5 +168,7 @@ class Business(Base):
     birthday_email_footer_text  = Column(String, nullable=True, default="")
     birthday_email_text_color   = Column(String, nullable=True, default="")   # color del texto del header
     birthday_email_bg_color     = Column(String, nullable=True, default="")   # color de fondo del wrapper
+    welcome_email_greeting      = Column(String, nullable=True, default="")   # texto hero bienvenida
+    welcome_email_footer        = Column(String, nullable=True, default="")   # pie del email bienvenida
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
