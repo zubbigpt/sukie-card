@@ -378,6 +378,8 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_accent_color VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_banner_url VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_footer_text VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_text_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_bg_color VARCHAR DEFAULT ''",
         # ── Apple Wallet live update web service ──────────────────────────────────
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS wallet_auth_token VARCHAR",
         """CREATE TABLE IF NOT EXISTS wallet_devices (
@@ -2423,25 +2425,19 @@ def _build_birthday_email_html(
     gift_type: str = "discount", gift_product: str = "", discount_pct: int = 20,
     hdr_color: str = "#1a1a1a", acc_color: str = "#c8a96e", banner_url: str = "",
     logo_url: str = "", email_intro: str = "", footer_text: str = "",
-    is_test: bool = False, slug: str = ""
+    is_test: bool = False, slug: str = "",
+    hdr_text_color: str = "#ffffff", bg_color: str = "#f4f4f4",
 ) -> str:
     """Build a premium, fully branded birthday email HTML."""
-    # Fallback footer
     if not footer_text:
         footer_text = f"Con cariño, el equipo de {biz_name}"
+    if not hdr_text_color:
+        hdr_text_color = "#ffffff"
+    if not bg_color:
+        bg_color = "#f4f4f4"
 
-    # Header: banner image OR solid brand color
-    # banner_url may be a data URI (stored in DB) or a slug hint — always serve via /birthday-banner.jpg
-    # We detect slug from banner_url pattern and build a real HTTP URL
-    effective_banner = ""
-    if banner_url:
-        if banner_url.startswith("data:"):
-            # Extract slug from context — caller must pass slug separately; use __slug hint
-            # We'll use a sentinel: caller sets banner_url to the real serving URL before calling
-            effective_banner = banner_url  # already resolved by caller
-        else:
-            effective_banner = banner_url
-
+    # Header background: banner image OR solid brand color
+    effective_banner = banner_url if banner_url and not banner_url.startswith("data:") else (banner_url if banner_url else "")
     if effective_banner:
         header_style = f"background:url('{effective_banner}') center/cover no-repeat;position:relative"
         header_overlay = f"<div style='position:absolute;inset:0;background:{hdr_color};opacity:.55;border-radius:12px 12px 0 0'></div>"
@@ -2451,7 +2447,7 @@ def _build_birthday_email_html(
         header_overlay = ""
         header_pos = ""
 
-    # Logo block — use served URL if it's a data URI
+    # Logo block
     logo_html = ""
     if logo_url:
         served_logo = f"{BASE_URL}/biz/{slug}/logo.png" if (logo_url.startswith("data:") and slug) else logo_url
@@ -2459,13 +2455,30 @@ def _build_birthday_email_html(
           <img src="{served_logo}" alt="{biz_name}" style="height:44px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1)">
         </div>"""
 
+    # Gift SVG icon — branded to business colors, no emoji
+    gift_svg = f"""<svg width="56" height="56" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 10px">
+      <!-- Box body -->
+      <rect x="5" y="26" width="46" height="25" rx="3" fill="{acc_color}"/>
+      <!-- Lid -->
+      <rect x="3" y="19" width="50" height="11" rx="3" fill="{hdr_color}"/>
+      <!-- Ribbon vertical on body -->
+      <rect x="24" y="26" width="8" height="25" fill="{hdr_color}" opacity="0.35"/>
+      <!-- Ribbon vertical on lid -->
+      <rect x="24" y="19" width="8" height="11" fill="{acc_color}" opacity="0.55"/>
+      <!-- Bow left loop -->
+      <ellipse cx="17" cy="14" rx="13" ry="7" fill="{acc_color}" transform="rotate(-20 17 14)"/>
+      <!-- Bow right loop -->
+      <ellipse cx="39" cy="14" rx="13" ry="7" fill="{acc_color}" transform="rotate(20 39 14)"/>
+      <!-- Bow center knot -->
+      <ellipse cx="28" cy="17" rx="6" ry="5" fill="{hdr_color}"/>
+    </svg>"""
+
     # Gift block
-    gift_badge_color = acc_color
     if gift_type == "product" and gift_product:
         intro_text = email_intro or f"Muestra este QR al llegar a <strong>{biz_name}</strong>. El empleado lo escaneará y recibirás tu regalo."
         gift_html = f"""
         <div style="background:#fff;border-radius:12px;padding:24px 20px;margin-bottom:20px;border:2px solid {acc_color};text-align:center">
-          <div style="font-size:2.2rem;margin-bottom:6px">🎁</div>
+          {gift_svg}
           <div style="font-family:Georgia,serif;font-size:1.4rem;font-weight:700;color:{hdr_color};letter-spacing:-.01em">{gift_product}</div>
           <div style="display:inline-block;margin-top:8px;background:{acc_color};color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:100px">Regalo exclusivo</div>
           <div style="color:#999;font-size:.75rem;margin-top:10px;letter-spacing:.03em">Válido solo hoy · Un solo uso</div>
@@ -2489,7 +2502,7 @@ def _build_birthday_email_html(
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
 </head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased">
+<body style="margin:0;padding:0;background:{bg_color};font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased">
 {test_banner}
 <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,.08)">
 
@@ -2499,10 +2512,10 @@ def _build_birthday_email_html(
     <div style="{header_pos}">
       {logo_html}
       <div style="display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:100px;padding:5px 16px;margin-bottom:14px">
-        <span style="color:rgba(255,255,255,.95);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase">🎂 Cumpleaños</span>
+        <span style="color:{hdr_text_color};opacity:.9;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase">&#127874; Cumpleaños</span>
       </div>
-      <h1 style="color:#fff;font-size:1.75rem;font-weight:800;margin:0 0 6px;letter-spacing:-.02em;text-shadow:0 1px 4px rgba(0,0,0,.2)">¡Feliz Cumpleaños, {name}!</h1>
-      <p style="color:rgba(255,255,255,.85);font-size:.9rem;margin:0;font-weight:400">Hoy es tu día especial — tenemos algo para ti</p>
+      <h1 style="color:{hdr_text_color};font-size:1.75rem;font-weight:800;margin:0 0 6px;letter-spacing:-.02em;text-shadow:0 1px 4px rgba(0,0,0,.2)">¡Feliz Cumpleaños, {name}!</h1>
+      <p style="color:{hdr_text_color};opacity:.8;font-size:.9rem;margin:0;font-weight:400">Hoy es tu día especial — tenemos algo para ti</p>
     </div>
   </div>
 
@@ -2547,14 +2560,16 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
     customer_id  = body.get("customer_id")   # single customer, or None = all today
     discount_pct = int(body.get("discount_pct", 20))
     force        = bool(body.get("force", False))  # skip birthday date check (test mode)
-    gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
-    gift_product = getattr(biz, "birthday_gift_product", "") or ""
-    email_intro  = getattr(biz, "birthday_email_intro", "") or ""
-    hdr_color    = getattr(biz, "birthday_email_header_color", "") or getattr(biz, "primary_color", "") or "#1a1a1a"
-    acc_color    = getattr(biz, "birthday_email_accent_color", "") or getattr(biz, "accent_color", "") or "#c8a96e"
-    banner_url   = getattr(biz, "birthday_email_banner_url", "") or ""
-    footer_text  = getattr(biz, "birthday_email_footer_text", "") or f"Con cariño, el equipo de {biz.name}"
-    logo_url     = getattr(biz, "logo_url", "") or ""
+    gift_type      = getattr(biz, "birthday_gift_type", "discount") or "discount"
+    gift_product   = getattr(biz, "birthday_gift_product", "") or ""
+    email_intro    = getattr(biz, "birthday_email_intro", "") or ""
+    hdr_color      = getattr(biz, "birthday_email_header_color", "") or getattr(biz, "primary_color", "") or "#1a1a1a"
+    acc_color      = getattr(biz, "birthday_email_accent_color", "") or getattr(biz, "accent_color", "") or "#c8a96e"
+    banner_url     = getattr(biz, "birthday_email_banner_url", "") or ""
+    footer_text    = getattr(biz, "birthday_email_footer_text", "") or f"Con cariño, el equipo de {biz.name}"
+    logo_url       = getattr(biz, "logo_url", "") or ""
+    hdr_text_color = getattr(biz, "birthday_email_text_color", "") or "#ffffff"
+    bg_color       = getattr(biz, "birthday_email_bg_color", "") or "#f4f4f4"
 
     today = datetime.now().strftime("%m-%d")
     expires_at = datetime.now().replace(hour=23, minute=59, second=59)
@@ -2608,7 +2623,8 @@ async def send_birthday_voucher(slug: str, request: Request, pin: str = "", db: 
             gift_type=gift_type, gift_product=gift_product, discount_pct=discount_pct,
             hdr_color=hdr_color, acc_color=acc_color, banner_url=served_banner,
             logo_url=logo_url, email_intro=email_intro, footer_text=footer_text,
-            is_test=False, slug=slug
+            is_test=False, slug=slug,
+            hdr_text_color=hdr_text_color, bg_color=bg_color,
         )
         try:
             if send_email(to_email=cust.email, subject=subject, html_body=html):
@@ -4260,6 +4276,8 @@ def get_birthday_config(slug: str, pin: str = "", db: Session = Depends(get_db))
         "birthday_email_accent_color":getattr(biz, "birthday_email_accent_color", "") or "",
         "birthday_email_banner_url":  getattr(biz, "birthday_email_banner_url", "") or "",
         "birthday_email_footer_text": getattr(biz, "birthday_email_footer_text", "") or "",
+        "birthday_email_text_color":  getattr(biz, "birthday_email_text_color", "") or "",
+        "birthday_email_bg_color":    getattr(biz, "birthday_email_bg_color", "") or "",
         "biz_primary_color":          getattr(biz, "primary_color", "#26170c") or "#26170c",
         "biz_accent_color":           getattr(biz, "accent_color", "#ffca48") or "#ffca48",
         "biz_logo_url":               getattr(biz, "logo_url", "") or "",
@@ -4291,6 +4309,10 @@ async def update_birthday_config(slug: str, request: Request, db: Session = Depe
         biz.birthday_email_banner_url = (body.get("birthday_email_banner_url") or "").strip()
     if body.get("birthday_email_footer_text") is not None:
         biz.birthday_email_footer_text = (body.get("birthday_email_footer_text") or "").strip()
+    if body.get("birthday_email_text_color") is not None:
+        biz.birthday_email_text_color = (body.get("birthday_email_text_color") or "").strip()
+    if body.get("birthday_email_bg_color") is not None:
+        biz.birthday_email_bg_color = (body.get("birthday_email_bg_color") or "").strip()
     db.add(biz)
     db.commit()
     db.refresh(biz)
@@ -5740,14 +5762,16 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
     if not to_email:
         raise HTTPException(status_code=400, detail="to_email es obligatorio")
 
-    gift_type    = getattr(biz, "birthday_gift_type", "discount") or "discount"
-    gift_product = getattr(biz, "birthday_gift_product", "") or ""
-    email_intro  = getattr(biz, "birthday_email_intro", "") or ""
-    hdr_color    = getattr(biz, "birthday_email_header_color", "") or getattr(biz, "primary_color", "") or "#1a1a1a"
-    acc_color    = getattr(biz, "birthday_email_accent_color", "") or getattr(biz, "accent_color", "") or "#c8a96e"
-    banner_url   = getattr(biz, "birthday_email_banner_url", "") or ""
-    footer_text  = getattr(biz, "birthday_email_footer_text", "") or ""
-    logo_url     = getattr(biz, "logo_url", "") or ""
+    gift_type      = getattr(biz, "birthday_gift_type", "discount") or "discount"
+    gift_product   = getattr(biz, "birthday_gift_product", "") or ""
+    email_intro    = getattr(biz, "birthday_email_intro", "") or ""
+    hdr_color      = getattr(biz, "birthday_email_header_color", "") or getattr(biz, "primary_color", "") or "#1a1a1a"
+    acc_color      = getattr(biz, "birthday_email_accent_color", "") or getattr(biz, "accent_color", "") or "#c8a96e"
+    banner_url     = getattr(biz, "birthday_email_banner_url", "") or ""
+    footer_text    = getattr(biz, "birthday_email_footer_text", "") or ""
+    logo_url       = getattr(biz, "logo_url", "") or ""
+    hdr_text_color = getattr(biz, "birthday_email_text_color", "") or "#ffffff"
+    bg_color       = getattr(biz, "birthday_email_bg_color", "") or "#f4f4f4"
 
     qr_url = f"{BASE_URL}/biz/{slug}/birthday/test-preview/qr.png"
     # Serve banner as real URL — Gmail blocks data: URIs
@@ -5758,7 +5782,8 @@ async def send_birthday_voucher_test(slug: str, request: Request, pin: str = "",
         gift_type=gift_type, gift_product=gift_product, discount_pct=discount_pct,
         hdr_color=hdr_color, acc_color=acc_color, banner_url=served_banner,
         logo_url=logo_url, email_intro=email_intro, footer_text=footer_text,
-        is_test=True, slug=slug
+        is_test=True, slug=slug,
+        hdr_text_color=hdr_text_color, bg_color=bg_color,
     )
 
     sent = send_email(to_email=to_email, subject=f"[TEST] ¡Feliz Cumpleaños, {name}! Tu regalo de {biz.name} te espera", html_body=html)
