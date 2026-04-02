@@ -5,16 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>{{ subject }}</title>
 </head>
-{% set bg     = card_bg_color    or '#26170c' %}
-{% set accent = card_accent_color or '#ffca48' %}
-{% set tc     = card_text_color  or '#ffffff' %}
+{% set bg     = wel_hdr_color    or card_bg_color    or '#26170c' %}
+{% set accent = wel_accent_color or card_accent_color or '#ffca48' %}
+{% set tc     = wel_text_color   or card_text_color  or '#ffffff' %}
+{% set outer_bg = wel_bg_color or '#f5f5f5' %}
 {% set emoji  = card_emoji       or '⭐' %}
 {% set spr    = card_stamps_per_reward or 10 %}
 {% set cols   = 5 %}
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Arial,sans-serif">
+<body style="margin:0;padding:0;background:{{ outer_bg }};font-family:'Helvetica Neue',Arial,sans-serif">
 
 <!-- WRAPPER -->
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:{{ outer_bg }}">
 <tr><td align="center" style="padding:28px 12px">
 
 <!-- MAIN CONTAINER -->
@@ -30,10 +31,20 @@
 </td></tr>
 
 <!-- HERO -->
+{% if wel_banner_url %}
+<tr><td style="background-image:url('{{ wel_banner_url }}');background-size:cover;background-position:center;padding:28px 24px 32px;text-align:center;position:relative;border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="position:absolute;inset:0;background:{{ bg }};opacity:0.55"></div>
+  <div style="position:relative;z-index:1">
+    <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px;color:{{ tc }}">{{ welcome_greeting or ('¡Bienvenida/o, ' + name + '! ' + emoji) }}</div>
+    <div style="font-size:13px;opacity:.55;margin-top:6px;color:{{ tc }}">Tu tarjeta de fidelidad está lista para empezar</div>
+  </div>
+</td></tr>
+{% else %}
 <tr><td style="background:{{ bg }};padding:28px 24px 32px;text-align:center;color:{{ tc }};border-top:1px solid rgba(255,255,255,0.08)">
   <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px">{{ welcome_greeting or ('¡Bienvenida/o, ' + name + '! ' + emoji) }}</div>
   <div style="font-size:13px;opacity:.55;margin-top:6px">Tu tarjeta de fidelidad está lista para empezar</div>
 </td></tr>
+{% endif %}
 
 <!-- CARD VISUAL -->
 <tr><td style="padding:28px 24px;background:#f9f9f9">

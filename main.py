@@ -382,6 +382,11 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS birthday_email_bg_color VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_greeting VARCHAR DEFAULT ''",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_footer VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_header_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_text_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_bg_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_accent_color VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS welcome_email_banner_url VARCHAR DEFAULT ''",
         # ── Apple Wallet live update web service ──────────────────────────────────
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS wallet_auth_token VARCHAR",
         """CREATE TABLE IF NOT EXISTS wallet_devices (
@@ -686,6 +691,11 @@ def render_welcome_email(
     card_logo_url: str = "",
     welcome_greeting: str = "",
     welcome_footer: str = "",
+    wel_hdr_color: str = "",
+    wel_text_color: str = "",
+    wel_bg_color: str = "#f5f5f5",
+    wel_accent_color: str = "",
+    wel_banner_url: str = "",
 ) -> str:
     """Render welcome email HTML with card branding"""
     template = templates.get_template("email_welcome.html")
@@ -709,6 +719,11 @@ def render_welcome_email(
         card_logo_url=card_logo_url,
         welcome_greeting=welcome_greeting or f"¡Bienvenida/o, {name}! {card_emoji}",
         welcome_footer=welcome_footer or f"Tarjeta de Fidelización © 2026",
+        wel_hdr_color=wel_hdr_color,
+        wel_text_color=wel_text_color,
+        wel_bg_color=wel_bg_color,
+        wel_accent_color=wel_accent_color,
+        wel_banner_url=wel_banner_url,
     )
 
 
@@ -6110,13 +6125,19 @@ def get_welcome_email_config(slug: str, pin: str = "", db: Session = Depends(get
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
     return {
-        "welcome_email_enabled":  True,
-        "welcome_email_subject":  (prog.welcome_email_subject if prog else "") or "",
-        "welcome_email_greeting": getattr(biz, "welcome_email_greeting", "") or "",
-        "welcome_email_footer":   getattr(biz, "welcome_email_footer", "") or "",
-        "biz_name":               biz.name or "",
-        "biz_primary_color":      biz.primary_color or "#26170c",
-        "biz_accent_color":       biz.accent_color  or "#ffca48",
+        "welcome_email_enabled":       True,
+        "welcome_email_subject":       (prog.welcome_email_subject if prog else "") or "",
+        "welcome_email_greeting":      getattr(biz, "welcome_email_greeting", "") or "",
+        "welcome_email_footer":        getattr(biz, "welcome_email_footer", "") or "",
+        "welcome_email_header_color":  getattr(biz, "welcome_email_header_color", "") or "",
+        "welcome_email_text_color":    getattr(biz, "welcome_email_text_color", "") or "",
+        "welcome_email_bg_color":      getattr(biz, "welcome_email_bg_color", "") or "",
+        "welcome_email_accent_color":  getattr(biz, "welcome_email_accent_color", "") or "",
+        "welcome_email_banner_url":    getattr(biz, "welcome_email_banner_url", "") or "",
+        "biz_name":                    biz.name or "",
+        "biz_primary_color":           biz.primary_color or "#26170c",
+        "biz_accent_color":            biz.accent_color  or "#ffca48",
+        "biz_logo_url":                biz.logo_url or "",
     }
 
 
@@ -6133,6 +6154,16 @@ async def update_welcome_email_config(slug: str, request: Request, db: Session =
         biz.welcome_email_greeting = (body.get("welcome_email_greeting") or "").strip()
     if body.get("welcome_email_footer") is not None:
         biz.welcome_email_footer = (body.get("welcome_email_footer") or "").strip()
+    if body.get("welcome_email_header_color") is not None:
+        biz.welcome_email_header_color = (body.get("welcome_email_header_color") or "").strip()
+    if body.get("welcome_email_text_color") is not None:
+        biz.welcome_email_text_color = (body.get("welcome_email_text_color") or "").strip()
+    if body.get("welcome_email_bg_color") is not None:
+        biz.welcome_email_bg_color = (body.get("welcome_email_bg_color") or "").strip()
+    if body.get("welcome_email_accent_color") is not None:
+        biz.welcome_email_accent_color = (body.get("welcome_email_accent_color") or "").strip()
+    if body.get("welcome_email_banner_url") is not None:
+        biz.welcome_email_banner_url = (body.get("welcome_email_banner_url") or "").strip()
     # Subject is stored per card program
     subject = (body.get("welcome_email_subject") or "").strip()
     if subject:
@@ -6153,17 +6184,78 @@ def welcome_email_preview(slug: str, pin: str = "", db: Session = Depends(get_db
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
-    greeting = getattr(biz, "welcome_email_greeting", "") or ""
-    footer   = getattr(biz, "welcome_email_footer", "") or ""
+    greeting   = getattr(biz, "welcome_email_greeting", "") or ""
+    footer     = getattr(biz, "welcome_email_footer", "") or ""
+    hdr_color  = getattr(biz, "welcome_email_header_color", "") or ""
+    text_color = getattr(biz, "welcome_email_text_color", "") or ""
+    bg_color   = getattr(biz, "welcome_email_bg_color", "") or ""
+    acc_color  = getattr(biz, "welcome_email_accent_color", "") or ""
+    banner_url = getattr(biz, "welcome_email_banner_url", "") or ""
+    served_banner = f"{BASE_URL}/biz/{slug}/welcome-banner.jpg" if banner_url else ""
     html = render_welcome_email(
         name="María",
         card_url=f"{BASE_URL}/biz/{slug}/register",
         stamps=0,
         welcome_greeting=greeting,
         welcome_footer=footer,
+        wel_hdr_color=hdr_color,
+        wel_text_color=text_color,
+        wel_bg_color=bg_color,
+        wel_accent_color=acc_color,
+        wel_banner_url=served_banner,
         **_prog_email_kwargs(prog, biz),
     )
     return HTMLResponse(content=html)
+
+
+@app.get("/biz/{slug}/welcome-banner.jpg")
+def serve_welcome_banner(slug: str, db: Session = Depends(get_db)):
+    """Serve welcome email banner image — Gmail blocks data: URIs."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404)
+    banner = getattr(biz, "welcome_email_banner_url", "") or ""
+    if not banner or not banner.startswith("data:image"):
+        raise HTTPException(status_code=404)
+    import base64 as _b64, io as _io
+    _, b64data = banner.split(",", 1)
+    raw = _b64.b64decode(b64data)
+    return StreamingResponse(_io.BytesIO(raw), media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.post("/api/biz/{slug}/welcome-email-banner")
+async def upload_welcome_banner(slug: str, pin: str = "", file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Upload banner image for welcome email header."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    ct = file.content_type or ""
+    if not ct.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Solo se permiten imágenes")
+    raw = await file.read()
+    if len(raw) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Imagen demasiado grande (máx 10 MB)")
+    try:
+        from PIL import Image as _PILImg
+        import io as _io, base64 as _b64
+        img = _PILImg.open(_io.BytesIO(raw)).convert("RGB")
+        TW, TH = 1200, 480
+        iw, ih = img.size
+        scale_f = max(TW / iw, TH / ih)
+        nw, nh = round(iw * scale_f), round(ih * scale_f)
+        img = img.resize((nw, nh), _PILImg.LANCZOS)
+        left = (nw - TW) // 2; top = (nh - TH) // 2
+        img = img.crop((left, top, left + TW, top + TH))
+        buf = _io.BytesIO()
+        img.save(buf, format="JPEG", quality=85, optimize=True)
+        data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Error procesando imagen: {e}")
+    db.execute(text("UPDATE businesses SET welcome_email_banner_url=:url WHERE slug=:slug"), {"url": data_url, "slug": slug})
+    db.commit()
+    return {"status": "ok", "banner_url": data_url}
 
 
 # ══════════════════════════════════════════════════════════════════════════════

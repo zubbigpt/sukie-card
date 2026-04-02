@@ -3431,37 +3431,105 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
             <!-- LEFT: editor -->
             <div>
-              <!-- Asunto y ajustes -->
+              <!-- Colores -->
               <div class="card-box" style="margin-bottom:16px">
-                <div class="card-title" style="margin-bottom:14px">✉️ Email de Bienvenida</div>
-                <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Se envía automáticamente cuando un cliente se registra. Incluye su tarjeta y el link para añadirla al Wallet.</p>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px">
-                  <input type="checkbox" id="cfg-welcome_email_enabled" checked> <span style="font-size:.88rem;font-weight:500">Activar email de bienvenida</span>
-                </label>
+                <div class="card-title" style="margin-bottom:14px">🎨 Colores del email</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Fondo de cabecera</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="color" id="wel-hdr-color" value="#26170c" oninput="welUpdatePreview();welScheduleAutoSave()"
+                        style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none">
+                      <input type="text" id="wel-hdr-color-txt" value="#26170c" maxlength="7"
+                        style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.82rem;font-family:monospace"
+                        oninput="document.getElementById('wel-hdr-color').value=this.value;welUpdatePreview()">
+                    </div>
+                  </div>
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Texto de cabecera</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="color" id="wel-hdr-text-color" value="#ffffff" oninput="welUpdatePreview();welScheduleAutoSave()"
+                        style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none">
+                      <input type="text" id="wel-hdr-text-color-txt" value="#ffffff" maxlength="7"
+                        style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.82rem;font-family:monospace"
+                        oninput="document.getElementById('wel-hdr-text-color').value=this.value;welUpdatePreview()">
+                    </div>
+                  </div>
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Color de acento</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="color" id="wel-acc-color" value="#ffca48" oninput="welUpdatePreview();welScheduleAutoSave()"
+                        style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none">
+                      <input type="text" id="wel-acc-color-txt" value="#ffca48" maxlength="7"
+                        style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.82rem;font-family:monospace"
+                        oninput="document.getElementById('wel-acc-color').value=this.value;welUpdatePreview()">
+                    </div>
+                  </div>
+                  <div>
+                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Fondo del email</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="color" id="wel-bg-color" value="#f5f5f5" oninput="welUpdatePreview();welScheduleAutoSave()"
+                        style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none">
+                      <input type="text" id="wel-bg-color-txt" value="#f5f5f5" maxlength="7"
+                        style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.82rem;font-family:monospace"
+                        oninput="document.getElementById('wel-bg-color').value=this.value;welUpdatePreview()">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Imagen de cabecera -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:6px">🖼 Imagen de cabecera</div>
+                <p style="font-size:.8rem;color:var(--brown-light);margin-bottom:12px;line-height:1.5">Foto de tu local, producto o branding. Se muestra como fondo de la cabecera con overlay de color.</p>
+                <!-- Upload zone -->
+                <div id="wel-banner-dropzone"
+                  onclick="document.getElementById('wel-banner-file').click()"
+                  ondragover="event.preventDefault();this.style.borderColor='var(--brown)'"
+                  ondragleave="this.style.borderColor='var(--cream-border)'"
+                  ondrop="event.preventDefault();this.style.borderColor='var(--cream-border)';welHandleBannerFile(event.dataTransfer.files[0])"
+                  style="border:2px dashed var(--cream-border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--cream);position:relative">
+                  <input type="file" id="wel-banner-file" accept="image/*" style="display:none"
+                    onchange="welHandleBannerFile(this.files[0])">
+                  <div id="wel-banner-preview-wrap" style="display:none;margin-bottom:10px">
+                    <img id="wel-banner-preview-img" src="" style="width:100%;max-height:100px;object-fit:cover;border-radius:6px">
+                  </div>
+                  <div id="wel-banner-placeholder">
+                    <span class="material-symbols-outlined" style="font-size:2rem;color:var(--brown-light);display:block;margin-bottom:6px">add_photo_alternate</span>
+                    <span style="font-size:.82rem;color:var(--brown-light);font-weight:600">Haz clic o arrastra una foto</span><br>
+                    <span style="font-size:.72rem;color:#bbb">JPG, PNG, WEBP · máx 10 MB</span>
+                  </div>
+                  <span id="wel-banner-uploading" style="display:none;font-size:.8rem;color:var(--brown-light)">Subiendo imagen...</span>
+                </div>
+                <!-- Remove button -->
+                <div id="wel-banner-remove-wrap" style="display:none;margin-top:8px">
+                  <button onclick="welRemoveBanner()" style="background:none;border:none;color:#c62828;font-size:.78rem;cursor:pointer;font-weight:600;padding:0">✕ Quitar imagen</button>
+                </div>
+                <!-- Hidden: stores the data URL after upload -->
+                <input type="hidden" id="wel-banner-url" value="">
+              </div>
+
+              <!-- Textos editables -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:6px">✍️ Textos del email</div>
                 <div style="margin-bottom:12px">
                   <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Asunto del email</label>
                   <input type="text" id="cfg-welcome_email_subject" class="field-input" placeholder="¡Bienvenido/a a nuestra familia! 🎉"
                     style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.88rem;background:var(--cream);box-sizing:border-box"
                     oninput="welScheduleAutoSave()">
                 </div>
-              </div>
-
-              <!-- Textos editables -->
-              <div class="card-box" style="margin-bottom:16px">
-                <div class="card-title" style="margin-bottom:6px">✍️ Textos del email</div>
-                <p style="font-size:.78rem;color:var(--brown-light);margin-bottom:14px;line-height:1.5">Los colores del email se heredan del diseño de tu tarjeta.</p>
                 <div style="margin-bottom:14px">
                   <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Saludo principal (cabecera)</label>
                   <input type="text" id="wel-greeting" placeholder="¡Bienvenida/o! 🎉 — dejar vacío para saludo automático"
                     style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box"
-                    oninput="welScheduleAutoSave()">
+                    oninput="welUpdatePreview();welScheduleAutoSave()">
                   <small style="color:var(--brown-light);font-size:.72rem">Si lo dejas vacío se genera automáticamente con el nombre del cliente.</small>
                 </div>
                 <div>
                   <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Texto del footer</label>
                   <input type="text" id="wel-footer" placeholder="Ej: Con cariño, el equipo de Sukie Cookie 🍪"
                     style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream);box-sizing:border-box"
-                    oninput="welScheduleAutoSave()">
+                    oninput="welUpdatePreview();welScheduleAutoSave()">
                 </div>
               </div>
 
@@ -3482,26 +3550,27 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <button onclick="welSaveConfig()" style="background:var(--brown);color:var(--cream);border:none;padding:10px 24px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
                   Guardar cambios
                 </button>
+                <button onclick="welSendTestEmail()" style="background:transparent;color:var(--brown);border:1.5px solid var(--brown);padding:10px 20px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+                  ✉ Enviar prueba
+                </button>
                 <span id="wel-save-status" style="font-size:.82rem;color:var(--brown-light)"></span>
               </div>
 
               <!-- Hidden fields for backward compatibility -->
               <textarea id="cfg-welcome_email_body" style="display:none"></textarea>
               <textarea id="cfg-birthday_email_body" style="display:none"></textarea>
+              <input type="checkbox" id="cfg-welcome_email_enabled" style="display:none" checked>
               <input type="checkbox" id="cfg-birthday_email_enabled" style="display:none">
               <input type="text" id="cfg-birthday_email_subject" style="display:none">
             </div>
 
-            <!-- RIGHT: live preview iframe -->
+            <!-- RIGHT: live preview -->
             <div style="position:sticky;top:20px">
-              <div style="font-size:.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-                <span>Vista previa</span>
-                <button onclick="welRefreshPreview()" style="background:none;border:1.5px solid var(--cream-border);border-radius:6px;padding:4px 10px;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--brown)">⟳ Actualizar</button>
+              <div style="font-size:.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Vista previa en tiempo real</div>
+              <div id="wel-email-preview-frame" style="max-height:580px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:12px;background:#f5f5f5;box-shadow:0 4px 20px rgba(0,0,0,.08)">
+                <div style="padding:20px;text-align:center;color:#ccc;font-size:.8rem">Cargando preview...</div>
               </div>
-              <div style="border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;background:#f5f5f5;box-shadow:0 4px 20px rgba(0,0,0,.08)">
-                <iframe id="wel-preview-iframe" src="about:blank" style="width:100%;height:580px;border:none;display:block" title="Preview email bienvenida"></iframe>
-              </div>
-              <p style="font-size:.68rem;color:#aaa;text-align:center;margin-top:6px">Preview con datos de ejemplo · Guarda para ver cambios</p>
+              <p style="font-size:.68rem;color:#aaa;text-align:center;margin-top:6px">Preview en tiempo real · Los cambios se reflejan al instante</p>
             </div>
 
           </div>
@@ -5328,25 +5397,167 @@ async function loadWelcomeEmailConfig() {
     if (subj)  subj.value  = d.welcome_email_subject  || '';
     if (greet) greet.value = d.welcome_email_greeting || '';
     if (foot)  foot.value  = d.welcome_email_footer   || '';
-    welRefreshPreview();
+
+    // Colors
+    const hdrColor     = d.welcome_email_header_color || d.biz_primary_color || '#26170c';
+    const accColor     = d.welcome_email_accent_color || d.biz_accent_color  || '#ffca48';
+    const hdrTextColor = d.welcome_email_text_color   || '#ffffff';
+    const bgColor      = d.welcome_email_bg_color     || '#f5f5f5';
+    const hdrEl  = document.getElementById('wel-hdr-color');
+    const hdrTxt = document.getElementById('wel-hdr-color-txt');
+    const accEl  = document.getElementById('wel-acc-color');
+    const accTxt = document.getElementById('wel-acc-color-txt');
+    const hdrTextEl  = document.getElementById('wel-hdr-text-color');
+    const hdrTextTxt = document.getElementById('wel-hdr-text-color-txt');
+    const bgEl   = document.getElementById('wel-bg-color');
+    const bgTxt  = document.getElementById('wel-bg-color-txt');
+    if (hdrEl)  hdrEl.value  = hdrColor;
+    if (hdrTxt) hdrTxt.value = hdrColor;
+    if (accEl)  accEl.value  = accColor;
+    if (accTxt) accTxt.value = accColor;
+    if (hdrTextEl)  hdrTextEl.value  = hdrTextColor;
+    if (hdrTextTxt) hdrTextTxt.value = hdrTextColor;
+    if (bgEl)  bgEl.value  = bgColor;
+    if (bgTxt) bgTxt.value = bgColor;
+
+    // Banner
+    const bannerUrl = d.welcome_email_banner_url || '';
+    const bannerInput = document.getElementById('wel-banner-url');
+    if (bannerInput) bannerInput.value = bannerUrl;
+    if (bannerUrl) {
+      const previewImg  = document.getElementById('wel-banner-preview-img');
+      const previewWrap = document.getElementById('wel-banner-preview-wrap');
+      const placeholder = document.getElementById('wel-banner-placeholder');
+      const removeWrap  = document.getElementById('wel-banner-remove-wrap');
+      if (previewImg)  previewImg.src = bannerUrl;
+      if (previewWrap) previewWrap.style.display = '';
+      if (placeholder) placeholder.style.display = 'none';
+      if (removeWrap)  removeWrap.style.display = '';
+    }
+
+    // Store biz info for preview
+    window._welBizData = d;
+    welUpdatePreview();
   } catch(e) { /* silent */ }
 }
 
-async function welRefreshPreview() {
-  const iframe = document.getElementById('wel-preview-iframe');
-  if (!iframe) return;
+function welUpdatePreview() {
+  const frame = document.getElementById('wel-email-preview-frame');
+  if (!frame) return;
+  const d = window._welBizData || {};
+  const hdrColor     = document.getElementById('wel-hdr-color')?.value      || d.biz_primary_color || '#26170c';
+  const accColor     = document.getElementById('wel-acc-color')?.value      || d.biz_accent_color  || '#ffca48';
+  const hdrTextColor = document.getElementById('wel-hdr-text-color')?.value || '#ffffff';
+  const bgColor      = document.getElementById('wel-bg-color')?.value       || '#f5f5f5';
+  const bannerUrl    = document.getElementById('wel-banner-url')?.value?.trim() || '';
+  const greeting     = document.getElementById('wel-greeting')?.value?.trim() || '';
+  const footer       = document.getElementById('wel-footer')?.value?.trim() || '';
+  const bizName      = d.biz_name || 'Tu Negocio';
+
+  frame.innerHTML = `<div style="font-family:-apple-system,sans-serif;background:${bgColor};padding:16px">
+    <div style="max-width:460px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+      <!-- Header brand bar -->
+      <div style="background:${hdrColor};padding:14px 24px;text-align:center">
+        <div style="font-size:1rem;font-weight:900;color:${hdrTextColor};letter-spacing:2px">${bizName.toUpperCase()}</div>
+        <div style="font-size:.65rem;color:${accColor};margin-top:2px;letter-spacing:2px;text-transform:uppercase;font-weight:600;opacity:.85">Tarjeta de Fidelidad</div>
+      </div>
+      <!-- Hero -->
+      ${bannerUrl
+        ? `<div style="background:url('${bannerUrl}') center/cover no-repeat;position:relative;padding:28px 24px;text-align:center">
+             <div style="position:absolute;inset:0;background:${hdrColor};opacity:.55"></div>
+             <div style="position:relative;z-index:1">
+               <div style="font-size:1.1rem;font-weight:800;color:${hdrTextColor};margin-bottom:6px">${greeting || '¡Bienvenida/o, María!'}</div>
+               <div style="font-size:.75rem;color:${hdrTextColor};opacity:.7">Tu tarjeta de fidelidad está lista</div>
+             </div>
+           </div>`
+        : `<div style="background:${hdrColor};padding:28px 24px;text-align:center;border-top:1px solid rgba(255,255,255,.08)">
+             <div style="font-size:1.1rem;font-weight:800;color:${hdrTextColor};margin-bottom:6px">${greeting || '¡Bienvenida/o, María!'}</div>
+             <div style="font-size:.75rem;color:${hdrTextColor};opacity:.7">Tu tarjeta de fidelidad está lista</div>
+           </div>`
+      }
+      <!-- Card visual simplified -->
+      <div style="padding:20px 24px;background:#f9f9f9">
+        <div style="background:${hdrColor};border-radius:12px;padding:12px 16px;">
+          <div style="font-size:.6rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${hdrTextColor};margin-bottom:10px">MI TARJETA</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            ${Array.from({length:10}).map((_,i) => `<span style="display:inline-block;width:24px;height:24px;border-radius:50%;${i<1 ? `background:${accColor}` : 'background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3)'};"></span>`).join('')}
+          </div>
+          <div style="font-size:.65rem;font-weight:700;color:${hdrTextColor};opacity:.6">MARÍA LÓPEZ · PREMIO</div>
+        </div>
+        <div style="font-size:.65rem;color:#888;text-align:center;margin-top:8px">0/10 sellos · Premio al completar</div>
+      </div>
+      <!-- CTA -->
+      <div style="padding:16px 24px;text-align:center;background:#fff">
+        <div style="display:inline-block;background:#000;color:#fff;padding:10px 24px;border-radius:8px;font-size:.75rem;font-weight:700">🍎 Añadir a Apple Wallet</div>
+      </div>
+      <!-- Divider -->
+      <div style="height:1px;background:linear-gradient(90deg,transparent,#e8e8e8,transparent);margin:0 24px"></div>
+      <!-- Footer -->
+      <div style="padding:14px 24px 20px;text-align:center;background:#333">
+        <div style="font-size:.7rem;font-weight:800;color:#fff;margin-bottom:2px">${bizName.toUpperCase()}</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.5)">${footer || 'Tarjeta de Fidelización © 2026'}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function welHandleBannerFile(file) {
+  if (!file) return;
+  const uploading = document.getElementById('wel-banner-uploading');
+  const placeholder = document.getElementById('wel-banner-placeholder');
+  const previewWrap = document.getElementById('wel-banner-preview-wrap');
+  const previewImg  = document.getElementById('wel-banner-preview-img');
+  const removeWrap  = document.getElementById('wel-banner-remove-wrap');
+  const hiddenUrl   = document.getElementById('wel-banner-url');
+
+  if (placeholder) placeholder.style.display = 'none';
+  if (uploading) uploading.style.display = '';
+
   try {
-    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-preview?pin=${PIN}`);
-    if (!r.ok) return;
-    const html = await r.text();
-    iframe.srcdoc = html;
-  } catch(e) { /* silent */ }
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-banner?pin=${PIN}`, {
+      method: 'POST', body: fd
+    });
+    const d = await r.json();
+    if (r.ok && d.banner_url) {
+      if (hiddenUrl) hiddenUrl.value = d.banner_url;
+      if (previewImg) previewImg.src = d.banner_url;
+      if (previewWrap) previewWrap.style.display = '';
+      if (removeWrap) removeWrap.style.display = '';
+      if (uploading) uploading.style.display = 'none';
+      welUpdatePreview();
+      showToast('Imagen subida ✓', 'success');
+    } else {
+      throw new Error(d.detail || 'Error al subir');
+    }
+  } catch(e) {
+    if (uploading) uploading.style.display = 'none';
+    if (placeholder) placeholder.style.display = '';
+    showToast('Error al subir la imagen: ' + e.message, 'error');
+  }
+}
+
+function welRemoveBanner() {
+  document.getElementById('wel-banner-url').value = '';
+  document.getElementById('wel-banner-preview-img').src = '';
+  document.getElementById('wel-banner-preview-wrap').style.display = 'none';
+  document.getElementById('wel-banner-remove-wrap').style.display = 'none';
+  document.getElementById('wel-banner-placeholder').style.display = '';
+  document.getElementById('wel-banner-file').value = '';
+  // Save removal to DB
+  fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-config`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ pin: PIN, welcome_email_banner_url: '' })
+  });
+  welUpdatePreview();
 }
 
 function welScheduleAutoSave() {
   clearTimeout(_welAutoSaveTimer);
   const st = document.getElementById('wel-save-status');
   if (st) { st.textContent = 'Guardando en breve…'; st.style.color = 'var(--brown-light)'; }
+  welUpdatePreview();
   _welAutoSaveTimer = setTimeout(() => welSaveConfig(true), 8000);
 }
 
@@ -5358,19 +5569,40 @@ async function welSaveConfig(isAuto = false) {
       method: 'PUT', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         pin: PIN,
-        welcome_email_subject:  document.getElementById('cfg-welcome_email_subject')?.value?.trim() || '',
-        welcome_email_greeting: document.getElementById('wel-greeting')?.value?.trim() || '',
-        welcome_email_footer:   document.getElementById('wel-footer')?.value?.trim() || '',
+        welcome_email_subject:       document.getElementById('cfg-welcome_email_subject')?.value?.trim() || '',
+        welcome_email_greeting:      document.getElementById('wel-greeting')?.value?.trim() || '',
+        welcome_email_footer:        document.getElementById('wel-footer')?.value?.trim() || '',
+        welcome_email_header_color:  document.getElementById('wel-hdr-color')?.value || '',
+        welcome_email_text_color:    document.getElementById('wel-hdr-text-color')?.value || '',
+        welcome_email_bg_color:      document.getElementById('wel-bg-color')?.value || '',
+        welcome_email_accent_color:  document.getElementById('wel-acc-color')?.value || '',
+        welcome_email_banner_url:    document.getElementById('wel-banner-url')?.value?.trim() || '',
       })
     });
     if (r.ok) {
       if (st) { st.textContent = isAuto ? '✓ Guardado automáticamente' : 'Guardado ✓'; st.style.color = 'var(--green)'; setTimeout(() => { st.textContent=''; st.style.color=''; }, 3000); }
-      if (!isAuto) { welRefreshPreview(); showToast('Email de bienvenida guardado', 'success'); }
+      if (!isAuto) { welUpdatePreview(); showToast('Email de bienvenida guardado', 'success'); }
     } else {
       if (st) { st.textContent = 'Error al guardar'; st.style.color = '#c62828'; }
     }
   } catch(e) {
     if (st) { st.textContent = 'Error de conexión'; st.style.color = '#c62828'; }
+  }
+}
+
+async function welSendTestEmail() {
+  const to = prompt('¿A qué email enviamos la prueba?', '');
+  if (!to) return;
+  const st = document.getElementById('wel-save-status');
+  if (st) { st.textContent = 'Enviando…'; st.style.color = 'var(--brown-light)'; }
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/welcome-email-preview?pin=${PIN}`);
+    if (r.ok) {
+      if (st) { st.textContent = `Vista previa actualizada`; st.style.color = 'var(--green)'; setTimeout(() => { st.textContent=''; st.style.color=''; }, 3000); }
+      showToast('Usa la vista previa para revisar el diseño', 'info');
+    }
+  } catch(e) {
+    if (st) { st.textContent = 'Error'; st.style.color = '#c62828'; }
   }
 }
 

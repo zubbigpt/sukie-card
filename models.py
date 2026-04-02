@@ -170,5 +170,10 @@ class Business(Base):
     birthday_email_bg_color     = Column(String, nullable=True, default="")   # color de fondo del wrapper
     welcome_email_greeting      = Column(String, nullable=True, default="")   # texto hero bienvenida
     welcome_email_footer        = Column(String, nullable=True, default="")   # pie del email bienvenida
+    welcome_email_header_color  = Column(String, nullable=True, default="")   # color fondo cabecera bienvenida
+    welcome_email_text_color    = Column(String, nullable=True, default="")   # color texto cabecera bienvenida
+    welcome_email_bg_color      = Column(String, nullable=True, default="")   # color fondo wrapper bienvenida
+    welcome_email_accent_color  = Column(String, nullable=True, default="")   # color acento bienvenida
+    welcome_email_banner_url    = Column(String, nullable=True, default="")   # imagen cabecera bienvenida
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
