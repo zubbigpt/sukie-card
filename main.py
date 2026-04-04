@@ -107,6 +107,47 @@ FREE_LIMITS = {
 def _get_biz_plan(biz) -> str:
     return (getattr(biz, "plan", None) or "free").lower()
 
+
+def _create_stripe_trial_session(biz, db: Session) -> str | None:
+    """Create a Stripe Checkout session with 14-day trial for new registrations.
+    Collects card details upfront but only charges after the trial ends.
+    Returns the Stripe checkout URL, or None if Stripe is not configured."""
+    if not STRIPE_SECRET_KEY or not STRIPE_PRICE_ID_PRO:
+        return None
+    try:
+        customer_id = getattr(biz, "stripe_customer_id", None)
+        if not customer_id:
+            customer = _stripe_sdk.Customer.create(
+                email=biz.email,
+                name=biz.name,
+                metadata={"biz_id": str(biz.id), "biz_slug": biz.slug},
+            )
+            customer_id = customer.id
+            db.execute(text("UPDATE businesses SET stripe_customer_id=:cid WHERE id=:bid"),
+                       {"cid": customer_id, "bid": str(biz.id)})
+            db.commit()
+
+        session = _stripe_sdk.checkout.Session.create(
+            customer=customer_id,
+            mode="subscription",
+            line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
+            payment_method_collection="always",   # collect card even in trial
+            subscription_data={
+                "trial_period_days": 14,
+                "metadata": {"biz_id": str(biz.id), "biz_slug": biz.slug},
+            },
+            success_url=f"{BASE_URL}/api/app/checkout-onboarding?slug={biz.slug}",
+            cancel_url=f"{BASE_URL}/app/register?trial_cancel=1",
+            allow_promotion_codes=True,
+            billing_address_collection="required",
+            locale="es",
+        )
+        return session.url
+    except Exception as e:
+        print(f"⚠️ Stripe trial session error for {biz.slug}: {e}")
+        return None
+
+
 def _require_pro(biz):
     """Raise HTTP 402 if the business is on the Free plan."""
     if _get_biz_plan(biz) != "pro":
@@ -3702,26 +3743,61 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     ), {"bid": str(business.id)})
     db.commit()
 
-    # ── Email de confirmación ─────────────────────────────────────────────────
-    # Stripe checkout is triggered from the dashboard after the 14-day trial ends.
+    # ── Email de bienvenida + confirmación ────────────────────────────────────
     confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
+    price_display = STRIPE_PRO_PRICE_DISPLAY
     try:
         email_sent = send_email(
             to_email=email,
-            subject="Confirma tu cuenta en ZubCard",
+            subject=f"¡Bienvenido a ZubCard, {name}! Confirma tu cuenta",
             html_body=f"""
-<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
-  <h2 style="color:#26170c;font-size:1.4rem;margin-bottom:8px">¡Bienvenido a ZubCard, {name}! 🎉</h2>
-  <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
-    Para activar tu cuenta y acceder a tu panel de administración, confirma tu email haciendo clic en el botón de abajo.
-  </p>
-  <a href="{confirm_url}" style="display:inline-block;background:#26170c;color:#fff;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.95rem">
-    ✅ Confirmar mi cuenta
-  </a>
-  <p style="color:#a08d83;font-size:.82rem;margin-top:28px;line-height:1.6">
-    Si no creaste esta cuenta, ignora este mensaje.<br>
-    El enlace expira en 24 horas.
-  </p>
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
+  <div style="background:#26170c;padding:32px 36px 28px">
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:1.7rem;font-weight:900;color:#fff;letter-spacing:-.5px">Zub<span style="color:#ffca48">Card</span></div>
+    <div style="color:#c9a84c;font-size:.8rem;font-weight:600;letter-spacing:1px;margin-top:4px">TARJETAS DE FIDELIZACIÓN DIGITALES</div>
+  </div>
+  <div style="padding:36px 36px 12px">
+    <h2 style="color:#26170c;font-size:1.35rem;font-weight:800;margin:0 0 10px">¡Bienvenido/a, {name}! 🎉</h2>
+    <p style="color:#5c4a3a;line-height:1.75;margin:0 0 24px;font-size:.95rem">
+      Gracias por afiliarte a ZubCard. Estás a un clic de crear tu tarjeta de fidelización digital y empezar a fidelizar a tus clientes.
+    </p>
+
+    <div style="background:#fff8f5;border:1.5px solid #ffeade;border-radius:10px;padding:20px 22px;margin-bottom:28px">
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#a08d83;margin-bottom:10px">Tu prueba gratuita</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#3d2b1f">
+          <span style="color:#27ae60;font-weight:800;flex-shrink:0">✓</span>
+          <span><strong>14 días gratis</strong> — acceso completo a todas las funciones sin coste</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#3d2b1f">
+          <span style="color:#27ae60;font-weight:800;flex-shrink:0">✓</span>
+          <span><strong>Cancela cuando quieras</strong> antes del día 14 y no se te cobrará nada</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#3d2b1f">
+          <span style="color:#27ae60;font-weight:800;flex-shrink:0">✓</span>
+          <span>Si continúas después del día 14, se te cobrará <strong>{price_display}/mes</strong> automáticamente</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="color:#5c4a3a;line-height:1.7;margin:0 0 24px;font-size:.92rem">
+      Para activar tu cuenta y añadir tu método de pago, haz clic en el botón de abajo:
+    </p>
+
+    <div style="text-align:center;margin-bottom:28px">
+      <a href="{confirm_url}" style="display:inline-block;background:#26170c;color:#fff;padding:15px 36px;border-radius:8px;text-decoration:none;font-weight:800;font-size:1rem;letter-spacing:.2px">
+        Activar mi cuenta →
+      </a>
+    </div>
+
+    <p style="color:#a08d83;font-size:.8rem;line-height:1.65;border-top:1px solid #f0e8e0;padding-top:18px;margin:0">
+      Si no creaste esta cuenta en ZubCard, ignora este mensaje.<br>
+      El enlace de activación expira en 24 horas.
+    </p>
+  </div>
+  <div style="background:#f7f0e8;padding:16px 36px;text-align:center">
+    <span style="color:#a08d83;font-size:.75rem">© ZubCard · zubcard.com</span>
+  </div>
 </div>"""
         )
     except Exception:
@@ -3755,12 +3831,19 @@ async def confirm_email(token: str = "", db: Session = Depends(get_db)):
         "UPDATE businesses SET email_confirmed=TRUE, email_confirm_token=NULL WHERE id=:bid"
     ), {"bid": str(biz.id)})
     db.commit()
-    # New user: go to onboarding to configure their card first
+    db.refresh(biz)
+
+    # Redirect to Stripe checkout (14-day trial, collects card details)
+    checkout_url = _create_stripe_trial_session(biz, db)
+    if checkout_url:
+        return RedirectResponse(checkout_url, status_code=302)
+
+    # Fallback if Stripe not configured: go directly to onboarding
     response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
     response.set_cookie(
         "_zc_boot",
         biz.admin_pin,
-        max_age=600,         # 10 min for onboarding form
+        max_age=600,
         httponly=False,
         secure=True,
         samesite="strict",
@@ -3860,6 +3943,25 @@ async def checkout_success_redirect(token: str = "", slug: str = "", db: Session
         secure=True,
         samesite="strict",
         path=f"/biz/{target_slug}/dashboard",
+    )
+    return response
+
+
+@app.get("/api/app/checkout-onboarding")
+async def checkout_onboarding_redirect(slug: str = "", db: Session = Depends(get_db)):
+    """After Stripe registration checkout: set onboarding cookie and redirect to card setup."""
+    biz = get_business_by_slug(slug, db) if slug else None
+    if not biz:
+        return RedirectResponse("/app/login?checkout_ok=1", status_code=302)
+    response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
+    response.set_cookie(
+        "_zc_boot",
+        biz.admin_pin,
+        max_age=600,
+        httponly=False,
+        secure=True,
+        samesite="strict",
+        path="/app/onboarding",
     )
     return response
 
@@ -6185,13 +6287,61 @@ async def auth_google_callback(
         db.commit()
         is_new_user = True
 
-    # New users go to onboarding to set up their card first
+    # New users: send welcome email then redirect to Stripe trial checkout
     if is_new_user:
+        price_display = STRIPE_PRO_PRICE_DISPLAY
+        try:
+            send_email(
+                to_email=biz.email,
+                subject=f"¡Bienvenido/a a ZubCard, {biz.name}!",
+                html_body=f"""
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
+  <div style="background:#26170c;padding:32px 36px 28px">
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:1.7rem;font-weight:900;color:#fff;letter-spacing:-.5px">Zub<span style="color:#ffca48">Card</span></div>
+    <div style="color:#c9a84c;font-size:.8rem;font-weight:600;letter-spacing:1px;margin-top:4px">TARJETAS DE FIDELIZACIÓN DIGITALES</div>
+  </div>
+  <div style="padding:36px 36px 12px">
+    <h2 style="color:#26170c;font-size:1.35rem;font-weight:800;margin:0 0 10px">¡Bienvenido/a, {biz.name}! 🎉</h2>
+    <p style="color:#5c4a3a;line-height:1.75;margin:0 0 24px;font-size:.95rem">
+      Gracias por afiliarte a ZubCard. Tu cuenta está activa y estás configurando tu tarjeta de fidelización digital.
+    </p>
+    <div style="background:#fff8f5;border:1.5px solid #ffeade;border-radius:10px;padding:20px 22px;margin-bottom:28px">
+      <div style="font-size:.7rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#a08d83;margin-bottom:10px">Tu prueba gratuita</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#3d2b1f">
+          <span style="color:#27ae60;font-weight:800;flex-shrink:0">✓</span>
+          <span><strong>14 días gratis</strong> — acceso completo a todas las funciones sin coste</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#3d2b1f">
+          <span style="color:#27ae60;font-weight:800;flex-shrink:0">✓</span>
+          <span><strong>Cancela cuando quieras</strong> antes del día 14 y no se te cobrará nada</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#3d2b1f">
+          <span style="color:#27ae60;font-weight:800;flex-shrink:0">✓</span>
+          <span>Si continúas, se te cobrará <strong>{price_display}/mes</strong> a partir del día 15</span>
+        </div>
+      </div>
+    </div>
+    <p style="color:#a08d83;font-size:.8rem;line-height:1.65;border-top:1px solid #f0e8e0;padding-top:18px;margin:0">
+      Puedes gestionar o cancelar tu suscripción en cualquier momento desde tu panel de administración.<br>
+      © ZubCard · zubcard.com
+    </p>
+  </div>
+</div>"""
+            )
+        except Exception:
+            pass
+
+        checkout_url = _create_stripe_trial_session(biz, db)
+        if checkout_url:
+            return RedirectResponse(checkout_url, status_code=302)
+
+        # Fallback if Stripe not configured
         response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
         response.set_cookie(
             "_zc_boot",
             biz.admin_pin,
-            max_age=600,       # 10 min — enough for onboarding form
+            max_age=600,
             httponly=False,
             secure=True,
             samesite="strict",
