@@ -1881,94 +1881,114 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div style="padding:24px 28px;border-right:1px solid #f0f0f0;overflow-y:auto">
 
               <!-- TAB: TARJETA -->
-              <div id="ec-panel-card">
-                <!-- Emoji + Name -->
-                <div style="display:grid;grid-template-columns:60px 1fr;gap:10px;margin-bottom:14px;align-items:end">
+              <div id="ec-panel-card" style="font-family:'Manrope',system-ui,sans-serif">
+
+                <!-- Nombre de la tarjeta -->
+                <div style="margin-bottom:18px">
+                  <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Nombre de la tarjeta</label>
+                  <input id="ec-name" type="text" placeholder="Ej: Coffee Card" oninput="ecUpdatePreview()"
+                    style="width:100%;padding:11px 14px;border:none;border-radius:6px;font-size:.93rem;outline:none;background:#fff8f5;color:#26170c;font-family:inherit;box-shadow:0 0 0 1.5px #e2cfc8;transition:box-shadow .18s"
+                    onfocus="this.style.boxShadow='0 0 0 2.5px #ffca48'" onblur="this.style.boxShadow='0 0 0 1.5px #e2cfc8'">
+                </div>
+
+                <!-- Emoji -->
+                <div style="margin-bottom:18px">
+                  <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Emoji o ícono</label>
                   <div style="position:relative">
-                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">EMOJI</label>
                     <button id="ec-emoji-btn" type="button" onclick="ecToggleEmojiPicker(event)"
-                      style="width:100%;text-align:center;font-size:1.6rem;padding:6px 4px;border:2px solid #e8e8e8;border-radius:8px;background:#fafafa;cursor:pointer;line-height:1.4">🎁</button>
+                      style="font-size:1.5rem;padding:6px 12px;border:1.5px solid #e2cfc8;border-radius:8px;background:#fff8f5;cursor:pointer;line-height:1.4;display:inline-flex;align-items:center;gap:8px;color:#a08d83">
+                      🎁 <span style="font-size:.7rem;font-weight:700;letter-spacing:.5px">CAMBIAR</span>
+                    </button>
                     <input id="ec-emoji" type="hidden" value="🎁">
-                    <div id="ec-emoji-picker" style="display:none;position:absolute;top:calc(100% + 4px);left:-8px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:700;padding:10px;width:248px;flex-wrap:wrap;gap:3px"></div>
-                  </div>
-                  <div>
-                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DE LA TARJETA</label>
-                    <input id="ec-name" type="text" placeholder="Ej: Coffee Card" oninput="ecUpdatePreview()"
-                      style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none"
-                      onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+                    <div id="ec-emoji-picker" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:700;padding:10px;width:248px;flex-wrap:wrap;gap:3px"></div>
                   </div>
                 </div>
-                <!-- Stamps + reward -->
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-                  <div>
-                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">SELLOS PARA PREMIO</label>
-                    <input id="ec-stamps" type="number" min="1" max="99" oninput="ecUpdatePreview()"
-                      style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none"
-                      onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+
+                <!-- Color de fondo -->
+                <div style="margin-bottom:18px">
+                  <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Color de fondo</label>
+                  <div style="display:flex;gap:10px;align-items:center">
+                    <div style="position:relative;width:42px;height:42px;border-radius:8px;overflow:hidden;border:1.5px solid #e2cfc8;cursor:pointer;flex-shrink:0" id="ec-bg-swatch-wrap">
+                      <div id="ec-bg-swatch-preview" style="width:100%;height:100%;background:#0a0a0a;pointer-events:none"></div>
+                      <input id="ec-bg" type="color" value="#0a0a0a" oninput="ecSyncColor('ec-bg');ecUpdatePreview()"
+                        style="position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);opacity:0;cursor:pointer;padding:0;border:none">
+                    </div>
+                    <input id="ec-bg-txt" type="text" value="#0a0a0a" maxlength="7"
+                      style="flex:1;padding:11px 14px;border:none;border-radius:6px;font-size:.85rem;outline:none;background:#fff8f5;color:#26170c;font-family:inherit;letter-spacing:.5px;box-shadow:0 0 0 1.5px #e2cfc8;transition:box-shadow .18s"
+                      onfocus="this.style.boxShadow='0 0 0 2.5px #ffca48'" onblur="this.style.boxShadow='0 0 0 1.5px #e2cfc8'"
+                      oninput="ecSyncText('ec-bg');ecUpdatePreview();document.getElementById('ec-bg-swatch-preview').style.background=this.value">
                   </div>
+                </div>
+
+                <!-- Color de acento -->
+                <div style="margin-bottom:18px">
+                  <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Color de acento</label>
+                  <div style="display:flex;gap:10px;align-items:center">
+                    <div style="position:relative;width:42px;height:42px;border-radius:8px;overflow:hidden;border:1.5px solid #e2cfc8;cursor:pointer;flex-shrink:0">
+                      <div id="ec-accent-swatch-preview" style="width:100%;height:100%;background:#00e676;pointer-events:none"></div>
+                      <input id="ec-accent" type="color" value="#00e676" oninput="ecSyncColor('ec-accent');ecUpdatePreview()"
+                        style="position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);opacity:0;cursor:pointer;padding:0;border:none">
+                    </div>
+                    <input id="ec-accent-txt" type="text" value="#00e676" maxlength="7"
+                      style="flex:1;padding:11px 14px;border:none;border-radius:6px;font-size:.85rem;outline:none;background:#fff8f5;color:#26170c;font-family:inherit;letter-spacing:.5px;box-shadow:0 0 0 1.5px #e2cfc8;transition:box-shadow .18s"
+                      onfocus="this.style.boxShadow='0 0 0 2.5px #ffca48'" onblur="this.style.boxShadow='0 0 0 1.5px #e2cfc8'"
+                      oninput="ecSyncText('ec-accent');ecUpdatePreview();document.getElementById('ec-accent-swatch-preview').style.background=this.value">
+                  </div>
+                </div>
+
+                <!-- Color de texto -->
+                <div style="margin-bottom:18px">
+                  <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Color de texto</label>
+                  <div style="display:flex;gap:10px;align-items:center">
+                    <div style="position:relative;width:42px;height:42px;border-radius:8px;overflow:hidden;border:1.5px solid #e2cfc8;cursor:pointer;flex-shrink:0">
+                      <div id="ec-text-swatch-preview" style="width:100%;height:100%;background:#ffffff;pointer-events:none;border:1px solid #e2cfc8"></div>
+                      <input id="ec-text" type="color" value="#ffffff" oninput="ecSyncColor('ec-text');ecUpdatePreview()"
+                        style="position:absolute;inset:-8px;width:calc(100% + 16px);height:calc(100% + 16px);opacity:0;cursor:pointer;padding:0;border:none">
+                    </div>
+                    <input id="ec-text-txt" type="text" value="#ffffff" maxlength="7"
+                      style="flex:1;padding:11px 14px;border:none;border-radius:6px;font-size:.85rem;outline:none;background:#fff8f5;color:#26170c;font-family:inherit;letter-spacing:.5px;box-shadow:0 0 0 1.5px #e2cfc8;transition:box-shadow .18s"
+                      onfocus="this.style.boxShadow='0 0 0 2.5px #ffca48'" onblur="this.style.boxShadow='0 0 0 1.5px #e2cfc8'"
+                      oninput="ecSyncText('ec-text');ecUpdatePreview();document.getElementById('ec-text-swatch-preview').style.background=this.value">
+                  </div>
+                </div>
+
+                <!-- Nombre del premio + Sellos (2 col) -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
                   <div>
-                    <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">NOMBRE DEL PREMIO</label>
+                    <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Nombre del premio</label>
                     <input id="ec-reward" type="text" placeholder="Ej: Café Gratis" oninput="ecUpdatePreview()"
-                      style="width:100%;padding:10px 14px;border:2px solid #e8e8e8;border-radius:8px;font-size:.94rem;outline:none"
-                      onfocus="this.style.borderColor='#333'" onblur="this.style.borderColor='#e8e8e8'">
+                      style="width:100%;padding:11px 14px;border:none;border-radius:6px;font-size:.93rem;outline:none;background:#fff8f5;color:#26170c;font-family:inherit;box-shadow:0 0 0 1.5px #e2cfc8;transition:box-shadow .18s"
+                      onfocus="this.style.boxShadow='0 0 0 2.5px #ffca48'" onblur="this.style.boxShadow='0 0 0 1.5px #e2cfc8'">
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Sellos para premio</label>
+                    <input id="ec-stamps" type="number" min="1" max="99" oninput="ecUpdatePreview()"
+                      style="width:100%;padding:11px 14px;border:none;border-radius:6px;font-size:.93rem;outline:none;background:#fff8f5;color:#26170c;font-family:inherit;box-shadow:0 0 0 1.5px #e2cfc8;transition:box-shadow .18s"
+                      onfocus="this.style.boxShadow='0 0 0 2.5px #ffca48'" onblur="this.style.boxShadow='0 0 0 1.5px #e2cfc8'">
                   </div>
                 </div>
-                <!-- Colors -->
-                <div style="margin-bottom:20px">
-                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:8px">COLORES</label>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-                    <div>
-                      <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Fondo</div>
-                      <div style="display:flex;align-items:center;gap:6px">
-                        <input id="ec-bg" type="color" value="#0a0a0a" oninput="ecSyncColor('ec-bg');ecUpdatePreview()"
-                          style="width:36px;height:36px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
-                        <input id="ec-bg-txt" type="text" value="#0a0a0a" maxlength="7"
-                          style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
-                          oninput="ecSyncText('ec-bg');ecUpdatePreview()">
-                      </div>
-                    </div>
-                    <div>
-                      <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Acento</div>
-                      <div style="display:flex;align-items:center;gap:6px">
-                        <input id="ec-accent" type="color" value="#00e676" oninput="ecSyncColor('ec-accent');ecUpdatePreview()"
-                          style="width:36px;height:36px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
-                        <input id="ec-accent-txt" type="text" value="#00e676" maxlength="7"
-                          style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
-                          oninput="ecSyncText('ec-accent');ecUpdatePreview()">
-                      </div>
-                    </div>
-                    <div>
-                      <div style="font-size:.7rem;color:#aaa;margin-bottom:4px">Texto</div>
-                      <div style="display:flex;align-items:center;gap:6px">
-                        <input id="ec-text" type="color" value="#ffffff" oninput="ecSyncColor('ec-text');ecUpdatePreview()"
-                          style="width:36px;height:36px;border:2px solid #e8e8e8;border-radius:6px;cursor:pointer;padding:2px;flex-shrink:0">
-                        <input id="ec-text-txt" type="text" value="#ffffff" maxlength="7"
-                          style="flex:1;padding:7px 8px;border:2px solid #e8e8e8;border-radius:6px;font-size:.8rem;outline:none"
-                          oninput="ecSyncText('ec-text');ecUpdatePreview()">
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
                 <!-- Strip background image upload -->
-                <div style="margin-bottom:14px">
-                  <label style="font-size:.7rem;font-weight:700;color:#888;display:block;margin-bottom:5px">IMAGEN DE FONDO DEL STRIP</label>
-                  <div style="font-size:.65rem;color:#aaa;margin-bottom:7px">Aparece detrás de los sellos en Apple Wallet. JPG/PNG recomendado 750×246 px.</div>
+                <div style="margin-bottom:20px">
+                  <label style="display:block;font-size:.68rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#a08d83;margin-bottom:6px">Imagen de fondo del strip</label>
+                  <div style="font-size:.65rem;color:#a08d83;margin-bottom:7px">Aparece detrás de los sellos en Apple Wallet. JPG/PNG recomendado 750×246 px.</div>
                   <div id="ec-strip-bg-drop" onclick="document.getElementById('ec-strip-bg-input').click()"
-                    style="border:2px dashed #e0e0e0;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s;background:#fafafa"
-                    onmouseover="this.style.borderColor='#aaa'" onmouseout="this.style.borderColor='#e0e0e0'">
-                    <div id="ec-strip-bg-preview" style="width:80px;height:26px;border-radius:4px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:.58rem;color:#aaa;flex-shrink:0;overflow:hidden;border:1px solid #e0e0e0">Sin imagen</div>
+                    style="border:2px dashed #e2cfc8;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s;background:#fff8f5"
+                    onmouseover="this.style.borderColor='#a08d83'" onmouseout="this.style.borderColor='#e2cfc8'">
+                    <div id="ec-strip-bg-preview" style="width:80px;height:26px;border-radius:4px;background:#f0ebe7;display:flex;align-items:center;justify-content:center;font-size:.58rem;color:#a08d83;flex-shrink:0;overflow:hidden;border:1px solid #e2cfc8">Sin imagen</div>
                     <div style="flex:1">
-                      <div style="font-size:.78rem;font-weight:600;color:#555">Haz clic para subir imagen</div>
-                      <div style="font-size:.65rem;color:#aaa;margin-top:1px">JPG o PNG — máx. 8 MB</div>
+                      <div style="font-size:.78rem;font-weight:700;color:#26170c">Haz clic para subir imagen</div>
+                      <div style="font-size:.65rem;color:#a08d83;margin-top:1px">JPG o PNG — máx. 8 MB</div>
                     </div>
-                    <button id="ec-strip-bg-remove" onclick="event.stopPropagation();ecRemoveStripBg()" style="display:none;background:#fee;border:none;border-radius:4px;padding:3px 7px;font-size:.62rem;font-weight:700;color:#c00;cursor:pointer">✕ Quitar</button>
+                    <button id="ec-strip-bg-remove" onclick="event.stopPropagation();ecRemoveStripBg()" style="display:none;background:#fbe9e7;border:none;border-radius:4px;padding:3px 7px;font-size:.62rem;font-weight:700;color:#c62828;cursor:pointer">✕ Quitar</button>
                     <input id="ec-strip-bg-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="ecHandleStripBg(this)">
                   </div>
-                  <div id="ec-strip-bg-msg" style="min-height:14px;margin-top:5px;font-size:.65rem;color:#888;text-align:center"></div>
+                  <div id="ec-strip-bg-msg" style="min-height:14px;margin-top:5px;font-size:.65rem;color:#a08d83;text-align:center"></div>
                 </div>
 
                 <button onclick="saveEditCard()" id="btn-ec-save"
-                  style="width:100%;padding:13px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:800;cursor:pointer">
+                  style="width:100%;padding:14px;background:#26170c;color:#fff;border:none;border-radius:6px;font-size:.92rem;font-weight:800;letter-spacing:.3px;cursor:pointer;font-family:inherit;transition:background .18s"
+                  onmouseover="this.style.background='#3d2b1f'" onmouseout="this.style.background='#26170c'">
                   Guardar cambios
                 </button>
                 <div id="ec-msg" style="min-height:18px;margin-top:8px;font-size:.82rem;text-align:center"></div>
@@ -2045,6 +2065,16 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         document.getElementById('ec-accent-txt').value = ac;
         document.getElementById('ec-text').value = tx;
         document.getElementById('ec-text-txt').value = tx;
+        // Sync swatch previews
+        const bgSwPrev = document.getElementById('ec-bg-swatch-preview');
+        const acSwPrev = document.getElementById('ec-accent-swatch-preview');
+        const txSwPrev = document.getElementById('ec-text-swatch-preview');
+        if (bgSwPrev) bgSwPrev.style.background = bg;
+        if (acSwPrev) acSwPrev.style.background = ac;
+        if (txSwPrev) txSwPrev.style.background = tx;
+        // Update emoji button to show emoji + label
+        const emojiBtn = document.getElementById('ec-emoji-btn');
+        if (emojiBtn) emojiBtn.innerHTML = (card.emoji || '🎁') + ' <span style="font-size:.7rem;font-weight:700;letter-spacing:.5px">CAMBIAR</span>';
         // Reset messages
         document.getElementById('ec-msg').textContent = '';
         // Strip background image — reset persistent preview card for this new card
@@ -2085,7 +2115,8 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             btn.onclick = (ev) => {
               ev.stopPropagation();
               document.getElementById('ec-emoji').value = em;
-              document.getElementById('ec-emoji-btn').textContent = em;
+              document.getElementById('ec-emoji').value = em;
+              document.getElementById('ec-emoji-btn').innerHTML = em + ' <span style="font-size:.7rem;font-weight:700;letter-spacing:.5px">CAMBIAR</span>';
               picker.style.display = 'none';
               ecUpdatePreview();
             };
@@ -2102,7 +2133,13 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
       function ecSyncColor(id) {
         const picker = document.getElementById(id), txt = document.getElementById(id+'-txt');
-        if (picker && txt) txt.value = picker.value;
+        if (picker && txt) {
+          txt.value = picker.value;
+          // Update swatch preview if present
+          const swatchMap = {'ec-bg':'ec-bg-swatch-preview','ec-accent':'ec-accent-swatch-preview','ec-text':'ec-text-swatch-preview'};
+          const swPrev = document.getElementById(swatchMap[id]);
+          if (swPrev) swPrev.style.background = picker.value;
+        }
       }
       function ecSyncText(id) {
         const txt = document.getElementById(id+'-txt'), picker = document.getElementById(id);

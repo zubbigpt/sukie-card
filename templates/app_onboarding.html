@@ -327,7 +327,7 @@
         <p class="form-sub">Personaliza cómo verán la tarjeta tus clientes en Apple Wallet y Google Wallet. Podrás cambiarlo cuando quieras desde el dashboard.</p>
 
         <label>Nombre de la tarjeta</label>
-        <input type="text" id="card-title" placeholder="Ej: Café Miramar Fidelidad"
+        <input type="text" id="card-name" placeholder="Ej: Café Miramar Fidelidad"
           oninput="updatePreview()" maxlength="40">
 
         <label>Emoji o ícono</label>
@@ -356,6 +356,22 @@
               oninput="syncColorText('acc')" placeholder="#FFF5B6">
           </div>
         </div>
+
+        <label>Color de texto</label>
+        <div class="color-row">
+          <div class="color-swatch" id="txt-swatch">
+            <div class="color-preview" id="txt-swatch-preview"></div>
+            <input type="color" id="txt-color" value="#ffffff" oninput="syncColor('txt')">
+          </div>
+          <div class="color-field-wrap">
+            <input type="text" id="txt-hex" value="#ffffff" maxlength="7"
+              oninput="syncColorText('txt')" placeholder="#ffffff">
+          </div>
+        </div>
+
+        <label>Nombre del premio</label>
+        <input type="text" id="reward-name" placeholder="Ej: Café Gratis"
+          oninput="updatePreview()" maxlength="40" value="Premio">
 
         <label>Sellos para conseguir el premio</label>
         <div class="stamps-row">
@@ -425,6 +441,7 @@
   var _selectedEmoji = '☕';
   var _bgColor  = '#3A3426';
   var _accColor = '#FFF5B6';
+  var _txtColor = '#ffffff';
   var _spr = 10;
 
   // Read PIN from cookie
@@ -457,6 +474,7 @@
     document.getElementById(which + '-swatch-preview').style.background = val;
     if (which === 'bg')  _bgColor  = val;
     if (which === 'acc') _accColor = val;
+    if (which === 'txt') _txtColor = val;
     updatePreview();
   }
   function syncColorText(which) {
@@ -466,12 +484,14 @@
       document.getElementById(which + '-color').value = val;
       if (which === 'bg')  _bgColor  = val;
       if (which === 'acc') _accColor = val;
+      if (which === 'txt') _txtColor = val;
       updatePreview();
     }
   }
   // Init swatches
   document.getElementById('bg-swatch-preview').style.background  = _bgColor;
   document.getElementById('acc-swatch-preview').style.background = _accColor;
+  document.getElementById('txt-swatch-preview').style.background = _txtColor;
 
   // ── Stamps slider ──
   function updateStamps() {
@@ -498,7 +518,8 @@
   }
 
   function updatePreview() {
-    var title = document.getElementById('card-title').value.trim() || 'Mi negocio';
+    var title = document.getElementById('card-name').value.trim() || 'Mi negocio';
+    var reward = document.getElementById('reward-name').value.trim() || 'Premio';
 
     // Card background
     document.getElementById('card-preview').style.background = _bgColor;
@@ -509,12 +530,22 @@
 
     // Business name
     document.getElementById('cp-biz').textContent = title;
+    document.getElementById('cp-biz').style.color = _txtColor;
     document.getElementById('cp-name-lbl').textContent = title.toUpperCase().substring(0, 20);
+    document.getElementById('cp-name-lbl').style.color = _txtColor;
 
     // Accent color elements
     ['cp-sub','cp-counter-lbl','cp-fl1','cp-fl2'].forEach(function(id) {
       document.getElementById(id).style.color = _accColor;
     });
+
+    // Text color for counter number and field values
+    ['cp-counter-num','cp-fv1','cp-fv2'].forEach(function(id) {
+      document.getElementById(id).style.color = _txtColor;
+    });
+
+    // Reward name
+    document.getElementById('cp-fv2').textContent = reward;
 
     // Stamps per reward
     document.getElementById('cp-spr').textContent = '/' + _spr;
@@ -538,8 +569,8 @@
       return;
     }
 
-    var cardTitle = document.getElementById('card-title').value.trim();
-    if (!cardTitle) {
+    var cardName = document.getElementById('card-name').value.trim();
+    if (!cardName) {
       errBox.textContent = 'Introduce el nombre de tu tarjeta.';
       errBox.style.display = 'block';
       return;
@@ -555,10 +586,12 @@
         body: JSON.stringify({
           slug:              _slug,
           pin:               _pin,
-          card_title:        cardTitle,
+          name:              cardName,
           emoji:             _selectedEmoji,
-          primary_color:     _bgColor,
+          bg_color:          _bgColor,
           accent_color:      _accColor,
+          text_color:        _txtColor,
+          reward_name:       document.getElementById('reward-name').value.trim() || 'Premio',
           stamps_per_reward: _spr
         })
       });

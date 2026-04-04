@@ -3777,14 +3777,17 @@ async def app_onboarding_page(request: Request, slug: str = ""):
 
 @app.post("/api/app/onboarding")
 async def complete_onboarding(request: Request, db: Session = Depends(get_db)):
-    """Save card configuration submitted during onboarding. Returns dashboard URL."""
-    body             = await request.json()
-    slug             = (body.get("slug") or "").strip()
-    pin              = str(body.get("pin") or "").strip()
-    card_title       = (body.get("card_title") or "").strip()
-    emoji            = (body.get("emoji") or "☕").strip()
-    primary_color    = (body.get("primary_color") or "#3A3426").strip()
-    accent_color     = (body.get("accent_color") or "#FFF5B6").strip()
+    """Save card configuration submitted during onboarding.
+    Uses the same CardProgram fields as the dashboard card editor so both stay in sync."""
+    body              = await request.json()
+    slug              = (body.get("slug") or "").strip()
+    pin               = str(body.get("pin") or "").strip()
+    name              = (body.get("name") or "").strip()
+    emoji             = (body.get("emoji") or "☕").strip()
+    bg_color          = (body.get("bg_color") or "#0a0a0a").strip()
+    accent_color      = (body.get("accent_color") or "#00e676").strip()
+    text_color        = (body.get("text_color") or "#ffffff").strip()
+    reward_name       = (body.get("reward_name") or "Premio").strip()
     stamps_per_reward = max(3, min(30, int(body.get("stamps_per_reward") or 10)))
 
     biz = get_business_by_slug(slug, db)
@@ -3793,10 +3796,38 @@ async def complete_onboarding(request: Request, db: Session = Depends(get_db)):
     if biz.admin_pin != pin:
         raise HTTPException(status_code=401, detail="No autorizado")
 
+    card_name = name or biz.name
+
+    # Create or update the CardProgram (same source of truth the dashboard uses)
+    existing = db.execute(text(
+        "SELECT id FROM card_programs WHERE business_id=:bid AND status='active' LIMIT 1"
+    ), {"bid": str(biz.id)}).fetchone()
+
+    if existing:
+        db.execute(text("""
+            UPDATE card_programs SET
+                name=:name, emoji=:emoji, stamps_per_reward=:stamps,
+                reward_name=:reward, bg_color=:bg, accent_color=:accent,
+                text_color=:txt, updated_at=NOW()
+            WHERE id=:id AND business_id=:bid
+        """), {"name": card_name, "emoji": emoji, "stamps": stamps_per_reward,
+               "reward": reward_name, "bg": bg_color, "accent": accent_color,
+               "txt": text_color, "id": str(existing[0]), "bid": str(biz.id)})
+    else:
+        db.execute(text("""
+            INSERT INTO card_programs
+                (business_id, name, emoji, stamps_per_reward, reward_name,
+                 bg_color, accent_color, text_color, status)
+            VALUES (:bid, :name, :emoji, :stamps, :reward, :bg, :accent, :txt, 'active')
+        """), {"bid": str(biz.id), "name": card_name, "emoji": emoji,
+               "stamps": stamps_per_reward, "reward": reward_name,
+               "bg": bg_color, "accent": accent_color, "txt": text_color})
+
+    # Also sync fallback fields on the businesses row
     db.execute(text(
         "UPDATE businesses SET card_title=:ct, primary_color=:pc, accent_color=:ac, "
         "stamps_per_reward=:spr, updated_at=NOW() WHERE id=:bid"
-    ), {"ct": card_title or biz.name, "pc": primary_color, "ac": accent_color,
+    ), {"ct": card_name, "pc": bg_color, "ac": accent_color,
         "spr": stamps_per_reward, "bid": str(biz.id)})
     db.commit()
     return {"ok": True}
