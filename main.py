@@ -48,10 +48,10 @@ templates = Jinja2Templates(directory="templates")
 # ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://zubcard.com", "https://www.zubcard.com"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -1387,7 +1387,8 @@ def wallet_get_updated_pass(
             },
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generando pass: {str(e)}")
+        print(f"❌ generate_pass error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generando el pase")
 
 
 @app.post("/api/wallet/v1/log")
@@ -1501,7 +1502,8 @@ def download_wallet_pass(card_id: str, db: Session = Depends(get_db)):
     except ValueError as ve:
         raise HTTPException(status_code=503, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generando wallet pass: {str(e)}")
+        print(f"❌ wallet_pass error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generando el pase de wallet")
 
 
 @app.get("/card/{card_id}", response_class=HTMLResponse)
@@ -1655,7 +1657,8 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
         db.refresh(card)
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Error al registrar: {str(e)}")
+        print(f"❌ register error: {str(e)}")
+        raise HTTPException(status_code=400, detail="Error al registrar el cliente")
 
     # Handle referral
     ref_code = body.get("ref", "").strip().upper()
@@ -2181,7 +2184,8 @@ async def delete_customer(card_id: str, request: Request, pin: str = "", db: Ses
         return {"message": "Cliente eliminado"}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)} | {_tb.format_exc()[-300:]}")
+        print(f"❌ delete_customer error: {str(e)}\n{_tb.format_exc()}")
+        raise HTTPException(status_code=500, detail="Error al eliminar el cliente")
 
 
 @app.delete("/api/admin/customers-all")
@@ -3590,7 +3594,7 @@ async def geo_search(q: str = "", limit: int = 5):
             )
             return r3.json()
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Geocoding error: {e}")
+        raise HTTPException(status_code=502, detail="Error conectando con el servicio de geocoding")
 
 
 @app.get("/api/geo/reverse")
@@ -3602,7 +3606,7 @@ async def geo_reverse(lat: float = 0.0, lng: float = 0.0):
             r = await client.get(url, headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"})
             return r.json()
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Reverse geocoding error: {e}")
+        raise HTTPException(status_code=502, detail="Error conectando con el servicio de geocoding")
 
 
 
@@ -3792,6 +3796,7 @@ async def confirm_email(token: str = "", db: Session = Depends(get_db)):
         biz.admin_pin,
         max_age=90,          # expires in 90 s — enough for page load
         httponly=False,      # JS must read it to auto-login
+        secure=True,
         samesite="strict",
         path=f"/biz/{biz.slug}/dashboard",
     )
@@ -3822,6 +3827,7 @@ async def checkout_success_redirect(token: str = "", slug: str = "", db: Session
         biz.admin_pin,
         max_age=90,
         httponly=False,
+        secure=True,
         samesite="strict",
         path=f"/biz/{target_slug}/dashboard",
     )
@@ -4652,15 +4658,15 @@ def cleanup_test_data(pin: str = "", db: Session = Depends(get_db)):
     results = []
     for card_id in card_ids:
         try:
-            cid = f"'{card_id}'::uuid"
-            db.execute(text(f"DELETE FROM push_subscriptions WHERE card_id = {cid}"))
-            db.execute(text(f"DELETE FROM referrals WHERE referrer_card = {cid} OR referred_card = {cid}"))
-            db.execute(text(f"DELETE FROM stamp_transactions WHERE card_id = {cid}"))
+            p = {"cid": card_id}
+            db.execute(text("DELETE FROM push_subscriptions WHERE card_id = CAST(:cid AS uuid)"), p)
+            db.execute(text("DELETE FROM referrals WHERE referrer_card = CAST(:cid AS uuid) OR referred_card = CAST(:cid AS uuid)"), p)
+            db.execute(text("DELETE FROM stamp_transactions WHERE card_id = CAST(:cid AS uuid)"), p)
             # Get customer_id before deleting card
-            row = db.execute(text(f"SELECT customer_id FROM loyalty_cards WHERE id = {cid}")).fetchone()
-            db.execute(text(f"DELETE FROM loyalty_cards WHERE id = {cid}"))
+            row = db.execute(text("SELECT customer_id FROM loyalty_cards WHERE id = CAST(:cid AS uuid)"), p).fetchone()
+            db.execute(text("DELETE FROM loyalty_cards WHERE id = CAST(:cid AS uuid)"), p)
             if row:
-                db.execute(text(f"DELETE FROM customers WHERE id = '{row[0]}'"))
+                db.execute(text("DELETE FROM customers WHERE id = CAST(:uid AS uuid)"), {"uid": str(row[0])})
             db.commit()
             results.append({"card_id": card_id, "status": "deleted"})
         except Exception as e:
@@ -4747,7 +4753,8 @@ def reset_owner(email: str = "", master_pin: str = "", db: Session = Depends(get
             deleted.append(bid)
         except Exception as e:
             db.rollback()
-            raise HTTPException(status_code=500, detail=f"Error al borrar business {bid}: {str(e)}")
+            print(f"❌ reset_owner error for {bid}: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error interno al eliminar el negocio")
 
     return {
         "status":  "deleted",
@@ -4815,7 +4822,8 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
         return {"status": "deleted", "slug": slug}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al eliminar: {str(e)}")
+        print(f"❌ delete_biz error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error interno al eliminar el negocio")
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -5425,7 +5433,8 @@ async def admin_stripe_sync(slug: str, request: Request, db: Session = Depends(g
             sub_id = sub["id"]
             pe = _dt.fromtimestamp(sub["current_period_end"])
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error Stripe: {str(e)}")
+            print(f"❌ Stripe cancel error: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error al conectar con Stripe")
     else:
         pe = _dt.fromisoformat(period_end) if period_end else _dt(2026, 4, 22)
 
@@ -5678,7 +5687,7 @@ async def upload_birthday_banner(
         img.save(buf, format="JPEG", quality=85, optimize=True)
         data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Error procesando imagen: {e}")
+        raise HTTPException(status_code=422, detail="Error procesando la imagen. Verifica el formato y tamaño.")
     db.execute(
         text("UPDATE businesses SET birthday_email_banner_url=:url WHERE slug=:slug"),
         {"url": data_url, "slug": slug}
@@ -5728,7 +5737,7 @@ async def upload_strip_bg(
         img.save(buf, format="JPEG", quality=82, optimize=True)
         data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Error procesando imagen: {e}")
+        raise HTTPException(status_code=422, detail="Error procesando la imagen. Verifica el formato y tamaño.")
 
     db.execute(
         text("UPDATE card_programs SET strip_bg_url=:url WHERE id=:id AND business_id=:bid"),
@@ -6166,6 +6175,7 @@ async def auth_google_callback(
         biz.admin_pin,
         max_age=90,
         httponly=False,
+        secure=True,
         samesite="strict",
         path=f"/biz/{biz.slug}/dashboard",
     )
@@ -6316,7 +6326,7 @@ async def upload_welcome_banner(slug: str, pin: str = "", file: UploadFile = Fil
         img.save(buf, format="JPEG", quality=85, optimize=True)
         data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Error procesando imagen: {e}")
+        raise HTTPException(status_code=422, detail="Error procesando la imagen. Verifica el formato y tamaño.")
     db.execute(text("UPDATE businesses SET welcome_email_banner_url=:url WHERE slug=:slug"), {"url": data_url, "slug": slug})
     db.commit()
     return {"status": "ok", "banner_url": data_url}
@@ -6354,6 +6364,7 @@ async def zubadmin_login(request: Request):
         "authenticated",
         max_age=60 * 60 * 8,   # 8 horas
         httponly=True,
+        secure=True,
         samesite="strict",
         path="/",
     )
@@ -6411,6 +6422,7 @@ async def zubadmin_access(slug: str, request: Request, db: Session = Depends(get
         biz.admin_pin,
         max_age=90,
         httponly=False,
+        secure=True,
         samesite="strict",
         path=f"/biz/{slug}/dashboard",
     )
@@ -6420,6 +6432,7 @@ async def zubadmin_access(slug: str, request: Request, db: Session = Depends(get
         biz.name,
         max_age=60 * 60 * 8,
         httponly=False,
+        secure=True,
         samesite="strict",
         path=f"/biz/{slug}/dashboard",
     )
