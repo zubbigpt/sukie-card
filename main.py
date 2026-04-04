@@ -4266,6 +4266,51 @@ async def update_reviews_config(slug: str, request: Request, db: Session = Depen
     return {"status": "updated"}
 
 
+@app.post("/api/biz/{slug}/support-ticket")
+async def send_support_ticket(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Send a support / bug-report ticket to zubcard@gmail.com"""
+    body = await request.json()
+    pin  = str(body.get("pin", "")).strip()
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    description = (body.get("description") or "").strip()
+    if not description:
+        raise HTTPException(status_code=400, detail="La descripción es obligatoria")
+    ticket_type = (body.get("type") or "other").strip()
+    subject_txt = (body.get("subject") or "").strip()
+    type_labels = {
+        "bug":        "🐛 Bug / Error",
+        "help":       "❓ Consulta / Ayuda",
+        "suggestion": "💡 Sugerencia",
+        "other":      "📋 Otro",
+    }
+    type_label = type_labels.get(ticket_type, "📋 Otro")
+    email_subject = f"[ZubCard Soporte] {type_label} — {biz.name}"
+    import html as _html
+    desc_escaped = _html.escape(description).replace("\n", "<br>")
+    html_body = f"""<div style="font-family:sans-serif;max-width:600px;color:#333">
+<h2 style="color:#26170c;margin-bottom:4px">Nuevo ticket de soporte</h2>
+<p style="color:#888;font-size:.85rem;margin-top:0">Recibido desde el dashboard de ZubCard</p>
+<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:.9rem">
+  <tr><td style="padding:8px 12px;background:#f5f0e8;font-weight:700;width:110px;border-bottom:1px solid #e8e0d0">Negocio</td><td style="padding:8px 12px;border-bottom:1px solid #e8e0d0">{_html.escape(biz.name)} <span style="color:#888;font-size:.85rem">({_html.escape(biz.slug)})</span></td></tr>
+  <tr><td style="padding:8px 12px;background:#f5f0e8;font-weight:700;border-bottom:1px solid #e8e0d0">Email</td><td style="padding:8px 12px;border-bottom:1px solid #e8e0d0"><a href="mailto:{_html.escape(biz.email)}" style="color:#26170c">{_html.escape(biz.email)}</a></td></tr>
+  <tr><td style="padding:8px 12px;background:#f5f0e8;font-weight:700;border-bottom:1px solid #e8e0d0">Tipo</td><td style="padding:8px 12px;border-bottom:1px solid #e8e0d0">{type_label}</td></tr>
+  <tr><td style="padding:8px 12px;background:#f5f0e8;font-weight:700">Asunto</td><td style="padding:8px 12px">{_html.escape(subject_txt) if subject_txt else '<em style="color:#aaa">sin asunto</em>'}</td></tr>
+</table>
+<h3 style="color:#26170c;margin-bottom:8px">Descripción</h3>
+<div style="background:#f9f9f9;border:1.5px solid #e0e0e0;border-radius:8px;padding:16px;font-size:.9rem;line-height:1.6">{desc_escaped}</div>
+</div>"""
+    send_email(
+        to_email="zubcard@gmail.com",
+        subject=email_subject,
+        html_body=html_body,
+        reply_to=biz.email,
+    )
+    return {"status": "sent"}
+
+
 @app.get("/api/biz/{slug}/birthday-config")
 def get_birthday_config(slug: str, pin: str = "", db: Session = Depends(get_db)):
     """Get birthday gift configuration for this business"""

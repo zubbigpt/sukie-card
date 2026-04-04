@@ -688,6 +688,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       <a onclick="showSection('reviews')" id="nav-reviews">
         <span class="material-symbols-outlined icon">star</span> Reseñas Google
       </a>
+      <a onclick="showSection('support')" id="nav-support">
+        <span class="material-symbols-outlined icon">help</span> Soporte &amp; Ayuda
+      </a>
 
       <!-- Mi Cuenta (collapsible) -->
       <a onclick="toggleNav('nav-cuenta-sub')" id="nav-cuenta" class="nav-parent">
@@ -2990,6 +2993,87 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         </div>
       </div>
 
+      <!-- ═══ SOPORTE & AYUDA ═══ -->
+      <div class="section" id="section-support">
+        <div class="section-header">
+          <div style="flex:1">
+            <h1>Soporte &amp; Ayuda</h1>
+            <p class="section-desc">¿Tienes alguna duda, encontraste un error o quieres sugerirnos algo? Escríbenos y te respondemos en breve.</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+
+          <!-- FORM -->
+          <div class="card-box">
+            <h3 style="margin-bottom:18px;color:#0a0a0a">Envíanos un mensaje</h3>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--brown-light);display:block;margin-bottom:6px">Tipo</label>
+              <select id="support-type" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+                <option value="bug">🐛 Bug / Error en la plataforma</option>
+                <option value="help">❓ Consulta / Ayuda</option>
+                <option value="suggestion">💡 Sugerencia o mejora</option>
+                <option value="other">📋 Otro</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--brown-light);display:block;margin-bottom:6px">Asunto <span style="font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+              <input id="support-subject" type="text" placeholder="Ej: No me llegan los emails de bienvenida"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream);box-sizing:border-box">
+            </div>
+
+            <div style="margin-bottom:20px">
+              <label style="font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--brown-light);display:block;margin-bottom:6px">Descripción <span style="color:#c62828">*</span></label>
+              <textarea id="support-body" rows="6" placeholder="Cuéntanos con detalle qué pasó, qué esperabas que pasara, y en qué sección ocurrió…"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.88rem;background:var(--cream);box-sizing:border-box;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button onclick="sendSupportTicket()" class="btn-sm btn-primary" style="padding:10px 28px">
+                <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle">send</span> Enviar
+              </button>
+              <span id="support-status" style="font-size:.82rem;color:var(--brown-light)"></span>
+            </div>
+          </div>
+
+          <!-- SIDEBAR INFO -->
+          <div>
+            <div class="card-box" style="margin-bottom:16px">
+              <div style="font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--brown-light);margin-bottom:8px">📧 Email directo</div>
+              <p style="font-size:.84rem;color:var(--brown);margin-bottom:10px;line-height:1.5">También puedes escribirnos directamente:</p>
+              <a href="mailto:zubcard@gmail.com" style="display:inline-flex;align-items:center;gap:6px;background:var(--brown);color:var(--cream);padding:8px 16px;border-radius:7px;text-decoration:none;font-size:.82rem;font-weight:700">
+                <span class="material-symbols-outlined" style="font-size:.9rem">mail</span> zubcard@gmail.com
+              </a>
+            </div>
+
+            <div class="card-box">
+              <div style="font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--brown-light);margin-bottom:12px">⚡ Preguntas frecuentes</div>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <details style="border-bottom:1px solid var(--cream-border);padding-bottom:8px;margin-bottom:8px">
+                  <summary style="font-size:.84rem;font-weight:700;color:var(--brown);cursor:pointer;list-style:none">¿Cómo añado sellos manualmente?</summary>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin-top:6px;line-height:1.5">Ve a <strong>Clientes</strong>, busca al cliente y haz clic en su tarjeta → botón <em>"+ Sello"</em>.</p>
+                </details>
+                <details style="border-bottom:1px solid var(--cream-border);padding-bottom:8px;margin-bottom:8px">
+                  <summary style="font-size:.84rem;font-weight:700;color:var(--brown);cursor:pointer;list-style:none">¿Por qué no me llega el email de bienvenida?</summary>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin-top:6px;line-height:1.5">Revisa la carpeta de spam. Si el cliente tiene Gmail, el email puede tardar unos minutos. También puedes usar la función <em>"Enviar prueba"</em> en <strong>Email &amp; QR → Emails</strong>.</p>
+                </details>
+                <details style="border-bottom:1px solid var(--cream-border);padding-bottom:8px;margin-bottom:8px">
+                  <summary style="font-size:.84rem;font-weight:700;color:var(--brown);cursor:pointer;list-style:none">¿Cómo obtengo el QR para el mostrador?</summary>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin-top:6px;line-height:1.5">Ve a <strong>Email &amp; QR → Landing + QR</strong> y haz clic en <em>"Descargar QR"</em>.</p>
+                </details>
+                <details>
+                  <summary style="font-size:.84rem;font-weight:700;color:var(--brown);cursor:pointer;list-style:none">¿Puedo tener varias tarjetas de sellos?</summary>
+                  <p style="font-size:.8rem;color:var(--brown-light);margin-top:6px;line-height:1.5">Sí, desde <strong>Tarjetas</strong> puedes crear varios programas de fidelización con colores y recompensas distintas.</p>
+                </details>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- ═══ TIENDAS / LOCALES ═══ -->
       <div class="section" id="section-stores">
         <div class="section-header">
@@ -4041,7 +4125,8 @@ const sectionTitles = {
     'cuenta-plan':'Mi Cuenta — Plan & Billing',
     apps:'Apps',
     geo:'Geo &amp; Notificaciones',
-    reviews:'Reseñas Google'
+    reviews:'Reseñas Google',
+    support:'Soporte &amp; Ayuda'
   };
 
 function toggleNav(subId){
@@ -4083,6 +4168,7 @@ function showSection(name){
   if(name==='cuenta-plan')   { renderPlanSection(); loadSubscriptionInfo(); }
   if(name==='geo'){          loadGeoSection(); setTimeout(checkVapidStatus,400); }
   if(name==='reviews'){      loadReviewsSection(); }
+  if(name==='support'){      /* reset form */ document.getElementById('support-status').textContent=''; }
 
   // Keep Tarjetas parent highlighted when inside a card sub-section
   const cardSubSections = ['fidelizacion','activity','birthdays','clients','new-client','import'];
@@ -6920,6 +7006,28 @@ async function saveReviewsConfig(){
   }catch(e){
     if(status) status.textContent='Error al guardar';
     showToast('Error al guardar','error');
+  }
+}
+// ── SOPORTE & AYUDA ──────────────────────────────────────────────────────────
+async function sendSupportTicket() {
+  const type  = document.getElementById('support-type')?.value || 'other';
+  const subj  = (document.getElementById('support-subject')?.value || '').trim();
+  const body  = (document.getElementById('support-body')?.value   || '').trim();
+  const status = document.getElementById('support-status');
+  if (!body) { if(status){ status.textContent='La descripción es obligatoria'; status.style.color='#c62828'; } return; }
+  if (status) { status.textContent = 'Enviando…'; status.style.color = 'var(--brown-light)'; }
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/support-ticket`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: PIN, type, subject: subj, description: body })
+    });
+    if (!r.ok) throw new Error('Error');
+    if (status) { status.textContent = '✓ Mensaje enviado, te respondemos pronto'; status.style.color = '#2e7d32'; }
+    document.getElementById('support-body').value = '';
+    document.getElementById('support-subject').value = '';
+  } catch(e) {
+    if (status) { status.textContent = 'Error al enviar. Escríbenos a zubcard@gmail.com'; status.style.color = '#c62828'; }
   }
 }
 // ────────────────────────────────────────────────────────────────────────────
