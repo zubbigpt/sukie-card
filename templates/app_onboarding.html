@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configura tu tarjeta – ZubCard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --surface: #fff8f5;
+      --surface-mid: #ffeade;
+      --primary: #26170c;
+      --primary-mid: #3d2b1f;
+      --on-primary: #ffffff;
+      --honey: #ffca48;
+      --honey-dark: #785a00;
+      --honey-light: #fff3d0;
+      --outline: #a08d83;
+      --outline-var: #e2cfc8;
+      --red: #c62828;
+      --r: 0.75rem;
+      --r-sm: 0.375rem;
+      --shadow-lg: 0 8px 40px rgba(38,23,12,0.14);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-mid) 100%);
+      font-family: 'Manrope', sans-serif;
+      min-height: 100vh;
+      padding: 32px 20px 48px;
+    }
+
+    .page-wrap {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .brand { margin-bottom: 32px; text-align: center; }
+    .brand-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      color: var(--primary);
+      letter-spacing: .5px;
+    }
+    .brand-logo span { color: var(--honey-dark); }
+    .brand-sub { color: var(--outline); font-size: .88rem; font-weight: 500; margin-top: 4px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; }
+      .preview-col { order: -1; }
+    }
+
+    /* ── Form column ── */
+    .form-card {
+      background: var(--on-primary);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: var(--shadow-lg);
+    }
+    .form-title {
+      font-family: 'Epilogue', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      font-size: .85rem;
+      color: var(--outline);
+      font-weight: 500;
+      margin-bottom: 28px;
+      line-height: 1.55;
+    }
+
+    label {
+      display: block;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--outline);
+      margin-bottom: 5px;
+      margin-top: 20px;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: .93rem;
+      outline: none;
+      transition: box-shadow .18s;
+      background: var(--surface);
+      color: var(--primary);
+      font-family: 'Manrope', sans-serif;
+    }
+    input:focus { box-shadow: 0 0 0 2.5px var(--honey); }
+
+    /* Emoji picker */
+    .emoji-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .emoji-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background: var(--surface);
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+    .emoji-btn:hover { background: var(--honey-light); }
+    .emoji-btn.selected { border-color: var(--honey); background: var(--honey-light); }
+
+    /* Color pickers */
+    .color-row { display: flex; gap: 12px; margin-top: 4px; }
+    .color-swatch {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--outline-var);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color .15s;
+    }
+    .color-swatch:hover { border-color: var(--outline); }
+    .color-swatch input[type="color"] {
+      position: absolute;
+      inset: -8px;
+      width: calc(100% + 16px);
+      height: calc(100% + 16px);
+      opacity: 0;
+      cursor: pointer;
+      padding: 0;
+      border: none;
+    }
+    .color-preview {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .color-field-wrap { flex: 1; }
+    .color-field-wrap input[type="text"] { font-size: .85rem; letter-spacing: .5px; }
+
+    /* Stamps slider */
+    .stamps-row { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+    .stamps-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+      height: 4px;
+      border-radius: 2px;
+      background: none;
+      padding: 0;
+    }
+    .stamps-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      padding: 14px;
+      border-radius: var(--r-sm);
+      font-size: .92rem;
+      font-weight: 800;
+      letter-spacing: .3px;
+      cursor: pointer;
+      margin-top: 28px;
+      transition: background .18s;
+      font-family: 'Manrope', sans-serif;
+    }
+    .btn-primary:hover { background: var(--primary-mid); }
+    .btn-primary:disabled { background: var(--outline); cursor: not-allowed; }
+
+    .skip-link {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      font-size: .8rem;
+      color: var(--outline);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .skip-link:hover { color: var(--primary); }
+
+    .error-box {
+      background: #fbe9e7;
+      color: var(--red);
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      font-size: .83rem;
+      margin-top: 14px;
+      display: none;
+      border-left: 3px solid var(--red);
+    }
+
+    /* ── Preview column ── */
+    .preview-col {
+      position: sticky;
+      top: 32px;
+    }
+    .preview-label {
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--outline);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    /* Apple Wallet-style card preview */
+    .card-preview {
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.18);
+      max-width: 340px;
+      margin: 0 auto;
+      transition: box-shadow .3s;
+    }
+    .cp-header {
+      padding: 16px 18px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cp-logo-area { display: flex; align-items: center; gap: 10px; }
+    .cp-emoji { font-size: 2rem; line-height: 1; }
+    .cp-biz { font-size: 13px; font-weight: 800; letter-spacing: .3px; }
+    .cp-sub { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .75; margin-top: 2px; }
+    .cp-counter { text-align: right; }
+    .cp-counter-lbl { font-size: 7px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .65; }
+    .cp-counter-num { font-size: 28px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+    .cp-counter-num span { font-size: 12px; font-weight: 400; opacity: .4; }
+
+    .cp-divider { height: 1px; background: rgba(255,255,255,.12); }
+
+    .cp-name-row { padding: 6px 18px 2px; }
+    .cp-name-lbl { font-size: 7px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; opacity: .35; }
+
+    .cp-stamps {
+      padding: 10px 18px 14px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+    }
+    .cp-stamp {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      border: 1.5px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
+    }
+    .cp-stamp.filled {
+      border-color: transparent;
+    }
+
+    .cp-footer {
+      padding: 10px 18px 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .cp-field-lbl { font-size: 6px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: .6; }
+    .cp-field-val { font-size: 11px; font-weight: 800; margin-top: 3px; letter-spacing: .3px; }
+
+    .preview-hint {
+      text-align: center;
+      font-size: .78rem;
+      color: var(--outline);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+    .trial-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--honey-light);
+      border: 1px solid rgba(201,168,76,.35);
+      color: var(--honey-dark);
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <div class="brand">
+      <div class="brand-logo">Zub<span>Card</span></div>
+      <div class="brand-sub">Paso 1 de 1 — configura tu tarjeta de fidelización</div>
+    </div>
+
+    <div class="layout">
+
+      <!-- ── FORM ── -->
+      <div class="form-card">
+        <h1 class="form-title">Diseña tu tarjeta</h1>
+        <p class="form-sub">Personaliza cómo verán la tarjeta tus clientes en Apple Wallet y Google Wallet. Podrás cambiarlo cuando quieras desde el dashboard.</p>
+
+        <label>Nombre de la tarjeta</label>
+        <input type="text" id="card-title" placeholder="Ej: Café Miramar Fidelidad"
+          oninput="updatePreview()" maxlength="40">
+
+        <label>Emoji o ícono</label>
+        <div class="emoji-grid" id="emoji-grid"></div>
+
+        <label>Color de fondo</label>
+        <div class="color-row">
+          <div class="color-swatch" id="bg-swatch">
+            <div class="color-preview" id="bg-swatch-preview"></div>
+            <input type="color" id="bg-color" value="#3A3426" oninput="syncColor('bg')">
+          </div>
+          <div class="color-field-wrap">
+            <input type="text" id="bg-hex" value="#3A3426" maxlength="7"
+              oninput="syncColorText('bg')" placeholder="#3A3426">
+          </div>
+        </div>
+
+        <label>Color de acento</label>
+        <div class="color-row">
+          <div class="color-swatch" id="acc-swatch">
+            <div class="color-preview" id="acc-swatch-preview"></div>
+            <input type="color" id="acc-color" value="#FFF5B6" oninput="syncColor('acc')">
+          </div>
+          <div class="color-field-wrap">
+            <input type="text" id="acc-hex" value="#FFF5B6" maxlength="7"
+              oninput="syncColorText('acc')" placeholder="#FFF5B6">
+          </div>
+        </div>
+
+        <label>Sellos para conseguir el premio</label>
+        <div class="stamps-row">
+          <input type="range" id="stamps-range" min="3" max="20" value="10"
+            oninput="updateStamps()">
+          <span class="stamps-value" id="stamps-val">10</span>
+        </div>
+
+        <div class="error-box" id="err-box"></div>
+        <button class="btn-primary" id="btn-start" onclick="doOnboarding()">
+          Empezar mi prueba gratuita →
+        </button>
+        <a class="skip-link" onclick="doSkip()">Configurar más tarde</a>
+      </div>
+
+      <!-- ── PREVIEW ── -->
+      <div class="preview-col">
+        <div class="preview-label">Vista previa</div>
+
+        <div class="card-preview" id="card-preview">
+          <div class="cp-header" id="cp-header">
+            <div class="cp-logo-area">
+              <span class="cp-emoji" id="cp-emoji">☕</span>
+              <div>
+                <div class="cp-biz" id="cp-biz" style="color:#fff">Mi negocio</div>
+                <div class="cp-sub" id="cp-sub" style="color:#FFF5B6">Tarjeta fidelidad</div>
+              </div>
+            </div>
+            <div class="cp-counter">
+              <div class="cp-counter-lbl" id="cp-counter-lbl" style="color:#FFF5B6">SELLOS</div>
+              <div class="cp-counter-num" id="cp-counter-num" style="color:#fff">0<span id="cp-spr">/10</span></div>
+            </div>
+          </div>
+          <div class="cp-divider"></div>
+          <div class="cp-name-row">
+            <div class="cp-name-lbl" id="cp-name-lbl" style="color:#fff">MI TARJETA</div>
+          </div>
+          <div class="cp-stamps" id="cp-stamps"></div>
+          <div class="cp-divider"></div>
+          <div class="cp-footer">
+            <div>
+              <div class="cp-field-lbl" id="cp-fl1" style="color:#FFF5B6">TITULAR</div>
+              <div class="cp-field-val" id="cp-fv1" style="color:#fff">TU CLIENTE</div>
+            </div>
+            <div style="text-align:right">
+              <div class="cp-field-lbl" id="cp-fl2" style="color:#FFF5B6">PREMIO</div>
+              <div class="cp-field-val" id="cp-fv2" style="color:#fff">Premio</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-hint">
+          Así verán la tarjeta tus clientes<br>en Apple Wallet y Google Wallet
+        </div>
+        <div style="text-align:center">
+          <div class="trial-pill">✓ 14 días gratis · Sin tarjeta de crédito</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ── State ──
+  var _slug = '{{ slug }}';
+  var _pin  = '';
+  var _selectedEmoji = '☕';
+  var _bgColor  = '#3A3426';
+  var _accColor = '#FFF5B6';
+  var _spr = 10;
+
+  // Read PIN from cookie
+  (function() {
+    var m = document.cookie.match(/(^|;)\s*_zc_boot=([^;]+)/);
+    if (m) _pin = decodeURIComponent(m[2]);
+  })();
+
+  // ── Emojis ──
+  var EMOJIS = ['☕','🍞','🍕','🍜','🍦','💇','💅','🛍️','🐶','🌸','⭐','🎁','🍷','🍔','🥐','💐','🏋️','📚','🎵','🧁'];
+  var emojiGrid = document.getElementById('emoji-grid');
+  EMOJIS.forEach(function(em) {
+    var btn = document.createElement('button');
+    btn.className = 'emoji-btn' + (em === _selectedEmoji ? ' selected' : '');
+    btn.textContent = em;
+    btn.type = 'button';
+    btn.onclick = function() {
+      document.querySelectorAll('.emoji-btn').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      _selectedEmoji = em;
+      updatePreview();
+    };
+    emojiGrid.appendChild(btn);
+  });
+
+  // ── Sync color pickers ──
+  function syncColor(which) {
+    var val = document.getElementById(which + '-color').value;
+    document.getElementById(which + '-hex').value = val;
+    document.getElementById(which + '-swatch-preview').style.background = val;
+    if (which === 'bg')  _bgColor  = val;
+    if (which === 'acc') _accColor = val;
+    updatePreview();
+  }
+  function syncColorText(which) {
+    var val = document.getElementById(which + '-hex').value.trim();
+    document.getElementById(which + '-swatch-preview').style.background = val;
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      document.getElementById(which + '-color').value = val;
+      if (which === 'bg')  _bgColor  = val;
+      if (which === 'acc') _accColor = val;
+      updatePreview();
+    }
+  }
+  // Init swatches
+  document.getElementById('bg-swatch-preview').style.background  = _bgColor;
+  document.getElementById('acc-swatch-preview').style.background = _accColor;
+
+  // ── Stamps slider ──
+  function updateStamps() {
+    _spr = parseInt(document.getElementById('stamps-range').value);
+    document.getElementById('stamps-val').textContent = _spr;
+    updatePreview();
+  }
+
+  // ── Live card preview ──
+  function renderStamps(count, emoji, accentColor) {
+    var container = document.getElementById('cp-stamps');
+    container.innerHTML = '';
+    // Use 5 cols, up to 2 rows max in preview (show all spr)
+    var show = Math.min(count, 20);
+    container.style.gridTemplateColumns = 'repeat(' + Math.min(5, show) + ', 1fr)';
+    for (var i = 0; i < show; i++) {
+      var d = document.createElement('div');
+      d.className = 'cp-stamp';
+      // Show 0 filled (it's a new card)
+      d.style.background = 'rgba(255,255,255,.1)';
+      d.style.borderColor = 'rgba(255,255,255,.22)';
+      container.appendChild(d);
+    }
+  }
+
+  function updatePreview() {
+    var title = document.getElementById('card-title').value.trim() || 'Mi negocio';
+
+    // Card background
+    document.getElementById('card-preview').style.background = _bgColor;
+    document.getElementById('cp-header').style.background = _bgColor;
+
+    // Emoji
+    document.getElementById('cp-emoji').textContent = _selectedEmoji;
+
+    // Business name
+    document.getElementById('cp-biz').textContent = title;
+    document.getElementById('cp-name-lbl').textContent = title.toUpperCase().substring(0, 20);
+
+    // Accent color elements
+    ['cp-sub','cp-counter-lbl','cp-fl1','cp-fl2'].forEach(function(id) {
+      document.getElementById(id).style.color = _accColor;
+    });
+
+    // Stamps per reward
+    document.getElementById('cp-spr').textContent = '/' + _spr;
+
+    // Render stamp grid
+    renderStamps(_spr, _selectedEmoji, _accColor);
+  }
+
+  // Initial preview
+  updatePreview();
+
+  // ── Submit ──
+  async function doOnboarding() {
+    var btn = document.getElementById('btn-start');
+    var errBox = document.getElementById('err-box');
+    errBox.style.display = 'none';
+
+    if (!_pin) {
+      errBox.textContent = 'Sesión expirada. Por favor vuelve a hacer login con Google.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    var cardTitle = document.getElementById('card-title').value.trim();
+    if (!cardTitle) {
+      errBox.textContent = 'Introduce el nombre de tu tarjeta.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    btn.textContent = 'Guardando…';
+    btn.disabled = true;
+
+    try {
+      var r = await fetch('/api/app/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug:              _slug,
+          pin:               _pin,
+          card_title:        cardTitle,
+          emoji:             _selectedEmoji,
+          primary_color:     _bgColor,
+          accent_color:      _accColor,
+          stamps_per_reward: _spr
+        })
+      });
+      var d = await r.json();
+      if (r.ok && d.ok) {
+        // Set _zc_boot for dashboard path then redirect
+        var expires = new Date(Date.now() + 90000).toUTCString();
+        document.cookie = '_zc_boot=' + encodeURIComponent(_pin) +
+          '; path=/biz/' + _slug + '/dashboard' +
+          '; max-age=90; secure; samesite=strict';
+        window.location.href = '/biz/' + _slug + '/dashboard?welcome=1';
+      } else {
+        errBox.textContent = d.detail || 'Error al guardar. Inténtalo de nuevo.';
+        errBox.style.display = 'block';
+        btn.textContent = 'Empezar mi prueba gratuita →';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      errBox.textContent = 'Error de conexión: ' + e.message;
+      errBox.style.display = 'block';
+      btn.textContent = 'Empezar mi prueba gratuita →';
+      btn.disabled = false;
+    }
+  }
+
+  function doSkip() {
+    if (!_pin || !_slug) { window.location.href = '/app/login'; return; }
+    var expires = new Date(Date.now() + 90000).toUTCString();
+    document.cookie = '_zc_boot=' + encodeURIComponent(_pin) +
+      '; path=/biz/' + _slug + '/dashboard' +
+      '; max-age=90; secure; samesite=strict';
+    window.location.href = '/biz/' + _slug + '/dashboard';
+  }
+</script>
+</body>
+</html>

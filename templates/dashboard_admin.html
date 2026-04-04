@@ -743,6 +743,37 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
     <div class="content">
 
+      {% if trial_days_left is not none %}
+      <!-- TRIAL BANNER -->
+      <div id="trial-banner" style="
+        display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+        padding:12px 20px;margin-bottom:16px;border-radius:var(--r-sm);
+        {% if trial_days_left > 3 %}
+          background:var(--honey-light);border:1px solid #ffe082;color:var(--honey-dark);
+        {% elif trial_days_left > 0 %}
+          background:#fff3e0;border:1px solid #ffb74d;color:#e65100;
+        {% else %}
+          background:var(--red-bg);border:1px solid #ef9a9a;color:var(--red);
+        {% endif %}
+      ">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="material-symbols-outlined" style="font-size:1.1rem">
+            {% if trial_days_left > 0 %}schedule{% else %}warning{% endif %}
+          </span>
+          <span style="font-size:.88rem;font-weight:600">
+            {% if trial_days_left > 0 %}
+              Prueba gratuita — te quedan <strong>{{ trial_days_left }} día{{ 's' if trial_days_left != 1 else '' }}</strong>
+            {% else %}
+              Tu prueba gratuita ha terminado — activa tu plan para seguir usando ZubCard
+            {% endif %}
+          </span>
+        </div>
+        <button onclick="startCheckout()" class="btn-sm btn-primary" style="flex-shrink:0;font-size:.8rem;padding:7px 16px">
+          Activar plan Pro →
+        </button>
+      </div>
+      {% endif %}
+
       <!-- ═══ DASHBOARD ═══ -->
       <div class="section active" id="section-dashboard">
         <!-- Refresh button -->

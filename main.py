@@ -3702,39 +3702,8 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     ), {"bid": str(business.id)})
     db.commit()
 
-    # ── Stripe checkout inmediato (14-day trial, tarjeta requerida) ──────────
-    checkout_url = None
-    if STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO:
-        try:
-            stripe_customer = _stripe_sdk.Customer.create(
-                email=email,
-                name=name,
-                metadata={"biz_id": str(business.id), "biz_slug": slug},
-            )
-            db.execute(text("UPDATE businesses SET stripe_customer_id=:cid WHERE id=:bid"),
-                       {"cid": stripe_customer.id, "bid": str(business.id)})
-            db.commit()
-            stripe_session = _stripe_sdk.checkout.Session.create(
-                customer=stripe_customer.id,
-                mode="subscription",
-                line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
-                success_url=f"{BASE_URL}/api/app/checkout-success?token={confirm_token}&slug={slug}",
-                cancel_url=f"{BASE_URL}/app/register?checkout_cancelled=1&email={email}",
-                subscription_data={
-                    "metadata": {"biz_id": str(business.id), "biz_slug": slug},
-                    "trial_period_days": 14,
-                },
-                allow_promotion_codes=True,
-                customer_update={"name": "auto", "address": "auto"},
-                tax_id_collection={"enabled": True},
-                billing_address_collection="required",
-                locale="es",
-            )
-            checkout_url = stripe_session.url
-        except Exception as e:
-            print(f"⚠️ Stripe checkout creation failed at registration: {e}")
-
-    # ── Email de confirmación (backup si el usuario no completa el pago) ────
+    # ── Email de confirmación ─────────────────────────────────────────────────
+    # Stripe checkout is triggered from the dashboard after the 14-day trial ends.
     confirm_url = f"{BASE_URL}/api/app/confirm-email?token={confirm_token}"
     try:
         email_sent = send_email(
@@ -3759,11 +3728,10 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
         email_sent = False
 
     return {
-        "message":     "Cuenta creada. Completa tu prueba gratuita de 14 días.",
-        "email_sent":  email_sent,
-        "slug":        slug,
-        "name":        name,
-        "checkout_url": checkout_url,   # frontend redirige aquí inmediatamente
+        "message":    "Cuenta creada. Revisa tu email para confirmar y configurar tu tarjeta.",
+        "email_sent": email_sent,
+        "slug":       slug,
+        "name":       name,
     }
 
 
@@ -3787,20 +3755,51 @@ async def confirm_email(token: str = "", db: Session = Depends(get_db)):
         "UPDATE businesses SET email_confirmed=TRUE, email_confirm_token=NULL WHERE id=:bid"
     ), {"bid": str(biz.id)})
     db.commit()
-    # Redirect to dashboard without putting the PIN in the URL.
-    # We pass the PIN via a short-lived HttpOnly=False cookie (JS needs to read it)
-    # so it never appears in server logs, browser history, or referrer headers.
-    response = RedirectResponse(f"/biz/{biz.slug}/dashboard?confirmed=1", status_code=302)
+    # New user: go to onboarding to configure their card first
+    response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
     response.set_cookie(
         "_zc_boot",
         biz.admin_pin,
-        max_age=90,          # expires in 90 s — enough for page load
-        httponly=False,      # JS must read it to auto-login
+        max_age=600,         # 10 min for onboarding form
+        httponly=False,
         secure=True,
         samesite="strict",
-        path=f"/biz/{biz.slug}/dashboard",
+        path="/app/onboarding",
     )
     return response
+
+
+@app.get("/app/onboarding", response_class=HTMLResponse)
+async def app_onboarding_page(request: Request, slug: str = ""):
+    """Card setup page shown to new businesses right after registration."""
+    return templates.TemplateResponse("app_onboarding.html", {"request": request, "slug": slug})
+
+
+@app.post("/api/app/onboarding")
+async def complete_onboarding(request: Request, db: Session = Depends(get_db)):
+    """Save card configuration submitted during onboarding. Returns dashboard URL."""
+    body             = await request.json()
+    slug             = (body.get("slug") or "").strip()
+    pin              = str(body.get("pin") or "").strip()
+    card_title       = (body.get("card_title") or "").strip()
+    emoji            = (body.get("emoji") or "☕").strip()
+    primary_color    = (body.get("primary_color") or "#3A3426").strip()
+    accent_color     = (body.get("accent_color") or "#FFF5B6").strip()
+    stamps_per_reward = max(3, min(30, int(body.get("stamps_per_reward") or 10)))
+
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    if biz.admin_pin != pin:
+        raise HTTPException(status_code=401, detail="No autorizado")
+
+    db.execute(text(
+        "UPDATE businesses SET card_title=:ct, primary_color=:pc, accent_color=:ac, "
+        "stamps_per_reward=:spr, updated_at=NOW() WHERE id=:bid"
+    ), {"ct": card_title or biz.name, "pc": primary_color, "ac": accent_color,
+        "spr": stamps_per_reward, "bid": str(biz.id)})
+    db.commit()
+    return {"ok": True}
 
 
 @app.get("/api/app/checkout-success")
@@ -4434,6 +4433,14 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    # Trial days remaining (only relevant for free plan)
+    from datetime import datetime, timezone
+    biz_plan = _get_biz_plan(biz)
+    trial_days_left = None
+    if biz_plan == "free" and biz.created_at:
+        elapsed = (datetime.now(timezone.utc) - biz.created_at).days
+        trial_days_left = max(0, 14 - elapsed)
+
     return templates.TemplateResponse("dashboard_admin.html", {
         "request":    request,
         "biz_slug":   slug,
@@ -4445,11 +4452,12 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         "biz_email":  biz.email,
         "stamps_per_reward": biz.stamps_per_reward,
         "card_title": biz.card_title,
-        "biz_plan":   _get_biz_plan(biz),
+        "biz_plan":   biz_plan,
         "stripe_configured": bool(STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO),
         "primary_color": biz.primary_color or "#26170c",
         "accent_color":  biz.accent_color  or "#ffca48",
         "logo_url":      biz.logo_url or "",
+        "trial_days_left": trial_days_left,
     })
 
 
@@ -6111,6 +6119,7 @@ async def auth_google_callback(
             biz.email_confirmed = True
             db.commit()
 
+    is_new_user = False
     if not biz:
         # Create new business account via Google
         base_slug = generate_slug(full_name)
@@ -6136,39 +6145,30 @@ async def auth_google_callback(
         db.commit()
         db.refresh(biz)
 
-        # Create default card_config (safe INSERT — no UNIQUE constraint assumed)
+        # Create default card_config
         db.execute(text(
             "INSERT INTO card_config (config, business_id, updated_at) "
             "SELECT '{}', :bid, NOW() WHERE NOT EXISTS "
             "(SELECT 1 FROM card_config WHERE business_id=:bid)"
         ), {"bid": str(biz.id)})
         db.commit()
+        is_new_user = True
 
-        # Send welcome email to new Google-registered businesses
-        try:
-            dashboard_url = f"{BASE_URL}/biz/{biz.slug}/dashboard"
-            send_email(
-                to_email=email,
-                subject=f"¡Bienvenido a ZubCard, {full_name}! 🎉",
-                html_body=f"""
-<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
-  <h2 style="color:#26170c;font-size:1.4rem;margin-bottom:8px">¡Bienvenido a ZubCard! 🎉</h2>
-  <p style="color:#6b5c54;line-height:1.7;margin-bottom:24px">
-    Tu cuenta <strong>{full_name}</strong> ya está activa. Accede a tu panel de administración para
-    crear tu primera tarjeta de sellos y empezar a fidelizar clientes.
-  </p>
-  <a href="{dashboard_url}" style="display:inline-block;background:#26170c;color:#fff;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.95rem">
-    🚀 Ir a mi panel
-  </a>
-  <p style="color:#a08d83;font-size:.82rem;margin-top:28px;line-height:1.6">
-    Puedes iniciar sesión siempre con tu cuenta de Google en <a href="{BASE_URL}/app/login" style="color:#26170c">{BASE_URL}/app/login</a>
-  </p>
-</div>"""
-            )
-        except Exception:
-            pass
+    # New users go to onboarding to set up their card first
+    if is_new_user:
+        response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
+        response.set_cookie(
+            "_zc_boot",
+            biz.admin_pin,
+            max_age=600,       # 10 min — enough for onboarding form
+            httponly=False,
+            secure=True,
+            samesite="strict",
+            path="/app/onboarding",
+        )
+        return response
 
-    # Redirect to dashboard via cookie (PIN never visible in URL, history, or server logs)
+    # Existing users go straight to dashboard
     response = RedirectResponse(f"/biz/{biz.slug}/dashboard?google=1", status_code=302)
     response.set_cookie(
         "_zc_boot",
