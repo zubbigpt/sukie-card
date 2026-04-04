@@ -594,6 +594,7 @@ def send_email(
     smtp_port: int = 0,
     smtp_user: str = "",
     smtp_pass: str = "",
+    attachments: list = None,   # [{"filename": "...", "content": "<base64>"}]
 ) -> bool:
     """
     Send email. Returns True if sent, False otherwise.
@@ -627,6 +628,8 @@ def send_email(
             }
             if reply_to:
                 payload["reply_to"] = reply_to
+            if attachments:
+                payload["attachments"] = attachments
             with httpx.Client(timeout=15) as client:
                 response = client.post(
                     "https://api.resend.com/emails",
@@ -4302,11 +4305,20 @@ async def send_support_ticket(slug: str, request: Request, db: Session = Depends
 <h3 style="color:#26170c;margin-bottom:8px">Descripción</h3>
 <div style="background:#f9f9f9;border:1.5px solid #e0e0e0;border-radius:8px;padding:16px;font-size:.9rem;line-height:1.6">{desc_escaped}</div>
 </div>"""
+    # Optional image attachment
+    attachments = []
+    image_data = (body.get("image_data") or "").strip()
+    image_name = (body.get("image_name") or "adjunto.png").strip()
+    if image_data and "," in image_data:
+        _, b64_content = image_data.split(",", 1)
+        attachments = [{"filename": image_name, "content": b64_content}]
+
     send_email(
         to_email="zubcard@gmail.com",
         subject=email_subject,
         html_body=html_body,
         reply_to=biz.email,
+        attachments=attachments or None,
     )
     return {"status": "sent"}
 

@@ -3030,6 +3030,29 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.88rem;background:var(--cream);box-sizing:border-box;resize:vertical;font-family:inherit;line-height:1.5"></textarea>
             </div>
 
+            <!-- Image attachment -->
+            <div style="margin-bottom:20px">
+              <label style="font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--brown-light);display:block;margin-bottom:6px">Captura de pantalla <span style="font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
+              <div id="support-img-dropzone"
+                onclick="document.getElementById('support-img-file').click()"
+                ondragover="event.preventDefault();this.style.borderColor='var(--brown)'"
+                ondragleave="this.style.borderColor='var(--cream-border)'"
+                ondrop="event.preventDefault();this.style.borderColor='var(--cream-border)';supportHandleImage(event.dataTransfer.files[0])"
+                style="border:2px dashed var(--cream-border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--cream);position:relative">
+                <input type="file" id="support-img-file" accept="image/*" style="display:none" onchange="supportHandleImage(this.files[0])">
+                <div id="support-img-placeholder">
+                  <span class="material-symbols-outlined" style="font-size:1.6rem;color:var(--brown-light);display:block;margin-bottom:4px">add_photo_alternate</span>
+                  <span style="font-size:.8rem;color:var(--brown-light);font-weight:600">Haz clic o arrastra una imagen</span><br>
+                  <span style="font-size:.72rem;color:#bbb">JPG, PNG, WEBP · máx 5 MB</span>
+                </div>
+                <div id="support-img-preview" style="display:none">
+                  <img id="support-img-thumb" src="" style="max-width:100%;max-height:160px;border-radius:6px;display:block;margin:0 auto">
+                  <button onclick="supportRemoveImage(event)"
+                    style="margin-top:8px;background:none;border:none;color:#c62828;font-size:.78rem;cursor:pointer;font-weight:600">✕ Quitar imagen</button>
+                </div>
+              </div>
+            </div>
+
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
               <button onclick="sendSupportTicket()" class="btn-sm btn-primary" style="padding:10px 28px">
                 <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle">send</span> Enviar
@@ -7009,6 +7032,36 @@ async function saveReviewsConfig(){
   }
 }
 // ── SOPORTE & AYUDA ──────────────────────────────────────────────────────────
+let _supportImageData = null;
+let _supportImageName = null;
+
+function supportHandleImage(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('Imagen demasiado grande (máx 5 MB)', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    _supportImageData = e.target.result;
+    _supportImageName = file.name;
+    const thumb = document.getElementById('support-img-thumb');
+    const preview = document.getElementById('support-img-preview');
+    const placeholder = document.getElementById('support-img-placeholder');
+    if (thumb) thumb.src = e.target.result;
+    if (preview) preview.style.display = '';
+    if (placeholder) placeholder.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function supportRemoveImage(e) {
+  e.stopPropagation();
+  _supportImageData = null;
+  _supportImageName = null;
+  document.getElementById('support-img-file').value = '';
+  document.getElementById('support-img-thumb').src = '';
+  document.getElementById('support-img-preview').style.display = 'none';
+  document.getElementById('support-img-placeholder').style.display = '';
+}
+
 async function sendSupportTicket() {
   const type  = document.getElementById('support-type')?.value || 'other';
   const subj  = (document.getElementById('support-subject')?.value || '').trim();
@@ -7017,15 +7070,18 @@ async function sendSupportTicket() {
   if (!body) { if(status){ status.textContent='La descripción es obligatoria'; status.style.color='#c62828'; } return; }
   if (status) { status.textContent = 'Enviando…'; status.style.color = 'var(--brown-light)'; }
   try {
+    const payload = { pin: PIN, type, subject: subj, description: body };
+    if (_supportImageData) { payload.image_data = _supportImageData; payload.image_name = _supportImageName || 'adjunto.png'; }
     const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/support-ticket`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: PIN, type, subject: subj, description: body })
+      body: JSON.stringify(payload)
     });
     if (!r.ok) throw new Error('Error');
     if (status) { status.textContent = '✓ Mensaje enviado, te respondemos pronto'; status.style.color = '#2e7d32'; }
     document.getElementById('support-body').value = '';
     document.getElementById('support-subject').value = '';
+    supportRemoveImage({ stopPropagation: () => {} });
   } catch(e) {
     if (status) { status.textContent = 'Error al enviar. Escríbenos a zubcard@gmail.com'; status.style.color = '#c62828'; }
   }
