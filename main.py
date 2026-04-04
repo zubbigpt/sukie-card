@@ -136,7 +136,7 @@ def _create_stripe_trial_session(biz, db: Session) -> str | None:
                 "trial_period_days": 14,
                 "metadata": {"biz_id": str(biz.id), "biz_slug": biz.slug},
             },
-            success_url=f"{BASE_URL}/api/app/checkout-onboarding?slug={biz.slug}",
+            success_url=f"{BASE_URL}/api/app/checkout-success?slug={biz.slug}",
             cancel_url=f"{BASE_URL}/app/register?trial_cancel=1",
             allow_promotion_codes=True,
             billing_address_collection="required",
@@ -3838,16 +3838,16 @@ async def confirm_email(token: str = "", db: Session = Depends(get_db)):
     if checkout_url:
         return RedirectResponse(checkout_url, status_code=302)
 
-    # Fallback if Stripe not configured: go directly to onboarding
-    response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
+    # Fallback if Stripe not configured: go directly to dashboard
+    response = RedirectResponse(f"/biz/{biz.slug}/dashboard?welcome=1", status_code=302)
     response.set_cookie(
         "_zc_boot",
         biz.admin_pin,
-        max_age=600,
+        max_age=90,
         httponly=False,
         secure=True,
         samesite="strict",
-        path="/app/onboarding",
+        path=f"/biz/{biz.slug}/dashboard",
     )
     return response
 
@@ -6336,16 +6336,16 @@ async def auth_google_callback(
         if checkout_url:
             return RedirectResponse(checkout_url, status_code=302)
 
-        # Fallback if Stripe not configured
-        response = RedirectResponse(f"/app/onboarding?slug={biz.slug}", status_code=302)
+        # Fallback if Stripe not configured: go directly to dashboard
+        response = RedirectResponse(f"/biz/{biz.slug}/dashboard?welcome=1", status_code=302)
         response.set_cookie(
             "_zc_boot",
             biz.admin_pin,
-            max_age=600,
+            max_age=90,
             httponly=False,
             secure=True,
             samesite="strict",
-            path="/app/onboarding",
+            path=f"/biz/{biz.slug}/dashboard",
         )
         return response
 
