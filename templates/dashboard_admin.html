@@ -709,9 +709,6 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       <a onclick="showSection('apps')" id="nav-apps">
         <span class="material-symbols-outlined icon">apps</span> Apps
       </a>
-      <a onclick="showSection('bi')" id="nav-bi">
-        <span class="material-symbols-outlined icon">analytics</span> Business Intelligence
-      </a>
     </nav>
     <!-- Plan chip -->
     <div class="sidebar-plan" id="sidebar-plan-chip" onclick="showSection('cuenta-plan')" style="cursor:pointer">
@@ -748,6 +745,13 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
       <!-- ═══ DASHBOARD ═══ -->
       <div class="section active" id="section-dashboard">
+        <!-- Refresh button -->
+        <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+          <button onclick="refreshAll()" class="btn-sm btn-ghost" style="display:flex;align-items:center;gap:5px;font-size:.78rem">
+            <span class="material-symbols-outlined" style="font-size:.9rem">refresh</span> Actualizar
+          </button>
+        </div>
+
         <!-- BENTO HERO GRID -->
         <div class="bento-grid" id="stats-grid">
           <!-- Main card: Total Clientes (2 cols) -->
@@ -805,7 +809,37 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
         </div>
 
-        <!-- MES ANTERIOR vs ACTUAL -->
+        <!-- INSIGHT KPIs (4 métricas analíticas) -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px" id="bi-stats-grid">
+          <div class="bento-card bento-accent" style="padding:18px 20px">
+            <div style="width:32px;height:32px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.1rem">toll</span>
+            </div>
+            <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Media sellos/cliente</span>
+            <span class="stat-num" id="bi-avg-stamps" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1;display:block;margin-top:6px">–</span>
+          </div>
+          <div class="bento-card bento-accent" style="padding:18px 20px">
+            <div style="width:32px;height:32px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.1rem">percent</span>
+            </div>
+            <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Tasa de canje</span>
+            <span class="stat-num" id="bi-conversion" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1;display:block;margin-top:6px">–%</span>
+          </div>
+          <div class="bento-card bento-accent" style="padding:18px 20px">
+            <div style="width:32px;height:32px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.1rem">credit_card</span>
+            </div>
+            <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Tarjetas activas</span>
+            <span class="stat-num" id="bi-active-cards" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1;display:block;margin-top:6px">–</span>
+          </div>
+          <div class="bento-card bento-sm" style="border-bottom:3px solid var(--honey);padding:18px 20px">
+            <span style="display:inline-block;background:var(--primary);color:#fff;font-size:.5rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;margin-bottom:10px">TOTAL</span>
+            <div class="stat-num" id="bi-total-stamps" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
+            <div class="stat-label" style="margin-top:6px;font-size:.72rem">Sellos emitidos totales</div>
+          </div>
+        </div>
+
+        <!-- COMPARATIVA DE PERIODOS -->
         <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Comparativa de periodos</h3>
         <div class="comparison-row" style="margin-bottom:24px">
           <div class="period-card">
@@ -830,9 +864,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
         </div>
 
-        <!-- ACTIVITY CHART -->
-        <div class="charts-row">
-          <div class="chart-card">
+        <!-- FILA DE GRÁFICOS: Actividad 30d (grande) + Top 10 clientes -->
+        <div class="charts-row" style="margin-bottom:24px">
+          <div class="chart-card" style="flex:2">
             <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Actividad Diaria – Últimos 30 Días</h3>
             <div class="legend-row">
               <div class="legend-item"><div class="legend-dot" style="background:#0a0a0a"></div>Sellos añadidos</div>
@@ -843,104 +877,36 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
               <canvas id="activity-chart"></canvas>
             </div>
           </div>
+          <div class="chart-card" style="flex:1">
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Top 10 Clientes</h3>
+            <div class="top-list" id="bi-top-list" style="max-height:320px;overflow-y:auto;margin-top:8px"></div>
+          </div>
+        </div>
+
+        <!-- FILA DE GRÁFICOS: Evolución mensual + Nuevos por mes + Distribución -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px">
           <div class="chart-card">
-            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Top 5 Clientes</h3>
-            <div class="top-list" id="dash-top-list" style="margin-top:8px"></div>
-          </div>
-        </div>
-
-        <!-- RECENT BIRTHDAYS TEASER -->
-        <div id="dash-bdays" style="margin-bottom:24px"></div>
-      </div>
-
-      <!-- ═══ BUSINESS INTELLIGENCE ═══ -->
-      <div class="section" id="section-bi">
-        <div class="section-header">
-          <div style="flex:1">
-            <h1>Business Intelligence</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Análisis completo de tu programa de fidelización</p>
-          </div>
-          <button class="btn-sm btn-gold" onclick="refreshAll()" style="display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="font-size:.95rem">refresh</span> Actualizar
-          </button>
-        </div>
-
-        <div class="bento-grid" id="bi-stats-grid" style="margin-bottom:24px;grid-template-columns:repeat(4,1fr)">
-          <div class="bento-card bento-accent">
-            <div style="width:36px;height:36px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
-              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">toll</span>
-            </div>
-            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Media sellos/cliente</span>
-            <div style="margin-top:8px">
-              <span class="stat-num" id="bi-avg-stamps" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–</span>
-            </div>
-          </div>
-          <div class="bento-card bento-accent">
-            <div style="width:36px;height:36px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
-              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">percent</span>
-            </div>
-            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">% con premio canjeado</span>
-            <div style="margin-top:8px">
-              <span class="stat-num" id="bi-conversion" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–%</span>
-            </div>
-          </div>
-          <div class="bento-card bento-accent">
-            <div style="width:36px;height:36px;background:rgba(38,23,12,.15);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
-              <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">credit_card</span>
-            </div>
-            <span style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:var(--brown-light);display:block">Tarjetas activas</span>
-            <div style="margin-top:8px">
-              <span class="stat-num" id="bi-active-cards" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1">–</span>
-            </div>
-          </div>
-          <div class="bento-card bento-sm" style="border-bottom:3px solid var(--honey)">
-            <span style="display:inline-block;background:var(--primary);color:#fff;font-size:.55rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;margin-bottom:10px">TOTAL</span>
-            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1" id="bi-total-stamps">–</div>
-            <div class="stat-label" style="margin-top:6px">Sellos emitidos totales</div>
-          </div>
-        </div>
-
-        <!-- Daily activity chart (30 days) -->
-        <div class="chart-card" style="margin-bottom:24px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Actividad diaria — últimos 30 días</h3>
-            <div style="display:flex;gap:14px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em">
-              <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:3px;background:var(--primary);display:inline-block;border-radius:2px"></span>Sellos</span>
-              <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:3px;background:var(--honey-dark);display:inline-block;border-radius:2px"></span>Nuevos clientes</span>
-            </div>
-          </div>
-          <div class="chart-wrap" style="height:180px">
-            <canvas id="daily-activity-chart"></canvas>
-          </div>
-        </div>
-
-        <div class="charts-row" style="margin-bottom:24px">
-          <div class="chart-card">
-            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Evolución Mensual de Sellos</h3>
-            <div class="chart-wrap">
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem">Evolución Mensual</h3>
+            <div class="chart-wrap" style="height:200px">
               <canvas id="monthly-chart"></canvas>
             </div>
           </div>
           <div class="chart-card">
-            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Distribución de Sellos Actuales</h3>
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem">Nuevos Clientes / Mes</h3>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="new-clients-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem">Distribución de Sellos</h3>
             <div class="chart-wrap" style="height:200px">
               <canvas id="dist-chart"></canvas>
             </div>
           </div>
         </div>
 
-        <div class="charts-row">
-          <div class="chart-card">
-            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Nuevos Clientes por Mes</h3>
-            <div class="chart-wrap">
-              <canvas id="new-clients-chart"></canvas>
-            </div>
-          </div>
-          <div class="chart-card">
-            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem">Top 10 Clientes por Sellos</h3>
-            <div class="top-list" id="bi-top-list" style="max-height:280px;overflow-y:auto;margin-top:8px"></div>
-          </div>
-        </div>
+        <!-- Cumpleaños de hoy (teaser) -->
+        <div id="dash-bdays" style="margin-bottom:24px"></div>
       </div>
 
       <!-- ═══ CARTAS DIGITALES ═══ -->
@@ -4149,7 +4115,8 @@ const sectionTitles = {
     apps:'Apps',
     geo:'Geo &amp; Notificaciones',
     reviews:'Reseñas Google',
-    support:'Soporte &amp; Ayuda'
+    support:'Soporte &amp; Ayuda',
+    dashboard:'Dashboard'
   };
 
 function toggleNav(subId){
@@ -4207,14 +4174,13 @@ function showSection(name){
 
 // ── DASHBOARD INIT ─────────────────────────────────────────────────────────
 async function initDashboard(){
-  await Promise.all([loadStats(), loadActivity(), loadTopCustomers(5,'dash'), loadBirthdaysBadge(), loadSubscriptionInfo()]);
+  await Promise.all([loadStats(), loadActivity(), loadBI(), loadBirthdaysBadge(), loadSubscriptionInfo()]);
 }
 
 async function refreshAll(){
   showToast('Actualizando…');
   await initDashboard();
   if(document.getElementById('section-clients').classList.contains('active')) loadClients(currentPage);
-  if(document.getElementById('section-bi').classList.contains('active')) loadBI();
   if(document.getElementById('section-birthdays').classList.contains('active')) { loadBdayConfig(); }
   showToast('Datos actualizados ✓','success');
 }
