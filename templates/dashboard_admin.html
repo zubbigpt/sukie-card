@@ -3706,9 +3706,10 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
             <!-- LEFT: controles -->
             <div>
+              <!-- TARJETA + LOGO -->
               <div class="card-box" style="margin-bottom:16px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                  <div class="card-title" style="margin:0">Contenido</div>
+                  <div class="card-title" style="margin:0">Tarjeta</div>
                   <button onclick="posterLoadFromCard()" style="background:var(--honey-light);border:1px solid var(--honey);color:var(--brown);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:var(--r-sm);cursor:pointer;white-space:nowrap">
                     ↺ Cargar desde tarjeta
                   </button>
@@ -3716,7 +3717,33 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <label class="field-label">Tarjeta activa
                   <select id="poster-card-select" class="field-input" onchange="posterLoadFromCard()" style="margin-bottom:0"></select>
                 </label>
-                <label class="field-label" style="margin-top:12px">Titular principal
+                <label class="field-label" style="margin-top:10px">Nombre en cabecera
+                  <input id="poster-card-name" class="field-input" type="text" placeholder="Nombre de tu negocio" oninput="posterRender()">
+                </label>
+                <!-- Logo upload -->
+                <div style="margin-top:10px">
+                  <div style="font-size:.7rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Logo del negocio</div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <div id="poster-logo-preview" style="width:48px;height:48px;border-radius:8px;border:2px dashed var(--cream-border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:var(--surface-low)">
+                      <span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--brown-light)">image</span>
+                    </div>
+                    <div style="flex:1">
+                      <input type="file" id="poster-logo-file" accept="image/*" onchange="posterHandleLogo(this)" style="display:none">
+                      <button onclick="document.getElementById('poster-logo-file').click()" style="width:100%;background:var(--surface-low);border:1px solid var(--cream-border);color:var(--brown);font-size:.75rem;font-weight:700;padding:7px;border-radius:var(--r-sm);cursor:pointer;margin-bottom:4px">
+                        Subir logo
+                      </button>
+                      <button id="poster-logo-remove" onclick="posterRemoveLogo()" style="display:none;width:100%;background:none;border:1px solid var(--cream-border);color:var(--brown-light);font-size:.72rem;padding:4px;border-radius:var(--r-sm);cursor:pointer">
+                        Quitar logo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CONTENIDO -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:14px">Contenido</div>
+                <label class="field-label">Titular principal
                   <input id="poster-headline" class="field-input" type="text" value="¡Únete y gana premios!" oninput="posterRender()">
                 </label>
                 <label class="field-label">Subtítulo
@@ -3725,33 +3752,40 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 <label class="field-label">Texto CTA (bajo el QR)
                   <input id="poster-cta" class="field-input" type="text" value="Escanea y regístrate gratis" oninput="posterRender()">
                 </label>
-                <label class="field-label">Texto pie de página
-                  <input id="poster-footer" class="field-input" type="text" placeholder="Ej: zubcard.com · @tunegocio" oninput="posterRender()">
+                <label class="field-label" style="margin-bottom:0">Texto pie de página
+                  <input id="poster-footer" class="field-input" type="text" placeholder="Ej: @tutienda · Calle Mayor 10" oninput="posterRender()">
                 </label>
               </div>
 
+              <!-- DISEÑO / COLORES -->
               <div class="card-box" style="margin-bottom:16px">
-                <div class="card-title" style="margin-bottom:14px">Diseño</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-                  <label class="field-label" style="margin-bottom:0">Color fondo
+                <div class="card-title" style="margin-bottom:14px">Colores</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <label class="field-label" style="margin-bottom:0">Fondo
                     <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-                      <input type="color" id="poster-bg-color" value="#26170c" oninput="document.getElementById('poster-bg-txt').value=this.value;posterRender()" style="width:36px;height:30px;border:none;padding:0;cursor:pointer;background:none">
-                      <input type="text" id="poster-bg-txt" value="#26170c" class="field-input" style="flex:1;padding:4px 8px;font-size:.78rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-bg-color').value=this.value;posterRender()}">
+                      <input type="color" id="poster-bg-color" value="#26170c" oninput="document.getElementById('poster-bg-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                      <input type="text" id="poster-bg-txt" value="#26170c" class="field-input" style="flex:1;padding:4px 6px;font-size:.75rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-bg-color').value=this.value;posterRender()}">
                     </div>
                   </label>
-                  <label class="field-label" style="margin-bottom:0">Color acento
+                  <label class="field-label" style="margin-bottom:0">Acento
                     <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-                      <input type="color" id="poster-accent-color" value="#ffca48" oninput="document.getElementById('poster-accent-txt').value=this.value;posterRender()" style="width:36px;height:30px;border:none;padding:0;cursor:pointer;background:none">
-                      <input type="text" id="poster-accent-txt" value="#ffca48" class="field-input" style="flex:1;padding:4px 8px;font-size:.78rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-accent-color').value=this.value;posterRender()}">
+                      <input type="color" id="poster-accent-color" value="#ffca48" oninput="document.getElementById('poster-accent-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                      <input type="text" id="poster-accent-txt" value="#ffca48" class="field-input" style="flex:1;padding:4px 6px;font-size:.75rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-accent-color').value=this.value;posterRender()}">
+                    </div>
+                  </label>
+                  <label class="field-label" style="margin-bottom:0">Color QR
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+                      <input type="color" id="poster-qr-color" value="#26170c" oninput="document.getElementById('poster-qr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                      <input type="text" id="poster-qr-txt" value="#26170c" class="field-input" style="flex:1;padding:4px 6px;font-size:.75rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-qr-color').value=this.value;posterRender()}">
+                    </div>
+                  </label>
+                  <label class="field-label" style="margin-bottom:0">Texto cabecera
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+                      <input type="color" id="poster-hdr-text-color" value="#ffffff" oninput="document.getElementById('poster-hdr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                      <input type="text" id="poster-hdr-txt" value="#ffffff" class="field-input" style="flex:1;padding:4px 6px;font-size:.75rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-hdr-text-color').value=this.value;posterRender()}">
                     </div>
                   </label>
                 </div>
-                <label class="field-label">Texto cabecera
-                  <select id="poster-hdr-text-color" class="field-input" onchange="posterRender()" style="margin-bottom:0">
-                    <option value="#ffffff">Blanco</option>
-                    <option value="#26170c">Marrón oscuro</option>
-                  </select>
-                </label>
                 <div style="margin-top:12px">
                   <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;font-weight:600">
                     <input type="checkbox" id="poster-show-bizname" checked onchange="posterRender()"> Mostrar nombre del negocio
@@ -3759,9 +3793,34 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 </div>
               </div>
 
+              <!-- IMAGEN DE FONDO -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:10px">Imagen de fondo</div>
+                <div style="font-size:.75rem;color:var(--brown-light);margin-bottom:8px">Se superpone sobre el color de fondo (opcional)</div>
+                <div id="poster-bg-img-preview" style="width:100%;height:72px;border-radius:var(--r-sm);border:2px dashed var(--cream-border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface-low);margin-bottom:8px;cursor:pointer" onclick="document.getElementById('poster-bg-img-file').click()">
+                  <span class="material-symbols-outlined" style="font-size:1.8rem;color:var(--brown-light)" id="poster-bg-img-icon">add_photo_alternate</span>
+                  <img id="poster-bg-img-thumb" src="" style="display:none;width:100%;height:100%;object-fit:cover">
+                </div>
+                <input type="file" id="poster-bg-img-file" accept="image/*" onchange="posterHandleBgImg(this)" style="display:none">
+                <div style="display:flex;gap:8px">
+                  <button onclick="document.getElementById('poster-bg-img-file').click()" style="flex:1;background:var(--surface-low);border:1px solid var(--cream-border);color:var(--brown);font-size:.75rem;font-weight:700;padding:6px;border-radius:var(--r-sm);cursor:pointer">Subir imagen</button>
+                  <button id="poster-bg-img-remove" onclick="posterRemoveBgImg()" style="display:none;background:none;border:1px solid var(--cream-border);color:var(--brown-light);font-size:.72rem;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer">Quitar</button>
+                </div>
+                <label class="field-label" style="margin-top:10px;margin-bottom:0">Opacidad del fondo
+                  <input type="range" id="poster-bg-img-opacity" min="0.05" max="1" step="0.05" value="0.25" oninput="document.getElementById('poster-bg-opacity-val').textContent=Math.round(this.value*100)+'%';posterRender()" style="width:100%;accent-color:var(--brown)">
+                  <span id="poster-bg-opacity-val" style="font-size:.72rem;color:var(--brown-light)">25%</span>
+                </label>
+              </div>
+
+              <!-- REDES + URL QR -->
               <div class="card-box">
-                <div class="card-title" style="margin-bottom:12px">URL del QR</div>
-                <input id="poster-qr-url" class="field-input" type="text" oninput="posterRender()" style="font-size:.75rem">
+                <div class="card-title" style="margin-bottom:12px">Redes y URL</div>
+                <label class="field-label">Arroba / red social
+                  <input id="poster-social" class="field-input" type="text" placeholder="@tutienda" oninput="posterRender()">
+                </label>
+                <label class="field-label" style="margin-bottom:0">URL del QR
+                  <input id="poster-qr-url" class="field-input" type="text" oninput="posterRender()" style="font-size:.75rem">
+                </label>
               </div>
             </div>
 
@@ -8423,36 +8482,94 @@ function posterLoadFromCard() {
   const idx = sel ? parseInt(sel.value) || 0 : 0;
   const card = _posterCards[idx];
   if (!card) { posterRender(); return; }
-  // Colors
   const bg = card.bg_color || '#26170c';
   const ac = card.accent_color || '#ffca48';
-  document.getElementById('poster-bg-color').value = bg;
-  document.getElementById('poster-bg-txt').value   = bg;
-  document.getElementById('poster-accent-color').value = ac;
-  document.getElementById('poster-accent-txt').value   = ac;
-  // Headline from card name + reward
-  const stamps  = card.stamps_per_reward || 10;
-  const reward  = card.reward_name || 'Premio';
-  const emoji   = card.emoji || '🎁';
-  document.getElementById('poster-headline').value = `¡${stamps} sellos = ${reward}!`;
-  document.getElementById('poster-subtext').value  = 'Acumula sellos con cada visita';
+  const v = id => document.getElementById(id);
+  v('poster-bg-color').value    = bg; v('poster-bg-txt').value    = bg;
+  v('poster-accent-color').value= ac; v('poster-accent-txt').value= ac;
+  v('poster-qr-color').value    = bg; v('poster-qr-txt').value    = bg;
+  v('poster-card-name').value   = BIZ_NAME || '';
+  const stamps = card.stamps_per_reward || 10;
+  const reward = card.reward_name || 'Premio';
+  v('poster-headline').value = `¡${stamps} sellos = ${reward}!`;
+  v('poster-subtext').value  = 'Acumula sellos con cada visita';
   posterRender();
 }
 
 function _posterGetConfig() {
   const v = id => document.getElementById(id);
   return {
-    headline    : v('poster-headline')?.value   || '¡Únete y gana!',
-    subtext     : v('poster-subtext')?.value    || '',
-    cta         : v('poster-cta')?.value        || 'Escanea y regístrate gratis',
-    footer      : v('poster-footer')?.value     || '',
-    bgColor     : v('poster-bg-color')?.value   || '#26170c',
+    headline    : v('poster-headline')?.value    || '¡Únete y gana!',
+    subtext     : v('poster-subtext')?.value     || '',
+    cta         : v('poster-cta')?.value         || 'Escanea y regístrate gratis',
+    footer      : v('poster-footer')?.value      || '',
+    social      : v('poster-social')?.value      || '',
+    cardName    : v('poster-card-name')?.value   || BIZ_NAME || '',
+    bgColor     : v('poster-bg-color')?.value    || '#26170c',
     accentColor : v('poster-accent-color')?.value || '#ffca48',
+    qrColor     : v('poster-qr-color')?.value    || '#26170c',
     hdrText     : v('poster-hdr-text-color')?.value || '#ffffff',
-    showStamps  : v('poster-show-stamps')?.checked !== false,
     showBizName : v('poster-show-bizname')?.checked !== false,
-    qrUrl       : v('poster-qr-url')?.value     || `${BASE}/biz/${BIZ_SLUG}/register`,
+    qrUrl       : v('poster-qr-url')?.value      || `${BASE}/biz/${BIZ_SLUG}/register`,
+    bgImgOpacity: parseFloat(v('poster-bg-img-opacity')?.value || '0.25'),
+    posterLogo  : window._posterLogoImg  || null,
+    bgImg       : window._posterBgImg    || null,
   };
+}
+
+/* Logo upload handlers */
+function posterHandleLogo(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      window._posterLogoImg = img;
+      const prev = document.getElementById('poster-logo-preview');
+      prev.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;padding:4px">`;
+      document.getElementById('poster-logo-remove').style.display = '';
+      posterRender();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value = '';
+}
+function posterRemoveLogo() {
+  window._posterLogoImg = null;
+  document.getElementById('poster-logo-preview').innerHTML = '<span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--brown-light)">image</span>';
+  document.getElementById('poster-logo-remove').style.display = 'none';
+  posterRender();
+}
+
+/* Background image handlers */
+function posterHandleBgImg(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      window._posterBgImg = img;
+      const thumb = document.getElementById('poster-bg-img-thumb');
+      const icon  = document.getElementById('poster-bg-img-icon');
+      thumb.src = e.target.result; thumb.style.display = '';
+      if (icon) icon.style.display = 'none';
+      document.getElementById('poster-bg-img-remove').style.display = '';
+      posterRender();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value = '';
+}
+function posterRemoveBgImg() {
+  window._posterBgImg = null;
+  const thumb = document.getElementById('poster-bg-img-thumb');
+  const icon  = document.getElementById('poster-bg-img-icon');
+  thumb.style.display = 'none'; thumb.src = '';
+  if (icon) icon.style.display = '';
+  document.getElementById('poster-bg-img-remove').style.display = 'none';
+  posterRender();
 }
 
 function _posterGetCard() {
@@ -8489,10 +8606,10 @@ async function _posterDraw(canvas) {
 
   const bg     = cfg.bgColor;
   const accent = cfg.accentColor;
-  const bizName = BIZ_NAME || '';
+  const bizName = cfg.cardName || BIZ_NAME || '';
 
   // Pre-load images so canvas renders them correctly
-  const logoImg = await _posterLoadImg(BIZ_LOGO_URL);
+  const logoImg = cfg.posterLogo || await _posterLoadImg(BIZ_LOGO_URL);
   if (card.strip_bg_url && !card._strip_bg_img) {
     card._strip_bg_img = await _posterLoadImg(card.strip_bg_url);
   }
@@ -8501,15 +8618,25 @@ async function _posterDraw(canvas) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle diagonal texture overlay
-  ctx.save();
-  ctx.globalAlpha = 0.03;
-  for (let i = -H; i < W + H; i += Math.round(W * 0.08)) {
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = Math.round(W * 0.04);
-    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + H, H); ctx.stroke();
+  // Background image (if uploaded) with opacity
+  if (cfg.bgImg) {
+    const img = cfg.bgImg;
+    const sf  = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const nw  = img.naturalWidth * sf, nh = img.naturalHeight * sf;
+    ctx.globalAlpha = cfg.bgImgOpacity;
+    ctx.drawImage(img, (W - nw) / 2, (H - nh) / 2, nw, nh);
+    ctx.globalAlpha = 1;
+  } else {
+    // Subtle diagonal texture overlay
+    ctx.save();
+    ctx.globalAlpha = 0.03;
+    for (let i = -H; i < W + H; i += Math.round(W * 0.08)) {
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = Math.round(W * 0.04);
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + H, H); ctx.stroke();
+    }
+    ctx.restore();
   }
-  ctx.restore();
 
   const pad = Math.round(W * 0.07);
 
@@ -8649,7 +8776,7 @@ async function _posterDraw(canvas) {
   if (!qrDiv) { qrDiv = document.createElement('div'); qrDiv.id='_poster-qr-tmp'; qrDiv.style.cssText='position:fixed;left:-9999px;visibility:hidden'; document.body.appendChild(qrDiv); }
   qrDiv.innerHTML = '';
   try {
-    new QRCode(qrDiv, { text: cfg.qrUrl, width: qrSize, height: qrSize, colorDark: bg, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(qrDiv, { text: cfg.qrUrl, width: qrSize, height: qrSize, colorDark: cfg.qrColor, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
     await new Promise(r => setTimeout(r, 150));
     const qrCvs = qrDiv.querySelector('canvas');
     const qrImg = qrDiv.querySelector('img');
@@ -8695,10 +8822,18 @@ async function _posterDraw(canvas) {
     ctx.fillText(cfg.footer, W/2, footerY + footerH/2);
   }
 
-  // Footer right: powered by ZubCard
-  const ftBadgeSize = Math.round(footerH * 0.26);
+  // Footer center: social handle
+  if (cfg.social) {
+    const ftSocSize = Math.round(footerH * 0.32);
+    ctx.font = `700 ${ftSocSize}px 'Manrope', sans-serif`;
+    ctx.fillStyle = bg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+    ctx.fillText(cfg.social, W/2, footerY + footerH/2);
+    ctx.globalAlpha = 1;
+  }
+  // Footer right: zubcard.com
+  const ftBadgeSize = Math.round(footerH * 0.24);
   ctx.font = `500 ${ftBadgeSize}px 'Manrope', sans-serif`;
-  ctx.fillStyle = bg; ctx.globalAlpha = 0.5; ctx.textAlign = 'right';
+  ctx.fillStyle = bg; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
   ctx.fillText('zubcard.com', W - pad, footerY + footerH/2);
   ctx.globalAlpha = 1;
 }
@@ -8793,17 +8928,18 @@ function _posterDrawPhone(ctx, card, px, py, pW, pH, bg, accent) {
   ctx.textAlign = 'right';
   ctx.fillText(card.reward_name||'Premio', passX+passW-cPad, fldY+fldH*0.48);
 
-  // Barcode zone
+  // QR zone (white rounded rect)
   const bcY  = fldY + fldH;
   const bcH  = passH - cHdrH - stripH - fldH;
   const bcPd = Math.round(passW*0.05);
   ctx.fillStyle = '#fff';
   _posterRoundRect(ctx, passX+bcPd, bcY+bcPd*0.4, passW-bcPd*2, bcH-bcPd*0.6, Math.round(passW*0.03));
   ctx.fill();
-  const bars=[1,0,1,1,0,1,0,1,0,1,1,0,1];
-  const bW=Math.round(passW*0.22), bH=Math.round(bcH*0.42);
-  const bX=passX+(passW-bW)/2, bY=bcY+(bcH-bH)/2;
-  bars.forEach((on,i)=>{ if(on){ctx.fillStyle='#1a1a1a'; ctx.fillRect(bX+i*(bW/bars.length), bY, bW/bars.length*0.7, bH);} });
+  // Draw mini QR pattern (decorative, not real)
+  const qrMiniSize = Math.round(Math.min(passW*0.28, bcH*0.72));
+  const qmX = passX + (passW - qrMiniSize) / 2;
+  const qmY = bcY + (bcH - qrMiniSize) / 2;
+  _posterDrawMiniQR(ctx, qmX, qmY, qrMiniSize, card.bg_color || bg);
 
   // Home indicator
   ctx.fillStyle = 'rgba(255,255,255,0.22)';
@@ -8812,6 +8948,36 @@ function _posterDrawPhone(ctx, card, px, py, pW, pH, bg, accent) {
   ctx.fill();
 
   ctx.restore();
+}
+
+/* Decorative mini QR pattern drawn with canvas 2D */
+function _posterDrawMiniQR(ctx, x, y, size, color) {
+  const cells = 7; // 7×7 grid
+  const cell  = size / cells;
+  const r     = Math.round(cell * 0.18);
+  ctx.fillStyle = color || '#1a1a1a';
+  // Corner squares (finder patterns)
+  const corner = (cx, cy) => {
+    // Outer 3×3
+    ctx.fillRect(cx, cy, cell*3, cell*3);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(cx+cell, cy+cell, cell, cell);
+    ctx.fillStyle = color || '#1a1a1a';
+  };
+  corner(x, y);                              // top-left
+  corner(x + cell*4, y);                    // top-right
+  corner(x, y + cell*4);                    // bottom-left
+  // Inner dots (simplified data area)
+  const data = [
+    [3,0],[5,0],[6,0],[3,1],[5,2],[6,2],
+    [0,3],[1,3],[3,3],[4,3],[6,3],
+    [0,4],[2,4],[4,4],[6,4],
+    [1,5],[3,5],[5,5],[6,5],
+    [0,6],[2,6],[3,6],[5,6]
+  ];
+  data.forEach(([dc, dr]) => {
+    ctx.fillRect(x + dc*cell + r*0.5, y + dr*cell + r*0.5, cell - r, cell - r);
+  });
 }
 
 function _posterRoundRect(ctx, x, y, w, h, r) {
