@@ -308,12 +308,32 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
       {% if birthday_enabled %}
       <div class="field">
         <label>Fecha de nacimiento <span style="font-size:.65rem;font-weight:400;letter-spacing:0;text-transform:none;color:var(--outline)">— para tu sorpresa 🎂</span></label>
-        <input type="date" id="birth_date">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+          <span style="font-size:.72rem;color:var(--outline)">Escribe la fecha</span>
+          <label class="toggle" style="width:32px;height:18px" title="Cambiar modo fecha">
+            <input type="checkbox" id="birth_mode_toggle">
+            <span class="slider"></span>
+          </label>
+          <span style="font-size:.72rem;color:var(--outline)">Seleccionar</span>
+        </div>
+        <input type="text" id="birth_date_text" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="bday" style="width:100%;padding:.8rem 1rem;border:none;border-radius:var(--r-sm);font-size:.92rem;font-family:'Manrope',sans-serif;background:var(--surface);color:var(--primary);outline:none;transition:box-shadow .18s">
+        <input type="date" id="birth_date_picker" style="display:none;width:100%;padding:.8rem 1rem;border:none;border-radius:var(--r-sm);font-size:.92rem;font-family:'Manrope',sans-serif;background:var(--surface);color:var(--primary);outline:none;transition:box-shadow .18s;color-scheme:light">
+        <input type="hidden" id="birth_date">
       </div>
       {% else %}
       <div class="field">
         <label>Fecha de nacimiento</label>
-        <input type="date" id="birth_date">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+          <span style="font-size:.72rem;color:var(--outline)">Escribe la fecha</span>
+          <label class="toggle" style="width:32px;height:18px" title="Cambiar modo fecha">
+            <input type="checkbox" id="birth_mode_toggle">
+            <span class="slider"></span>
+          </label>
+          <span style="font-size:.72rem;color:var(--outline)">Seleccionar</span>
+        </div>
+        <input type="text" id="birth_date_text" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="bday" style="width:100%;padding:.8rem 1rem;border:none;border-radius:var(--r-sm);font-size:.92rem;font-family:'Manrope',sans-serif;background:var(--surface);color:var(--primary);outline:none;transition:box-shadow .18s">
+        <input type="date" id="birth_date_picker" style="display:none;width:100%;padding:.8rem 1rem;border:none;border-radius:var(--r-sm);font-size:.92rem;font-family:'Manrope',sans-serif;background:var(--surface);color:var(--primary);outline:none;transition:box-shadow .18s;color-scheme:light">
+        <input type="hidden" id="birth_date">
       </div>
       {% endif %}
 
@@ -364,7 +384,7 @@ async function doRegister() {
   const last_name    = document.getElementById('last_name').value.trim();
   const email        = document.getElementById('email').value.trim();
   const phone        = document.getElementById('phone').value.trim();
-  const birth_date   = document.getElementById('birth_date').value;
+  const birth_date   = document.getElementById('birth_date').value; // ya sincronizado por el toggle/input
   const opt_in_email = document.getElementById('opt_in_email').checked;
   const opt_in_sms   = document.getElementById('opt_in_sms')?.checked || false;
 
@@ -408,6 +428,60 @@ async function doRegister() {
     btn.textContent = 'Crear mi tarjeta gratis →';
   }
 }
+
+// ── Fecha de nacimiento: modo texto / selector ──────────────────────────
+(function() {
+  const toggle   = document.getElementById('birth_mode_toggle');
+  const txtInput = document.getElementById('birth_date_text');
+  const picker   = document.getElementById('birth_date_picker');
+  const hidden   = document.getElementById('birth_date');
+
+  if (!toggle) return;
+
+  function syncFromText(val) {
+    // acepta DD/MM/AAAA o DD-MM-AAAA
+    const clean = val.replace(/[^0-9]/g, '');
+    let formatted = '';
+    if (clean.length >= 1) formatted = clean.slice(0,2);
+    if (clean.length >= 3) formatted += '/' + clean.slice(2,4);
+    if (clean.length >= 5) formatted += '/' + clean.slice(4,8);
+    txtInput.value = formatted;
+
+    if (clean.length === 8) {
+      const d = clean.slice(0,2), m = clean.slice(2,4), y = clean.slice(4,8);
+      hidden.value = `${y}-${m}-${d}`;
+    } else {
+      hidden.value = '';
+    }
+  }
+
+  txtInput.addEventListener('input', function() {
+    syncFromText(this.value);
+  });
+
+  picker.addEventListener('change', function() {
+    hidden.value = this.value; // YYYY-MM-DD
+    if (this.value) {
+      const [y,m,d] = this.value.split('-');
+      // reflejar en texto si el usuario vuelve al modo texto
+      txtInput.value = `${d}/${m}/${y}`;
+    }
+  });
+
+  toggle.addEventListener('change', function() {
+    if (this.checked) {
+      // modo selector
+      txtInput.style.display = 'none';
+      picker.style.display   = '';
+      picker.focus();
+    } else {
+      // modo texto
+      picker.style.display   = 'none';
+      txtInput.style.display = '';
+      txtInput.focus();
+    }
+  });
+})();
 
 function showErr(msg) {
   const el = document.getElementById('error-msg');
