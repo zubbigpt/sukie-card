@@ -370,6 +370,20 @@ nav a.active .icon{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 2
 /* ── CARD BOX ─────────────────────────────────────────────── */
 .card-box{background:var(--white);border-radius:var(--r-lg);padding:20px;border:1px solid var(--cream-border);margin-bottom:16px}
 
+/* ── POSTER TYPOGRAPHY PANEL ──────────────────────────────── */
+.pfont-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.pfont-pill{padding:5px 11px;border-radius:20px;border:1.5px solid var(--cream-border);cursor:pointer;font-size:.78rem;color:var(--brown);background:var(--surface-low);transition:border-color .15s,background .15s,color .15s;white-space:nowrap;line-height:1.3;letter-spacing:.01em}
+.pfont-pill:hover{border-color:var(--honey);background:var(--honey-light)}
+.pfont-pill.active{border-color:var(--brown);background:var(--brown);color:var(--cream)}
+.pacc-item{border-bottom:1px solid var(--cream-border)}
+.pacc-item:last-child{border-bottom:none}
+.pacc-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;cursor:pointer;font-size:.7rem;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:.09em;user-select:none;transition:color .15s}
+.pacc-hdr:hover{color:var(--honey-dark)}
+.pacc-hdr .pacc-arrow{font-size:1rem;line-height:1;transition:transform .2s;color:var(--brown-light);font-weight:400}
+.pacc-hdr.open .pacc-arrow{transform:rotate(90deg)}
+.pacc-body{display:none;padding-bottom:14px}
+.pacc-body.open{display:block}
+
 /* ── IMPORT ───────────────────────────────────────────────── */
 .import-drop{border-radius:var(--r-lg);padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface-low);border:2px dashed var(--cream-border);margin-bottom:16px}
 .import-drop:hover,.import-drop.over{background:var(--honey-light);border-color:var(--honey)}
@@ -3757,6 +3771,102 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                 </label>
               </div>
 
+              <!-- TIPOGRAFÍA -->
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:4px">Tipografía</div>
+                <div id="poster-typo-accordions">
+
+                  <!-- Cabecera -->
+                  <div class="pacc-item">
+                    <div class="pacc-hdr" id="pacc-hdr-hdr" onclick="posterToggleAcc('hdr')">
+                      <span>Cabecera</span><span class="pacc-arrow">›</span>
+                    </div>
+                    <div class="pacc-body" id="pacc-body-hdr">
+                      <div style="font-size:.68rem;color:var(--brown-light);margin-bottom:2px">Fuente</div>
+                      <div class="pfont-pills" id="pfont-pills-hdr"></div>
+                      <div style="display:flex;gap:8px;margin-top:10px;align-items:flex-end">
+                        <label class="field-label" style="flex:1;margin-bottom:0">Tamaño
+                          <input type="number" id="poster-hdr-font-size" class="field-input" value="89" min="20" max="220" oninput="posterRender()">
+                        </label>
+                        <label class="field-label" style="margin-bottom:0">Color
+                          <div style="display:flex;gap:4px;align-items:center;margin-top:4px">
+                            <input type="color" id="poster-hdr-text-color" value="#ffffff" oninput="document.getElementById('poster-hdr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                            <input type="text" id="poster-hdr-txt" value="#ffffff" class="field-input" style="width:64px;padding:4px 6px;font-size:.72rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-hdr-text-color').value=this.value;posterRender()}">
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Titular -->
+                  <div class="pacc-item">
+                    <div class="pacc-hdr" id="pacc-hdr-headline" onclick="posterToggleAcc('headline')">
+                      <span>Titular principal</span><span class="pacc-arrow">›</span>
+                    </div>
+                    <div class="pacc-body" id="pacc-body-headline">
+                      <div style="font-size:.68rem;color:var(--brown-light);margin-bottom:2px">Fuente</div>
+                      <div class="pfont-pills" id="pfont-pills-headline"></div>
+                      <div style="display:flex;gap:8px;margin-top:10px;align-items:flex-end">
+                        <label class="field-label" style="flex:1;margin-bottom:0">Tamaño
+                          <input type="number" id="poster-headline-font-size" class="field-input" value="114" min="20" max="260" oninput="posterRender()">
+                        </label>
+                        <label class="field-label" style="margin-bottom:0">Color
+                          <div style="display:flex;gap:4px;align-items:center;margin-top:4px">
+                            <input type="color" id="poster-headline-color" value="#ffffff" oninput="document.getElementById('poster-headline-clr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                            <input type="text" id="poster-headline-clr-txt" value="#ffffff" class="field-input" style="width:64px;padding:4px 6px;font-size:.72rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-headline-color').value=this.value;posterRender()}">
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- CTA -->
+                  <div class="pacc-item">
+                    <div class="pacc-hdr" id="pacc-hdr-cta" onclick="posterToggleAcc('cta')">
+                      <span>Texto CTA (bajo el QR)</span><span class="pacc-arrow">›</span>
+                    </div>
+                    <div class="pacc-body" id="pacc-body-cta">
+                      <div style="font-size:.68rem;color:var(--brown-light);margin-bottom:2px">Fuente</div>
+                      <div class="pfont-pills" id="pfont-pills-cta"></div>
+                      <div style="display:flex;gap:8px;margin-top:10px;align-items:flex-end">
+                        <label class="field-label" style="flex:1;margin-bottom:0">Tamaño
+                          <input type="number" id="poster-cta-font-size" class="field-input" value="53" min="12" max="160" oninput="posterRender()">
+                        </label>
+                        <label class="field-label" style="margin-bottom:0">Color
+                          <div style="display:flex;gap:4px;align-items:center;margin-top:4px">
+                            <input type="color" id="poster-cta-color" value="#26170c" oninput="document.getElementById('poster-cta-clr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                            <input type="text" id="poster-cta-clr-txt" value="#26170c" class="field-input" style="width:64px;padding:4px 6px;font-size:.72rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-cta-color').value=this.value;posterRender()}">
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pie -->
+                  <div class="pacc-item">
+                    <div class="pacc-hdr" id="pacc-hdr-footer" onclick="posterToggleAcc('footer')">
+                      <span>Pie de página</span><span class="pacc-arrow">›</span>
+                    </div>
+                    <div class="pacc-body" id="pacc-body-footer">
+                      <div style="font-size:.68rem;color:var(--brown-light);margin-bottom:2px">Fuente</div>
+                      <div class="pfont-pills" id="pfont-pills-footer"></div>
+                      <div style="display:flex;gap:8px;margin-top:10px;align-items:flex-end">
+                        <label class="field-label" style="flex:1;margin-bottom:0">Tamaño
+                          <input type="number" id="poster-footer-font-size" class="field-input" value="47" min="12" max="120" oninput="posterRender()">
+                        </label>
+                        <label class="field-label" style="margin-bottom:0">Color
+                          <div style="display:flex;gap:4px;align-items:center;margin-top:4px">
+                            <input type="color" id="poster-footer-color" value="#26170c" oninput="document.getElementById('poster-footer-clr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
+                            <input type="text" id="poster-footer-clr-txt" value="#26170c" class="field-input" style="width:64px;padding:4px 6px;font-size:.72rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-footer-color').value=this.value;posterRender()}">
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                </div><!-- /accordions -->
+              </div>
+
               <!-- DISEÑO / COLORES -->
               <div class="card-box" style="margin-bottom:16px">
                 <div class="card-title" style="margin-bottom:14px">Colores</div>
@@ -3777,12 +3887,6 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                     <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
                       <input type="color" id="poster-qr-color" value="#26170c" oninput="document.getElementById('poster-qr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
                       <input type="text" id="poster-qr-txt" value="#26170c" class="field-input" style="flex:1;padding:4px 6px;font-size:.75rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-qr-color').value=this.value;posterRender()}">
-                    </div>
-                  </label>
-                  <label class="field-label" style="margin-bottom:0">Texto cabecera
-                    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-                      <input type="color" id="poster-hdr-text-color" value="#ffffff" oninput="document.getElementById('poster-hdr-txt').value=this.value;posterRender()" style="width:32px;height:28px;border:none;padding:0;cursor:pointer;background:none">
-                      <input type="text" id="poster-hdr-txt" value="#ffffff" class="field-input" style="flex:1;padding:4px 6px;font-size:.75rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-hdr-text-color').value=this.value;posterRender()}">
                     </div>
                   </label>
                 </div>
@@ -8459,7 +8563,74 @@ function attachLPListeners(){
 let _posterCards = [];
 let _posterQRData = null; // {url, size} cache
 
+/* ── Premium font catalogue ─────────────────────────────────── */
+const POSTER_FONTS = [
+  { name: 'Bebas Neue',         weight: '400' },
+  { name: 'Playfair Display',   weight: '700' },
+  { name: 'Fraunces',           weight: '700' },
+  { name: 'Montserrat',         weight: '800' },
+  { name: 'EB Garamond',        weight: '700' },
+  { name: 'Raleway',            weight: '800' },
+  { name: 'Cormorant Garamond', weight: '700' },
+  { name: 'DM Sans',            weight: '800' },
+  { name: 'Manrope',            weight: '800' },
+];
+const POSTER_FONT_DEFAULTS = { hdr:'Bebas Neue', headline:'Bebas Neue', cta:'Bebas Neue', footer:'Manrope' };
+
+/* Lazy-load Google Fonts not already on the page */
+function posterLoadFonts() {
+  if (document.getElementById('poster-gfonts')) return;
+  const link = document.createElement('link');
+  link.id = 'poster-gfonts'; link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Fraunces:wght@700&family=Montserrat:wght@800&family=EB+Garamond:wght@700&family=Raleway:wght@800&family=Cormorant+Garamond:wght@700&family=DM+Sans:wght@800&display=swap';
+  document.head.appendChild(link);
+}
+
+/* Build/rebuild font pill buttons for all sections */
+function _posterInitFontPills() {
+  window._posterFonts = window._posterFonts || { ...POSTER_FONT_DEFAULTS };
+  ['hdr','headline','cta','footer'].forEach(sec => {
+    const container = document.getElementById(`pfont-pills-${sec}`);
+    if (!container) return;
+    const active = window._posterFonts[sec] || POSTER_FONT_DEFAULTS[sec];
+    container.innerHTML = POSTER_FONTS.map(f =>
+      `<button class="pfont-pill${f.name === active ? ' active' : ''}"
+        data-font="${f.name}"
+        style="font-family:'${f.name}',serif;font-weight:${f.weight}"
+        onclick="posterSelectFont('${sec}','${f.name}')">${f.name}</button>`
+    ).join('');
+  });
+}
+
+/* Select a font for a given section */
+function posterSelectFont(sec, fontName) {
+  window._posterFonts = window._posterFonts || { ...POSTER_FONT_DEFAULTS };
+  window._posterFonts[sec] = fontName;
+  document.querySelectorAll(`#pfont-pills-${sec} .pfont-pill`).forEach(p =>
+    p.classList.toggle('active', p.dataset.font === fontName)
+  );
+  posterRender();
+}
+
+/* Build canvas font string with correct weight for a font */
+function _posterFontStr(fontName, sizePx) {
+  const f = POSTER_FONTS.find(f => f.name === fontName);
+  return `${f ? f.weight : '700'} ${sizePx}px '${fontName}', serif`;
+}
+
+/* Toggle accordion section (one open at a time) */
+function posterToggleAcc(sec) {
+  const body = document.getElementById(`pacc-body-${sec}`);
+  const hdr  = document.getElementById(`pacc-hdr-${sec}`);
+  const wasOpen = body?.classList.contains('open');
+  document.querySelectorAll('.pacc-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.pacc-hdr').forEach(h => h.classList.remove('open'));
+  if (!wasOpen && body) { body.classList.add('open'); hdr?.classList.add('open'); }
+}
+
 async function initPosterEditor() {
+  posterLoadFonts();
+  _posterInitFontPills();
   const url = `${BASE}/biz/${BIZ_SLUG}/register`;
   const urlEl = document.getElementById('poster-qr-url');
   if (urlEl && !urlEl.value) urlEl.value = url;
@@ -8469,7 +8640,7 @@ async function initPosterEditor() {
     _posterCards = await r.json();
     const sel = document.getElementById('poster-card-select');
     if (sel && _posterCards.length) {
-      sel.innerHTML = _posterCards.map((c,i) => `<option value="${i}">${c.emoji||'🎁'} ${c.name}</option>`).join('');
+      sel.innerHTML = _posterCards.map((c,i) => `<option value="${i}">${c.name}</option>`).join('');
       // Only auto-fill fields on first load
       if (!sel.dataset.loaded) { sel.dataset.loaded = '1'; posterLoadFromCard(); return; }
     }
@@ -8498,22 +8669,35 @@ function posterLoadFromCard() {
 
 function _posterGetConfig() {
   const v = id => document.getElementById(id);
+  const fonts = window._posterFonts || POSTER_FONT_DEFAULTS;
   return {
-    headline    : v('poster-headline')?.value    || '¡Únete y gana!',
-    subtext     : v('poster-subtext')?.value     || '',
-    cta         : v('poster-cta')?.value         || 'Escanea y regístrate gratis',
-    footer      : v('poster-footer')?.value      || '',
-    social      : v('poster-social')?.value      || '',
-    cardName    : v('poster-card-name')?.value   || BIZ_NAME || '',
-    bgColor     : v('poster-bg-color')?.value    || '#26170c',
-    accentColor : v('poster-accent-color')?.value || '#ffca48',
-    qrColor     : v('poster-qr-color')?.value    || '#26170c',
-    hdrText     : v('poster-hdr-text-color')?.value || '#ffffff',
-    showBizName : v('poster-show-bizname')?.checked !== false,
-    qrUrl       : v('poster-qr-url')?.value      || `${BASE}/biz/${BIZ_SLUG}/register`,
-    bgImgOpacity: parseFloat(v('poster-bg-img-opacity')?.value || '0.25'),
-    posterLogo  : window._posterLogoImg  || null,
-    bgImg       : window._posterBgImg    || null,
+    headline     : v('poster-headline')?.value    || '¡Únete y gana!',
+    subtext      : v('poster-subtext')?.value     || '',
+    cta          : v('poster-cta')?.value         || 'Escanea y regístrate gratis',
+    footer       : v('poster-footer')?.value      || '',
+    social       : v('poster-social')?.value      || '',
+    cardName     : v('poster-card-name')?.value   || BIZ_NAME || '',
+    bgColor      : v('poster-bg-color')?.value    || '#26170c',
+    accentColor  : v('poster-accent-color')?.value || '#ffca48',
+    qrColor      : v('poster-qr-color')?.value    || '#26170c',
+    showBizName  : v('poster-show-bizname')?.checked !== false,
+    qrUrl        : v('poster-qr-url')?.value      || `${BASE}/biz/${BIZ_SLUG}/register`,
+    bgImgOpacity : parseFloat(v('poster-bg-img-opacity')?.value || '0.25'),
+    posterLogo   : window._posterLogoImg  || null,
+    bgImg        : window._posterBgImg    || null,
+    // ── Per-section typography ───────────────────────────────
+    hdrFont      : fonts.hdr       || 'Bebas Neue',
+    hdrSize      : parseInt(v('poster-hdr-font-size')?.value      || '89'),
+    hdrColor     : v('poster-hdr-text-color')?.value               || '#ffffff',
+    headlineFont : fonts.headline  || 'Bebas Neue',
+    headlineSize : parseInt(v('poster-headline-font-size')?.value  || '114'),
+    headlineColor: v('poster-headline-color')?.value               || '#ffffff',
+    ctaFont      : fonts.cta       || 'Bebas Neue',
+    ctaSize      : parseInt(v('poster-cta-font-size')?.value       || '53'),
+    ctaColor     : v('poster-cta-color')?.value                    || '#26170c',
+    footerFont   : fonts.footer    || 'Manrope',
+    footerSize   : parseInt(v('poster-footer-font-size')?.value    || '47'),
+    footerColor  : v('poster-footer-color')?.value                 || '#26170c',
   };
 }
 
@@ -8654,36 +8838,40 @@ async function _posterDraw(canvas) {
 
   if (cfg.showBizName) {
     const logoSize = Math.round(hdrH * 0.56);
+    const circR = logoSize / 2;
     let textStartX = pad;
     if (logoImg) {
       // Draw logo circle
       ctx.save();
-      ctx.beginPath(); ctx.arc(pad + logoSize/2, hdrMid, logoSize/2, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(logoImg, pad, hdrMid - logoSize/2, logoSize, logoSize);
+      ctx.beginPath(); ctx.arc(pad + circR, hdrMid, circR, 0, Math.PI*2); ctx.clip();
+      ctx.drawImage(logoImg, pad, hdrMid - circR, logoSize, logoSize);
       ctx.restore();
       textStartX = pad + logoSize + Math.round(W * 0.03);
     } else {
-      // Emoji circle fallback
-      const circR = logoSize / 2;
-      ctx.fillStyle = accent;
-      ctx.globalAlpha = 0.18;
+      // Geometric monogram fallback (no emoji)
+      ctx.save();
+      ctx.fillStyle = accent; ctx.globalAlpha = 0.2;
       ctx.beginPath(); ctx.arc(pad + circR, hdrMid, circR, 0, Math.PI*2); ctx.fill();
       ctx.globalAlpha = 1;
-      ctx.font = `${Math.round(logoSize * 0.62)}px serif`;
+      const letter = (bizName || 'B')[0].toUpperCase();
+      const lSize = Math.round(logoSize * 0.52);
+      ctx.font = `400 ${lSize}px 'Bebas Neue', sans-serif`;
+      ctx.fillStyle = accent;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(card.emoji || '🎁', pad + circR, hdrMid);
+      ctx.fillText(letter, pad + circR, hdrMid);
+      ctx.restore();
       textStartX = pad + logoSize + Math.round(W * 0.03);
     }
-    // Business name
-    const nameFontSize = Math.round(W * 0.072);
-    ctx.font = `900 ${nameFontSize}px 'Bebas Neue', sans-serif`;
-    ctx.fillStyle = cfg.hdrText;
+    // Business name — per-section font
+    const nameFontSize = Math.round(cfg.hdrSize * W / 1240);
+    ctx.font = _posterFontStr(cfg.hdrFont, nameFontSize);
+    ctx.fillStyle = cfg.hdrColor;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(bizName.toUpperCase(), textStartX, hdrMid - nameFontSize * 0.08);
+    ctx.fillText(bizName.toUpperCase(), textStartX, hdrMid - nameFontSize * 0.06);
     // Tagline below name
-    const tagFontSize = Math.round(W * 0.032);
+    const tagFontSize = Math.round(W * 0.030);
     ctx.font = `500 ${tagFontSize}px 'Manrope', sans-serif`;
-    ctx.fillStyle = cfg.hdrText; ctx.globalAlpha = 0.55;
+    ctx.fillStyle = cfg.hdrColor; ctx.globalAlpha = 0.5;
     ctx.fillText('Programa de fidelización', textStartX, hdrMid + nameFontSize * 0.62);
     ctx.globalAlpha = 1;
   }
@@ -8692,18 +8880,18 @@ async function _posterDraw(canvas) {
   // ── HEADLINE (below header) ────────────────────────────
   // ══════════════════════════════════════════════════════════
   let curY = hdrH + Math.round(H * 0.038);
-  const hlFontSize = Math.round(W * 0.092);
-  ctx.font = `900 ${hlFontSize}px 'Bebas Neue', sans-serif`;
-  ctx.fillStyle = cfg.hdrText;
+  const hlFontSize = Math.round(cfg.headlineSize * W / 1240);
+  ctx.font = _posterFontStr(cfg.headlineFont, hlFontSize);
+  ctx.fillStyle = cfg.headlineColor;
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   const hlLines = _posterWrap(ctx, cfg.headline, W - pad * 2);
   hlLines.forEach(line => { ctx.fillText(line, W/2, curY); curY += hlFontSize * 1.08; });
 
   if (cfg.subtext) {
     curY += Math.round(H * 0.004);
-    const stFontSize = Math.round(W * 0.038);
+    const stFontSize = Math.round(W * 0.036);
     ctx.font = `500 ${stFontSize}px 'Manrope', sans-serif`;
-    ctx.fillStyle = cfg.hdrText; ctx.globalAlpha = 0.65;
+    ctx.fillStyle = cfg.headlineColor; ctx.globalAlpha = 0.65;
     ctx.fillText(cfg.subtext, W/2, curY);
     ctx.globalAlpha = 1;
     curY += stFontSize * 1.5;
@@ -8788,9 +8976,9 @@ async function _posterDraw(canvas) {
 
   // ── CTA bajo el QR ─────────────────────────────────────
   const ctaY = qrFrmY + qrFrmW + Math.round(H * 0.018);
-  const ctaFontSize = Math.round(leftW * 0.1);
-  ctx.font = `800 ${ctaFontSize}px 'Bebas Neue', sans-serif`;
-  ctx.fillStyle = bg; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const ctaFontSize = Math.round(cfg.ctaSize * W / 1240);
+  ctx.font = _posterFontStr(cfg.ctaFont, ctaFontSize);
+  ctx.fillStyle = cfg.ctaColor; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   ctx.fillText(cfg.cta, leftX + leftW/2, ctaY);
 
   // URL pequeña bajo el CTA
@@ -8809,31 +8997,31 @@ async function _posterDraw(canvas) {
   ctx.fillRect(0, footerY, W, footerH);
 
   // Footer left: biz name
-  const ftNameSize = Math.round(footerH * 0.38);
-  ctx.font = `800 ${ftNameSize}px 'Bebas Neue', sans-serif`;
-  ctx.fillStyle = bg; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  const ftNameSize = Math.round(cfg.footerSize * W / 1240);
+  ctx.font = _posterFontStr(cfg.footerFont, ftNameSize);
+  ctx.fillStyle = cfg.footerColor; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   if (bizName) ctx.fillText(bizName.toUpperCase(), pad, footerY + footerH/2);
 
   // Footer center: custom text
   if (cfg.footer) {
-    const ftTxtSize = Math.round(footerH * 0.30);
+    const ftTxtSize = Math.round(ftNameSize * 0.82);
     ctx.font = `600 ${ftTxtSize}px 'Manrope', sans-serif`;
-    ctx.textAlign = 'center';
+    ctx.fillStyle = cfg.footerColor; ctx.textAlign = 'center';
     ctx.fillText(cfg.footer, W/2, footerY + footerH/2);
   }
 
-  // Footer center: social handle
-  if (cfg.social) {
-    const ftSocSize = Math.round(footerH * 0.32);
+  // Footer center: social handle (shown when no custom footer text)
+  if (cfg.social && !cfg.footer) {
+    const ftSocSize = Math.round(ftNameSize * 0.85);
     ctx.font = `700 ${ftSocSize}px 'Manrope', sans-serif`;
-    ctx.fillStyle = bg; ctx.globalAlpha = 0.75; ctx.textAlign = 'center';
+    ctx.fillStyle = cfg.footerColor; ctx.globalAlpha = 0.8; ctx.textAlign = 'center';
     ctx.fillText(cfg.social, W/2, footerY + footerH/2);
     ctx.globalAlpha = 1;
   }
   // Footer right: zubcard.com
-  const ftBadgeSize = Math.round(footerH * 0.24);
+  const ftBadgeSize = Math.round(ftNameSize * 0.6);
   ctx.font = `500 ${ftBadgeSize}px 'Manrope', sans-serif`;
-  ctx.fillStyle = bg; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
+  ctx.fillStyle = cfg.footerColor; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
   ctx.fillText('zubcard.com', W - pad, footerY + footerH/2);
   ctx.globalAlpha = 1;
 }
