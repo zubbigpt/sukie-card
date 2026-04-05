@@ -4468,7 +4468,15 @@ def get_birthday_config(slug: str, pin: str = "", db: Session = Depends(get_db))
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    # Read birthday_enabled from card_config JSON
+    row = db.execute(
+        text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
+        {"bid": str(biz.id)}
+    ).fetchone()
+    cfg = json.loads(row[0]) if row and row[0] else {}
+    birthday_enabled = cfg.get("programa_cfg", {}).get("birthday_enabled", True)
     return {
+        "birthday_enabled":           birthday_enabled,
         "birthday_gift_type":         getattr(biz, "birthday_gift_type", "discount") or "discount",
         "birthday_gift_product":      getattr(biz, "birthday_gift_product", "") or "",
         "birthday_discount_pct":      20,
@@ -4517,6 +4525,30 @@ async def update_birthday_config(slug: str, request: Request, db: Session = Depe
     db.add(biz)
     db.commit()
     db.refresh(biz)
+    # Save birthday_enabled to card_config JSON if provided
+    if "birthday_enabled" in body:
+        row = db.execute(
+            text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
+            {"bid": str(biz.id)}
+        ).fetchone()
+        cfg = json.loads(row[0]) if row and row[0] else {}
+        if "programa_cfg" not in cfg:
+            cfg["programa_cfg"] = {}
+        cfg["programa_cfg"]["birthday_enabled"] = bool(body["birthday_enabled"])
+        exists = db.execute(
+            text("SELECT 1 FROM card_config WHERE business_id=:bid LIMIT 1"), {"bid": str(biz.id)}
+        ).fetchone()
+        if exists:
+            db.execute(
+                text("UPDATE card_config SET config=:cfg, updated_at=NOW() WHERE business_id=:bid"),
+                {"cfg": json.dumps(cfg), "bid": str(biz.id)}
+            )
+        else:
+            db.execute(
+                text("INSERT INTO card_config (config, business_id, updated_at) VALUES (:cfg, :bid, NOW())"),
+                {"cfg": json.dumps(cfg), "bid": str(biz.id)}
+            )
+        db.commit()
     return {"status": "updated"}
 
 

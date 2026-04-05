@@ -1205,8 +1205,27 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <h1>Cumpleaños</h1>
             <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Envía regalos de cumpleaños automáticos con QR de un solo uso</p>
           </div>
+          <!-- Toggle activar/desactivar -->
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;flex-shrink:0">
+            <span style="font-size:.82rem;font-weight:700;color:var(--brown-light)" id="bday-toggle-label">Activado</span>
+            <span style="position:relative;display:inline-block;width:44px;height:24px">
+              <input type="checkbox" id="bday-enabled-toggle" onchange="bdayToggleEnabled(this.checked)"
+                style="opacity:0;width:0;height:0;position:absolute">
+              <span id="bday-toggle-track" style="position:absolute;inset:0;background:var(--honey);border-radius:24px;transition:.2s;cursor:pointer"></span>
+              <span id="bday-toggle-thumb" style="position:absolute;left:22px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+            </span>
+          </label>
         </div>
 
+        <!-- Banner desactivado -->
+        <div id="bday-disabled-banner" style="display:none;background:var(--surface-mid);border:1px solid var(--cream-border);border-radius:var(--r-lg);padding:24px;text-align:center;margin-bottom:20px">
+          <span class="material-symbols-outlined" style="font-size:2rem;color:var(--brown-light);display:block;margin-bottom:8px">cake</span>
+          <p style="font-weight:700;color:var(--brown);margin-bottom:4px">Función de cumpleaños desactivada</p>
+          <p style="font-size:.82rem;color:var(--brown-light)">Activa el toggle para configurar y enviar regalos de cumpleaños automáticos.</p>
+        </div>
+
+        <!-- Contenido (tabs) — se oculta cuando está desactivado -->
+        <div id="bday-main-content">
         <!-- Tabs -->
         <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--cream-border);padding-bottom:0">
           <button id="bday-tab-config" onclick="bdayShowTab('config')"
@@ -1433,6 +1452,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             </div>
           </div>
         </div>
+        </div><!-- /bday-main-content -->
       </div>
 
       <!-- ═══ TARJETAS ═══ -->
@@ -4434,10 +4454,41 @@ async function loadBdayConfig() {
     const footerInput = document.getElementById('bday-footer-text');
     if (footerInput) footerInput.value = d.birthday_email_footer_text || '';
 
+    // Toggle birthday_enabled
+    const enabled = d.birthday_enabled !== false;
+    const toggle = document.getElementById('bday-enabled-toggle');
+    if (toggle) toggle.checked = enabled;
+    _bdayApplyToggleUI(enabled);
+
     // Store biz info for preview
     window._bdayBizData = d;
     bdayUpdateEmailPreview();
   } catch(e) { console.warn('loadBdayConfig error', e); }
+}
+
+function _bdayApplyToggleUI(enabled) {
+  const track  = document.getElementById('bday-toggle-track');
+  const thumb  = document.getElementById('bday-toggle-thumb');
+  const label  = document.getElementById('bday-toggle-label');
+  const banner = document.getElementById('bday-disabled-banner');
+  const content= document.getElementById('bday-main-content');
+  if (track)  track.style.background  = enabled ? 'var(--honey)' : 'var(--cream-border)';
+  if (thumb)  thumb.style.left        = enabled ? '22px' : '4px';
+  if (label)  label.textContent       = enabled ? 'Activado' : 'Desactivado';
+  if (label)  label.style.color       = enabled ? 'var(--brown)' : 'var(--brown-light)';
+  if (banner) banner.style.display    = enabled ? 'none' : '';
+  if (content)content.style.display   = enabled ? '' : 'none';
+}
+
+async function bdayToggleEnabled(enabled) {
+  _bdayApplyToggleUI(enabled);
+  try {
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/birthday-config`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ pin: PIN, birthday_enabled: enabled })
+    });
+    showToast(enabled ? 'Cumpleaños activado ✓' : 'Cumpleaños desactivado', enabled ? 'success' : '');
+  } catch(e) { showToast('Error al guardar', 'error'); }
 }
 
 async function bdaySaveConfig() {
