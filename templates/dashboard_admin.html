@@ -569,22 +569,6 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 .lp-pv-sub{font-size:.62rem;color:#888;margin-bottom:10px;line-height:1.5}
 .lp-pv-field{height:26px;border-radius:4px;margin-bottom:5px;background:#f0f0f0}
 .lp-pv-btn{height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#fff;margin-top:8px}
-/* ── CARTAS DIGITALES ─────────────────────────────────────── */
-.carta-card{background:var(--white);border:1px solid var(--cream-border);border-radius:var(--r-lg);overflow:hidden;transition:border-color .2s,transform .2s;cursor:pointer}
-.carta-card:hover{border-color:var(--honey-dark);transform:translateY(-2px)}
-.carta-thumb{height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.carta-info{padding:14px 16px}
-.carta-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.08em;color:var(--primary);margin-bottom:2px}
-.carta-meta{font-size:.68rem;color:var(--brown-light);font-weight:600}
-.carta-actions{display:flex;gap:6px;margin-top:10px}
-/* Menu editor modal */
-.menu-modal-overlay{display:none;position:fixed;inset:0;background:rgba(38,23,12,.55);z-index:750;backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:16px}
-.menu-modal-overlay.open{display:flex}
-.menu-modal{width:100%;max-width:700px;background:var(--white);border-radius:var(--r-lg);overflow:hidden;max-height:88vh;display:flex;flex-direction:column;border:1px solid var(--cream-border);box-shadow:0 24px 80px rgba(38,23,12,.25)}
-.menu-section-item{background:var(--surface-low);border:1px solid var(--cream-border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px}
-.menu-section-hdr{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:.9rem;cursor:pointer}
-.menu-prod-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(210,196,188,.2)}
-.menu-prod-item:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -673,9 +657,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       <a onclick="showSection('passcodes')" id="nav-passcodes">
         <span class="material-symbols-outlined icon">vpn_key</span> PassCodes / Pin
       </a>
-      <a onclick="showSection('cartas')" id="nav-cartas">
-        <span class="material-symbols-outlined icon">menu_book</span> Cartas Digitales
-      </a>
+
       <a onclick="showSection('stores')" id="nav-stores">
         <span class="material-symbols-outlined icon">storefront</span> Tiendas / Locales
       </a>
@@ -940,80 +922,6 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div id="dash-bdays" style="margin-bottom:24px"></div>
       </div>
 
-      <!-- ═══ CARTAS DIGITALES ═══ -->
-      <div class="section" id="section-cartas">
-        <div class="section-header">
-          <div style="flex:1">
-            <h1>Cartas Digitales</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Crea y comparte menús digitales con QR</p>
-          </div>
-          <button class="btn-sm btn-primary" onclick="showToast('Cartas digitales — próximamente')" style="padding:10px 18px">+ Nueva carta</button>
-        </div>
-
-        <!-- Stats Row -->
-        <div class="bento-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:32px">
-          <div class="bento-card bento-sm">
-            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block">visibility</span>
-            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
-            <div class="stat-label" style="margin-top:6px">Vistas totales</div>
-          </div>
-          <div class="bento-card bento-sm">
-            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block">qr_code_2</span>
-            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
-            <div class="stat-label" style="margin-top:6px">Escaneos QR</div>
-          </div>
-          <div class="bento-card bento-sm">
-            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block">restaurant_menu</span>
-            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">–</div>
-            <div class="stat-label" style="margin-top:6px">Cartas activas</div>
-          </div>
-          <div class="bento-card bento-sm" style="border-bottom:3px solid var(--honey)">
-            <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;margin-bottom:8px;display:block;font-variation-settings:'FILL' 1">star</span>
-            <div class="stat-num" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;line-height:1">4.8</div>
-            <div class="stat-label" style="margin-top:6px">Calificación media</div>
-          </div>
-        </div>
-
-        <!-- Info banner -->
-        <div class="card-box" style="background:var(--honey-light);border:1px solid var(--honey);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px">
-          <span class="material-symbols-outlined" style="color:var(--honey-dark);font-size:1.4rem;flex-shrink:0">info</span>
-          <div style="font-size:.8rem;color:var(--brown)"><strong>Cartas digitales MVP</strong> — Los datos se guardan localmente en tu navegador. La sincronización con el servidor estará disponible próximamente.</div>
-        </div>
-        <!-- Gallery -->
-        <h3 style="font-size:.9rem;font-weight:700;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Tus cartas</h3>
-        <div id="cartas-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:16px">
-          <!-- Populated by JS -->
-        </div>
-        <!-- New carta card (always shown last) -->
-        <div style="margin-top:4px">
-          <div class="carta-card" onclick="openMenuEditor(null)" style="text-align:center;padding:28px 20px;border:2px dashed var(--outline-var);background:transparent;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:160px">
-            <span class="material-symbols-outlined" style="font-size:2.4rem;color:var(--brown-light);margin-bottom:10px">add_circle</span>
-            <p style="font-size:.88rem;font-weight:600;color:var(--primary)">Crear nueva carta</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- MENU EDITOR MODAL -->
-      <div id="menu-editor-overlay" class="menu-modal-overlay">
-        <div class="menu-modal">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;gap:12px;background:var(--surface-low);flex-shrink:0">
-            <span class="material-symbols-outlined" style="color:var(--brown-light)">restaurant_menu</span>
-            <input id="menu-name-input" class="field-input" placeholder="Nombre de la carta (ej. Menú Primavera)" style="flex:1;font-weight:700">
-            <button class="drawer-close" style="position:static" onclick="closeMenuEditor()">✕</button>
-          </div>
-          <div style="overflow-y:auto;flex:1;padding:16px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-              <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--brown-light)">Secciones</span>
-              <button class="btn-sm btn-ghost" onclick="addMenuSection()" style="font-size:.72rem">+ Añadir sección</button>
-            </div>
-            <div id="menu-sections-list"></div>
-          </div>
-          <div style="padding:12px 20px;border-top:1px solid var(--cream-border);display:flex;gap:8px;background:var(--surface-low);flex-shrink:0">
-            <button class="btn-sm btn-ghost" onclick="closeMenuEditor()">Cancelar</button>
-            <button class="btn-sm btn-primary" style="margin-left:auto" onclick="saveMenu()">Guardar carta</button>
-          </div>
-        </div>
-      </div>
 
       <!-- ═══ MI CUENTA - PERFIL ═══ -->
       <div class="section" id="section-cuenta-perfil">
@@ -4177,7 +4085,6 @@ const sectionTitles = {
     activity:'Sellos — Actividad', campaigns:'Campañas',
     passcodes:'PassCodes / Pin', stores:'Tiendas / Locales', qrs:'QRs de Alta', email:'Email',
     bi:'Business Intelligence',
-    cartas:'Cartas Digitales',
     'cuenta-perfil':'Mi Cuenta — Perfil',
     'cuenta-plan':'Mi Cuenta — Plan & Billing',
     apps:'Apps',
@@ -4217,7 +4124,6 @@ function showSection(name){
   if(name==='activity')  loadActivityLog();
   if(name==='campaigns')     loadCampaigns();
   if(name==='fidelizacion'){ setTimeout(async()=>{attachLPListeners();await loadConfig();lpUpdatePreview();},200); }
-  if(name==='cartas')       loadMenus();
   if(name==='passcodes')    setPCCardUrl();
   if(name==='passcodes')     loadPassCodes();
   if(name==='stores')        { loadStores(); loadDevices(); }
@@ -8287,97 +8193,6 @@ function attachLPListeners(){
   });
 }
 
-/* ── CARTAS DIGITALES (localStorage MVP) ─────────────────── */
-let _menus=[];
-let _editingMenuId=null;
-function loadMenus(){
-  try{ _menus=JSON.parse(localStorage.getItem('zub_menus_'+BIZ_SLUG)||'[]'); }catch(e){_menus=[];}
-  renderMenus();
-}
-function renderMenus(){
-  const grid=document.getElementById('cartas-grid');
-  if(!grid) return;
-  const colors=['#26170c','#1a472a','#2c3e50','#7b2d8b','#c0392b','#e67e22'];
-  grid.innerHTML=_menus.map((m,i)=>{
-    const c=colors[i%colors.length];
-    return `<div class="carta-card">
-      <div class="carta-thumb" style="background:${c}">
-        <span class="material-symbols-outlined" style="font-size:3rem;color:rgba(255,255,255,.3)">restaurant_menu</span>
-        <span style="position:absolute;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#fff;letter-spacing:.08em;padding:0 12px;text-align:center">${m.name}</span>
-      </div>
-      <div class="carta-info">
-        <div class="carta-name">${m.name}</div>
-        <div class="carta-meta">${(m.sections||[]).length} secciones · ${(m.sections||[]).reduce((a,s)=>a+(s.items||[]).length,0)} platos</div>
-        <div class="carta-actions">
-          <button class="btn-sm btn-ghost" style="font-size:.7rem" onclick="openMenuEditor('${m.id}')">Editar</button>
-          <button class="btn-sm btn-ghost" style="font-size:.7rem" onclick="deleteMenu('${m.id}')">Eliminar</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-function openMenuEditor(id){
-  _editingMenuId=id;
-  const menu=id?_menus.find(m=>m.id===id):null;
-  document.getElementById('menu-name-input').value=menu?menu.name:'';
-  renderMenuSections(menu?menu.sections:[]);
-  document.getElementById('menu-editor-overlay').classList.add('open');
-}
-function closeMenuEditor(){ document.getElementById('menu-editor-overlay').classList.remove('open'); }
-function deleteMenu(id){
-  if(!confirm('¿Eliminar esta carta?')) return;
-  _menus=_menus.filter(m=>m.id!==id);
-  localStorage.setItem('zub_menus_'+BIZ_SLUG,JSON.stringify(_menus));
-  renderMenus();
-  showToast('Carta eliminada');
-}
-let _editingSections=[];
-function renderMenuSections(sections){
-  _editingSections=JSON.parse(JSON.stringify(sections||[]));
-  const list=document.getElementById('menu-sections-list');
-  if(!list) return;
-  list.innerHTML=_editingSections.map((sec,si)=>`
-    <div class="menu-section-item">
-      <div class="menu-section-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-        <input type="text" value="${sec.name}" placeholder="Nombre de sección" style="background:transparent;border:none;outline:none;font-weight:700;font-size:.88rem;flex:1" oninput="_editingSections[${si}].name=this.value">
-        <div style="display:flex;gap:6px">
-          <button class="btn-sm btn-ghost" style="font-size:.7rem;padding:3px 8px" onclick="addMenuItem(${si})">+ Plato</button>
-          <button class="btn-sm btn-ghost" style="font-size:.7rem;padding:3px 8px;color:var(--red)" onclick="deleteSection(${si})">✕</button>
-        </div>
-      </div>
-      <div style="margin-top:10px">${(sec.items||[]).map((item,ii)=>`
-        <div class="menu-prod-item">
-          <div style="flex:1">
-            <input type="text" value="${item.name}" placeholder="Nombre del plato" style="background:transparent;border:none;outline:none;font-weight:600;font-size:.85rem;width:100%" oninput="_editingSections[${si}].items[${ii}].name=this.value">
-            <input type="text" value="${item.desc||''}" placeholder="Descripción (opcional)" style="background:transparent;border:none;outline:none;font-size:.75rem;color:var(--brown-light);width:100%;" oninput="_editingSections[${si}].items[${ii}].desc=this.value">
-          </div>
-          <input type="text" value="${item.price||''}" placeholder="€" style="width:60px;text-align:right;background:transparent;border:none;outline:none;font-weight:700;font-size:.85rem;color:var(--honey-dark)" oninput="_editingSections[${si}].items[${ii}].price=this.value">
-          <button onclick="deleteMenuItem(${si},${ii})" style="border:none;background:transparent;cursor:pointer;color:var(--brown-light);font-size:.85rem;padding:0 4px">✕</button>
-        </div>`).join('')}
-      </div>
-    </div>`).join('');
-}
-function addMenuSection(){
-  _editingSections.push({id:'sec_'+Date.now(),name:'Nueva sección',items:[]});
-  renderMenuSections(_editingSections);
-}
-function deleteSection(si){ _editingSections.splice(si,1); renderMenuSections(_editingSections); }
-function addMenuItem(si){ _editingSections[si].items=_editingSections[si].items||[]; _editingSections[si].items.push({name:'',desc:'',price:''}); renderMenuSections(_editingSections); }
-function deleteMenuItem(si,ii){ _editingSections[si].items.splice(ii,1); renderMenuSections(_editingSections); }
-function saveMenu(){
-  const name=document.getElementById('menu-name-input')?.value.trim();
-  if(!name){showToast('Introduce un nombre para la carta');return;}
-  if(_editingMenuId){
-    const idx=_menus.findIndex(m=>m.id===_editingMenuId);
-    if(idx>-1){ _menus[idx].name=name; _menus[idx].sections=_editingSections; }
-  } else {
-    _menus.push({id:'menu_'+Date.now(),name,sections:_editingSections,created:new Date().toISOString()});
-  }
-  localStorage.setItem('zub_menus_'+BIZ_SLUG,JSON.stringify(_menus));
-  renderMenus();
-  closeMenuEditor();
-  showToast('Carta guardada');
-}
 
 /* ── PASSCODES CARD URL ────────────────────────────────────── */
 function setPCCardUrl(){
