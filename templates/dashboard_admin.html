@@ -4151,6 +4151,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 // ── STATE ──────────────────────────────────────────────────────────────────
 const BASE = '{{ biz_api_base or "" }}' || window.location.origin;
 const BIZ_SLUG = '{{ biz_slug or "" }}';
+const BIZ_NAME = '{{ biz_name or "" }}';
 const BIZ_PLAN_INITIAL = '{{ biz_plan or "free" }}';
 const BIZ_PRIMARY_COLOR = '{{ primary_color or "#26170c" }}';
 const BIZ_ACCENT_COLOR  = '{{ accent_color  or "#ffca48" }}';
@@ -8466,7 +8467,19 @@ async function posterRender() {
   await _posterDraw(canvas, 1);
 }
 
-async function _posterDraw(canvas, scale) {
+/* Pre-load an image and return it (or null on error) */
+function _posterLoadImg(src) {
+  return new Promise(resolve => {
+    if (!src) return resolve(null);
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload  = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+async function _posterDraw(canvas) {
   const cfg  = _posterGetConfig();
   const card = _posterGetCard();
   const W = canvas.width;
@@ -8476,264 +8489,343 @@ async function _posterDraw(canvas, scale) {
 
   const bg     = cfg.bgColor;
   const accent = cfg.accentColor;
-  const emoji  = card.emoji || '🎁';
-  const bizName = (typeof BIZ_NAME !== 'undefined' ? BIZ_NAME : '') || '';
+  const bizName = BIZ_NAME || '';
 
-  // ── Header band (top 28%) ──────────────────────────────────
-  const hdrH = Math.round(H * 0.28);
+  // Pre-load images so canvas renders them correctly
+  const logoImg = await _posterLoadImg(BIZ_LOGO_URL);
+  if (card.strip_bg_url && !card._strip_bg_img) {
+    card._strip_bg_img = await _posterLoadImg(card.strip_bg_url);
+  }
+
+  // ── BACKGROUND: full solid bg_color ───────────────────────
   ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, hdrH);
+  ctx.fillRect(0, 0, W, H);
 
-  // Accent stripe (top edge)
+  // Subtle diagonal texture overlay
+  ctx.save();
+  ctx.globalAlpha = 0.03;
+  for (let i = -H; i < W + H; i += Math.round(W * 0.08)) {
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = Math.round(W * 0.04);
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + H, H); ctx.stroke();
+  }
+  ctx.restore();
+
+  const pad = Math.round(W * 0.07);
+
+  // ══════════════════════════════════════════════════════════
+  // ── HEADER (top ~16%): logo + nombre negocio ───────────
+  // ══════════════════════════════════════════════════════════
+  const hdrH = Math.round(H * 0.16);
+  const hdrMid = hdrH / 2;
+
+  // Accent bottom stripe on header
   ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, W, Math.round(H * 0.011));
+  ctx.globalAlpha = 0.15;
+  ctx.fillRect(0, hdrH - Math.round(H * 0.004), W, Math.round(H * 0.004));
+  ctx.globalAlpha = 1;
 
-  // Emoji
-  const emojiFontSize = Math.round(W * 0.15);
-  ctx.font = `${emojiFontSize}px serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const emojiY = Math.round(hdrH * 0.37);
-  ctx.fillText(emoji, W / 2, emojiY);
-
-  // Business name
-  if (cfg.showBizName && bizName) {
-    const nameFontSize = Math.round(W * 0.065);
+  if (cfg.showBizName) {
+    const logoSize = Math.round(hdrH * 0.56);
+    let textStartX = pad;
+    if (logoImg) {
+      // Draw logo circle
+      ctx.save();
+      ctx.beginPath(); ctx.arc(pad + logoSize/2, hdrMid, logoSize/2, 0, Math.PI*2); ctx.clip();
+      ctx.drawImage(logoImg, pad, hdrMid - logoSize/2, logoSize, logoSize);
+      ctx.restore();
+      textStartX = pad + logoSize + Math.round(W * 0.03);
+    } else {
+      // Emoji circle fallback
+      const circR = logoSize / 2;
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.arc(pad + circR, hdrMid, circR, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.font = `${Math.round(logoSize * 0.62)}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(card.emoji || '🎁', pad + circR, hdrMid);
+      textStartX = pad + logoSize + Math.round(W * 0.03);
+    }
+    // Business name
+    const nameFontSize = Math.round(W * 0.072);
     ctx.font = `900 ${nameFontSize}px 'Bebas Neue', sans-serif`;
     ctx.fillStyle = cfg.hdrText;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText(bizName.toUpperCase(), W / 2, emojiY + emojiFontSize * 0.56);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(bizName.toUpperCase(), textStartX, hdrMid - nameFontSize * 0.08);
+    // Tagline below name
+    const tagFontSize = Math.round(W * 0.032);
+    ctx.font = `500 ${tagFontSize}px 'Manrope', sans-serif`;
+    ctx.fillStyle = cfg.hdrText; ctx.globalAlpha = 0.55;
+    ctx.fillText('Programa de fidelización', textStartX, hdrMid + nameFontSize * 0.62);
+    ctx.globalAlpha = 1;
   }
 
-  // ── White body panel (rounded top corners) ─────────────────
-  const bodyY = hdrH - Math.round(H * 0.022);
-  const radius = Math.round(W * 0.055);
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(radius, bodyY);
-  ctx.lineTo(W - radius, bodyY);
-  ctx.quadraticCurveTo(W, bodyY, W, bodyY + radius);
-  ctx.lineTo(W, H);
-  ctx.lineTo(0, H);
-  ctx.lineTo(0, bodyY + radius);
-  ctx.quadraticCurveTo(0, bodyY, radius, bodyY);
-  ctx.closePath();
-  ctx.fill();
-
-  // ── Headline ───────────────────────────────────────────────
-  const bodyPadX = Math.round(W * 0.075);
-  let curY = bodyY + Math.round(H * 0.048);
-
-  const hlFontSize = Math.round(W * 0.082);
+  // ══════════════════════════════════════════════════════════
+  // ── HEADLINE (below header) ────────────────────────────
+  // ══════════════════════════════════════════════════════════
+  let curY = hdrH + Math.round(H * 0.038);
+  const hlFontSize = Math.round(W * 0.092);
   ctx.font = `900 ${hlFontSize}px 'Bebas Neue', sans-serif`;
-  ctx.fillStyle = bg;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  const hlLines = _posterWrap(ctx, cfg.headline, W - bodyPadX * 2);
-  hlLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += hlFontSize * 1.12; });
+  ctx.fillStyle = cfg.hdrText;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const hlLines = _posterWrap(ctx, cfg.headline, W - pad * 2);
+  hlLines.forEach(line => { ctx.fillText(line, W/2, curY); curY += hlFontSize * 1.08; });
 
-  // Subtext
   if (cfg.subtext) {
-    curY += Math.round(H * 0.006);
-    const stFontSize = Math.round(W * 0.04);
+    curY += Math.round(H * 0.004);
+    const stFontSize = Math.round(W * 0.038);
     ctx.font = `500 ${stFontSize}px 'Manrope', sans-serif`;
-    ctx.fillStyle = '#7a6055';
-    const stLines = _posterWrap(ctx, cfg.subtext, W - bodyPadX * 2);
-    stLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += stFontSize * 1.4; });
+    ctx.fillStyle = cfg.hdrText; ctx.globalAlpha = 0.65;
+    ctx.fillText(cfg.subtext, W/2, curY);
+    ctx.globalAlpha = 1;
+    curY += stFontSize * 1.5;
   }
 
-  // ── Card face (exact same design as Gestión de Tarjetas) ───
+  // ══════════════════════════════════════════════════════════
+  // ── WHITE BODY PANEL (rounded top) ─────────────────────
+  // ══════════════════════════════════════════════════════════
   curY += Math.round(H * 0.022);
-  const cardW = Math.round(W * 0.82);
-  const cardH = Math.round(cardW / 1.62); // same landscape aspect ratio as Apple Wallet pass
-  const cardX = Math.round((W - cardW) / 2);
-  _posterDrawCard(ctx, card, cardX, curY, cardW, cardH);
-  curY += cardH + Math.round(H * 0.024);
+  const bodyY  = curY;
+  const bodyR  = Math.round(W * 0.06);
+  const footerH = Math.round(H * 0.07);
+  ctx.fillStyle = '#f9f4f0';
+  ctx.beginPath();
+  ctx.moveTo(bodyR, bodyY);
+  ctx.lineTo(W - bodyR, bodyY); ctx.quadraticCurveTo(W, bodyY, W, bodyY + bodyR);
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.lineTo(0, bodyY + bodyR);
+  ctx.quadraticCurveTo(0, bodyY, bodyR, bodyY);
+  ctx.closePath(); ctx.fill();
 
-  // ── Divider ────────────────────────────────────────────────
-  ctx.strokeStyle = '#e8e0da';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(bodyPadX, curY); ctx.lineTo(W - bodyPadX, curY); ctx.stroke();
-  curY += Math.round(H * 0.020);
+  curY = bodyY + Math.round(H * 0.038);
 
-  // ── QR Code ───────────────────────────────────────────────
-  const qrSize = Math.round(Math.min(W * 0.44, H - curY - Math.round(H * 0.12)));
-  const qrX = Math.round((W - qrSize) / 2);
+  // ══════════════════════════════════════════════════════════
+  // ── TWO-COLUMN LAYOUT ──────────────────────────────────
+  //   Left (55%): QR grande + CTA
+  //   Right (40%): mockup de tarjeta
+  // ══════════════════════════════════════════════════════════
+  const colGap  = Math.round(W * 0.04);
+  const leftW   = Math.round(W * 0.52) - pad - colGap/2;
+  const rightW  = W - pad - leftW - colGap - pad;
+  const leftX   = pad;
+  const rightX  = pad + leftW + colGap;
 
-  // Generate QR using hidden div (QRCode.js renders to div)
+  // Available height for content (leaving footer room)
+  const contentH = H - footerH - curY - Math.round(H * 0.02);
+
+  // ── RIGHT: tarjeta en mockup móvil ─────────────────────
+  const phoneW  = rightW;
+  const phoneH  = Math.round(phoneW * 2.1); // tall phone ratio
+  const phoneX  = rightX;
+  const phoneY  = curY + Math.round((contentH - phoneH) / 2);
+  _posterDrawPhone(ctx, card, phoneX, phoneY, phoneW, phoneH, bg, accent);
+
+  // ── LEFT: QR grande ────────────────────────────────────
+  const qrSize  = Math.round(Math.min(leftW * 0.88, contentH * 0.62));
+  const qrX     = leftX + Math.round((leftW - qrSize) / 2);
+  const qrY     = curY  + Math.round(H * 0.016);
+
+  // White QR frame with shadow
+  const qrPad  = Math.round(qrSize * 0.06);
+  const qrFrmW = qrSize + qrPad * 2;
+  const qrFrmX = qrX - qrPad;
+  const qrFrmY = qrY - qrPad;
+  ctx.shadowColor = 'rgba(38,23,12,0.18)'; ctx.shadowBlur = Math.round(W * 0.02);
+  ctx.fillStyle = '#ffffff';
+  _posterRoundRect(ctx, qrFrmX, qrFrmY, qrFrmW, qrFrmW, Math.round(qrPad * 0.8));
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Accent corner marks on QR frame
+  const cmk = Math.round(qrPad * 0.9);
+  ctx.strokeStyle = accent; ctx.lineWidth = Math.round(qrPad * 0.35); ctx.lineCap = 'round';
+  [[qrFrmX, qrFrmY], [qrFrmX+qrFrmW, qrFrmY], [qrFrmX, qrFrmY+qrFrmW], [qrFrmX+qrFrmW, qrFrmY+qrFrmW]].forEach(([cx,cy],i) => {
+    const dx = i%2===0 ? 1 : -1, dy = i<2 ? 1 : -1;
+    ctx.beginPath(); ctx.moveTo(cx + dx*cmk, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, cy + dy*cmk); ctx.stroke();
+  });
+
+  // QR code
   let qrDiv = document.getElementById('_poster-qr-tmp');
-  if (!qrDiv) { qrDiv = document.createElement('div'); qrDiv.id = '_poster-qr-tmp'; qrDiv.style.cssText='position:fixed;left:-9999px;top:-9999px;visibility:hidden'; document.body.appendChild(qrDiv); }
+  if (!qrDiv) { qrDiv = document.createElement('div'); qrDiv.id='_poster-qr-tmp'; qrDiv.style.cssText='position:fixed;left:-9999px;visibility:hidden'; document.body.appendChild(qrDiv); }
   qrDiv.innerHTML = '';
   try {
     new QRCode(qrDiv, { text: cfg.qrUrl, width: qrSize, height: qrSize, colorDark: bg, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-    await new Promise(r => setTimeout(r, 120));
-    const qrImg = qrDiv.querySelector('img');
+    await new Promise(r => setTimeout(r, 150));
     const qrCvs = qrDiv.querySelector('canvas');
-    if (qrCvs) {
-      ctx.drawImage(qrCvs, qrX, curY, qrSize, qrSize);
-    } else if (qrImg && qrImg.src) {
-      await new Promise((res, rej) => { if (qrImg.complete) res(); else { qrImg.onload = res; qrImg.onerror = rej; } });
-      ctx.drawImage(qrImg, qrX, curY, qrSize, qrSize);
-    }
+    const qrImg = qrDiv.querySelector('img');
+    if (qrCvs) ctx.drawImage(qrCvs, qrX, qrY, qrSize, qrSize);
+    else if (qrImg) { await new Promise(r => { if(qrImg.complete) r(); else qrImg.onload=r; }); ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize); }
   } catch(e) {
-    ctx.fillStyle = '#f0ebe7';
-    ctx.fillRect(qrX, curY, qrSize, qrSize);
-    ctx.font = `${Math.round(qrSize*0.12)}px sans-serif`;
-    ctx.fillStyle = '#999'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('QR', qrX + qrSize/2, curY + qrSize/2);
+    ctx.fillStyle='#eee'; ctx.fillRect(qrX, qrY, qrSize, qrSize);
   }
-  curY += qrSize + Math.round(H * 0.016);
 
-  // ── CTA text ──────────────────────────────────────────────
-  const ctaFontSize = Math.round(W * 0.048);
-  ctx.font = `700 ${ctaFontSize}px 'Manrope', sans-serif`;
-  ctx.fillStyle = bg;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.fillText(cfg.cta, W / 2, curY);
-  curY += ctaFontSize * 1.4;
+  // ── CTA bajo el QR ─────────────────────────────────────
+  const ctaY = qrFrmY + qrFrmW + Math.round(H * 0.018);
+  const ctaFontSize = Math.round(leftW * 0.1);
+  ctx.font = `800 ${ctaFontSize}px 'Bebas Neue', sans-serif`;
+  ctx.fillStyle = bg; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText(cfg.cta, leftX + leftW/2, ctaY);
 
-  // ── Footer band ────────────────────────────────────────────
-  const footerH = Math.round(H * 0.055);
+  // URL pequeña bajo el CTA
+  const urlFontSize = Math.round(leftW * 0.055);
+  ctx.font = `500 ${urlFontSize}px 'Manrope', sans-serif`;
+  ctx.fillStyle = '#7a6055'; ctx.globalAlpha = 0.8;
+  const shortUrl = cfg.qrUrl.replace(/^https?:\/\//, '');
+  ctx.fillText(shortUrl.length > 36 ? shortUrl.slice(0,34)+'…' : shortUrl, leftX + leftW/2, ctaY + ctaFontSize * 1.3);
+  ctx.globalAlpha = 1;
+
+  // ══════════════════════════════════════════════════════════
+  // ── FOOTER BAND ────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════
   const footerY = H - footerH;
   ctx.fillStyle = accent;
   ctx.fillRect(0, footerY, W, footerH);
+
+  // Footer left: biz name
+  const ftNameSize = Math.round(footerH * 0.38);
+  ctx.font = `800 ${ftNameSize}px 'Bebas Neue', sans-serif`;
+  ctx.fillStyle = bg; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  if (bizName) ctx.fillText(bizName.toUpperCase(), pad, footerY + footerH/2);
+
+  // Footer center: custom text
   if (cfg.footer) {
-    const ftFontSize = Math.round(footerH * 0.42);
-    ctx.font = `700 ${ftFontSize}px 'Manrope', sans-serif`;
-    ctx.fillStyle = bg;
+    const ftTxtSize = Math.round(footerH * 0.30);
+    ctx.font = `600 ${ftTxtSize}px 'Manrope', sans-serif`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(cfg.footer, W / 2, footerY + footerH / 2);
+    ctx.fillText(cfg.footer, W/2, footerY + footerH/2);
   }
+
+  // Footer right: powered by ZubCard
+  const ftBadgeSize = Math.round(footerH * 0.26);
+  ctx.font = `500 ${ftBadgeSize}px 'Manrope', sans-serif`;
+  ctx.fillStyle = bg; ctx.globalAlpha = 0.5; ctx.textAlign = 'right';
+  ctx.fillText('zubcard.com', W - pad, footerY + footerH/2);
+  ctx.globalAlpha = 1;
+}
+
+/* ── Draw phone mockup with card inside ───────────────────── */
+function _posterDrawPhone(ctx, card, px, py, pW, pH, bg, accent) {
+  const phoneR = Math.round(pW * 0.14);
+  // Phone shell
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = Math.round(pW * 0.12);
+  ctx.fillStyle = '#1c1c1e';
+  _posterRoundRect(ctx, px, py, pW, pH, phoneR); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Screen area
+  const scrPad = Math.round(pW * 0.05);
+  const scrX = px + scrPad, scrY = py + scrPad;
+  const scrW = pW - scrPad*2, scrH = pH - scrPad*2;
+  const scrR = Math.round(phoneR * 0.75);
+  ctx.fillStyle = '#000';
+  _posterRoundRect(ctx, scrX, scrY, scrW, scrH, scrR); ctx.fill();
+  ctx.clip();
+
+  // Dark UI bar (top)
+  const barH = Math.round(scrH * 0.06);
+  ctx.fillStyle = '#1c1c1e';
+  ctx.fillRect(scrX, scrY, scrW, barH);
+  // Dynamic island
+  ctx.fillStyle = '#2c2c2e';
+  ctx.beginPath(); ctx.roundRect(scrX + scrW/2 - Math.round(scrW*0.18), scrY + Math.round(barH*0.25), Math.round(scrW*0.36), Math.round(barH*0.5), Math.round(barH*0.25)); ctx.fill();
+
+  // Wallet header
+  const wHdrH = Math.round(scrH * 0.07);
+  const wHdrY = scrY + barH;
+  ctx.fillStyle = '#1c1c1e';
+  ctx.fillRect(scrX, wHdrY, scrW, wHdrH);
+  ctx.font = `500 ${Math.round(scrW*0.12)}px -apple-system, sans-serif`;
+  ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('← Wallet', scrX + Math.round(scrW*0.05), wHdrY + wHdrH/2);
+
+  // Pass card
+  const passX = scrX + Math.round(scrW*0.05);
+  const passW = scrW - Math.round(scrW*0.1);
+  const passY = wHdrY + wHdrH + Math.round(scrH*0.01);
+  const passH = Math.round(scrH * 0.55);
+  const passR = Math.round(passW * 0.06);
+
+  // Card background
+  ctx.fillStyle = card.bg_color || bg;
+  _posterRoundRect(ctx, passX, passY, passW, passH, passR); ctx.fill();
+
+  // Card header row
+  const cHdrH = Math.round(passH * 0.16);
+  const cPad  = Math.round(passW * 0.06);
+  const cNameSz = Math.round(passW * 0.07);
+  ctx.font = `700 ${cNameSz}px -apple-system, sans-serif`;
+  ctx.fillStyle = card.text_color || '#ffffff';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText((card.name||'TARJETA').toUpperCase(), passX+cPad, passY+cHdrH/2);
+  const spr = card.stamps_per_reward || 10;
+  ctx.font = `600 ${Math.round(cNameSz*0.85)}px -apple-system, sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(`0/${spr}`, passX+passW-cPad, passY+cHdrH/2);
+
+  // Strip
+  const stripH = Math.round(passH * 0.42);
+  const stripCanvas = _buildStripCanvas({
+    bg_color: card.bg_color || bg,
+    accent_color: card.accent_color || accent,
+    stamps_per_reward: spr, filled: 0,
+    strip_bg_url: card.strip_bg_url || '',
+    _strip_bg_img: card._strip_bg_img || null
+  }, passW, stripH);
+  ctx.drawImage(stripCanvas, passX, passY + cHdrH, passW, stripH);
+
+  // Fields row
+  const fldY   = passY + cHdrH + stripH;
+  const fldH   = Math.round(passH * 0.20);
+  const fldSz  = Math.round(passW * 0.062);
+  const fldLbl = Math.round(passW * 0.044);
+  ctx.font = `600 ${fldLbl}px -apple-system, sans-serif`;
+  ctx.fillStyle = card.accent_color || accent; ctx.globalAlpha = 0.75;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('TITULAR', passX+cPad, fldY+fldH*0.14);
+  ctx.textAlign = 'right';
+  ctx.fillText('PREMIO', passX+passW-cPad, fldY+fldH*0.14);
+  ctx.globalAlpha = 1;
+  ctx.font = `700 ${fldSz}px -apple-system, sans-serif`;
+  ctx.fillStyle = card.text_color || '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.fillText('Tu Nombre', passX+cPad, fldY+fldH*0.48);
+  ctx.textAlign = 'right';
+  ctx.fillText(card.reward_name||'Premio', passX+passW-cPad, fldY+fldH*0.48);
+
+  // Barcode zone
+  const bcY  = fldY + fldH;
+  const bcH  = passH - cHdrH - stripH - fldH;
+  const bcPd = Math.round(passW*0.05);
+  ctx.fillStyle = '#fff';
+  _posterRoundRect(ctx, passX+bcPd, bcY+bcPd*0.4, passW-bcPd*2, bcH-bcPd*0.6, Math.round(passW*0.03));
+  ctx.fill();
+  const bars=[1,0,1,1,0,1,0,1,0,1,1,0,1];
+  const bW=Math.round(passW*0.22), bH=Math.round(bcH*0.42);
+  const bX=passX+(passW-bW)/2, bY=bcY+(bcH-bH)/2;
+  bars.forEach((on,i)=>{ if(on){ctx.fillStyle='#1a1a1a'; ctx.fillRect(bX+i*(bW/bars.length), bY, bW/bars.length*0.7, bH);} });
+
+  // Home indicator
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.beginPath();
+  ctx.roundRect(scrX + scrW/2 - Math.round(scrW*0.18), scrY+scrH-Math.round(scrH*0.025), Math.round(scrW*0.36), Math.round(scrH*0.014), Math.round(scrH*0.007));
+  ctx.fill();
+
+  ctx.restore();
 }
 
 function _posterRoundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
 }
 
-function _posterDrawCard(ctx, card, x, y, cW, cH) {
-  const bgColor     = card.bg_color     || '#26170c';
-  const accentColor = card.accent_color || '#ffca48';
-  const textColor   = card.text_color   || '#ffffff';
-  const spr         = card.stamps_per_reward || 10;
-  const rewardName  = card.reward_name  || 'Premio';
-  const cardName    = (card.name        || 'TARJETA').toUpperCase();
-
-  // Proportions mirror buildCardMockup:
-  // header 15% | strip 42% | fields 20% | barcode 23%
-  const hdrH    = Math.round(cH * 0.15);
-  const stripH  = Math.round(cH * 0.42);
-  const fieldsH = Math.round(cH * 0.20);
-  const bcH     = cH - hdrH - stripH - fieldsH;
-  const cardR   = Math.round(cW * 0.045);
-  const pad     = Math.round(cW * 0.05);
-
-  ctx.save();
-
-  // Clip to card rounded rect
-  _posterRoundRect(ctx, x, y, cW, cH, cardR);
-  ctx.fillStyle = bgColor;
-  ctx.fill();
-  ctx.clip();
-
-  // ── Header row ──────────────────────────────────────────────
-  const hdrFontSize  = Math.round(cW * 0.055);
-  const ctrFontSize  = Math.round(cW * 0.048);
-  const lblFontSize  = Math.round(cW * 0.034);
-  ctx.textBaseline = 'middle';
-  const hdrMidY = y + hdrH / 2;
-
-  // Card name (left)
-  ctx.font = `800 ${hdrFontSize}px 'Manrope', sans-serif`;
-  ctx.fillStyle = textColor;
-  ctx.textAlign = 'left';
-  ctx.fillText(cardName, x + pad, hdrMidY);
-
-  // Counter + SELLOS label (right)
-  ctx.font = `700 ${ctrFontSize}px 'Manrope', sans-serif`;
-  ctx.textAlign = 'right';
-  ctx.fillStyle = textColor;
-  ctx.fillText(`0/${spr}`, x + cW - pad, hdrMidY - lblFontSize * 0.4);
-  ctx.font = `600 ${lblFontSize}px 'Manrope', sans-serif`;
-  ctx.fillStyle = accentColor;
-  ctx.globalAlpha = 0.8;
-  ctx.fillText('SELLOS', x + cW - pad, hdrMidY + ctrFontSize * 0.55);
-  ctx.globalAlpha = 1;
-
-  // ── Strip: reuse _buildStripCanvas ───────────────────────────
-  const stripCanvas = _buildStripCanvas({
-    bg_color: bgColor, accent_color: accentColor,
-    stamps_per_reward: spr, filled: 0,
-    strip_bg_url: card.strip_bg_url || '',
-    _strip_bg_img: card._strip_bg_img || null
-  }, cW, stripH);
-  ctx.drawImage(stripCanvas, x, y + hdrH, cW, stripH);
-
-  // ── Fields row ───────────────────────────────────────────────
-  const fldY    = y + hdrH + stripH;
-  const fldFont = Math.round(cW * 0.048);
-  const fldLbl  = Math.round(cW * 0.032);
-  ctx.textBaseline = 'top';
-
-  // TITULAR (left)
-  ctx.font = `600 ${fldLbl}px 'Manrope', sans-serif`;
-  ctx.fillStyle = accentColor; ctx.globalAlpha = 0.75;
-  ctx.textAlign = 'left';
-  ctx.fillText('TITULAR', x + pad, fldY + fieldsH * 0.14);
-  ctx.globalAlpha = 1;
-  ctx.font = `700 ${fldFont}px 'Manrope', sans-serif`;
-  ctx.fillStyle = textColor;
-  ctx.fillText('TU NOMBRE', x + pad, fldY + fieldsH * 0.44);
-
-  // PREMIO (right)
-  ctx.font = `600 ${fldLbl}px 'Manrope', sans-serif`;
-  ctx.fillStyle = accentColor; ctx.globalAlpha = 0.75;
-  ctx.textAlign = 'right';
-  ctx.fillText('PREMIO', x + cW - pad, fldY + fieldsH * 0.14);
-  ctx.globalAlpha = 1;
-  ctx.font = `700 ${fldFont}px 'Manrope', sans-serif`;
-  ctx.fillStyle = textColor;
-  ctx.fillText(rewardName, x + cW - pad, fldY + fieldsH * 0.44);
-
-  // ── Barcode area ─────────────────────────────────────────────
-  const bcY   = fldY + fieldsH;
-  const bcPad = Math.round(cW * 0.04);
-  const bcR   = Math.round(cW * 0.032);
-  ctx.fillStyle = '#ffffff';
-  _posterRoundRect(ctx, x + bcPad, bcY + bcPad * 0.5, cW - bcPad * 2, bcH - bcPad * 0.7, bcR);
-  ctx.fill();
-  // Barcode lines
-  const bars = [1,0,1,1,0,1,0,1,0,1,1,0,1];
-  const bW = Math.round(cW * 0.22);
-  const bH = Math.round(bcH * 0.44);
-  const bX = x + (cW - bW) / 2;
-  const bY = bcY + (bcH - bH) / 2;
-  const bBarW = bW / bars.length;
-  bars.forEach((on, i) => {
-    if (on) {
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(bX + i * bBarW, bY, bBarW * 0.72, bH);
-    }
-  });
-
-  ctx.restore();
-}
-
 function _posterWrap(ctx, text, maxW) {
-  const words = text.split(' ');
-  const lines = [];
+  const words = text.split(' '), lines = [];
   let cur = '';
   for (const w of words) {
     const test = cur ? cur + ' ' + w : w;
