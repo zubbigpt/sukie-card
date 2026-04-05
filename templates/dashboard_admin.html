@@ -3213,6 +3213,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div style="display:flex;gap:0;border-bottom:2px solid var(--cream-border);margin-bottom:24px;overflow-x:auto">
           <button class="fid-tab active" onclick="showFidTab('landing')" id="fid-tab-landing">Landing + QR</button>
           <button class="fid-tab" onclick="showFidTab('emails')" id="fid-tab-emails">Emails</button>
+          <button class="fid-tab" onclick="showFidTab('poster')" id="fid-tab-poster">🖨 Cartel imprimible</button>
           <button class="fid-tab" onclick="showFidTab('programa')" id="fid-tab-programa" style="display:none"></button>
           <button class="fid-tab" onclick="showFidTab('diseno')" id="fid-tab-diseno" style="display:none"></button>
         </div>
@@ -3698,6 +3699,96 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
           </div>
         </div><!-- /fid-panel-emails -->
+
+        <!-- ──────────── TAB: CARTEL IMPRIMIBLE ──────────── -->
+        <div id="fid-panel-poster" style="display:none">
+          <div style="display:grid;grid-template-columns:340px 1fr;gap:28px;align-items:start">
+
+            <!-- LEFT: controles -->
+            <div>
+              <div class="card-box" style="margin-bottom:16px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                  <div class="card-title" style="margin:0">Contenido</div>
+                  <button onclick="posterLoadFromCard()" style="background:var(--honey-light);border:1px solid var(--honey);color:var(--brown);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:var(--r-sm);cursor:pointer;white-space:nowrap">
+                    ↺ Cargar desde tarjeta
+                  </button>
+                </div>
+                <label class="field-label">Tarjeta activa
+                  <select id="poster-card-select" class="field-input" onchange="posterLoadFromCard()" style="margin-bottom:0"></select>
+                </label>
+                <label class="field-label" style="margin-top:12px">Titular principal
+                  <input id="poster-headline" class="field-input" type="text" value="¡Únete y gana premios!" oninput="posterRender()">
+                </label>
+                <label class="field-label">Subtítulo
+                  <input id="poster-subtext" class="field-input" type="text" value="Acumula sellos con cada visita" oninput="posterRender()">
+                </label>
+                <label class="field-label">Texto CTA (bajo el QR)
+                  <input id="poster-cta" class="field-input" type="text" value="Escanea y regístrate gratis" oninput="posterRender()">
+                </label>
+                <label class="field-label">Texto pie de página
+                  <input id="poster-footer" class="field-input" type="text" placeholder="Ej: zubcard.com · @tunegocio" oninput="posterRender()">
+                </label>
+              </div>
+
+              <div class="card-box" style="margin-bottom:16px">
+                <div class="card-title" style="margin-bottom:14px">Diseño</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                  <label class="field-label" style="margin-bottom:0">Color fondo
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+                      <input type="color" id="poster-bg-color" value="#26170c" oninput="document.getElementById('poster-bg-txt').value=this.value;posterRender()" style="width:36px;height:30px;border:none;padding:0;cursor:pointer;background:none">
+                      <input type="text" id="poster-bg-txt" value="#26170c" class="field-input" style="flex:1;padding:4px 8px;font-size:.78rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-bg-color').value=this.value;posterRender()}">
+                    </div>
+                  </label>
+                  <label class="field-label" style="margin-bottom:0">Color acento
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+                      <input type="color" id="poster-accent-color" value="#ffca48" oninput="document.getElementById('poster-accent-txt').value=this.value;posterRender()" style="width:36px;height:30px;border:none;padding:0;cursor:pointer;background:none">
+                      <input type="text" id="poster-accent-txt" value="#ffca48" class="field-input" style="flex:1;padding:4px 8px;font-size:.78rem" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('poster-accent-color').value=this.value;posterRender()}">
+                    </div>
+                  </label>
+                </div>
+                <label class="field-label">Texto cabecera
+                  <select id="poster-hdr-text-color" class="field-input" onchange="posterRender()" style="margin-bottom:0">
+                    <option value="#ffffff">Blanco</option>
+                    <option value="#26170c">Marrón oscuro</option>
+                  </select>
+                </label>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;font-weight:600">
+                    <input type="checkbox" id="poster-show-stamps" checked onchange="posterRender()"> Mostrar sellos
+                  </label>
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;font-weight:600">
+                    <input type="checkbox" id="poster-show-bizname" checked onchange="posterRender()"> Mostrar nombre del negocio
+                  </label>
+                </div>
+              </div>
+
+              <div class="card-box">
+                <div class="card-title" style="margin-bottom:12px">URL del QR</div>
+                <input id="poster-qr-url" class="field-input" type="text" oninput="posterRender()" style="font-size:.75rem">
+              </div>
+            </div>
+
+            <!-- RIGHT: preview + descarga -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light)">Vista previa</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button onclick="posterDownload('A5')" style="background:var(--surface-low);border:1px solid var(--cream-border);color:var(--brown);font-size:.75rem;font-weight:700;padding:7px 14px;border-radius:var(--r-sm);cursor:pointer">⬇ A5</button>
+                  <button onclick="posterDownload('A4')" style="background:var(--brown);color:var(--cream);font-size:.75rem;font-weight:700;padding:7px 14px;border-radius:var(--r-sm);cursor:pointer">⬇ A4</button>
+                  <button onclick="posterDownload('A3')" style="background:var(--brown);color:var(--cream);font-size:.75rem;font-weight:700;padding:7px 14px;border-radius:var(--r-sm);cursor:pointer">⬇ A3</button>
+                </div>
+              </div>
+              <!-- Canvas preview (A4 ratio = 1:√2 ≈ 1:1.414) -->
+              <div style="display:flex;justify-content:center">
+                <canvas id="poster-canvas" width="396" height="560"
+                  style="width:396px;max-width:100%;border:1px solid var(--cream-border);box-shadow:0 4px 24px rgba(38,23,12,.12)"></canvas>
+              </div>
+              <p style="font-size:.68rem;color:var(--brown-light);text-align:center;margin-top:8px">
+                La descarga es en alta resolución (150 dpi) · listo para imprimir
+              </p>
+            </div>
+          </div>
+        </div><!-- /fid-panel-poster -->
 
       </div><!-- /section-fidelizacion -->
 
@@ -7379,7 +7470,7 @@ async function revokeDevice(id){
 
 
 function showFidTab(tab) {
-  ['programa','diseno','landing','emails'].forEach(t => {
+  ['programa','diseno','landing','emails','poster'].forEach(t => {
     const panel = document.getElementById('fid-panel-' + t);
     const btn   = document.getElementById('fid-tab-' + t);
     if (panel) panel.style.display = (t === tab) ? '' : 'none';
@@ -7388,6 +7479,7 @@ function showFidTab(tab) {
   if (tab === 'diseno') { loadDesign(); }
   if (tab === 'landing') { initFidLandingQR(); }
   if (tab === 'emails') { loadWelcomeEmailConfig(); }
+  if (tab === 'poster') { initPosterEditor(); }
 }
 
 function initFidLandingQR() {
@@ -8305,6 +8397,290 @@ function attachLPListeners(){
   });
 }
 
+
+/* ── CARTEL IMPRIMIBLE ────────────────────────────────────── */
+let _posterCards = [];
+let _posterQRData = null; // {url, size} cache
+
+async function initPosterEditor() {
+  const url = `${BASE}/biz/${BIZ_SLUG}/register`;
+  const urlEl = document.getElementById('poster-qr-url');
+  if (urlEl && !urlEl.value) urlEl.value = url;
+  // Load cards for select
+  try {
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs?pin=${PIN}`);
+    _posterCards = await r.json();
+    const sel = document.getElementById('poster-card-select');
+    if (sel && _posterCards.length) {
+      sel.innerHTML = _posterCards.map((c,i) => `<option value="${i}">${c.emoji||'🎁'} ${c.name}</option>`).join('');
+      // Only auto-fill fields on first load
+      if (!sel.dataset.loaded) { sel.dataset.loaded = '1'; posterLoadFromCard(); return; }
+    }
+  } catch(e) {}
+  posterRender();
+}
+
+function posterLoadFromCard() {
+  const sel = document.getElementById('poster-card-select');
+  const idx = sel ? parseInt(sel.value) || 0 : 0;
+  const card = _posterCards[idx];
+  if (!card) { posterRender(); return; }
+  // Colors
+  const bg = card.bg_color || '#26170c';
+  const ac = card.accent_color || '#ffca48';
+  document.getElementById('poster-bg-color').value = bg;
+  document.getElementById('poster-bg-txt').value   = bg;
+  document.getElementById('poster-accent-color').value = ac;
+  document.getElementById('poster-accent-txt').value   = ac;
+  // Headline from card name + reward
+  const stamps  = card.stamps_per_reward || 10;
+  const reward  = card.reward_name || 'Premio';
+  const emoji   = card.emoji || '🎁';
+  document.getElementById('poster-headline').value = `¡${stamps} sellos = ${reward}!`;
+  document.getElementById('poster-subtext').value  = 'Acumula sellos con cada visita';
+  posterRender();
+}
+
+function _posterGetConfig() {
+  const v = id => document.getElementById(id);
+  return {
+    headline    : v('poster-headline')?.value   || '¡Únete y gana!',
+    subtext     : v('poster-subtext')?.value    || '',
+    cta         : v('poster-cta')?.value        || 'Escanea y regístrate gratis',
+    footer      : v('poster-footer')?.value     || '',
+    bgColor     : v('poster-bg-color')?.value   || '#26170c',
+    accentColor : v('poster-accent-color')?.value || '#ffca48',
+    hdrText     : v('poster-hdr-text-color')?.value || '#ffffff',
+    showStamps  : v('poster-show-stamps')?.checked !== false,
+    showBizName : v('poster-show-bizname')?.checked !== false,
+    qrUrl       : v('poster-qr-url')?.value     || `${BASE}/biz/${BIZ_SLUG}/register`,
+  };
+}
+
+function _posterGetCard() {
+  const sel = document.getElementById('poster-card-select');
+  const idx = sel ? parseInt(sel.value) || 0 : 0;
+  return _posterCards[idx] || {};
+}
+
+async function posterRender() {
+  const canvas = document.getElementById('poster-canvas');
+  if (!canvas) return;
+  await _posterDraw(canvas, 1);
+}
+
+async function _posterDraw(canvas, scale) {
+  const cfg  = _posterGetConfig();
+  const card = _posterGetCard();
+  const W = canvas.width;
+  const H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const bg     = cfg.bgColor;
+  const accent = cfg.accentColor;
+  const stamps = card.stamps_per_reward || 10;
+  const reward = card.reward_name || 'Premio';
+  const emoji  = card.emoji || '🎁';
+  const bizName = (typeof BIZ_NAME !== 'undefined' ? BIZ_NAME : '') || '';
+
+  // ── Header band (top 30%) ──────────────────────────────────
+  const hdrH = Math.round(H * 0.30);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, hdrH);
+
+  // Decorative accent stripe (thin, top)
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, W, Math.round(H * 0.012));
+
+  // Emoji
+  const emojiFontSize = Math.round(W * 0.16);
+  ctx.font = `${emojiFontSize}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const emojiY = Math.round(hdrH * 0.38);
+  ctx.fillText(emoji, W / 2, emojiY);
+
+  // Business name
+  if (cfg.showBizName && bizName) {
+    const nameFontSize = Math.round(W * 0.068);
+    ctx.font = `900 ${nameFontSize}px 'Bebas Neue', sans-serif`;
+    ctx.fillStyle = cfg.hdrText;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(bizName.toUpperCase(), W / 2, emojiY + emojiFontSize * 0.58);
+  }
+
+  // ── White body panel (rounded top corners) ─────────────────
+  const bodyY = hdrH - Math.round(H * 0.025);
+  const radius = Math.round(W * 0.055);
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(radius, bodyY);
+  ctx.lineTo(W - radius, bodyY);
+  ctx.quadraticCurveTo(W, bodyY, W, bodyY + radius);
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.lineTo(0, bodyY + radius);
+  ctx.quadraticCurveTo(0, bodyY, radius, bodyY);
+  ctx.closePath();
+  ctx.fill();
+
+  // ── Headline ───────────────────────────────────────────────
+  const bodyPadX = Math.round(W * 0.075);
+  let curY = bodyY + Math.round(H * 0.055);
+
+  const hlFontSize = Math.round(W * 0.087);
+  ctx.font = `900 ${hlFontSize}px 'Bebas Neue', sans-serif`;
+  ctx.fillStyle = bg;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const hlLines = _posterWrap(ctx, cfg.headline, W - bodyPadX * 2);
+  hlLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += hlFontSize * 1.15; });
+
+  // Subtext
+  if (cfg.subtext) {
+    curY += Math.round(H * 0.008);
+    const stFontSize = Math.round(W * 0.042);
+    ctx.font = `500 ${stFontSize}px 'Manrope', sans-serif`;
+    ctx.fillStyle = '#7a6055';
+    const stLines = _posterWrap(ctx, cfg.subtext, W - bodyPadX * 2);
+    stLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += stFontSize * 1.45; });
+  }
+
+  // ── Stamps row ─────────────────────────────────────────────
+  if (cfg.showStamps) {
+    curY += Math.round(H * 0.018);
+    const maxShow = Math.min(stamps, 12);
+    const stampR = Math.round(W * 0.038);
+    const stampGap = Math.round(W * 0.018);
+    const arrowW = Math.round(W * 0.06);
+    const totalW = maxShow * (stampR * 2) + (maxShow - 1) * stampGap + arrowW + stampR * 2 + stampGap;
+    let sx = (W - totalW) / 2;
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < maxShow; i++) {
+      ctx.beginPath();
+      ctx.arc(sx + stampR, curY + stampR, stampR, 0, Math.PI * 2);
+      ctx.strokeStyle = bg;
+      ctx.lineWidth = Math.round(W * 0.006);
+      ctx.fillStyle = i === maxShow - 1 ? accent : '#f5f0ed';
+      ctx.fill(); ctx.stroke();
+      if (i < maxShow - 1) sx += stampR * 2 + stampGap;
+    }
+    // Arrow
+    sx += stampR * 2 + stampGap;
+    const arrowFontSize = Math.round(W * 0.05);
+    ctx.font = `700 ${arrowFontSize}px sans-serif`;
+    ctx.fillStyle = '#7a6055';
+    ctx.textAlign = 'center';
+    ctx.fillText('→', sx + arrowW / 2, curY + stampR);
+    sx += arrowW + stampGap;
+    // Prize circle
+    const prizeFontSize = Math.round(stampR * 1.1);
+    ctx.beginPath();
+    ctx.arc(sx + stampR, curY + stampR, stampR, 0, Math.PI * 2);
+    ctx.fillStyle = accent; ctx.fill();
+    ctx.font = `${prizeFontSize}px serif`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🎁', sx + stampR, curY + stampR);
+
+    // Reward label
+    curY += stampR * 2 + Math.round(H * 0.016);
+    const rwFontSize = Math.round(W * 0.052);
+    ctx.font = `800 ${rwFontSize}px 'Bebas Neue', sans-serif`;
+    ctx.fillStyle = bg;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`PREMIO: ${reward.toUpperCase()}`, W / 2, curY);
+    curY += rwFontSize * 1.2;
+  }
+
+  // ── Divider ────────────────────────────────────────────────
+  curY += Math.round(H * 0.022);
+  ctx.strokeStyle = '#e8e0da';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(bodyPadX, curY); ctx.lineTo(W - bodyPadX, curY); ctx.stroke();
+  curY += Math.round(H * 0.022);
+
+  // ── QR Code ───────────────────────────────────────────────
+  const qrSize = Math.round(Math.min(W * 0.44, H - curY - Math.round(H * 0.12)));
+  const qrX = Math.round((W - qrSize) / 2);
+
+  // Generate QR using hidden div (QRCode.js renders to div)
+  let qrDiv = document.getElementById('_poster-qr-tmp');
+  if (!qrDiv) { qrDiv = document.createElement('div'); qrDiv.id = '_poster-qr-tmp'; qrDiv.style.cssText='position:fixed;left:-9999px;top:-9999px;visibility:hidden'; document.body.appendChild(qrDiv); }
+  qrDiv.innerHTML = '';
+  try {
+    new QRCode(qrDiv, { text: cfg.qrUrl, width: qrSize, height: qrSize, colorDark: bg, colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    await new Promise(r => setTimeout(r, 120));
+    const qrImg = qrDiv.querySelector('img');
+    const qrCvs = qrDiv.querySelector('canvas');
+    if (qrCvs) {
+      ctx.drawImage(qrCvs, qrX, curY, qrSize, qrSize);
+    } else if (qrImg && qrImg.src) {
+      await new Promise((res, rej) => { if (qrImg.complete) res(); else { qrImg.onload = res; qrImg.onerror = rej; } });
+      ctx.drawImage(qrImg, qrX, curY, qrSize, qrSize);
+    }
+  } catch(e) {
+    ctx.fillStyle = '#f0ebe7';
+    ctx.fillRect(qrX, curY, qrSize, qrSize);
+    ctx.font = `${Math.round(qrSize*0.12)}px sans-serif`;
+    ctx.fillStyle = '#999'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('QR', qrX + qrSize/2, curY + qrSize/2);
+  }
+  curY += qrSize + Math.round(H * 0.016);
+
+  // ── CTA text ──────────────────────────────────────────────
+  const ctaFontSize = Math.round(W * 0.048);
+  ctx.font = `700 ${ctaFontSize}px 'Manrope', sans-serif`;
+  ctx.fillStyle = bg;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(cfg.cta, W / 2, curY);
+  curY += ctaFontSize * 1.4;
+
+  // ── Footer band ────────────────────────────────────────────
+  const footerH = Math.round(H * 0.055);
+  const footerY = H - footerH;
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, footerY, W, footerH);
+  if (cfg.footer) {
+    const ftFontSize = Math.round(footerH * 0.42);
+    ctx.font = `700 ${ftFontSize}px 'Manrope', sans-serif`;
+    ctx.fillStyle = bg;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(cfg.footer, W / 2, footerY + footerH / 2);
+  }
+}
+
+function _posterWrap(ctx, text, maxW) {
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+    else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+async function posterDownload(size) {
+  // px at 150 dpi: A5=874×1240 A4=1240×1754 A3=1754×2480
+  const sizes = { A5:[874,1240], A4:[1240,1754], A3:[1754,2480] };
+  const [W, H] = sizes[size] || sizes.A4;
+  const offCanvas = document.createElement('canvas');
+  offCanvas.width = W; offCanvas.height = H;
+  await _posterDraw(offCanvas, 1);
+  const link = document.createElement('a');
+  const slug = (typeof BIZ_SLUG !== 'undefined' ? BIZ_SLUG : 'poster');
+  link.download = `cartel-${slug}-${size}.png`;
+  link.href = offCanvas.toDataURL('image/png');
+  link.click();
+  showToast(`Descargando cartel ${size} ✓`, 'success');
+}
 
 /* ── PASSCODES CARD URL ────────────────────────────────────── */
 function setPCCardUrl(){
