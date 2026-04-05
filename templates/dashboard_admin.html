@@ -3752,10 +3752,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
                     <option value="#26170c">Marrón oscuro</option>
                   </select>
                 </label>
-                <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
-                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;font-weight:600">
-                    <input type="checkbox" id="poster-show-stamps" checked onchange="posterRender()"> Mostrar sellos
-                  </label>
+                <div style="margin-top:12px">
                   <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;font-weight:600">
                     <input type="checkbox" id="poster-show-bizname" checked onchange="posterRender()"> Mostrar nombre del negocio
                   </label>
@@ -8479,40 +8476,38 @@ async function _posterDraw(canvas, scale) {
 
   const bg     = cfg.bgColor;
   const accent = cfg.accentColor;
-  const stamps = card.stamps_per_reward || 10;
-  const reward = card.reward_name || 'Premio';
   const emoji  = card.emoji || '🎁';
   const bizName = (typeof BIZ_NAME !== 'undefined' ? BIZ_NAME : '') || '';
 
-  // ── Header band (top 30%) ──────────────────────────────────
-  const hdrH = Math.round(H * 0.30);
+  // ── Header band (top 28%) ──────────────────────────────────
+  const hdrH = Math.round(H * 0.28);
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, hdrH);
 
-  // Decorative accent stripe (thin, top)
+  // Accent stripe (top edge)
   ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, W, Math.round(H * 0.012));
+  ctx.fillRect(0, 0, W, Math.round(H * 0.011));
 
   // Emoji
-  const emojiFontSize = Math.round(W * 0.16);
+  const emojiFontSize = Math.round(W * 0.15);
   ctx.font = `${emojiFontSize}px serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const emojiY = Math.round(hdrH * 0.38);
+  const emojiY = Math.round(hdrH * 0.37);
   ctx.fillText(emoji, W / 2, emojiY);
 
   // Business name
   if (cfg.showBizName && bizName) {
-    const nameFontSize = Math.round(W * 0.068);
+    const nameFontSize = Math.round(W * 0.065);
     ctx.font = `900 ${nameFontSize}px 'Bebas Neue', sans-serif`;
     ctx.fillStyle = cfg.hdrText;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(bizName.toUpperCase(), W / 2, emojiY + emojiFontSize * 0.58);
+    ctx.fillText(bizName.toUpperCase(), W / 2, emojiY + emojiFontSize * 0.56);
   }
 
   // ── White body panel (rounded top corners) ─────────────────
-  const bodyY = hdrH - Math.round(H * 0.025);
+  const bodyY = hdrH - Math.round(H * 0.022);
   const radius = Math.round(W * 0.055);
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
@@ -8528,79 +8523,39 @@ async function _posterDraw(canvas, scale) {
 
   // ── Headline ───────────────────────────────────────────────
   const bodyPadX = Math.round(W * 0.075);
-  let curY = bodyY + Math.round(H * 0.055);
+  let curY = bodyY + Math.round(H * 0.048);
 
-  const hlFontSize = Math.round(W * 0.087);
+  const hlFontSize = Math.round(W * 0.082);
   ctx.font = `900 ${hlFontSize}px 'Bebas Neue', sans-serif`;
   ctx.fillStyle = bg;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const hlLines = _posterWrap(ctx, cfg.headline, W - bodyPadX * 2);
-  hlLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += hlFontSize * 1.15; });
+  hlLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += hlFontSize * 1.12; });
 
   // Subtext
   if (cfg.subtext) {
-    curY += Math.round(H * 0.008);
-    const stFontSize = Math.round(W * 0.042);
+    curY += Math.round(H * 0.006);
+    const stFontSize = Math.round(W * 0.04);
     ctx.font = `500 ${stFontSize}px 'Manrope', sans-serif`;
     ctx.fillStyle = '#7a6055';
     const stLines = _posterWrap(ctx, cfg.subtext, W - bodyPadX * 2);
-    stLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += stFontSize * 1.45; });
+    stLines.forEach(line => { ctx.fillText(line, W / 2, curY); curY += stFontSize * 1.4; });
   }
 
-  // ── Stamps row ─────────────────────────────────────────────
-  if (cfg.showStamps) {
-    curY += Math.round(H * 0.018);
-    const maxShow = Math.min(stamps, 12);
-    const stampR = Math.round(W * 0.038);
-    const stampGap = Math.round(W * 0.018);
-    const arrowW = Math.round(W * 0.06);
-    const totalW = maxShow * (stampR * 2) + (maxShow - 1) * stampGap + arrowW + stampR * 2 + stampGap;
-    let sx = (W - totalW) / 2;
-    ctx.textBaseline = 'middle';
-    for (let i = 0; i < maxShow; i++) {
-      ctx.beginPath();
-      ctx.arc(sx + stampR, curY + stampR, stampR, 0, Math.PI * 2);
-      ctx.strokeStyle = bg;
-      ctx.lineWidth = Math.round(W * 0.006);
-      ctx.fillStyle = i === maxShow - 1 ? accent : '#f5f0ed';
-      ctx.fill(); ctx.stroke();
-      if (i < maxShow - 1) sx += stampR * 2 + stampGap;
-    }
-    // Arrow
-    sx += stampR * 2 + stampGap;
-    const arrowFontSize = Math.round(W * 0.05);
-    ctx.font = `700 ${arrowFontSize}px sans-serif`;
-    ctx.fillStyle = '#7a6055';
-    ctx.textAlign = 'center';
-    ctx.fillText('→', sx + arrowW / 2, curY + stampR);
-    sx += arrowW + stampGap;
-    // Prize circle
-    const prizeFontSize = Math.round(stampR * 1.1);
-    ctx.beginPath();
-    ctx.arc(sx + stampR, curY + stampR, stampR, 0, Math.PI * 2);
-    ctx.fillStyle = accent; ctx.fill();
-    ctx.font = `${prizeFontSize}px serif`;
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🎁', sx + stampR, curY + stampR);
-
-    // Reward label
-    curY += stampR * 2 + Math.round(H * 0.016);
-    const rwFontSize = Math.round(W * 0.052);
-    ctx.font = `800 ${rwFontSize}px 'Bebas Neue', sans-serif`;
-    ctx.fillStyle = bg;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText(`PREMIO: ${reward.toUpperCase()}`, W / 2, curY);
-    curY += rwFontSize * 1.2;
-  }
+  // ── Card face (exact same design as Gestión de Tarjetas) ───
+  curY += Math.round(H * 0.022);
+  const cardW = Math.round(W * 0.82);
+  const cardH = Math.round(cardW / 1.62); // same landscape aspect ratio as Apple Wallet pass
+  const cardX = Math.round((W - cardW) / 2);
+  _posterDrawCard(ctx, card, cardX, curY, cardW, cardH);
+  curY += cardH + Math.round(H * 0.024);
 
   // ── Divider ────────────────────────────────────────────────
-  curY += Math.round(H * 0.022);
   ctx.strokeStyle = '#e8e0da';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(bodyPadX, curY); ctx.lineTo(W - bodyPadX, curY); ctx.stroke();
-  curY += Math.round(H * 0.022);
+  curY += Math.round(H * 0.020);
 
   // ── QR Code ───────────────────────────────────────────────
   const qrSize = Math.round(Math.min(W * 0.44, H - curY - Math.round(H * 0.12)));
@@ -8652,6 +8607,128 @@ async function _posterDraw(canvas, scale) {
     ctx.textBaseline = 'middle';
     ctx.fillText(cfg.footer, W / 2, footerY + footerH / 2);
   }
+}
+
+function _posterRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function _posterDrawCard(ctx, card, x, y, cW, cH) {
+  const bgColor     = card.bg_color     || '#26170c';
+  const accentColor = card.accent_color || '#ffca48';
+  const textColor   = card.text_color   || '#ffffff';
+  const spr         = card.stamps_per_reward || 10;
+  const rewardName  = card.reward_name  || 'Premio';
+  const cardName    = (card.name        || 'TARJETA').toUpperCase();
+
+  // Proportions mirror buildCardMockup:
+  // header 15% | strip 42% | fields 20% | barcode 23%
+  const hdrH    = Math.round(cH * 0.15);
+  const stripH  = Math.round(cH * 0.42);
+  const fieldsH = Math.round(cH * 0.20);
+  const bcH     = cH - hdrH - stripH - fieldsH;
+  const cardR   = Math.round(cW * 0.045);
+  const pad     = Math.round(cW * 0.05);
+
+  ctx.save();
+
+  // Clip to card rounded rect
+  _posterRoundRect(ctx, x, y, cW, cH, cardR);
+  ctx.fillStyle = bgColor;
+  ctx.fill();
+  ctx.clip();
+
+  // ── Header row ──────────────────────────────────────────────
+  const hdrFontSize  = Math.round(cW * 0.055);
+  const ctrFontSize  = Math.round(cW * 0.048);
+  const lblFontSize  = Math.round(cW * 0.034);
+  ctx.textBaseline = 'middle';
+  const hdrMidY = y + hdrH / 2;
+
+  // Card name (left)
+  ctx.font = `800 ${hdrFontSize}px 'Manrope', sans-serif`;
+  ctx.fillStyle = textColor;
+  ctx.textAlign = 'left';
+  ctx.fillText(cardName, x + pad, hdrMidY);
+
+  // Counter + SELLOS label (right)
+  ctx.font = `700 ${ctrFontSize}px 'Manrope', sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = textColor;
+  ctx.fillText(`0/${spr}`, x + cW - pad, hdrMidY - lblFontSize * 0.4);
+  ctx.font = `600 ${lblFontSize}px 'Manrope', sans-serif`;
+  ctx.fillStyle = accentColor;
+  ctx.globalAlpha = 0.8;
+  ctx.fillText('SELLOS', x + cW - pad, hdrMidY + ctrFontSize * 0.55);
+  ctx.globalAlpha = 1;
+
+  // ── Strip: reuse _buildStripCanvas ───────────────────────────
+  const stripCanvas = _buildStripCanvas({
+    bg_color: bgColor, accent_color: accentColor,
+    stamps_per_reward: spr, filled: 0,
+    strip_bg_url: card.strip_bg_url || '',
+    _strip_bg_img: card._strip_bg_img || null
+  }, cW, stripH);
+  ctx.drawImage(stripCanvas, x, y + hdrH, cW, stripH);
+
+  // ── Fields row ───────────────────────────────────────────────
+  const fldY    = y + hdrH + stripH;
+  const fldFont = Math.round(cW * 0.048);
+  const fldLbl  = Math.round(cW * 0.032);
+  ctx.textBaseline = 'top';
+
+  // TITULAR (left)
+  ctx.font = `600 ${fldLbl}px 'Manrope', sans-serif`;
+  ctx.fillStyle = accentColor; ctx.globalAlpha = 0.75;
+  ctx.textAlign = 'left';
+  ctx.fillText('TITULAR', x + pad, fldY + fieldsH * 0.14);
+  ctx.globalAlpha = 1;
+  ctx.font = `700 ${fldFont}px 'Manrope', sans-serif`;
+  ctx.fillStyle = textColor;
+  ctx.fillText('TU NOMBRE', x + pad, fldY + fieldsH * 0.44);
+
+  // PREMIO (right)
+  ctx.font = `600 ${fldLbl}px 'Manrope', sans-serif`;
+  ctx.fillStyle = accentColor; ctx.globalAlpha = 0.75;
+  ctx.textAlign = 'right';
+  ctx.fillText('PREMIO', x + cW - pad, fldY + fieldsH * 0.14);
+  ctx.globalAlpha = 1;
+  ctx.font = `700 ${fldFont}px 'Manrope', sans-serif`;
+  ctx.fillStyle = textColor;
+  ctx.fillText(rewardName, x + cW - pad, fldY + fieldsH * 0.44);
+
+  // ── Barcode area ─────────────────────────────────────────────
+  const bcY   = fldY + fieldsH;
+  const bcPad = Math.round(cW * 0.04);
+  const bcR   = Math.round(cW * 0.032);
+  ctx.fillStyle = '#ffffff';
+  _posterRoundRect(ctx, x + bcPad, bcY + bcPad * 0.5, cW - bcPad * 2, bcH - bcPad * 0.7, bcR);
+  ctx.fill();
+  // Barcode lines
+  const bars = [1,0,1,1,0,1,0,1,0,1,1,0,1];
+  const bW = Math.round(cW * 0.22);
+  const bH = Math.round(bcH * 0.44);
+  const bX = x + (cW - bW) / 2;
+  const bY = bcY + (bcH - bH) / 2;
+  const bBarW = bW / bars.length;
+  bars.forEach((on, i) => {
+    if (on) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(bX + i * bBarW, bY, bBarW * 0.72, bH);
+    }
+  });
+
+  ctx.restore();
 }
 
 function _posterWrap(ctx, text, maxW) {
