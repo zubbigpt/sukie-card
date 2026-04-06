@@ -67,6 +67,7 @@
   .hero {
     position: relative; height: 100vh; min-height: 640px;
     display: flex; align-items: center; overflow: hidden;
+    padding-top: 68px; /* compensate fixed nav */
   }
   .hero-bg {
     position: absolute; inset: 0;
@@ -108,7 +109,7 @@
     opacity: 0; animation: fade-up .7s .7s var(--ease) forwards;
   }
   .hero-actions {
-    margin-top: 40px; display: flex; gap: 14px; flex-wrap: wrap;
+    margin-top: 28px; display: flex; gap: 14px; flex-wrap: wrap;
     opacity: 0; animation: fade-up .7s .9s var(--ease) forwards;
   }
   .btn-primary {
