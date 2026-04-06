@@ -615,6 +615,115 @@
   .testi-biz { font-size: .78rem; color: rgba(255,255,255,.38); margin-top: 3px; }
 
   /* ── RESPONSIVE ── */
+  /* ── HERO VISUAL (loyalty card mockup) ─────────────────── */
+  .hero { justify-content: space-between; }
+  .hero-content { flex-shrink: 0; max-width: 560px; }
+  .hero-visual {
+    position: relative; z-index: 2; flex-shrink: 0;
+    padding-right: 6vw; display: flex; align-items: center;
+    opacity: 0; animation: fade-up .8s 1.1s var(--ease) forwards;
+  }
+  .hlc {
+    width: 348px; border-radius: 22px;
+    background: linear-gradient(140deg, #1c0d05 0%, #2e1609 100%);
+    overflow: hidden;
+    box-shadow: 0 28px 72px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.07);
+    transform: rotate(-5deg);
+    position: relative; transition: transform .4s var(--ease);
+  }
+  .hlc:hover { transform: rotate(-2deg) translateY(-8px); }
+  .hlc::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(140deg, rgba(201,168,76,.09) 0%, transparent 55%);
+  }
+  .hlc-header {
+    padding: 20px 22px 16px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .hlc-brand { display: flex; align-items: center; gap: 11px; }
+  .hlc-mark {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: var(--gold); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .hlc-biz-name { font-size: .9rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
+  .hlc-biz-sub {
+    font-size: .6rem; font-weight: 600; color: rgba(255,255,255,.38);
+    text-transform: uppercase; letter-spacing: .12em; margin-top: 2px;
+  }
+  .hlc-prog { text-align: right; }
+  .hlc-prog-num {
+    font-size: 1.5rem; font-weight: 900; color: var(--gold);
+    line-height: 1; letter-spacing: -.04em;
+  }
+  .hlc-prog-of {
+    font-size: .58rem; font-weight: 600; color: rgba(255,255,255,.32);
+    text-transform: uppercase; letter-spacing: .1em; margin-top: 2px;
+  }
+  .hlc-divider { height: 1px; margin: 0 22px; background: rgba(255,255,255,.06); }
+  .hlc-stamps {
+    padding: 18px 18px 14px;
+    display: flex; gap: 8px; justify-content: center;
+  }
+  .hlc-stamp {
+    width: 33px; height: 33px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .hlc-stamp.filled {
+    background: var(--gold);
+    box-shadow: 0 3px 14px rgba(201,168,76,.48);
+  }
+  .hlc-stamp.empty {
+    border: 1.5px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.03);
+  }
+  .hlc-footer {
+    padding: 14px 22px; background: rgba(0,0,0,.32);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .hlc-field-lbl {
+    font-size: .54rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .13em;
+    color: rgba(255,255,255,.28); margin-bottom: 2px;
+  }
+  .hlc-field-val { font-size: .82rem; font-weight: 700; color: #fff; }
+  .hlc-barcode { display: flex; gap: 2px; align-items: flex-end; opacity: .18; }
+  .hlc-bar { background: rgba(255,255,255,.9); border-radius: 1px; width: 2px; }
+
+  /* ── DEMO / CALL BOOKING ────────────────────────────────── */
+  .demo-section {
+    background: var(--black); padding: 100px 5vw;
+    text-align: center;
+  }
+  .demo-section .section-eyebrow { justify-content: center; display: flex; }
+  .demo-section .section-h2 { margin: 0 auto; text-align: center; color: var(--white); }
+  .demo-section .section-h2 em { color: var(--gold); }
+  .demo-section .section-p { margin: 18px auto 0; text-align: center; color: rgba(255,255,255,.55); }
+  .demo-actions {
+    margin-top: 40px; display: flex; gap: 14px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .demo-slots {
+    margin-top: 48px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .demo-slot {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px; padding: 12px 20px;
+    font-size: .82rem; font-weight: 500; color: rgba(255,255,255,.55);
+  }
+  .demo-slot svg { flex-shrink: 0; }
+  .demo-guarantee {
+    margin-top: 24px; font-size: .78rem; color: rgba(255,255,255,.28);
+    font-weight: 500;
+  }
+
+  @media (max-width: 1060px) {
+    .hero-visual { display: none; }
+    .hero-content { max-width: 780px; }
+  }
+
   @media (max-width: 900px) {
     .nav-links { display: none; }
     .nav-mobile-toggle { display: block; }
@@ -693,6 +802,76 @@
     </div>
   </div>
   <div class="hero-scroll">Scroll para explorar</div>
+
+  <!-- Loyalty card floating mockup -->
+  <div class="hero-visual">
+    <div class="hlc">
+      <!-- Header -->
+      <div class="hlc-header">
+        <div class="hlc-brand">
+          <div class="hlc-mark">
+            <!-- Z lettermark -->
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4.5 4.5H15.5L4.5 15.5H15.5" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="hlc-biz-name">ZubCard</div>
+            <div class="hlc-biz-sub">Programa de fidelización</div>
+          </div>
+        </div>
+        <div class="hlc-prog">
+          <div class="hlc-prog-num">3<span style="font-size:.9rem;opacity:.5">/8</span></div>
+          <div class="hlc-prog-of">sellos</div>
+        </div>
+      </div>
+      <div class="hlc-divider"></div>
+
+      <!-- Stamp row: 3 filled + 5 empty -->
+      <div class="hlc-stamps">
+        <!-- Filled stamps -->
+        <div class="hlc-stamp filled">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="hlc-stamp filled">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="hlc-stamp filled">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <!-- Empty stamps -->
+        <div class="hlc-stamp empty"></div>
+        <div class="hlc-stamp empty"></div>
+        <div class="hlc-stamp empty"></div>
+        <div class="hlc-stamp empty"></div>
+        <div class="hlc-stamp empty"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="hlc-footer">
+        <div>
+          <div class="hlc-field-lbl">Titular</div>
+          <div class="hlc-field-val">Ana García</div>
+        </div>
+        <div>
+          <div class="hlc-field-lbl">Premio</div>
+          <div class="hlc-field-val">Café gratis</div>
+        </div>
+        <!-- Decorative barcode -->
+        <div class="hlc-barcode" aria-hidden="true">
+          <div class="hlc-bar" style="height:22px"></div>
+          <div class="hlc-bar" style="height:16px"></div>
+          <div class="hlc-bar" style="height:22px"></div>
+          <div class="hlc-bar" style="height:12px"></div>
+          <div class="hlc-bar" style="height:20px"></div>
+          <div class="hlc-bar" style="height:18px"></div>
+          <div class="hlc-bar" style="height:22px"></div>
+          <div class="hlc-bar" style="height:14px"></div>
+          <div class="hlc-bar" style="height:22px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- TICKER -->
@@ -1093,6 +1272,44 @@
     <h2 class="section-h2 reveal">¿Tienes dudas? <em>Las respondemos.</em></h2>
   </div>
   <div class="faq-list reveal" id="faq-list"></div>
+</section>
+
+<!-- DEMO / BOOK A CALL -->
+<section class="demo-section">
+  <p class="section-eyebrow">Habla con nosotros</p>
+  <h2 class="section-h2">¿Tienes dudas antes<br/>de empezar? <em>Agéndanos.</em></h2>
+  <p class="section-p">Reserva una llamada de 20 minutos. Te enseñamos cómo ZubCard funciona para tu negocio, sin presión y sin coste.</p>
+
+  <div class="demo-actions">
+    <!-- Swap this href for your Calendly / Google Calendar booking page when ready -->
+    <a href="mailto:zubcard@gmail.com?subject=Quiero%20una%20demo%20de%20ZubCard&body=Hola%2C%20me%20gustar%C3%ADa%20agendar%20una%20demo.%20Mi%20negocio%20es%3A%20" class="btn-primary">
+      Agendar demo gratuita
+    </a>
+    <a href="mailto:zubcard@gmail.com?subject=Pregunta%20sobre%20ZubCard" class="btn-ghost" style="color:rgba(255,255,255,.75);border-color:rgba(255,255,255,.2)">
+      Enviar mensaje →
+    </a>
+  </div>
+
+  <div class="demo-slots">
+    <div class="demo-slot">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="rgba(201,168,76,.7)" stroke-width="1.3"/><path d="M8 5v3.5l2 2" stroke="rgba(201,168,76,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      20 minutos
+    </div>
+    <div class="demo-slot">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="rgba(201,168,76,.7)" stroke-width="1.3"/><path d="M5 2v2M11 2v2M2 7h12" stroke="rgba(201,168,76,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      A tu horario
+    </div>
+    <div class="demo-slot">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5l1.8 3.7 4 .58-2.9 2.83.68 4L8 10.5l-3.58 1.88.68-4L2.2 5.78l4-.58L8 1.5z" stroke="rgba(201,168,76,.7)" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      Sin compromiso
+    </div>
+    <div class="demo-slot">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 4.5L6.5 11 3 7.5" stroke="rgba(201,168,76,.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Respuesta en 24h
+    </div>
+  </div>
+
+  <p class="demo-guarantee">zubcard@gmail.com · Respondemos en menos de 24 horas</p>
 </section>
 
 <!-- CTA BANNER -->
