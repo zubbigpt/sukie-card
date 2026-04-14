@@ -6827,3 +6827,44 @@ async def zubadmin_logout():
     response = RedirectResponse("/zubadmin", status_code=302)
     response.delete_cookie(ZUBADMIN_COOKIE, path="/")
     return response
+
+
+@app.get("/api/biz/{slug}/send-review-test")
+async def send_review_test(slug: str, pin: str = "", email: str = "", store: str = "", db: Session = Depends(get_db)):
+    """Temp: send test review email to given address using a specific store's review URL."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    store_row = db.execute(text(
+        "SELECT name, google_review_url FROM stores "
+        "WHERE business_id=:bid AND LOWER(name) LIKE :name LIMIT 1"
+    ), {"bid": str(biz.id), "name": f"%{store.lower()}%"}).fetchone()
+
+    if not store_row or not store_row[1]:
+        raise HTTPException(status_code=404, detail=f"Tienda '{store}' sin review URL configurado")
+
+    store_name = store_row[0]
+    review_url = store_row[1]
+
+    html_body = templates.get_template("email_review.html").render(
+        subject      = f"Gracias por tu fidelidad en {biz.name}",
+        biz_name     = biz.name,
+        name         = "Yanir",
+        store_name   = store_name,
+        review_url   = review_url,
+        card_url     = f"{BASE_URL}",
+        logo_url     = getattr(biz, "logo_url", "") or "",
+        header_color = getattr(biz, "primary_color", "") or "#26170c",
+        accent_color = getattr(biz, "accent_color", "") or "#ffca48",
+        text_color   = "#ffffff",
+        bg_color     = "#f5f5f5",
+    )
+    sent = send_email(
+        to_email  = email or "yanir.mgta@gmail.com",
+        subject   = f"Gracias por tu fidelidad en {biz.name}",
+        html_body = html_body,
+        from_name = getattr(biz, "email_from_name", "") or biz.name,
+    )
+    return {"sent": sent, "to": email, "store": store_name, "review_url": review_url}
