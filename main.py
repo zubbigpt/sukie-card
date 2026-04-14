@@ -460,6 +460,17 @@ def run_migrations():
     finally:
         db.close()
 
+    # ── Constraint fix: email unique per-business (separate connection, auto-commit) ──
+    from database import engine
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE customers DROP CONSTRAINT IF EXISTS customers_email_key"))
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_customer_email_business ON customers(email, business_id)"))
+            conn.commit()
+        print("✅ Email constraint fixed: now unique per business")
+    except Exception as e:
+        print(f"Email constraint fix note: {e}")
+
 
 # ── SCHEDULED CAMPAIGNS RUNNER ────────────────────────────────────────────────
 def _run_scheduled_campaigns():
