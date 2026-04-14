@@ -360,8 +360,8 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 
     <!-- SUCCESS -->
     <div class="success-screen" id="success-screen">
-      <div class="success-icon"><span class="material-symbols-outlined">check</span></div>
-      <h2>¡BIENVENIDO!</h2>
+      <div class="success-icon"><span class="material-symbols-outlined" id="success-icon-sym">check</span></div>
+      <h2 id="success-title">¡BIENVENIDO!</h2>
       <p id="success-text">Tu tarjeta está lista. Muéstrala en caja en tu próxima visita para empezar a acumular sellos.</p>
       <a href="#" id="view-card-btn" class="btn-view-card">Ver mi tarjeta →</a>
     </div>
@@ -418,8 +418,15 @@ async function doRegister() {
     document.getElementById('form-content').style.display = 'none';
     const ss = document.getElementById('success-screen');
     ss.style.display = 'block';
-    document.getElementById('success-text').textContent =
-      `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Por cada ${STAMPS_REWARD} compras, ¡premio!`;
+    if (d.returning) {
+      document.getElementById('success-title').textContent = '¡BIENVENIDO DE NUEVO!';
+      document.getElementById('success-icon-sym').textContent = 'card_membership';
+      document.getElementById('success-text').textContent =
+        `¡Hola ${first_name}! Hemos actualizado tus datos y te hemos reenviado tu tarjeta por email. Sigue acumulando sellos.`;
+    } else {
+      document.getElementById('success-text').textContent =
+        `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Por cada ${STAMPS_REWARD} compras, ¡premio!`;
+    }
     document.getElementById('view-card-btn').href = d.card_url || (API_BASE + '/card/' + d.card_id);
 
   } catch(e) {

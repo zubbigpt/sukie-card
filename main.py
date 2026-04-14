@@ -1671,55 +1671,98 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
     biz = get_business_by_slug(slug, db) if slug else None
     biz_id = biz.id if biz else None
 
+    fn = (body.get("first_name") or "").strip() or "Cliente"
+    ln = (body.get("last_name") or "").strip()
+    new_phone      = (body.get("phone", "") or "").strip()
+    new_birth_date = (body.get("birth_date", "") or "").strip()
+    new_opt_in_email = body.get("opt_in_email", True)
+    new_opt_in_sms   = body.get("opt_in_sms", False)
+
     # Check if already registered within this business
     existing_q = db.query(models.Customer).filter(models.Customer.email == email)
     if biz_id:
         existing_q = existing_q.filter(models.Customer.business_id == biz_id)
     existing = existing_q.first()
+
+    is_returning = False
     if existing:
-        card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.customer_id == existing.id).first()
-        return {"message": "Ya registrado", "card_id": str(card.id) if card else None,
-                "card_url": f"{BASE_URL}/card/{card.id}" if card else None}
+        # ── Returning customer: update missing fields and re-send card email ──
+        is_returning = True
+        updated = False
 
-    fn = (body.get("first_name") or "").strip() or "Cliente"
-    ln = (body.get("last_name") or "").strip()
+        # Fill in fields that were blank (e.g. Shopify imports without phone/birth)
+        if new_phone and not (existing.phone or "").strip():
+            existing.phone = new_phone
+            updated = True
+        if new_birth_date and not (existing.birth_date or "").strip():
+            existing.birth_date = new_birth_date
+            updated = True
+        # Update name only if it was auto-filled ("Cliente") or blank
+        if fn and fn != "Cliente" and (not existing.first_name or existing.first_name == "Cliente"):
+            existing.first_name = fn
+            updated = True
+        if ln and not (existing.last_name or "").strip():
+            existing.last_name = ln
+            updated = True
+        # Always update opt-ins from new form submission
+        existing.opt_in_email = new_opt_in_email
+        existing.opt_in_sms   = new_opt_in_sms
+        updated = True
 
-    try:
-        customer = models.Customer(
-            email        = email,
-            first_name   = fn,
-            last_name    = ln,
-            phone        = body.get("phone", ""),
-            birth_date   = body.get("birth_date", ""),
-            card_active  = True,
-            opt_in       = body.get("opt_in", True),
-            opt_in_email = body.get("opt_in_email", True),
-            opt_in_sms   = body.get("opt_in_sms", False),
-            origin       = "Web",
-            channel      = body.get("channel", "Landing"),
-            language     = body.get("language", "es"),
-            business_id  = biz_id,
-        )
-        db.add(customer)
-        db.flush()
+        if updated:
+            try:
+                db.commit()
+                db.refresh(existing)
+            except Exception:
+                db.rollback()
 
-        card = models.LoyaltyCard(customer_id=customer.id)
-        db.add(card)
-        db.flush()  # generate card.id before using it in StampTransaction
+        card = db.query(models.LoyaltyCard).filter(
+            models.LoyaltyCard.customer_id == existing.id
+        ).first()
+        customer = existing
+        fn = existing.first_name or fn
 
-        tx = models.StampTransaction(card_id=card.id, stamps_added=0,
-                                      transaction_type="register", note="Alta Web")
-        db.add(tx)
-        db.commit()
-        db.refresh(card)
-    except Exception as e:
-        db.rollback()
-        print(f"❌ register error: {str(e)}")
-        raise HTTPException(status_code=400, detail="Error al registrar el cliente")
+        if not card:
+            return {"message": "Ya registrado", "card_id": None, "card_url": None}
 
-    # Handle referral
+    else:
+        # ── New customer ────────────────────────────────────────────────────────
+        try:
+            customer = models.Customer(
+                email        = email,
+                first_name   = fn,
+                last_name    = ln,
+                phone        = new_phone,
+                birth_date   = new_birth_date,
+                card_active  = True,
+                opt_in       = body.get("opt_in", True),
+                opt_in_email = new_opt_in_email,
+                opt_in_sms   = new_opt_in_sms,
+                origin       = "Web",
+                channel      = body.get("channel", "Landing"),
+                language     = body.get("language", "es"),
+                business_id  = biz_id,
+            )
+            db.add(customer)
+            db.flush()
+
+            card = models.LoyaltyCard(customer_id=customer.id)
+            db.add(card)
+            db.flush()
+
+            tx = models.StampTransaction(card_id=card.id, stamps_added=0,
+                                          transaction_type="register", note="Alta Web")
+            db.add(tx)
+            db.commit()
+            db.refresh(card)
+        except Exception as e:
+            db.rollback()
+            print(f"❌ register error: {str(e)}")
+            raise HTTPException(status_code=400, detail="Error al registrar el cliente")
+
+    # Handle referral (only for new customers)
     ref_code = body.get("ref", "").strip().upper()
-    if ref_code:
+    if ref_code and not is_returning:
         try:
             ref = db.query(models.Referral).filter(
                 models.Referral.code == ref_code,
@@ -1740,23 +1783,24 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
         except Exception:
             pass
 
-    # Send welcome email (non-blocking — never break registration if email fails)
+    # Send welcome/card email (non-blocking — never break registration if email fails)
     try:
         card_url = f"{BASE_URL}/card/{card.id}"
         referral_code = ""
         referral_url  = ""
-        try:
-            ref_obj = db.query(models.Referral).filter(
-                models.Referral.referrer_card == card.id
-            ).first()
-            if ref_obj:
-                referral_code = ref_obj.code
-                referral_url  = f"{BASE_URL}/biz/{slug}/register?ref={ref_obj.code}" if slug else ""
-        except Exception:
-            pass
+        if not is_returning:
+            try:
+                ref_obj = db.query(models.Referral).filter(
+                    models.Referral.referrer_card == card.id
+                ).first()
+                if ref_obj:
+                    referral_code = ref_obj.code
+                    referral_url  = f"{BASE_URL}/biz/{slug}/register?ref={ref_obj.code}" if slug else ""
+            except Exception:
+                pass
 
         # Use card program's custom subject/body if configured
-        email_subject = "¡Bienvenido/a! 🎉"
+        email_subject = "Aqui tienes tu tarjeta de fidelidad" if is_returning else "¡Bienvenido/a! 🎉"
         email_html    = None
         _prog_for_email = None  # keep reference for branding kwargs
         if biz_id:
@@ -1854,10 +1898,11 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
         print(f"Welcome email setup failed (non-fatal): {_email_err}")
 
     return {
-        "message":  "Tarjeta creada",
+        "message":  "Tu tarjeta ya te espera" if is_returning else "Tarjeta creada",
         "card_id":  str(card.id),
         "card_url": f"{BASE_URL}/card/{card.id}",
         "name":     fn,
+        "returning": is_returning,
     }
 
 
