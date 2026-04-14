@@ -1860,8 +1860,6 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
                 name=fn,
                 card_url=card_url,
                 stamps=card.stamps or 0,
-                referral_code=referral_code,
-                referral_url=referral_url,
                 wallet_url=wallet_url if os.environ.get("APPLE_P12_B64") else "",
                 google_wallet_url=_gw_url,
                 **_prog_email_kwargs(_prog_for_email, biz),
@@ -3367,13 +3365,13 @@ async def send_email_all(request: Request, db: Session = Depends(get_db)):
     sent_count = 0
     for card, cust in rows:
         if cust.email and "@" in cust.email:
-            ref_code = get_or_create_referral_code(str(card.id), db)
-            ref_url  = f"{BASE_URL}/register?ref={ref_code}"
             _biz3 = db.query(models.Business).filter(models.Business.id == cust.business_id).first() if cust.business_id else None
             _prog3 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz3.id).first() if _biz3 else None
+            _wu3 = f"{BASE_URL}/card/{card.id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
             html    = render_welcome_email(cust.first_name or "Cliente",
                                            f"{BASE_URL}/card/{card.id}",
-                                           card.stamps or 0, ref_code, ref_url,
+                                           card.stamps or 0,
+                                           wallet_url=_wu3,
                                            **_prog_email_kwargs(_prog3, _biz3))
             if send_email(cust.email, "¡Tu tarjeta de fidelización te espera! 🎉", html):
                 sent_count += 1
