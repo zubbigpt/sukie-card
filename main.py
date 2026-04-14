@@ -3337,7 +3337,7 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
     else:
         _biz2 = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer.business_id else None
         _prog2 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz2.id).first() if _biz2 else None
-        wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
+        wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass"
         html    = render_welcome_email(name, card_url, card.stamps or 0,
                                        wallet_url=wallet_url,
                                        **_prog_email_kwargs(_prog2, _biz2))
