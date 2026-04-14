@@ -6874,6 +6874,31 @@ async def zubadmin_logout():
     return response
 
 
+@app.get("/api/biz/{slug}/send-welcome-test")
+async def send_welcome_test(slug: str, pin: str = "", email: str = "", db: Session = Depends(get_db)):
+    """Temp: send test welcome email using first card of the business."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+    html_body = render_welcome_email(
+        name="Yanir",
+        card_url=f"{BASE_URL}",
+        stamps=3,
+        wallet_url="",
+        google_wallet_url="",
+        **_prog_email_kwargs(prog, biz),
+    )
+    sent = send_email(
+        to_email=email or "yanir.mgta@gmail.com",
+        subject=f"Bienvenido/a a {biz.name}",
+        html_body=html_body,
+        from_name=biz.email_from_name or biz.name,
+    )
+    return {"sent": sent, "to": email or "yanir.mgta@gmail.com"}
+
+
 @app.get("/api/biz/{slug}/send-review-test")
 async def send_review_test(slug: str, pin: str = "", email: str = "", store: str = "", db: Session = Depends(get_db)):
     """Temp: send test review email to given address using a specific store's review URL."""
