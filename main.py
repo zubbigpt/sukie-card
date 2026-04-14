@@ -3358,17 +3358,22 @@ async def send_email_all(request: Request, db: Session = Depends(get_db)):
     """Send welcome email to all customers (or just new ones)"""
     body = await request.json()
     verify_pin(str(body.get("pin", "")), db)
-    target = body.get("target", "new")  # new | all
-    rows = (db.query(models.LoyaltyCard, models.Customer)
-            .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
-            .filter(models.Customer.email != "PLACEHOLDER@sukie.internal").all())
+    slug = body.get("slug", "")  # filter by business slug
+    q = (db.query(models.LoyaltyCard, models.Customer)
+         .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
+         .filter(models.Customer.email != "PLACEHOLDER@sukie.internal"))
+    if slug:
+        biz_filter = db.query(models.Business).filter(models.Business.slug == slug).first()
+        if biz_filter:
+            q = q.filter(models.Customer.business_id == biz_filter.id)
+    rows = q.all()
     sent_count = 0
     migration_tpl = templates.get_template("email_migration.html")
     for card, cust in rows:
         if cust.email and "@" in cust.email:
             _biz3 = db.query(models.Business).filter(models.Business.id == cust.business_id).first() if cust.business_id else None
             _prog3 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz3.id).first() if _biz3 else None
-            _wu3 = f"{BASE_URL}/card/{card.id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
+            _wu3 = f"{BASE_URL}/card/{card.id}/wallet.pkpass"
             _card_url = f"{BASE_URL}/card/{card.id}"
             _kwargs = _prog_email_kwargs(_prog3, _biz3)
             html = migration_tpl.render(
