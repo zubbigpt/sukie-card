@@ -300,6 +300,9 @@ def run_migrations():
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS language VARCHAR DEFAULT 'es'",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS anniversary_date VARCHAR",
         "ALTER TABLE customers ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ",
+        # Fix email uniqueness: global → per-business (email, business_id)
+        "ALTER TABLE customers DROP CONSTRAINT IF EXISTS customers_email_key",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_customer_email_business ON customers(email, business_id)",
         "ALTER TABLE loyalty_cards ADD COLUMN IF NOT EXISTS award_balance INTEGER DEFAULT 0",
         "ALTER TABLE stamp_transactions ADD COLUMN IF NOT EXISTS transaction_type VARCHAR DEFAULT 'stamp'",
         "ALTER TABLE stamp_transactions ADD COLUMN IF NOT EXISTS store VARCHAR",

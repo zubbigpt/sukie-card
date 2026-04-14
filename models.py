@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Float
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Float, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from database import Base
@@ -7,12 +7,15 @@ from database import Base
 
 class Customer(Base):
     __tablename__ = "customers"
+    __table_args__ = (
+        UniqueConstraint("email", "business_id", name="uq_customer_email_business"),
+    )
 
     id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     shopify_id   = Column(String, unique=True, nullable=True)
     first_name   = Column(String, nullable=False)
     last_name    = Column(String, nullable=True)
-    email        = Column(String, unique=True, nullable=False)
+    email        = Column(String, nullable=False)
     phone        = Column(String, nullable=True)
     birth_date   = Column(String, nullable=True)   # "YYYY-MM-DD"
     card_active  = Column(Boolean, default=True)
