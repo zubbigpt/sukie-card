@@ -6923,7 +6923,7 @@ async def send_migration_test(slug: str, pin: str = "", email: str = "", card_id
         if card:
             stamps = card.stamps or 0
             real_card_url = f"{BASE_URL}/card/{card_id}"
-            wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
+            wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass"
             cust = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
             if cust:
                 cust_name = cust.first_name or "Yanir"
