@@ -3335,11 +3335,11 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
         html    = render_birthday_email(name, card_url)
         subject = f"¡Feliz Cumpleaños, {name}! 🎂"
     else:
-        ref_code = get_or_create_referral_code(card_id, db)
-        ref_url  = f"{BASE_URL}/register?ref={ref_code}"
         _biz2 = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer.business_id else None
         _prog2 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz2.id).first() if _biz2 else None
-        html    = render_welcome_email(name, card_url, card.stamps or 0, ref_code, ref_url,
+        wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
+        html    = render_welcome_email(name, card_url, card.stamps or 0,
+                                       wallet_url=wallet_url,
                                        **_prog_email_kwargs(_prog2, _biz2))
         subject = "¡Bienvenido/a! 🎉"
     # Per-business email branding
