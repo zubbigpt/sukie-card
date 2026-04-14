@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{{ subject }}</title>
+</head>
+{% set bg     = card_bg_color    or '#26170c' %}
+{% set accent = card_accent_color or '#ffca48' %}
+{% set tc     = card_text_color  or '#ffffff' %}
+{% set outer_bg = '#f5f5f5' %}
+{% set emoji  = card_emoji or '⭐' %}
+{% set spr    = card_stamps_per_reward or 10 %}
+{% set cols   = 5 %}
+<body style="margin:0;padding:0;background:{{ outer_bg }};font-family:'Helvetica Neue',Arial,sans-serif">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:{{ outer_bg }}">
+<tr><td align="center" style="padding:28px 12px">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 6px 32px rgba(0,0,0,0.10)">
+
+<!-- HEADER -->
+<tr><td style="background:{{ bg }};padding:20px 24px 16px;text-align:center">
+  {% if card_logo_url %}
+  <img src="{{ card_logo_url }}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">
+  {% endif %}
+  <div style="font-size:22px;font-weight:900;color:{{ tc }};letter-spacing:2px;font-family:Georgia,serif">{{ card_biz_name or 'ZubCard' }}</div>
+  <div style="font-size:11px;color:{{ accent }};margin-top:4px;letter-spacing:2px;text-transform:uppercase;font-weight:600;opacity:.8">Tarjeta de Fidelidad</div>
+</td></tr>
+
+<!-- HERO -->
+<tr><td style="background:{{ bg }};padding:28px 24px 32px;text-align:center;color:{{ tc }};border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px">{{ name }}, renovamos tu tarjeta</div>
+  <div style="font-size:13px;opacity:.65;margin-top:6px;line-height:1.6">Hemos actualizado nuestro sistema de fidelizacion a una plataforma mejor. Tu nueva tarjeta ya esta lista con todos tus sellos guardados.</div>
+</td></tr>
+
+<!-- CARD VISUAL -->
+<tr><td style="padding:28px 24px;background:#f9f9f9">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:320px;margin:0 auto;background:{{ bg }};border-radius:22px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.28)">
+
+  <tr><td style="background-color:{{ bg }};padding:14px 16px 12px">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="vertical-align:middle;width:52px">
+        {% if card_logo_url %}
+        <img src="{{ card_logo_url }}" style="width:46px;height:46px;border-radius:10px;object-fit:contain;display:block">
+        {% else %}
+        <span style="font-size:2.2rem;line-height:1;display:block">{{ emoji }}</span>
+        {% endif %}
+      </td>
+      <td style="text-align:right;vertical-align:top;padding-top:2px">
+        <div style="font-size:8px;font-weight:700;color:{{ accent }};letter-spacing:1.5px;text-transform:uppercase;opacity:.8;margin-bottom:2px">SELLOS</div>
+        <div style="font-size:30px;font-weight:900;color:{{ tc }};line-height:1;letter-spacing:-1px">{{ stamps }}<span style="font-size:14px;font-weight:600;opacity:.45">/{{ spr }}</span></div>
+      </td>
+    </tr></table>
+  </td></tr>
+
+  <tr><td style="padding:5px 16px 0;border-top:1px solid rgba(255,255,255,0.10)">
+    <div style="font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:{{ tc }};opacity:.4">{{ card_name or card_biz_name or 'MI TARJETA' }}</div>
+  </td></tr>
+
+  <tr><td style="padding:10px 16px 14px">
+    <table cellpadding="0" cellspacing="0" style="margin:0 auto">
+    {% for row_start in range(0, spr, cols) %}
+    <tr>
+      {% for i in range(row_start, [row_start + cols, spr]|min) %}
+      <td style="padding:3px">
+        <span style="display:inline-block;width:30px;height:30px;border-radius:50%;{% if (i+1) <= stamps %}background:{{ accent }};box-shadow:0 0 8px {{ accent }}88;{% else %}background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.25);{% endif %}line-height:30px;font-size:14px;text-align:center;color:{{ tc }}">{% if (i+1) <= stamps %}{{ emoji }}{% endif %}</span>
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.12)">
+    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:{{ accent }};opacity:.65">TITULAR</td>
+      <td style="text-align:right;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:{{ accent }};opacity:.65">PREMIO</td>
+    </tr><tr>
+      <td style="font-size:12px;font-weight:800;color:{{ tc }};padding-top:3px;letter-spacing:.5px">{{ name | upper }}</td>
+      <td style="text-align:right;font-size:12px;font-weight:800;color:{{ tc }};padding-top:3px">{{ card_reward_name or 'Premio' }}</td>
+    </tr></table>
+  </td></tr>
+
+  </table>
+  <div style="font-size:11px;color:#888;text-align:center;margin-top:12px">{{ stamps }}/{{ spr }} sellos &middot; {{ card_reward_name or 'Premio' }} al completar</div>
+</td></tr>
+
+<!-- CTA BUTTONS -->
+<tr><td style="padding:24px 24px 28px;background:#ffffff;text-align:center">
+
+  {% if wallet_url %}
+  <a href="{{ wallet_url }}" style="display:inline-block;background:#000000;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
+    Añadir a Apple Wallet
+  </a>
+  <br>
+  {% endif %}
+
+  {% if google_wallet_url %}
+  <a href="{{ google_wallet_url }}" style="display:inline-block;background:#1a73e8;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
+    <img src="https://pay.google.com/about/static/images/social/googlepay_mark.png" width="16" height="16" style="vertical-align:middle;margin-right:6px;border-radius:2px" alt="">
+    Añadir a Google Wallet
+  </a>
+  <br>
+  {% else %}
+  <a href="{{ card_url }}" style="display:inline-block;background:#34a853;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
+    Ver mi tarjeta (Android)
+  </a>
+  <br>
+  {% endif %}
+
+  <a href="{{ card_url }}" style="display:inline-block;margin-top:8px;color:#888;font-size:12px;text-decoration:underline">
+    Ver tarjeta en el navegador
+  </a>
+
+</td></tr>
+
+<!-- NOVEDADES -->
+<tr><td style="padding:24px;background:#f9f9f9">
+  <div style="font-size:11px;font-weight:800;color:#aaa;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:18px">Que hay de nuevo</div>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="width:28px;vertical-align:top;padding-top:1px">
+        <div style="width:22px;height:22px;border-radius:50%;background:{{ bg }};color:{{ accent }};font-size:12px;font-weight:800;line-height:22px;text-align:center">1</div>
+      </td>
+      <td style="padding-left:12px;padding-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:2px">Tus sellos estan guardados</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">No pierdes nada. Todos tus sellos anteriores han sido transferidos a tu nueva tarjeta.</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:28px;vertical-align:top;padding-top:1px">
+        <div style="width:22px;height:22px;border-radius:50%;background:{{ bg }};color:{{ accent }};font-size:12px;font-weight:800;line-height:22px;text-align:center">2</div>
+      </td>
+      <td style="padding-left:12px;padding-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:2px">Nueva tarjeta digital mejorada</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">Compatible con Apple Wallet y Google Wallet. Siempre en tu movil, sin apps adicionales.</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:28px;vertical-align:top;padding-top:1px">
+        <div style="width:22px;height:22px;border-radius:50%;background:{{ bg }};color:{{ accent }};font-size:12px;font-weight:800;line-height:22px;text-align:center">3</div>
+      </td>
+      <td style="padding-left:12px">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:2px">Elimina la tarjeta anterior</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">Puedes borrar la tarjeta antigua de Loyicard de tu wallet. A partir de ahora usaremos esta nueva.</div>
+      </td>
+    </tr>
+  </table>
+</td></tr>
+
+<!-- FOOTER -->
+<tr><td style="padding:22px 24px;background:#333;color:#fff;text-align:center;font-size:11px">
+  <div style="font-weight:800;font-size:13px;letter-spacing:1px;margin-bottom:4px">{{ card_biz_name or 'ZubCard' }}</div>
+  <div style="opacity:0.5;margin-bottom:10px">Tarjeta de Fidelizacion 2026</div>
+  <div style="opacity:0.4;font-size:10px">
+    <a href="{{ card_url }}" style="color:#fff;text-decoration:none">Ver mi tarjeta</a>
+  </div>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+
+</body>
+</html>

@@ -3363,17 +3363,25 @@ async def send_email_all(request: Request, db: Session = Depends(get_db)):
             .join(models.Customer, models.LoyaltyCard.customer_id == models.Customer.id)
             .filter(models.Customer.email != "PLACEHOLDER@sukie.internal").all())
     sent_count = 0
+    migration_tpl = templates.get_template("email_migration.html")
     for card, cust in rows:
         if cust.email and "@" in cust.email:
             _biz3 = db.query(models.Business).filter(models.Business.id == cust.business_id).first() if cust.business_id else None
             _prog3 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz3.id).first() if _biz3 else None
             _wu3 = f"{BASE_URL}/card/{card.id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
-            html    = render_welcome_email(cust.first_name or "Cliente",
-                                           f"{BASE_URL}/card/{card.id}",
-                                           card.stamps or 0,
-                                           wallet_url=_wu3,
-                                           **_prog_email_kwargs(_prog3, _biz3))
-            if send_email(cust.email, "¡Tu tarjeta de fidelización te espera! 🎉", html):
+            _card_url = f"{BASE_URL}/card/{card.id}"
+            _kwargs = _prog_email_kwargs(_prog3, _biz3)
+            html = migration_tpl.render(
+                subject="Cambiamos a una nueva tarjeta de fidelidad",
+                name=cust.first_name or "Cliente",
+                card_url=_card_url,
+                stamps=card.stamps or 0,
+                wallet_url=_wu3,
+                google_wallet_url="",
+                **_kwargs,
+            )
+            if send_email(cust.email, "Cambiamos a una nueva tarjeta de fidelidad", html,
+                          from_name=(_biz3.email_from_name or _biz3.name) if _biz3 else ""):
                 sent_count += 1
     return {"sent": sent_count, "total": len(rows)}
 
