@@ -2793,61 +2793,56 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div class="section-header">
           <div style="flex:1">
             <h1>Geo &amp; Notificaciones</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Configura tu ubicación y el mensaje que reciben tus clientes cuando están cerca</p>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Configura la ubicación de cada local para geo-notificaciones en Wallet</p>
           </div>
-          <button class="btn-sm btn-ghost" onclick="sendGeoPush2()" id="geo-push-btn2" style="font-size:.76rem;white-space:nowrap">Enviar notificación ahora</button>
+          <button class="btn-sm btn-ghost" onclick="sendGeoPush2()" id="geo-push-btn2" style="font-size:.76rem;white-space:nowrap">Enviar push a todos</button>
         </div>
 
         <!-- Info banner -->
         <div class="card-box" style="background:var(--honey-light);border:1.5px solid var(--honey);margin-bottom:20px;padding:16px 20px">
           <p style="font-size:.88rem;color:var(--brown);line-height:1.7;margin:0">
             <strong>¿Cómo funciona?</strong><br>
-            <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">phone_iphone</span> <strong>iPhone (Apple Wallet)</strong>: cuando el cliente añade la tarjeta al Wallet, iOS muestra una notificación en la pantalla de bloqueo automáticamente al acercarse a tu local — sin app, sin configuración extra.<br>
-            <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">phone_android</span> <strong>Android (web push)</strong>: cuando el cliente acepta notificaciones en la tarjeta web, recibe un push al acercarse. Requiere configurar las claves VAPID en Railway.
+            <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">phone_iphone</span> <strong>iPhone (Apple Wallet)</strong>: iOS muestra una notificación en la pantalla de bloqueo al acercarse al local — sin app, sin configuración extra.<br>
+            <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">phone_android</span> <strong>Android (web push)</strong>: el cliente recibe un push al acercarse si ha aceptado notificaciones. Requiere configurar VAPID.
           </p>
         </div>
 
-        <!-- Ubicación guardada — resumen visible -->
-        <div id="geo-saved-banner" style="display:none;background:var(--honey-light);border:1.5px solid var(--honey);border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-          <span class="material-symbols-outlined" style="font-size:1.4rem;color:var(--honey-dark);font-variation-settings:'FILL' 1;flex-shrink:0">location_on</span>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);margin-bottom:2px">Ubicación guardada</div>
-            <div id="geo-saved-address" style="font-size:.88rem;font-weight:700;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-            <div id="geo-saved-details" style="font-size:.76rem;color:var(--brown-light);margin-top:2px"></div>
+        <!-- Lista de locales con geo -->
+        <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;justify-content:space-between">
+            <h3 style="margin:0;color:#0a0a0a;font-size:.95rem">Ubicaciones por local</h3>
+            <button class="btn-sm btn-ghost" onclick="loadGeoStoresList()" style="font-size:.72rem">↺ Actualizar</button>
           </div>
-          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
-            <span style="font-size:.7rem;background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:12px;font-weight:800;white-space:nowrap">✓ Activa</span>
-            <div style="display:flex;gap:6px">
-              <button onclick="editGeoConfig()" style="font-size:.72rem;padding:3px 10px;border:1.5px solid var(--honey);border-radius:6px;background:white;color:var(--brown);cursor:pointer;font-weight:700;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:.85rem">edit</span> Editar</button>
-              <button onclick="deleteGeoConfig()" style="font-size:.72rem;padding:3px 10px;border:1.5px solid #f44336;border-radius:6px;background:white;color:#c62828;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:3px"><span class="material-symbols-outlined" style="font-size:.85rem">delete</span> Eliminar</button>
-            </div>
+          <div id="geo-stores-list">
+            <p style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Cargando locales…</p>
           </div>
         </div>
 
-        <div class="card-box">
-          <h3 style="margin-bottom:16px;color:#0a0a0a">Ubicación del local</h3>
+        <!-- Formulario de edición geo (per-store, compartido) -->
+        <div id="geo-store-edit-form" style="display:none" class="card-box">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--honey-dark);font-variation-settings:'FILL' 1">location_on</span>
+            <h3 style="margin:0;color:#0a0a0a;font-size:.95rem">Editar geo: <strong id="geo-edit-store-name" style="color:var(--brown)"></strong></h3>
+            <input type="hidden" id="geo-edit-store-id">
+          </div>
 
           <!-- Map search bar -->
-          <label style="font-size:.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--brown-light)">Buscar una dirección en el mapa</label>
+          <label style="font-size:.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--brown-light)">Buscar dirección</label>
           <div style="position:relative;margin-top:4px;margin-bottom:12px">
             <div style="display:flex;gap:8px">
-              <input id="geo-search2" type="text" placeholder="Ej: Calle Mayor 12, Madrid…"
-                autocomplete="off"
+              <input id="geo-search2" type="text" placeholder="Ej: Calle Mayor 12, Madrid…" autocomplete="off"
                 style="flex:1;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)"
-                oninput="geoAutocomplete(this.value)"
-                onkeydown="geoSearchKeydown(event)">
+                oninput="geoAutocomplete(this.value)" onkeydown="geoSearchKeydown(event)">
               <button onclick="searchGeoAddress()" class="btn-sm btn-primary" style="padding:9px 16px;display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:.9rem">search</span></button>
               <button onclick="detectLocation2()" class="btn-sm btn-ghost" style="padding:9px 14px;white-space:nowrap;display:flex;align-items:center;gap:4px" title="Usar mi ubicación actual"><span class="material-symbols-outlined" style="font-size:.9rem">my_location</span></button>
             </div>
-            <!-- Autocomplete dropdown -->
             <div id="geo-autocomplete-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:#fff;border:1.5px solid var(--cream-border);border-radius:0 0 8px 8px;box-shadow:0 6px 20px rgba(0,0,0,.12);max-height:220px;overflow-y:auto"></div>
           </div>
 
           <!-- Map -->
-          <div id="geo-map2" style="height:300px;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1.5px solid var(--cream-border)"></div>
-          <p style="font-size:.76rem;color:var(--brown-light);margin-top:-10px;margin-bottom:12px">Haz clic en el mapa o arrastra el pin para ajustar la ubicación exacta.</p>
+          <div id="geo-map2" style="height:280px;border-radius:8px;overflow:hidden;margin-bottom:14px;border:1.5px solid var(--cream-border)"></div>
+          <p style="font-size:.76rem;color:var(--brown-light);margin-top:-8px;margin-bottom:12px">Haz clic en el mapa o arrastra el pin para ajustar la ubicación exacta.</p>
 
-          <!-- Lat / Lng read-only display + other fields -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div class="form-group">
               <label>Latitud</label>
@@ -2864,15 +2859,15 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
             <div class="form-group">
               <label>Radio de activación (metros)</label>
               <input id="geo-radius2" type="number" value="300" min="50" max="1000" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
-              <p style="font-size:.75rem;color:var(--brown-light);margin-top:4px">Máx. 1000m. El cliente recibirá la notificación al entrar en este radio.</p>
             </div>
             <div class="form-group">
               <label>Mensaje de la notificación</label>
-              <input id="geo-msg2" type="text" placeholder="¡Estás cerca! Visítanos y acumula sellos 🎉" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
+              <input id="geo-msg2" type="text" placeholder="¡Estás cerca! Visítanos 🎉" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap">
-            <button class="btn-sm btn-primary" onclick="saveGeoConfig2()" style="padding:10px 24px">Guardar ubicación</button>
+            <button class="btn-sm btn-primary" onclick="saveGeoForStore()" style="padding:10px 24px">Guardar ubicación</button>
+            <button class="btn-sm btn-ghost" onclick="document.getElementById('geo-store-edit-form').style.display='none'" style="padding:10px 16px">Cancelar</button>
             <span id="geo-status2" style="font-size:.8rem;color:var(--brown-light)"></span>
           </div>
         </div>
@@ -2959,41 +2954,40 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div class="section-header">
           <div style="flex:1">
             <h1>Reseñas en Google</h1>
-            <p class="section-desc">Pide reseñas automáticamente cuando un cliente llega a un número de sellos. Cuantas más reseñas, más visibilidad en Google Maps.</p>
+            <p class="section-desc">Configura el link de reseñas por cada local. Los clientes verán el banner al llegar al umbral de sellos.</p>
           </div>
         </div>
 
-        <div class="card-box">
-          <h3 style="margin-bottom:16px;color:#0a0a0a">Configuración</h3>
+        <!-- Info tip -->
+        <div style="background:var(--honey-light);border:1.5px solid var(--honey);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:.83rem;color:var(--brown);line-height:1.6">
+          <strong>¿Cómo obtener el link?</strong> Abre <strong>Google Maps</strong> → busca tu negocio → <em>Obtener más reseñas</em> → copia el enlace.
+        </div>
 
-          <div style="margin-bottom:16px">
-            <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px">Link de reseña de Google</label>
-            <input id="review-url-input" type="url" placeholder="https://g.page/r/XXXXXXXXXX/review"
+        <!-- Lista per-store -->
+        <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;justify-content:space-between">
+            <h3 style="margin:0;color:#0a0a0a;font-size:.95rem">Link de reseñas por local</h3>
+            <button class="btn-sm btn-ghost" onclick="loadReviewsStoresList()" style="font-size:.72rem">↺ Actualizar</button>
+          </div>
+          <div id="reviews-stores-list">
+            <p style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Cargando locales…</p>
+          </div>
+        </div>
+
+        <!-- Formulario de edición reviews (per-store, compartido) -->
+        <div id="reviews-store-edit-form" style="display:none;max-width:560px" class="card-box">
+          <h3 style="margin-bottom:14px;color:#0a0a0a;font-size:.95rem">Editar reseñas: <strong id="reviews-edit-store-name" style="color:var(--brown)"></strong></h3>
+          <input type="hidden" id="reviews-edit-store-id">
+
+          <div class="form-group" style="margin-bottom:14px">
+            <label>Link de reseña de Google</label>
+            <input id="reviews-url-input" type="url" placeholder="https://g.page/r/XXXXXXXXXX/review"
               style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream);box-sizing:border-box">
-            <p style="font-size:.76rem;color:var(--brown-light);margin-top:5px;line-height:1.5">
-              Para obtener tu link: abre <strong>Google Maps</strong> → busca tu negocio → <em>Obtener más reseñas</em> → copia el enlace.
-            </p>
-            <!-- Link activo guardado -->
-            <div id="review-saved-url-box" style="display:none;margin-top:10px;background:#e6f4ea;border:1.5px solid #a8d5b5;border-radius:8px;padding:10px 14px;align-items:center;gap:10px;flex-wrap:wrap">
-              <span class="material-symbols-outlined" style="font-size:1.1rem;color:#1a6a3a;flex-shrink:0;font-variation-settings:'FILL' 1">check_circle</span>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#1a6a3a;margin-bottom:2px">Link activo guardado</div>
-                <div id="review-saved-url-text" style="font-size:.78rem;color:#1a4f2a;font-family:monospace;word-break:break-all;white-space:pre-wrap"></div>
-              </div>
-              <a id="review-saved-url-open" href="#" target="_blank" rel="noopener noreferrer"
-                style="flex-shrink:0;padding:6px 12px;background:#1a6a3a;color:#fff;border-radius:6px;font-size:.75rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px">
-                <span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Probar link
-              </a>
-              <button onclick="deleteReviewUrl()"
-                style="flex-shrink:0;padding:6px 12px;background:none;border:1.5px solid #c62828;color:#c62828;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">
-                <span class="material-symbols-outlined" style="font-size:.85rem">delete</span> Eliminar
-              </button>
-            </div>
           </div>
 
-          <div style="margin-bottom:20px">
-            <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;color:var(--brown-light);text-transform:uppercase;letter-spacing:.5px">¿Cuándo mostrar el banner?</label>
-            <select id="review-trigger-select"
+          <div class="form-group" style="margin-bottom:20px">
+            <label>¿Cuándo mostrar el banner?</label>
+            <select id="reviews-trigger-select"
               style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.9rem;background:var(--cream)">
               <option value="0">Al canjear la primera recompensa</option>
               <option value="5">A partir de 5 sellos acumulados</option>
@@ -3004,16 +2998,17 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
 
           <!-- Preview -->
-          <div style="background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:14px 16px;text-align:center;margin-bottom:20px">
-            <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#a07c00;margin-bottom:8px">Vista previa — como lo verá el cliente</div>
-            <div style="font-size:1.35rem;margin-bottom:4px">⭐⭐⭐⭐⭐</div>
-            <div style="font-weight:700;color:#26170c;font-size:.95rem;margin-bottom:4px">¿Te gusta nuestro servicio?</div>
-            <div style="font-size:.82rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google 🙏</div>
-            <div style="display:inline-block;background:#4285F4;color:#fff;font-weight:700;font-size:.85rem;padding:8px 18px;border-radius:8px">✍️ Dejar reseña en Google</div>
+          <div style="background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:12px 16px;text-align:center;margin-bottom:16px">
+            <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#a07c00;margin-bottom:6px">Vista previa</div>
+            <div style="font-size:1.2rem;margin-bottom:3px">⭐⭐⭐⭐⭐</div>
+            <div style="font-weight:700;color:#26170c;font-size:.88rem;margin-bottom:4px">¿Te gusta nuestro servicio?</div>
+            <div style="font-size:.78rem;color:#6b5c4e;margin-bottom:8px">Nos ayudaría muchísimo que dejaras una reseña en Google 🙏</div>
+            <div style="display:inline-block;background:#4285F4;color:#fff;font-weight:700;font-size:.8rem;padding:7px 16px;border-radius:8px">✍️ Dejar reseña en Google</div>
           </div>
 
-          <div style="display:flex;align-items:center;gap:10px">
-            <button class="btn-sm btn-primary" onclick="saveReviewsConfig()" style="padding:10px 24px">Guardar</button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <button class="btn-sm btn-primary" onclick="saveReviewForStore()" style="padding:10px 24px">Guardar</button>
+            <button class="btn-sm btn-ghost" onclick="document.getElementById('reviews-store-edit-form').style.display='none'" style="padding:10px 16px">Cancelar</button>
             <span id="reviews-status" style="font-size:.8rem;color:var(--brown-light)"></span>
           </div>
         </div>
@@ -3166,27 +3161,6 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           <div class="form-group" style="margin-bottom:12px"><label>Nombre del local *</label><input id="store-name" placeholder="ej. Cafetería Centro"></div>
           <div class="form-group" style="margin-bottom:12px"><label>PIN de acceso (4-6 dígitos) *</label><input id="store-pin" type="number" placeholder="1234" maxlength="6"></div>
           <div class="form-group" style="margin-bottom:16px"><label>Notas internas</label><input id="store-notes" placeholder="ej. Calle Mayor 1, Madrid"></div>
-
-          <!-- Geo location per store -->
-          <div style="border-top:1px solid var(--cream-border);margin:16px 0 12px;padding-top:14px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-              <span class="material-symbols-outlined" style="font-size:1rem;color:var(--honey-dark);font-variation-settings:'FILL' 1">location_on</span>
-              <span style="font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--brown)">Geo-notificación (opcional)</span>
-            </div>
-            <p style="font-size:.75rem;color:var(--brown-light);margin-bottom:10px">Si configuras la ubicación, tus clientes recibirán una notificación en el Wallet cuando estén cerca de este local.</p>
-            <div style="display:flex;gap:8px;margin-bottom:8px">
-              <input id="store-geo-search" type="text" placeholder="Buscar dirección…" style="flex:1;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:6px;font-size:.85rem;background:var(--cream)" oninput="storeGeoAutocomplete(this.value)">
-              <button onclick="searchStoreGeo()" class="btn-sm btn-primary" style="padding:8px 14px"><span class="material-symbols-outlined" style="font-size:.9rem">search</span></button>
-              <button onclick="detectStoreLocation()" class="btn-sm btn-ghost" style="padding:8px 12px" title="Usar ubicación actual"><span class="material-symbols-outlined" style="font-size:.9rem">my_location</span></button>
-            </div>
-            <div id="store-geo-autocomplete" style="display:none;position:relative;z-index:999;background:#fff;border:1.5px solid var(--cream-border);border-radius:0 0 6px 6px;box-shadow:0 4px 16px rgba(0,0,0,.1);max-height:160px;overflow-y:auto;margin-bottom:6px"></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div class="form-group"><label style="font-size:.72rem">Latitud</label><input id="store-lat" type="number" step="any" placeholder="40.4168" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
-              <div class="form-group"><label style="font-size:.72rem">Longitud</label><input id="store-lng" type="number" step="any" placeholder="-3.7038" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
-              <div class="form-group"><label style="font-size:.72rem">Radio (metros)</label><input id="store-radius" type="number" value="300" min="50" max="1000" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
-              <div class="form-group"><label style="font-size:.72rem">Mensaje</label><input id="store-geo-msg" placeholder="¡Estás cerca! Visítanos 🎉" style="width:100%;padding:7px 9px;border:1.5px solid var(--cream-border);border-radius:5px;font-size:.85rem;background:var(--cream)"></div>
-            </div>
-          </div>
 
           <div id="store-msg" style="font-size:.82rem;margin-bottom:10px;min-height:16px"></div>
           <div style="display:flex;gap:8px">
@@ -6998,6 +6972,7 @@ async function loadPassCodes(){
 
 
 // ── Geo section (dedicated nav panel) ──────────────────────────────────────
+let _storesCache = [];
 let _geoMap = null;
 let _geoMarker = null;
 
@@ -7147,95 +7122,134 @@ function syncMapFromInputs(){
 }
 
 async function loadGeoSection(){
-  try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo?pin=${PIN}`);
-    if(!r.ok) return;
-    const d=await r.json();
-    if(document.getElementById('geo-address2')) document.getElementById('geo-address2').value=d.address||'';
-    if(document.getElementById('geo-lat2'))     document.getElementById('geo-lat2').value=d.latitude||'';
-    if(document.getElementById('geo-lng2'))     document.getElementById('geo-lng2').value=d.longitude||'';
-    if(document.getElementById('geo-radius2'))  document.getElementById('geo-radius2').value=d.geo_radius_m||300;
-    if(document.getElementById('geo-msg2'))     document.getElementById('geo-msg2').value=d.geo_push_msg||'';
-    // Show saved banner if location exists
-    const banner=document.getElementById('geo-saved-banner');
-    if(banner && d.latitude && d.longitude){
-      banner.style.display='flex';
-      const addrEl=document.getElementById('geo-saved-address');
-      const detailEl=document.getElementById('geo-saved-details');
-      if(addrEl) addrEl.textContent=d.address||`${d.latitude.toFixed(5)}, ${d.longitude.toFixed(5)}`;
-      if(detailEl) detailEl.textContent=`Radio: ${d.geo_radius_m||300}m · "${d.geo_push_msg||'¡Estás cerca!'}"`;
-    } else if(banner){
-      banner.style.display='none';
-    }
-    // Init map after populating fields
-    setTimeout(()=>{ initGeoMap(d.latitude, d.longitude); }, 50);
-  }catch(e){}
+  // Load per-store geo list
+  await loadGeoStoresList();
 }
 
-async function saveGeoConfig2(){
+// ── GEO PER-STORE ────────────────────────────────────────────────────────────
+async function loadGeoStoresList(){
+  // Re-use stores cache or fetch fresh
+  if(!_storesCache.length){
+    try{
+      const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+      const d=await r.json();
+      _storesCache=d.stores||[];
+    }catch(e){ _storesCache=[]; }
+  }
+  renderGeoStoresList(_storesCache);
+}
+
+function renderGeoStoresList(stores){
+  const el=document.getElementById('geo-stores-list');
+  if(!el) return;
+  if(!stores.length){
+    el.innerHTML='<p style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Sin locales creados. Ve a <strong>Tiendas & Locales</strong> para añadir tu primer local.</p>';
+    return;
+  }
+  el.innerHTML=stores.map(s=>{
+    const hasGeo=!!(s.latitude && s.longitude);
+    const geoLabel=hasGeo
+      ? `<span style="font-size:.7rem;background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:12px;font-weight:800">📍 Configurada</span>`
+      : `<span style="font-size:.7rem;background:var(--cream-dark);color:var(--brown-light);padding:2px 9px;border-radius:12px;font-weight:700">Sin ubicación</span>`;
+    const detail=hasGeo
+      ? `<div style="font-size:.75rem;color:var(--brown-light);margin-top:2px">${s.address||`${s.latitude.toFixed(5)}, ${s.longitude.toFixed(5)}`} · Radio: ${s.geo_radius_m||300}m</div>`
+      : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--cream-border);flex-wrap:wrap">
+      <span class="material-symbols-outlined" style="font-size:1.2rem;color:var(--honey-dark);font-variation-settings:'FILL' 1;flex-shrink:0">store</span>
+      <div style="flex:1;min-width:120px">
+        <div style="font-weight:700;font-size:.9rem;color:var(--brown)">${s.name}</div>
+        ${detail}
+      </div>
+      ${geoLabel}
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn-sm btn-ghost" style="font-size:.72rem" onclick='openGeoStoreEdit(${JSON.stringify(s)})'>
+          <span class="material-symbols-outlined" style="font-size:.85rem">edit</span> Editar geo
+        </button>
+        ${hasGeo?`<button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="clearGeoForStore('${s.id}','${s.name.replace(/'/g,"\\'")}')">
+          <span class="material-symbols-outlined" style="font-size:.85rem">location_off</span>
+        </button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openGeoStoreEdit(s){
+  if(typeof s==='string'){try{s=JSON.parse(s);}catch(e){return;}}
+  document.getElementById('geo-edit-store-id').value=s.id||'';
+  document.getElementById('geo-edit-store-name').textContent=s.name||'';
+  document.getElementById('geo-search2').value=s.address||'';
+  document.getElementById('geo-lat2').value=s.latitude||'';
+  document.getElementById('geo-lng2').value=s.longitude||'';
+  document.getElementById('geo-radius2').value=s.geo_radius_m||300;
+  document.getElementById('geo-msg2').value=s.geo_push_msg||'¡Estás cerca! Visítanos y acumula sellos 🎉';
+  document.getElementById('geo-status2').textContent='';
+  const form=document.getElementById('geo-store-edit-form');
+  form.style.display='block';
+  form.scrollIntoView({behavior:'smooth'});
+  // Init map
+  setTimeout(()=>{ initGeoMap(s.latitude||null, s.longitude||null); }, 150);
+}
+
+async function saveGeoForStore(){
+  const storeId=document.getElementById('geo-edit-store-id')?.value;
+  if(!storeId){showToast('Error: no hay local seleccionado','error');return;}
   const status=document.getElementById('geo-status2');
   if(status) status.textContent='Guardando…';
+  const lat=parseFloat(document.getElementById('geo-lat2')?.value)||null;
+  const lng=parseFloat(document.getElementById('geo-lng2')?.value)||null;
+  const address=(document.getElementById('geo-address2')?.value||'').trim()||(document.getElementById('geo-search2')?.value||'').trim();
+  const radius=parseInt(document.getElementById('geo-radius2')?.value)||300;
+  const geoMsg=(document.getElementById('geo-msg2')?.value||'').trim();
+  // Preserve existing store fields
+  const existing=_storesCache.find(s=>s.id===storeId)||{};
   const body={
-    pin: PIN,
-    address:      (document.getElementById('geo-address2')?.value||'').trim(),
-    latitude:     parseFloat(document.getElementById('geo-lat2')?.value)||null,
-    longitude:    parseFloat(document.getElementById('geo-lng2')?.value)||null,
-    geo_radius_m: parseInt(document.getElementById('geo-radius2')?.value)||300,
-    geo_push_msg: (document.getElementById('geo-msg2')?.value||'').trim()
+    name:existing.name||'', pin:existing.pin||'', notes:existing.notes||'', active:existing.active!==false,
+    latitude:lat, longitude:lng, address, geo_radius_m:radius, geo_push_msg:geoMsg,
+    google_review_url:existing.google_review_url||'',
+    review_trigger_stamps:existing.review_trigger_stamps||0
   };
   try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo`,{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${storeId}?pin=${PIN}`,{
       method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
     });
     if(!r.ok) throw new Error((await r.json()).detail||'Error');
-    if(status){status.textContent='✅ Ubicación guardada';setTimeout(()=>{status.textContent='';},3000);}
-    showToast('Ubicación guardada — el próximo .pkpass incluirá la notificación de proximidad','success');
-    // Refresh saved banner
-    const banner=document.getElementById('geo-saved-banner');
-    if(banner && body.latitude){
-      banner.style.display='flex';
-      const addrEl=document.getElementById('geo-saved-address');
-      const detailEl=document.getElementById('geo-saved-details');
-      if(addrEl) addrEl.textContent=body.address||`${body.latitude.toFixed(5)}, ${body.longitude.toFixed(5)}`;
-      if(detailEl) detailEl.textContent=`Radio: ${body.geo_radius_m||300}m · "${body.geo_push_msg||'¡Estás cerca!'}"`;
-    }
+    if(status){status.textContent='✅ Guardado';setTimeout(()=>status.textContent='',3000);}
+    showToast('Ubicación guardada ✓','success');
+    document.getElementById('geo-store-edit-form').style.display='none';
+    // Refresh cache and list
+    const resp=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+    const d=await resp.json();
+    _storesCache=d.stores||[];
+    renderGeoStoresList(_storesCache);
   }catch(e){
     if(status) status.textContent='Error: '+e.message;
-    showToast('Error al guardar: '+e.message,'error');
+    showToast('Error: '+e.message,'error');
   }
 }
 
-function editGeoConfig(){
-  // Scroll down to the geo form so user can edit the fields
-  const form=document.getElementById('geo-address2');
-  if(form){ form.scrollIntoView({behavior:'smooth',block:'center'}); form.focus(); }
-}
-
-async function deleteGeoConfig(){
-  if(!confirm('¿Eliminar la ubicación guardada? Los clientes dejarán de recibir notificaciones de proximidad.')) return;
-  const status=document.getElementById('geo-status2');
-  if(status) status.textContent='Eliminando…';
+async function clearGeoForStore(storeId, storeName){
+  if(!confirm(`¿Eliminar la ubicación de "${storeName}"?`)) return;
+  const existing=_storesCache.find(s=>s.id===storeId)||{};
+  const body={
+    name:existing.name||'', pin:existing.pin||'', notes:existing.notes||'', active:existing.active!==false,
+    latitude:null, longitude:null, address:'', geo_radius_m:300, geo_push_msg:'',
+    google_review_url:existing.google_review_url||'',
+    review_trigger_stamps:existing.review_trigger_stamps||0
+  };
   try{
-    const body={pin:PIN,address:'',latitude:null,longitude:null,geo_radius_m:300,geo_push_msg:''};
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/geo`,{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${storeId}?pin=${PIN}`,{
       method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
     });
-    if(!r.ok) throw new Error((await r.json()).detail||'Error');
-    // Hide banner and clear fields
-    const banner=document.getElementById('geo-saved-banner');
-    if(banner) banner.style.display='none';
-    if(document.getElementById('geo-address2')) document.getElementById('geo-address2').value='';
-    if(document.getElementById('geo-lat2'))     document.getElementById('geo-lat2').value='';
-    if(document.getElementById('geo-lng2'))     document.getElementById('geo-lng2').value='';
-    if(document.getElementById('geo-radius2'))  document.getElementById('geo-radius2').value='300';
-    if(document.getElementById('geo-msg2'))     document.getElementById('geo-msg2').value='';
-    if(status){status.textContent='';};
     showToast('Ubicación eliminada','success');
-  }catch(e){
-    if(status) status.textContent='Error: '+e.message;
-    showToast('Error al eliminar: '+e.message,'error');
-  }
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+    const d=await r.json();
+    _storesCache=d.stores||[];
+    renderGeoStoresList(_storesCache);
+  }catch(e){ showToast('Error: '+e.message,'error'); }
 }
+
+// Legacy alias (kept for compatibility with any other callers)
+async function saveGeoConfig2(){ await saveGeoForStore(); }
 
 function detectLocation2(){
   const status=document.getElementById('geo-status2');
@@ -7268,73 +7282,129 @@ async function sendGeoPush2(){
 }
 // ────────────────────────────────────────────────────────────────────────────
 
-// ── GOOGLE REVIEWS ───────────────────────────────────────────────────────────
-function _showReviewSavedUrl(url){
-  const box=document.getElementById('review-saved-url-box');
-  const txt=document.getElementById('review-saved-url-text');
-  const link=document.getElementById('review-saved-url-open');
-  if(!box) return;
-  if(url){
-    box.style.display='flex';
-    box.style.flexWrap='wrap';
-    if(txt) txt.textContent=url;
-    if(link) link.href=url;
-  } else {
-    box.style.display='none';
+// ── GOOGLE REVIEWS PER-STORE ──────────────────────────────────────────────────
+async function loadReviewsStoresList(){
+  if(!_storesCache.length){
+    try{
+      const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+      const d=await r.json();
+      _storesCache=d.stores||[];
+    }catch(e){ _storesCache=[]; }
   }
+  renderReviewsStoresList(_storesCache);
 }
 
-async function loadReviewsSection(){
-  try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/reviews-config?pin=${PIN}`);
-    const d=await r.json();
-    const urlInput=document.getElementById('review-url-input');
-    const triggerSel=document.getElementById('review-trigger-select');
-    if(urlInput) urlInput.value=d.google_review_url||'';
-    if(triggerSel){
-      const trigger=String(d.review_trigger_stamps||0);
-      const opt=[...triggerSel.options].find(o=>o.value===trigger);
-      if(opt) opt.selected=true; else triggerSel.options[0].selected=true;
-    }
-    _showReviewSavedUrl(d.google_review_url||'');
-  }catch(e){ console.warn('loadReviewsSection error',e); }
+function renderReviewsStoresList(stores){
+  const el=document.getElementById('reviews-stores-list');
+  if(!el) return;
+  if(!stores.length){
+    el.innerHTML='<p style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Sin locales creados. Ve a <strong>Tiendas & Locales</strong> para añadir tu primer local.</p>';
+    return;
+  }
+  const triggerLabel={0:'Al canjear premio',5:'5+ sellos',10:'10+ sellos',20:'20+ sellos',30:'30+ sellos'};
+  el.innerHTML=stores.map(s=>{
+    const hasUrl=!!(s.google_review_url);
+    const urlLabel=hasUrl
+      ? `<span style="font-size:.7rem;background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:12px;font-weight:800">✓ Configurado</span>`
+      : `<span style="font-size:.7rem;background:var(--cream-dark);color:var(--brown-light);padding:2px 9px;border-radius:12px;font-weight:700">Sin link</span>`;
+    const detail=hasUrl
+      ? `<div style="font-size:.75rem;color:var(--brown-light);margin-top:2px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px">${s.google_review_url}</div>
+         <div style="font-size:.72rem;color:var(--brown-light);margin-top:1px">Trigger: ${triggerLabel[s.review_trigger_stamps||0]||'Al canjear premio'}</div>`
+      : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--cream-border);flex-wrap:wrap">
+      <span class="material-symbols-outlined" style="font-size:1.2rem;color:var(--honey-dark);font-variation-settings:'FILL' 1;flex-shrink:0">store</span>
+      <div style="flex:1;min-width:120px">
+        <div style="font-weight:700;font-size:.9rem;color:var(--brown)">${s.name}</div>
+        ${detail}
+      </div>
+      ${urlLabel}
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn-sm btn-ghost" style="font-size:.72rem" onclick='openReviewStoreEdit(${JSON.stringify(s)})'>
+          <span class="material-symbols-outlined" style="font-size:.85rem">edit</span> Editar
+        </button>
+        ${hasUrl?`<button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="clearReviewForStore('${s.id}','${s.name.replace(/'/g,"\\'")}')">
+          <span class="material-symbols-outlined" style="font-size:.85rem">delete</span>
+        </button>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
-async function deleteReviewUrl(){
-  if(!confirm('¿Eliminar el link de reseñas de Google?')) return;
-  const urlInput=document.getElementById('review-url-input');
-  if(urlInput) urlInput.value='';
-  try{
-    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/reviews-config`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pin:PIN, google_review_url:'', review_trigger_stamps:0})
-    });
-    _showReviewSavedUrl('');
-    showToast('Link de reseñas eliminado','success');
-  }catch(e){ showToast('Error al eliminar','error'); }
+function openReviewStoreEdit(s){
+  if(typeof s==='string'){try{s=JSON.parse(s);}catch(e){return;}}
+  document.getElementById('reviews-edit-store-id').value=s.id||'';
+  document.getElementById('reviews-edit-store-name').textContent=s.name||'';
+  document.getElementById('reviews-url-input').value=s.google_review_url||'';
+  const sel=document.getElementById('reviews-trigger-select');
+  if(sel){
+    const v=String(s.review_trigger_stamps||0);
+    const opt=[...sel.options].find(o=>o.value===v);
+    if(opt) opt.selected=true; else sel.options[0].selected=true;
+  }
+  document.getElementById('reviews-status').textContent='';
+  const form=document.getElementById('reviews-store-edit-form');
+  form.style.display='block';
+  form.scrollIntoView({behavior:'smooth'});
 }
 
-async function saveReviewsConfig(){
+async function saveReviewForStore(){
+  const storeId=document.getElementById('reviews-edit-store-id')?.value;
+  if(!storeId){showToast('Error: no hay local seleccionado','error');return;}
   const status=document.getElementById('reviews-status');
-  const url=(document.getElementById('review-url-input')?.value||'').trim();
-  const trigger=parseInt(document.getElementById('review-trigger-select')?.value||'0');
   if(status) status.textContent='Guardando…';
+  const url=(document.getElementById('reviews-url-input')?.value||'').trim();
+  const trigger=parseInt(document.getElementById('reviews-trigger-select')?.value||'0');
+  const existing=_storesCache.find(s=>s.id===storeId)||{};
+  const body={
+    name:existing.name||'', pin:existing.pin||'', notes:existing.notes||'', active:existing.active!==false,
+    latitude:existing.latitude||null, longitude:existing.longitude||null,
+    geo_radius_m:existing.geo_radius_m||300, geo_push_msg:existing.geo_push_msg||'',
+    address:existing.address||'',
+    google_review_url:url, review_trigger_stamps:trigger
+  };
   try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/reviews-config`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({pin:PIN, google_review_url:url, review_trigger_stamps:trigger})
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${storeId}?pin=${PIN}`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
     });
-    if(!r.ok) throw new Error('Error');
-    if(status){ status.textContent='Guardado'; setTimeout(()=>status.textContent='',3000); }
-    _showReviewSavedUrl(url);
-    showToast('Configuración de reseñas guardada','success');
+    if(!r.ok) throw new Error((await r.json()).detail||'Error');
+    if(status){status.textContent='✅ Guardado';setTimeout(()=>status.textContent='',3000);}
+    showToast('Reseñas guardadas ✓','success');
+    document.getElementById('reviews-store-edit-form').style.display='none';
+    const resp=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+    const d=await resp.json();
+    _storesCache=d.stores||[];
+    renderReviewsStoresList(_storesCache);
   }catch(e){
-    if(status) status.textContent='Error al guardar';
-    showToast('Error al guardar','error');
+    if(status) status.textContent='Error: '+e.message;
+    showToast('Error: '+e.message,'error');
   }
 }
+
+async function clearReviewForStore(storeId, storeName){
+  if(!confirm(`¿Eliminar el link de reseñas de "${storeName}"?`)) return;
+  const existing=_storesCache.find(s=>s.id===storeId)||{};
+  const body={
+    name:existing.name||'', pin:existing.pin||'', notes:existing.notes||'', active:existing.active!==false,
+    latitude:existing.latitude||null, longitude:existing.longitude||null,
+    geo_radius_m:existing.geo_radius_m||300, geo_push_msg:existing.geo_push_msg||'',
+    address:existing.address||'',
+    google_review_url:'', review_trigger_stamps:0
+  };
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${storeId}?pin=${PIN}`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+    });
+    showToast('Link eliminado','success');
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+    const d=await r.json();
+    _storesCache=d.stores||[];
+    renderReviewsStoresList(_storesCache);
+  }catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+// Legacy aliases for compatibility
+async function loadReviewsSection(){ await loadReviewsStoresList(); }
+async function saveReviewsConfig(){ await saveReviewForStore(); }
 // ── SOPORTE & AYUDA ──────────────────────────────────────────────────────────
 let _supportImageData = null;
 let _supportImageName = null;
@@ -7445,7 +7515,8 @@ async function loadStores(){
   try{
     const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
     const data=await r.json();
-    renderStores(data.stores||[]);
+    _storesCache=data.stores||[];
+    renderStores(_storesCache);
   }catch(e){ renderStores([]); }
 }
 
@@ -7475,11 +7546,6 @@ function showAddStore(){
   document.getElementById('store-name').value='';
   document.getElementById('store-pin').value='';
   document.getElementById('store-notes').value='';
-  document.getElementById('store-lat').value='';
-  document.getElementById('store-lng').value='';
-  document.getElementById('store-radius').value='300';
-  document.getElementById('store-geo-msg').value='';
-  document.getElementById('store-geo-search').value='';
   document.getElementById('store-msg').textContent='';
   document.getElementById('store-form').style.display='block';
   document.getElementById('store-form').scrollIntoView({behavior:'smooth'});
@@ -7492,11 +7558,6 @@ function editStore(s){
   document.getElementById('store-name').value=s.name||'';
   document.getElementById('store-pin').value=s.pin||'';
   document.getElementById('store-notes').value=s.notes||'';
-  document.getElementById('store-lat').value=s.latitude||'';
-  document.getElementById('store-lng').value=s.longitude||'';
-  document.getElementById('store-radius').value=s.geo_radius_m||300;
-  document.getElementById('store-geo-msg').value=s.geo_push_msg||'';
-  document.getElementById('store-geo-search').value=s.address||'';
   document.getElementById('store-msg').textContent='';
   document.getElementById('store-form').style.display='block';
   document.getElementById('store-form').scrollIntoView({behavior:'smooth'});
@@ -7507,18 +7568,26 @@ async function saveStore(){
   const name=document.getElementById('store-name')?.value.trim();
   const pin=document.getElementById('store-pin')?.value.trim();
   const notes=document.getElementById('store-notes')?.value.trim()||'';
-  const lat=parseFloat(document.getElementById('store-lat')?.value)||null;
-  const lng=parseFloat(document.getElementById('store-lng')?.value)||null;
-  const radius=parseInt(document.getElementById('store-radius')?.value)||300;
-  const geoMsg=document.getElementById('store-geo-msg')?.value.trim()||'';
-  const address=document.getElementById('store-geo-search')?.value.trim()||'';
   const msgEl=document.getElementById('store-msg');
   if(!name){if(msgEl){msgEl.textContent='⚠ Introduce el nombre del local';msgEl.style.color='#c62828';}return;}
   if(!pin||pin.length<4){if(msgEl){msgEl.textContent='⚠ El PIN debe tener al menos 4 dígitos';msgEl.style.color='#c62828';}return;}
+  // Build body, preserving existing geo/review data if editing
+  let body={name,pin,notes,active:true};
+  if(id){
+    const existing=_storesCache.find(s=>s.id===id);
+    if(existing){
+      body.latitude=existing.latitude;
+      body.longitude=existing.longitude;
+      body.geo_radius_m=existing.geo_radius_m||300;
+      body.geo_push_msg=existing.geo_push_msg||'';
+      body.address=existing.address||'';
+      body.google_review_url=existing.google_review_url||'';
+      body.review_trigger_stamps=existing.review_trigger_stamps||0;
+    }
+  }
   try{
     const method=id?'PUT':'POST';
     const url=id?`${BASE}/api/biz/${BIZ_SLUG}/stores/${id}?pin=${PIN}`:`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`;
-    const body={name,pin,notes,active:true,latitude:lat,longitude:lng,geo_radius_m:radius,geo_push_msg:geoMsg,address};
     const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!r.ok){const d=await r.json();throw new Error(d.detail||'Error');}
     document.getElementById('store-form').style.display='none';
@@ -7527,37 +7596,7 @@ async function saveStore(){
   }catch(e){if(msgEl){msgEl.textContent='Error: '+e.message;msgEl.style.color='#c62828';}}
 }
 
-// Geo search for store form
-async function storeGeoAutocomplete(q){
-  const box=document.getElementById('store-geo-autocomplete');
-  if(!q||q.length<3){box.style.display='none';return;}
-  try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`,{headers:{'Accept-Language':'es'}});
-    const results=await r.json();
-    if(!results.length){box.style.display='none';return;}
-    box.style.display='block';
-    box.innerHTML=results.map(p=>`<div style="padding:8px 12px;cursor:pointer;font-size:.82rem;border-bottom:1px solid #eee;line-height:1.4" onmousedown="selectStoreGeo(${p.lat},${p.lon},'${(p.display_name||'').replace(/'/g,'&#39;')}')">${p.display_name}</div>`).join('');
-  }catch(e){box.style.display='none';}
-}
-function selectStoreGeo(lat,lng,name){
-  document.getElementById('store-lat').value=parseFloat(lat).toFixed(6);
-  document.getElementById('store-lng').value=parseFloat(lng).toFixed(6);
-  document.getElementById('store-geo-search').value=name;
-  document.getElementById('store-geo-autocomplete').style.display='none';
-}
-async function searchStoreGeo(){
-  const q=document.getElementById('store-geo-search').value.trim();
-  if(!q) return;
-  await storeGeoAutocomplete(q);
-}
-function detectStoreLocation(){
-  if(!navigator.geolocation){showToast('Geolocalización no soportada','error');return;}
-  navigator.geolocation.getCurrentPosition(pos=>{
-    document.getElementById('store-lat').value=pos.coords.latitude.toFixed(6);
-    document.getElementById('store-lng').value=pos.coords.longitude.toFixed(6);
-    showToast('Ubicación detectada ✓','success');
-  },()=>showToast('No se pudo detectar la ubicación','error'));
-}
+// (store-form geo search functions removed — geo is now managed per-store in the Geo section)
 
 async function deleteStore(id){
   if(!confirm('¿Eliminar este local?')) return;

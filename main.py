@@ -356,6 +356,8 @@ def run_migrations():
         "ALTER TABLE stores ADD COLUMN IF NOT EXISTS geo_radius_m INTEGER DEFAULT 300",
         "ALTER TABLE stores ADD COLUMN IF NOT EXISTS geo_push_msg VARCHAR DEFAULT ''",
         "ALTER TABLE stores ADD COLUMN IF NOT EXISTS address VARCHAR DEFAULT ''",
+        "ALTER TABLE stores ADD COLUMN IF NOT EXISTS google_review_url VARCHAR DEFAULT ''",
+        "ALTER TABLE stores ADD COLUMN IF NOT EXISTS review_trigger_stamps INTEGER DEFAULT 0",
         # ── PassCodes ─────────────────────────────────────────────────────────────
         "CREATE TABLE IF NOT EXISTS passcodes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), business_id UUID REFERENCES businesses(id), code VARCHAR(16) UNIQUE NOT NULL, stamps INTEGER DEFAULT 1, used BOOLEAN DEFAULT FALSE, used_by UUID REFERENCES loyalty_cards(id), used_at TIMESTAMPTZ, expires_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW())",
         # ── Campañas ──────────────────────────────────────────────────────────────
@@ -5061,11 +5063,14 @@ def list_stores(slug: str, pin: str = "", db: Session = Depends(get_db)):
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     rows = db.execute(text(
-        "SELECT id, name, pin, notes, active, created_at, latitude, longitude, geo_radius_m, geo_push_msg, address FROM stores WHERE business_id=:bid ORDER BY created_at ASC"
+        "SELECT id, name, pin, notes, active, created_at, latitude, longitude, geo_radius_m, geo_push_msg, address, "
+        "COALESCE(google_review_url,'') AS google_review_url, COALESCE(review_trigger_stamps,0) AS review_trigger_stamps "
+        "FROM stores WHERE business_id=:bid ORDER BY created_at ASC"
     ), {"bid": str(biz.id)}).fetchall()
     return {"stores": [
         {"id": str(r[0]), "name": r[1], "pin": r[2], "notes": r[3] or "", "active": bool(r[4]), "created_at": str(r[5]),
-         "latitude": r[6], "longitude": r[7], "geo_radius_m": r[8] or 300, "geo_push_msg": r[9] or "", "address": r[10] or ""}
+         "latitude": r[6], "longitude": r[7], "geo_radius_m": r[8] or 300, "geo_push_msg": r[9] or "", "address": r[10] or "",
+         "google_review_url": r[11] or "", "review_trigger_stamps": r[12] or 0}
         for r in rows
     ]}
 
@@ -5078,14 +5083,16 @@ def create_store(slug: str, pin: str = "", payload: dict = Body(...), db: Sessio
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     store_id = str(uuid.uuid4())
     db.execute(text(
-        "INSERT INTO stores (id, business_id, name, pin, notes, active, latitude, longitude, geo_radius_m, geo_push_msg, address) "
-        "VALUES (:id, :bid, :name, :pin, :notes, :active, :lat, :lng, :radius, :geo_msg, :address)"
+        "INSERT INTO stores (id, business_id, name, pin, notes, active, latitude, longitude, geo_radius_m, geo_push_msg, address, google_review_url, review_trigger_stamps) "
+        "VALUES (:id, :bid, :name, :pin, :notes, :active, :lat, :lng, :radius, :geo_msg, :address, :review_url, :review_stamps)"
     ), {"id": store_id, "bid": str(biz.id), "name": payload.get("name", ""),
         "pin": str(payload.get("pin", "")), "notes": payload.get("notes", ""),
         "active": payload.get("active", True),
         "lat": payload.get("latitude"), "lng": payload.get("longitude"),
         "radius": payload.get("geo_radius_m", 300), "geo_msg": payload.get("geo_push_msg", ""),
-        "address": payload.get("address", "")})
+        "address": payload.get("address", ""),
+        "review_url": payload.get("google_review_url", ""),
+        "review_stamps": payload.get("review_trigger_stamps", 0)})
     db.commit()
     return {"id": store_id, "status": "created"}
 
@@ -5098,13 +5105,16 @@ def update_store(slug: str, store_id: str, pin: str = "", payload: dict = Body(.
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     db.execute(text(
         "UPDATE stores SET name=:name, pin=:pin, notes=:notes, active=:active, "
-        "latitude=:lat, longitude=:lng, geo_radius_m=:radius, geo_push_msg=:geo_msg, address=:address "
+        "latitude=:lat, longitude=:lng, geo_radius_m=:radius, geo_push_msg=:geo_msg, address=:address, "
+        "google_review_url=:review_url, review_trigger_stamps=:review_stamps "
         "WHERE id=:id AND business_id=:bid"
     ), {"name": payload.get("name", ""), "pin": str(payload.get("pin", "")),
         "notes": payload.get("notes", ""), "active": payload.get("active", True),
         "lat": payload.get("latitude"), "lng": payload.get("longitude"),
         "radius": payload.get("geo_radius_m", 300), "geo_msg": payload.get("geo_push_msg", ""),
         "address": payload.get("address", ""),
+        "review_url": payload.get("google_review_url", ""),
+        "review_stamps": payload.get("review_trigger_stamps", 0),
         "id": store_id, "bid": str(biz.id)})
     db.commit()
     return {"status": "updated"}
