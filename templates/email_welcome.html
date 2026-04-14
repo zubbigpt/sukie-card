@@ -9,7 +9,7 @@
 {% set accent = wel_accent_color or card_accent_color or '#ffca48' %}
 {% set tc     = wel_text_color   or card_text_color  or '#ffffff' %}
 {% set outer_bg = wel_bg_color or '#f5f5f5' %}
-{% set emoji  = card_emoji       or '⭐' %}
+{% set emoji  = card_emoji       or '' %}
 {% set spr    = card_stamps_per_reward or 10 %}
 {% set cols   = 5 %}
 <body style="margin:0;padding:0;background:{{ outer_bg }};font-family:'Helvetica Neue',Arial,sans-serif">
@@ -22,9 +22,9 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 6px 32px rgba(0,0,0,0.10)">
 
 <!-- HEADER BRAND BAR -->
-<tr><td style="background:{{ bg }};padding:20px 24px 16px;text-align:center">
+<tr><td style="background:{{ bg }};padding:28px 24px 24px;text-align:center">
   {% if card_logo_url %}
-  <img src="{{ card_logo_url }}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">
+  <img src="{{ card_logo_url }}" style="width:52px;height:52px;border-radius:10px;object-fit:contain;display:block;margin:0 auto 12px">
   {% endif %}
   <div style="font-size:22px;font-weight:900;color:{{ tc }};letter-spacing:2px;font-family:Georgia,serif">{{ card_biz_name or 'ZubCard' }}</div>
   <div style="font-size:11px;color:{{ accent }};margin-top:4px;letter-spacing:2px;text-transform:uppercase;font-weight:600;opacity:.8">Tarjeta de Fidelidad</div>
@@ -35,22 +35,34 @@
 <tr><td style="background-image:url('{{ wel_banner_url }}');background-size:cover;background-position:center;padding:28px 24px 32px;text-align:center;position:relative;border-top:1px solid rgba(255,255,255,0.08)">
   <div style="position:absolute;inset:0;background:{{ bg }};opacity:0.55"></div>
   <div style="position:relative;z-index:1">
-    <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px;color:{{ tc }}">{{ welcome_greeting or ('¡Bienvenida/o, ' + name + '! ' + emoji) }}</div>
-    <div style="font-size:13px;opacity:.55;margin-top:6px;color:{{ tc }}">Tu tarjeta de fidelidad está lista para empezar</div>
+    <div style="margin-bottom:14px">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="9" stroke="{{ accent }}" stroke-width="1.5" fill="{{ accent }}" fill-opacity="0.12"/>
+        <path d="M8.5 12.5L11 15L15.5 9.5" stroke="{{ accent }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px;color:{{ tc }}">{{ welcome_greeting or ('Bienvenido/a, ' + name) }}</div>
+    <div style="font-size:13px;opacity:.6;margin-top:6px;color:{{ tc }}">Tu tarjeta de fidelidad esta lista para empezar</div>
   </div>
 </td></tr>
 {% else %}
 <tr><td style="background:{{ bg }};padding:28px 24px 32px;text-align:center;color:{{ tc }};border-top:1px solid rgba(255,255,255,0.08)">
-  <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px">{{ welcome_greeting or ('¡Bienvenida/o, ' + name + '! ' + emoji) }}</div>
-  <div style="font-size:13px;opacity:.55;margin-top:6px">Tu tarjeta de fidelidad está lista para empezar</div>
+  <div style="margin-bottom:14px">
+    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" stroke="{{ accent }}" stroke-width="1.5" fill="{{ accent }}" fill-opacity="0.12"/>
+      <path d="M8.5 12.5L11 15L15.5 9.5" stroke="{{ accent }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:0.5px">{{ welcome_greeting or ('Bienvenido/a, ' + name) }}</div>
+  <div style="font-size:13px;opacity:.6;margin-top:6px">Tu tarjeta de fidelidad esta lista para empezar</div>
 </td></tr>
 {% endif %}
 
 <!-- CARD VISUAL — Apple Wallet style -->
-<tr><td style="padding:28px 24px;background:#f9f9f9">
+<tr><td style="padding:28px 24px;background:#f9f6f0">
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width:320px;margin:0 auto;background:{{ bg }};border-radius:22px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.28)">
 
-  <!-- STRIP / HEADER (like Apple Wallet top strip) -->
+  <!-- STRIP / HEADER -->
   <tr><td style="{% if card_strip_bg_url %}background-image:url('{{ card_strip_bg_url }}');background-size:cover;background-position:center;{% endif %}background-color:{{ bg }};padding:14px 16px 12px">
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
@@ -58,7 +70,11 @@
         {% if card_logo_url %}
         <img src="{{ card_logo_url }}" style="width:46px;height:46px;border-radius:10px;object-fit:contain;display:block">
         {% else %}
-        <span style="font-size:2.2rem;line-height:1;display:block">{{ emoji }}</span>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="6" fill="{{ accent }}" fill-opacity="0.18"/>
+          <path d="M12 4.5C9.1 4.5 6.75 6.85 6.75 9.75v4.5h10.5v-4.5C17.25 6.85 14.9 4.5 12 4.5Z" stroke="{{ accent }}" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9.75 14.25v2.25a2.25 2.25 0 004.5 0v-2.25" stroke="{{ accent }}" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
         {% endif %}
       </td>
       <td style="text-align:right;vertical-align:top;padding-top:2px">
@@ -81,7 +97,17 @@
     <tr>
       {% for i in range(row_start, [row_start + cols, spr]|min) %}
       <td style="padding:3px">
-        <span style="display:inline-block;width:30px;height:30px;border-radius:50%;{% if (i+1) <= stamps %}background:{{ accent }};box-shadow:0 0 8px {{ accent }}88;{% else %}background:rgba(255,255,255,0.10);border:1.5px solid rgba(255,255,255,0.25);{% endif %}line-height:30px;font-size:14px;text-align:center;color:{{ tc }}">{% if (i+1) <= stamps %}{{ emoji }}{% endif %}</span>
+        {% if (i+1) <= stamps %}
+        <!-- Filled stamp: gold circle with checkmark -->
+        <span style="display:inline-block;width:30px;height:30px;border-radius:50%;background:{{ accent }};box-shadow:0 0 8px {{ accent }}88;line-height:30px;text-align:center;vertical-align:middle">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle">
+            <path d="M3.5 8.5L6.5 11.5L12.5 5" stroke="#26170c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        {% else %}
+        <!-- Empty stamp: subtle ring -->
+        <span style="display:inline-block;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);line-height:30px;text-align:center"></span>
+        {% endif %}
       </td>
       {% endfor %}
     </tr>
@@ -89,7 +115,7 @@
     </table>
   </td></tr>
 
-  <!-- FOOTER (Apple Wallet bottom fields) -->
+  <!-- FOOTER FIELDS -->
   <tr><td style="padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.12)">
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
@@ -104,7 +130,7 @@
   </td></tr>
 
   </table>
-  <div style="font-size:11px;color:#888;text-align:center;margin-top:12px">{{ stamps }}/{{ spr }} sellos · {{ card_reward_name or 'Premio' }} al completar</div>
+  <div style="font-size:11px;color:#8b7355;text-align:center;margin-top:12px">{{ stamps }}/{{ spr }} sellos &middot; {{ card_reward_name or 'Premio' }} al completar</div>
 </td></tr>
 
 <!-- CTA BUTTONS -->
@@ -112,60 +138,103 @@
 
   {% if wallet_url %}
   <!-- Apple Wallet -->
-  <a href="{{ wallet_url }}" style="display:inline-block;background:#000000;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
-    🍎 Añadir a Apple Wallet
+  <a href="{{ wallet_url }}" style="display:inline-block;background:#000000;color:#ffffff;padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
+    <svg style="vertical-align:middle;margin-right:8px;margin-bottom:1px" width="16" height="18" viewBox="0 0 814 1000" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+      <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.6-155.5-127.4C46 790.9 0 663.8 0 542.7 0 346.7 130.3 224.5 258.5 224.5c69.1 0 126.4 45.7 169.3 45.7 41.6 0 106.7-48.3 183.8-48.3 30.3.1 108.2 5.8 162.4 63.7zm-234.5-184.8C599.3 83.8 634 34.4 634 0c0-2.6-.3-5.8-.6-8.4-64.7 2.6-139.2 43.5-182.5 91.3-40.3 44.6-75.7 94.7-75.7 154.1 0 3.2.6 6.5 1.3 8.4 4.5.6 9.7 1.3 14.9 1.3 60 0 128.7-40.1 162.2-81.6z"/>
+    </svg>
+    Añadir a Apple Wallet
   </a>
   <br>
   {% endif %}
 
   {% if google_wallet_url %}
-  <!-- Google Wallet (configurado) -->
-  <a href="{{ google_wallet_url }}" style="display:inline-block;background:#1a73e8;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
-    <img src="https://pay.google.com/about/static/images/social/googlepay_mark.png" width="16" height="16" style="vertical-align:middle;margin-right:6px;border-radius:2px" alt="">
+  <!-- Google Wallet -->
+  <a href="{{ google_wallet_url }}" style="display:inline-block;background:#1a73e8;color:#ffffff;padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
+    <svg style="vertical-align:middle;margin-right:8px" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#ffffff"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#ffffffcc"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#ffffffaa"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#ffffffdd"/>
+    </svg>
     Añadir a Google Wallet
   </a>
   <br>
   {% else %}
-  <!-- Sin Google Wallet: botón a tarjeta web con instrucciones -->
-  <a href="{{ card_url }}" style="display:inline-block;background:#34a853;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
-    🤖 Ver mi tarjeta (Android)
+  <!-- Sin Google Wallet: botón Android -->
+  <a href="{{ card_url }}" style="display:inline-block;background:#34a853;color:#ffffff;padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
+    <svg style="vertical-align:middle;margin-right:8px" width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 00-.83.22l-1.88 3.24C14.93 8.31 13.52 8 12 8s-2.93.31-4.47.91L5.65 5.67a.637.637 0 00-.83-.22c-.3.16-.42.54-.26.85L6.4 9.48A10.78 10.78 0 002 18h20a10.78 10.78 0 00-4.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/>
+    </svg>
+    Ver mi tarjeta (Android)
   </a>
   <br>
   <div style="background:#f0f7ff;border:1px solid #c8e0ff;border-radius:8px;padding:12px 16px;margin-top:4px;text-align:left;max-width:340px;display:inline-block">
-    <div style="font-size:11px;font-weight:700;color:#1a56a0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📱 Guárdala en tu Android</div>
+    <div style="font-size:11px;font-weight:700;color:#1a56a0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">
+      <svg style="vertical-align:middle;margin-right:4px" width="12" height="12" viewBox="0 0 24 24" fill="#1a56a0" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="2" width="14" height="20" rx="2" stroke="#1a56a0" stroke-width="2" fill="none"/>
+        <circle cx="12" cy="18" r="1" fill="#1a56a0"/>
+      </svg>
+      Guardala en tu Android
+    </div>
     <div style="font-size:12px;color:#333;line-height:1.6">
-      1. Abre el link de arriba en Chrome<br>
-      2. Toca el menú <strong>⋮</strong> → <strong>"Añadir a pantalla de inicio"</strong><br>
-      3. ¡Listo! Tu tarjeta quedará como una app
+      1. Abre el link en Chrome<br>
+      2. Menu (3 puntos) &rarr; <strong>"Añadir a pantalla de inicio"</strong><br>
+      3. Tu tarjeta quedara como una app
     </div>
   </div>
   {% endif %}
 
-  <!-- Ver tarjeta web (siempre disponible) -->
+  <!-- Ver tarjeta web -->
   <br>
-  <a href="{{ card_url }}" style="display:inline-block;margin-top:12px;color:#888;font-size:12px;text-decoration:underline">
+  <a href="{{ card_url }}" style="display:inline-block;margin-top:12px;color:#a08d83;font-size:12px;text-decoration:underline">
     Ver tarjeta en el navegador
   </a>
 
 </td></tr>
 
 <!-- HOW IT WORKS -->
-<tr><td style="padding:24px;background:#f9f9f9">
-  <div style="text-align:center;margin-bottom:18px">
-    <div style="font-size:11px;font-weight:800;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px">CÓMO FUNCIONA</div>
+<tr><td style="padding:28px 24px;background:#f9f6f0">
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:800;color:#a08d83;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:24px">COMO FUNCIONA</div>
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
-      <td width="33%" style="text-align:center">
-        <div style="font-size:26px;margin-bottom:8px">🛍️</div>
-        <div style="font-size:12px;font-weight:700;color:#333">Compra</div>
+      <!-- Compra -->
+      <td width="33%" style="text-align:center;padding:0 8px">
+        <div style="margin-bottom:10px;display:inline-block;background:{{ bg }};border-radius:50%;width:52px;height:52px;line-height:52px;text-align:center;box-shadow:0 4px 16px rgba(38,23,12,0.18)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-top:14px">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 6h18" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M16 10a4 4 0 01-8 0" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#26170c">Compra</div>
+        <div style="font-size:11px;color:#a08d83;margin-top:3px">en el local</div>
       </td>
-      <td width="33%" style="text-align:center">
-        <div style="font-size:26px;margin-bottom:8px">{{ emoji }}</div>
-        <div style="font-size:12px;font-weight:700;color:#333">Acumula sellos</div>
+      <!-- Acumula -->
+      <td width="33%" style="text-align:center;padding:0 8px">
+        <div style="margin-bottom:10px;display:inline-block;background:{{ bg }};border-radius:50%;width:52px;height:52px;line-height:52px;text-align:center;box-shadow:0 4px 16px rgba(38,23,12,0.18)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-top:14px">
+            <circle cx="12" cy="12" r="8" stroke="{{ accent }}" stroke-width="1.6"/>
+            <circle cx="12" cy="12" r="3.5" fill="{{ accent }}" fill-opacity="0.4" stroke="{{ accent }}" stroke-width="1.2"/>
+            <path d="M12 2v2M12 20v2M2 12h2M20 12h2" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#26170c">Acumula sellos</div>
+        <div style="font-size:11px;color:#a08d83;margin-top:3px">con cada visita</div>
       </td>
-      <td width="33%" style="text-align:center">
-        <div style="font-size:26px;margin-bottom:8px">🎁</div>
-        <div style="font-size:12px;font-weight:700;color:#333">Canjea {{ card_reward_name or 'tu premio' }}</div>
+      <!-- Premio -->
+      <td width="33%" style="text-align:center;padding:0 8px">
+        <div style="margin-bottom:10px;display:inline-block;background:{{ bg }};border-radius:50%;width:52px;height:52px;line-height:52px;text-align:center;box-shadow:0 4px 16px rgba(38,23,12,0.18)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-top:14px">
+            <path d="M20 12v10H4V12" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 7H2v5h20V7z" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 22V7" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="{{ accent }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#26170c">Canjea {{ card_reward_name or 'tu premio' }}</div>
+        <div style="font-size:11px;color:#a08d83;margin-top:3px">cuando completes</div>
       </td>
     </tr>
     </table>
@@ -175,20 +244,29 @@
 <!-- REFERRAL SECTION -->
 {% if referral_code %}
 <tr><td style="padding:24px;background:#ffffff">
-  <div style="background:#f5f5f5;border-radius:14px;padding:18px 22px">
-    <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:8px">🔗 Invita a tus amigos</div>
-    <div style="font-size:13px;color:#555;margin-bottom:14px;line-height:1.5">Comparte tu código <strong style="background:{{ accent }};padding:2px 8px;border-radius:4px;color:{{ bg }}">{{ referral_code }}</strong> y ambos recibiréis 2 sellos extra</div>
-    <a href="{{ referral_url }}" style="display:inline-block;background:{{ bg }};color:{{ tc }};padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px;letter-spacing:0.5px">Compartir código</a>
+  <div style="background:#fdf8ef;border:1.5px solid #f0dfa0;border-radius:14px;padding:20px 22px">
+    <div style="display:flex;align-items:center;margin-bottom:10px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:8px;flex-shrink:0">
+        <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="#785a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="#785a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-size:15px;font-weight:800;color:#26170c">Invita a tus amigos</span>
+    </div>
+    <div style="font-size:13px;color:#5a4a38;margin-bottom:14px;line-height:1.6">Comparte tu codigo <strong style="background:{{ accent }};padding:2px 8px;border-radius:4px;color:#26170c">{{ referral_code }}</strong> y ambos recibireis 2 sellos extra</div>
+    <a href="{{ referral_url }}" style="display:inline-block;background:{{ bg }};color:{{ tc }};padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:700;font-size:12px;letter-spacing:0.5px">Compartir codigo</a>
   </div>
 </td></tr>
 {% endif %}
 
 <!-- FOOTER -->
-<tr><td style="padding:22px 24px;background:#333;color:#fff;text-align:center;font-size:11px">
-  <div style="font-weight:800;font-size:13px;letter-spacing:1px;margin-bottom:4px">{{ card_biz_name or 'ZubCard' }}</div>
-  <div style="opacity:0.5;margin-bottom:10px">{{ welcome_footer or ('Tarjeta de Fidelización © 2026') }}</div>
-  <div style="opacity:0.4;font-size:10px">
-    <a href="#" style="color:#fff;text-decoration:none">Gestionar preferencias</a>
+<tr><td style="background:{{ bg }};padding:22px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="font-weight:800;font-size:13px;letter-spacing:1.5px;color:{{ tc }};margin-bottom:4px">{{ card_biz_name or 'ZubCard' }}</div>
+  <div style="font-size:11px;color:{{ tc }};opacity:.4;margin-bottom:10px">{{ welcome_footer or 'Tarjeta de Fidelizacion 2026' }}</div>
+  <div style="font-size:10px;color:{{ tc }};opacity:.3">
+    <a href="{{ card_url }}" style="color:{{ tc }};text-decoration:none">Gestionar preferencias</a>
+  </div>
+  <div style="font-size:10px;color:{{ accent }};opacity:.5;margin-top:10px;letter-spacing:1px;text-transform:uppercase">
+    Gestionado con ZubCard &middot; zubcard.com
   </div>
 </td></tr>
 
