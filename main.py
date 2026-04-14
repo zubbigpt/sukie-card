@@ -2006,19 +2006,94 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
     if (card.award_balance or 0) < 1:
         raise HTTPException(status_code=400, detail="No hay premios disponibles")
 
+    was_first_redeem = (card.rewards_redeemed or 0) == 0
+
     card.award_balance    = (card.award_balance or 0) - 1
     card.rewards_redeemed = (card.rewards_redeemed or 0) + 1
+
+    store_name = body.get("store", "")
+    store_id   = body.get("store_id", "")
 
     tx = models.StampTransaction(
         card_id=card.id, stamps_added=0,
         transaction_type="redeem",
         note=body.get("note", f"Premio canjeado: {REWARD_NAME}"),
-        store=body.get("store", ""),
+        store=store_name,
     )
     db.add(tx)
     db.commit()
     db.refresh(card)
     await _push_wallet_update(card.id, db)
+
+    # ── Send Google Review email on first redemption ──────────────────────────
+    if was_first_redeem:
+        try:
+            customer = db.query(models.Customer).filter(
+                models.Customer.id == card.customer_id
+            ).first()
+            biz = db.query(models.Business).filter(
+                models.Business.id == customer.business_id
+            ).first() if (customer and customer.business_id) else None
+
+            if customer and biz and customer.opt_in_email and customer.email:
+                # Find review URL: prefer store-level, else skip
+                review_url = ""
+                resolved_store_name = store_name or (biz.name if biz else "")
+
+                if store_id:
+                    store_row = db.execute(text(
+                        "SELECT name, google_review_url FROM stores WHERE id=:sid AND business_id=:bid LIMIT 1"
+                    ), {"sid": store_id, "bid": str(biz.id)}).fetchone()
+                    if store_row:
+                        resolved_store_name = store_row[0]
+                        review_url = store_row[1] or ""
+
+                # Fallback: match by store name
+                if not review_url and store_name:
+                    store_row = db.execute(text(
+                        "SELECT name, google_review_url FROM stores "
+                        "WHERE business_id=:bid AND LOWER(name)=LOWER(:name) LIMIT 1"
+                    ), {"bid": str(biz.id), "name": store_name}).fetchone()
+                    if store_row:
+                        resolved_store_name = store_row[0]
+                        review_url = store_row[1] or ""
+
+                # Fallback: business-level review URL
+                if not review_url:
+                    review_url = getattr(biz, "google_review_url", "") or ""
+
+                if review_url:
+                    card_url = f"{BASE_URL}/card/{str(card.id)}"
+                    first_name = (customer.first_name or "").split()[0] or customer.first_name or "Cliente"
+
+                    html_body = templates.get_template("email_review.html").render(
+                        subject      = f"Gracias por tu fidelidad en {biz.name}",
+                        biz_name     = biz.name,
+                        name         = first_name,
+                        store_name   = resolved_store_name,
+                        review_url   = review_url,
+                        card_url     = card_url,
+                        logo_url     = getattr(biz, "logo_url", "") or "",
+                        header_color = getattr(biz, "primary_color", "") or "#26170c",
+                        accent_color = getattr(biz, "accent_color", "") or "#ffca48",
+                        text_color   = "#ffffff",
+                        bg_color     = "#f5f5f5",
+                    )
+                    send_email(
+                        to_email  = customer.email,
+                        subject   = f"Gracias por tu fidelidad en {biz.name}",
+                        html_body = html_body,
+                        from_name = getattr(biz, "email_from_name", "") or biz.name,
+                        reply_to  = getattr(biz, "email_reply_to", "") or "",
+                        smtp_host = getattr(biz, "email_smtp_host", "") or "",
+                        smtp_port = getattr(biz, "email_smtp_port", 0) or 0,
+                        smtp_user = getattr(biz, "email_smtp_user", "") or "",
+                        smtp_pass = getattr(biz, "email_smtp_pass", "") or "",
+                    )
+                    print(f"✅ Review email sent to {customer.email} | store: {resolved_store_name} | url: {review_url[:40]}")
+        except Exception as e:
+            print(f"⚠️ Review email error (non-fatal): {e}")
+
     return {"message": "Premio canjeado ✅",
             "award_balance": card.award_balance,
             "rewards_redeemed": card.rewards_redeemed}
