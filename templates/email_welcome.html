@@ -113,7 +113,7 @@
   {% if wallet_url %}
   <!-- Apple Wallet -->
   <a href="{{ wallet_url }}" style="display:inline-block;background:#000000;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
-    🍎 Añadir a Apple Wallet
+    <img src="https://developer.apple.com/assets/elements/icons/apple-wallet/apple-wallet-32x32_2x.png" width="18" height="18" style="vertical-align:middle;margin-right:8px" alt="" onerror="this.style.display='none'"> Añadir a Apple Wallet
   </a>
   <br>
   {% endif %}
@@ -128,15 +128,15 @@
   {% else %}
   <!-- Sin Google Wallet: botón a tarjeta web con instrucciones -->
   <a href="{{ card_url }}" style="display:inline-block;background:#34a853;color:#ffffff;padding:13px 30px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.3px;margin-bottom:12px">
-    🤖 Ver mi tarjeta (Android)
+    Ver mi tarjeta (Android)
   </a>
   <br>
   <div style="background:#f0f7ff;border:1px solid #c8e0ff;border-radius:8px;padding:12px 16px;margin-top:4px;text-align:left;max-width:340px;display:inline-block">
-    <div style="font-size:11px;font-weight:700;color:#1a56a0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">📱 Guárdala en tu Android</div>
+    <div style="font-size:11px;font-weight:700;color:#1a56a0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Guardala en tu Android</div>
     <div style="font-size:12px;color:#333;line-height:1.6">
-      1. Abre el link de arriba en Chrome<br>
-      2. Toca el menú <strong>⋮</strong> → <strong>"Añadir a pantalla de inicio"</strong><br>
-      3. ¡Listo! Tu tarjeta quedará como una app
+      1. Abre el link en Chrome<br>
+      2. Menu (3 puntos) &rarr; <strong>"Añadir a pantalla de inicio"</strong><br>
+      3. Tu tarjeta quedara como una app
     </div>
   </div>
   {% endif %}
@@ -156,15 +156,15 @@
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <td width="33%" style="text-align:center">
-        <div style="font-size:26px;margin-bottom:8px">🛍️</div>
+        <div style="width:42px;height:42px;border-radius:50%;background:{{ bg }};color:{{ tc }};font-size:18px;font-weight:900;line-height:42px;margin:0 auto 8px">1</div>
         <div style="font-size:12px;font-weight:700;color:#333">Compra</div>
       </td>
       <td width="33%" style="text-align:center">
-        <div style="font-size:26px;margin-bottom:8px">{{ emoji }}</div>
+        <div style="width:42px;height:42px;border-radius:50%;background:{{ bg }};color:{{ tc }};font-size:18px;font-weight:900;line-height:42px;margin:0 auto 8px">2</div>
         <div style="font-size:12px;font-weight:700;color:#333">Acumula sellos</div>
       </td>
       <td width="33%" style="text-align:center">
-        <div style="font-size:26px;margin-bottom:8px">🎁</div>
+        <div style="width:42px;height:42px;border-radius:50%;background:{{ bg }};color:{{ tc }};font-size:18px;font-weight:900;line-height:42px;margin:0 auto 8px">3</div>
         <div style="font-size:12px;font-weight:700;color:#333">Canjea {{ card_reward_name or 'tu premio' }}</div>
       </td>
     </tr>
@@ -176,7 +176,7 @@
 {% if referral_code %}
 <tr><td style="padding:24px;background:#ffffff">
   <div style="background:#f5f5f5;border-radius:14px;padding:18px 22px">
-    <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:8px">🔗 Invita a tus amigos</div>
+    <div style="font-size:15px;font-weight:800;color:#333;margin-bottom:8px">Invita a tus amigos</div>
     <div style="font-size:13px;color:#555;margin-bottom:14px;line-height:1.5">Comparte tu código <strong style="background:{{ accent }};padding:2px 8px;border-radius:4px;color:{{ bg }}">{{ referral_code }}</strong> y ambos recibiréis 2 sellos extra</div>
     <a href="{{ referral_url }}" style="display:inline-block;background:{{ bg }};color:{{ tc }};padding:10px 22px;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px;letter-spacing:0.5px">Compartir código</a>
   </div>
