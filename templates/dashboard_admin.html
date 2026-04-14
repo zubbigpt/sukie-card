@@ -6429,43 +6429,85 @@ function copyRegLink(){
 
 function downloadQR(){
   const regUrl = `${BASE}/biz/${BIZ_SLUG}/register`;
+  const SIZE = 2400;
+  const PAD  = 120;
   const tempDiv = document.createElement('div');
   tempDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
   document.body.appendChild(tempDiv);
   try {
-    new QRCode(tempDiv, {text:regUrl, width:1200, height:1200, colorDark:'#0a0a0a', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.H});
+    new QRCode(tempDiv, {text:regUrl, width:SIZE, height:SIZE, colorDark:'#0a0a0a', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.H});
     setTimeout(() => {
+      // Soporte canvas e img (según navegador)
       const canvas = tempDiv.querySelector('canvas');
-      if(canvas){
+      const img    = tempDiv.querySelector('img');
+      const source = canvas || img;
+      if(!source){ document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); return; }
+
+      // Crear canvas final con padding blanco
+      const out = document.createElement('canvas');
+      out.width  = SIZE + PAD * 2;
+      out.height = SIZE + PAD * 2;
+      const ctx = out.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, out.width, out.height);
+
+      const draw = (src) => {
+        ctx.drawImage(src, PAD, PAD, SIZE, SIZE);
         const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
-        a.download = `qr-${BIZ_SLUG}-registro.png`;
+        a.href = out.toDataURL('image/png');
+        a.download = `qr-registro-${BIZ_SLUG}.png`;
         a.click();
-        showToast('QR descargado en alta resolución ✓','success');
-      } else { showToast('Error al generar QR','error'); }
-      document.body.removeChild(tempDiv);
-    }, 250);
-  } catch(e) { document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); }
+        showToast('QR descargado (2400×2400 px) ✓','success');
+        document.body.removeChild(tempDiv);
+      };
+
+      if(canvas){
+        draw(canvas);
+      } else {
+        // img: necesita cargarse antes de drawImage
+        const tmp = new Image();
+        tmp.onload = () => draw(tmp);
+        tmp.src = img.src;
+      }
+    }, 400);
+  } catch(e){ document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); }
 }
 
 function downloadCustomQR(url, canal){
+  const SIZE = 2400;
+  const PAD  = 120;
   const tempDiv = document.createElement('div');
   tempDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
   document.body.appendChild(tempDiv);
   try {
-    new QRCode(tempDiv, {text:url, width:1200, height:1200, colorDark:'#0a0a0a', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.H});
+    new QRCode(tempDiv, {text:url, width:SIZE, height:SIZE, colorDark:'#0a0a0a', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.H});
     setTimeout(() => {
       const canvas = tempDiv.querySelector('canvas');
-      if(canvas){
+      const img    = tempDiv.querySelector('img');
+      const source = canvas || img;
+      if(!source){ document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); return; }
+
+      const out = document.createElement('canvas');
+      out.width  = SIZE + PAD * 2;
+      out.height = SIZE + PAD * 2;
+      const ctx = out.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, out.width, out.height);
+
+      const draw = (src) => {
+        ctx.drawImage(src, PAD, PAD, SIZE, SIZE);
         const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
+        a.href = out.toDataURL('image/png');
         a.download = `qr-${BIZ_SLUG}-${canal.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.png`;
         a.click();
-        showToast('QR descargado en alta resolución ✓','success');
-      } else { showToast('Error al generar QR','error'); }
-      document.body.removeChild(tempDiv);
-    }, 250);
-  } catch(e) { document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); }
+        showToast('QR descargado (2400×2400 px) ✓','success');
+        document.body.removeChild(tempDiv);
+      };
+
+      if(canvas){ draw(canvas); }
+      else { const tmp=new Image(); tmp.onload=()=>draw(tmp); tmp.src=img.src; }
+    }, 400);
+  } catch(e){ document.body.removeChild(tempDiv); showToast('Error al generar QR','error'); }
 }
 
 function addCustomQR(){
