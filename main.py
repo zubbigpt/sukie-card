@@ -5132,6 +5132,76 @@ def delete_store(slug: str, store_id: str, pin: str = "", db: Session = Depends(
     return {"status": "deleted"}
 
 
+@app.get("/api/biz/{slug}/stores/stats")
+def get_stores_stats(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Per-store statistics: stamps, redeems, registrations."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    stores = db.execute(text(
+        "SELECT id, name FROM stores WHERE business_id=:bid ORDER BY created_at ASC"
+    ), {"bid": str(biz.id)}).fetchall()
+
+    result = []
+    for store in stores:
+        sid  = str(store[0])
+        name = store[1]
+
+        # Stamps added from this store (by store_id or store name)
+        stamps_row = db.execute(text(
+            "SELECT COALESCE(SUM(st.stamps_added), 0) "
+            "FROM stamp_transactions st "
+            "JOIN loyalty_cards lc ON lc.id = st.card_id "
+            "JOIN customers c ON c.id = lc.customer_id "
+            "WHERE c.business_id=:bid AND st.transaction_type='stamp' "
+            "AND (st.store_id::text=:sid OR st.store=:name)"
+        ), {"bid": str(biz.id), "sid": sid, "name": name}).fetchone()
+
+        # Redeems from this store
+        redeems_row = db.execute(text(
+            "SELECT COALESCE(COUNT(*), 0) "
+            "FROM stamp_transactions st "
+            "JOIN loyalty_cards lc ON lc.id = st.card_id "
+            "JOIN customers c ON c.id = lc.customer_id "
+            "WHERE c.business_id=:bid AND st.transaction_type='redeem' "
+            "AND (st.store_id::text=:sid OR st.store=:name)"
+        ), {"bid": str(biz.id), "sid": sid, "name": name}).fetchone()
+
+        # Unique cards scanned (any transaction from this store)
+        cards_row = db.execute(text(
+            "SELECT COALESCE(COUNT(DISTINCT st.card_id), 0) "
+            "FROM stamp_transactions st "
+            "JOIN loyalty_cards lc ON lc.id = st.card_id "
+            "JOIN customers c ON c.id = lc.customer_id "
+            "WHERE c.business_id=:bid "
+            "AND (st.store_id::text=:sid OR st.store=:name)"
+        ), {"bid": str(biz.id), "sid": sid, "name": name}).fetchone()
+
+        # Last activity
+        last_row = db.execute(text(
+            "SELECT st.created_at "
+            "FROM stamp_transactions st "
+            "JOIN loyalty_cards lc ON lc.id = st.card_id "
+            "JOIN customers c ON c.id = lc.customer_id "
+            "WHERE c.business_id=:bid "
+            "AND (st.store_id::text=:sid OR st.store=:name) "
+            "ORDER BY st.created_at DESC LIMIT 1"
+        ), {"bid": str(biz.id), "sid": sid, "name": name}).fetchone()
+
+        result.append({
+            "store_id":    sid,
+            "store_name":  name,
+            "stamps":      int(stamps_row[0]) if stamps_row else 0,
+            "redeems":     int(redeems_row[0]) if redeems_row else 0,
+            "unique_cards": int(cards_row[0]) if cards_row else 0,
+            "last_activity": str(last_row[0])[:10] if last_row and last_row[0] else None,
+        })
+
+    return {"stats": result}
+
+
 # ════════════════════════════════════════════════════════════════════════════════
 # SCANNER DEVICE AUTHORIZATION
 # ════════════════════════════════════════════════════════════════════════════════

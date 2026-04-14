@@ -3123,45 +3123,38 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div class="section-header">
           <div style="flex:1">
             <h1>Tiendas &amp; Locales</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Gestiona tus puntos de venta</p>
+            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Cada local tiene su propio PIN y link de escáner único</p>
           </div>
           <button class="btn-sm btn-primary" onclick="showAddStore()">+ Añadir local</button>
         </div>
-        <p style="color:var(--brown-light);font-size:.85rem;margin-bottom:16px">Gestiona tus puntos de venta. Cada local tiene su propio PIN para que los empleados puedan escanear sellos.</p>
-        <!-- Acceso empleado box -->
-        <div style="background:var(--brown);color:var(--cream);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-          <div style="flex:1;min-width:200px">
-            <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.55;margin-bottom:4px">Link de acceso para empleados</div>
-            <div style="font-size:.88rem;font-weight:700;font-family:monospace;opacity:.9">zubcard.com/biz/{{ biz_slug }}/scanner-login</div>
-            <div style="font-size:.71rem;opacity:.55;margin-top:3px">El empleado abre esta URL, introduce su PIN y listo.</div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <button onclick="copyLoginUrl()" style="padding:7px 13px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);color:var(--cream);border-radius:4px;font-size:.73rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px;display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.9rem">content_copy</span> Copiar URL</button>
-            <a href="/biz/{{ biz_slug }}/scanner-login" target="_blank" style="padding:7px 13px;background:var(--gold);color:var(--brown);border-radius:4px;font-size:.73rem;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;letter-spacing:.5px">↗ Abrir</a>
-          </div>
+
+        <!-- Cómo funciona -->
+        <div style="background:var(--honey-light);border:1.5px solid var(--honey);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:.83rem;color:var(--brown);line-height:1.6">
+          <strong>¿Cómo funciona?</strong> Cada local tiene un PIN único. El empleado abre el link de su local e introduce su PIN → el sistema sabe desde qué tienda se escaneó. Las estadísticas y los premios quedan registrados por local.
         </div>
-        <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
-          <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:.85rem">
-              <thead><tr style="background:var(--cream)">
-                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Nombre del local</th>
-                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Usuario / PIN</th>
-                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Estado</th>
-                <th style="padding:12px 16px;text-align:left;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Notas</th>
-                <th style="padding:12px 16px;text-align:center;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Acciones</th>
-              </tr></thead>
-              <tbody id="stores-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Sin locales — añade tu primer local con el botón superior</td></tr></tbody>
-            </table>
-          </div>
+
+        <!-- Cards de locales -->
+        <div id="stores-cards-container">
+          <p style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Cargando locales…</p>
         </div>
+
         <!-- add/edit store form -->
-        <div id="store-form" style="display:none;max-width:560px" class="card-box">
+        <div id="store-form" style="display:none;max-width:560px;margin-top:16px" class="card-box">
           <h3 id="store-form-title" style="margin-bottom:16px;color:#0a0a0a">Añadir local</h3>
           <input type="hidden" id="store-edit-id">
-          <div class="form-group" style="margin-bottom:12px"><label>Nombre del local *</label><input id="store-name" placeholder="ej. Cafetería Centro"></div>
-          <div class="form-group" style="margin-bottom:12px"><label>PIN de acceso (4-6 dígitos) *</label><input id="store-pin" type="number" placeholder="1234" maxlength="6"></div>
-          <div class="form-group" style="margin-bottom:16px"><label>Notas internas</label><input id="store-notes" placeholder="ej. Calle Mayor 1, Madrid"></div>
-
+          <div class="form-group" style="margin-bottom:12px">
+            <label>Nombre del local *</label>
+            <input id="store-name" placeholder="ej. Madrid Centro">
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label>PIN de acceso (4-6 dígitos) *</label>
+            <input id="store-pin" type="number" placeholder="1234" maxlength="6">
+            <p style="font-size:.74rem;color:var(--brown-light);margin-top:4px">Cada local debe tener un PIN diferente. El empleado lo usa para identificar su tienda.</p>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label>Notas internas</label>
+            <input id="store-notes" placeholder="ej. Calle Mayor 1, Madrid">
+          </div>
           <div id="store-msg" style="font-size:.82rem;margin-bottom:10px;min-height:16px"></div>
           <div style="display:flex;gap:8px">
             <button class="btn-sm btn-primary" onclick="saveStore()" style="flex:1">Guardar</button>
@@ -3173,16 +3166,13 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         <div class="card-box" style="margin-top:24px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
             <div>
-              <h3 style="color:var(--brown);font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">smartphone</span> Dispositivos de Escáner</h3>
-              <p style="font-size:.78rem;color:var(--brown-light);margin-top:2px">Aprueba o revoca tablets / móviles que usan el escáner de empleado</p>
+              <h3 style="color:var(--brown);font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:7px"><span class="material-symbols-outlined" style="font-size:1rem">smartphone</span> Dispositivos aprobados</h3>
+              <p style="font-size:.78rem;color:var(--brown-light);margin-top:2px">Tablets y móviles que han iniciado sesión como escáner. Aquí puedes aprobar o revocar accesos.</p>
             </div>
             <button class="btn-sm btn-ghost" onclick="loadDevices()" style="font-size:.72rem">↺ Actualizar</button>
           </div>
           <div id="devices-list">
             <p style="text-align:center;padding:20px;color:var(--brown-light);font-size:.82rem">Cargando dispositivos...</p>
-          </div>
-          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--cream-border);font-size:.75rem;color:var(--brown-light)">
-            <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle;color:var(--honey-dark)">tips_and_updates</span> El empleado accede desde <strong>zubcard.com/biz/{{ biz_slug }}/scanner-login</strong> y la primera vez queda pendiente hasta que lo apruebes aquí.
           </div>
         </div>
       </div>
@@ -7511,33 +7501,97 @@ function printPassCodes(){
 // ═══════════════════════════════════════════════════════════════════
 // ── TIENDAS / LOCALES ────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════
+let _storeStatsCache = {};
+
 async function loadStores(){
   try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
-    const data=await r.json();
-    _storesCache=data.stores||[];
+    const [storesResp, statsResp] = await Promise.all([
+      fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`),
+      fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/stats?pin=${PIN}`)
+    ]);
+    const storesData = await storesResp.json();
+    _storesCache = storesData.stores||[];
+    if(statsResp.ok){
+      const statsData = await statsResp.json();
+      _storeStatsCache = {};
+      (statsData.stats||[]).forEach(s=>{ _storeStatsCache[s.store_id]=s; });
+    }
     renderStores(_storesCache);
   }catch(e){ renderStores([]); }
 }
 
 function renderStores(stores){
-  const tbody=document.getElementById('stores-tbody');
-  if(!tbody) return;
+  const container=document.getElementById('stores-cards-container');
+  if(!container) return;
   if(stores.length===0){
-    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem">Sin locales — añade tu primer local con el botón superior</td></tr>';
+    container.innerHTML='<div style="text-align:center;padding:40px;color:var(--brown-light);font-size:.85rem">Sin locales — añade tu primer local con el botón superior</div>';
     return;
   }
-  tbody.innerHTML=stores.map(s=>`
-    <tr style="border-bottom:1px solid var(--cream-border)">
-      <td style="padding:12px 16px;font-weight:600">${s.name}</td>
-      <td style="padding:12px 16px;font-family:monospace;font-size:.85rem;letter-spacing:1px">${s.pin||'—'}</td>
-      <td style="padding:12px 16px"><span style="padding:2px 8px;border-radius:2px;font-size:.72rem;font-weight:700;background:${s.active!==false?'#e8f5e9':'#fbe9e7'};color:${s.active!==false?'#2e7d32':'#c62828'}">${s.active!==false?'Activo':'Inactivo'}</span>${s.latitude?'<span style="margin-left:6px;font-size:.7rem;background:var(--honey-light);color:var(--honey-dark);padding:2px 7px;border-radius:10px;font-weight:700">📍 Geo</span>':''}</td>
-      <td style="padding:12px 16px;color:var(--brown-light);font-size:.82rem">${s.notes||s.address||'—'}</td>
-      <td style="padding:12px 16px;text-align:center">
-        <button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick='editStore(${JSON.stringify(s)})'>✏ Editar</button>
-        <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteStore('${s.id}')">🗑</button>
-      </td>
-    </tr>`).join('');
+  const scannerBase=`${window.location.origin}/biz/${BIZ_SLUG}/scanner-login`;
+  container.innerHTML=stores.map(s=>{
+    const st=_storeStatsCache[s.id]||{stamps:0,redeems:0,unique_cards:0,last_activity:null};
+    const geoTag=s.latitude?'<span style="font-size:.68rem;background:var(--honey-light);color:var(--honey-dark);padding:2px 7px;border-radius:10px;font-weight:700;margin-left:6px">📍 Geo</span>':'';
+    const reviewTag=s.google_review_url?'<span style="font-size:.68rem;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:10px;font-weight:700;margin-left:4px">⭐ Reseña</span>':'';
+    const lastActivity=st.last_activity?`Última actividad: ${st.last_activity}`:'Sin actividad aún';
+    return `<div class="card-box" style="margin-bottom:16px;padding:0;overflow:hidden">
+      <!-- Header local -->
+      <div style="padding:16px 20px;background:var(--brown);color:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="flex:1;min-width:150px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;font-variation-settings:'FILL' 1">store</span>
+            <span style="font-size:1rem;font-weight:800;letter-spacing:.3px">${s.name}</span>
+            ${geoTag}${reviewTag}
+          </div>
+          ${s.notes?`<div style="font-size:.74rem;opacity:.6;margin-top:3px">${s.notes}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn-sm" style="padding:5px 11px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);color:var(--cream);font-size:.72rem;border-radius:4px;cursor:pointer;font-family:inherit;font-weight:700" onclick='editStore(${JSON.stringify(s)})'>✏ Editar</button>
+          <button class="btn-sm" style="padding:5px 11px;background:rgba(220,50,50,.25);border:1.5px solid rgba(220,50,50,.4);color:#ffb3b3;font-size:.72rem;border-radius:4px;cursor:pointer;font-family:inherit;font-weight:700" onclick="deleteStore('${s.id}')">🗑</button>
+        </div>
+      </div>
+
+      <!-- PIN + URL de escáner -->
+      <div style="padding:14px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff">
+        <!-- PIN box -->
+        <div style="background:var(--cream);border:1.5px solid var(--cream-border);border-radius:8px;padding:10px 16px;text-align:center;min-width:100px">
+          <div style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--brown-light);margin-bottom:4px">PIN empleado</div>
+          <div style="font-size:1.5rem;font-weight:900;font-family:monospace;color:var(--brown);letter-spacing:4px">${s.pin||'—'}</div>
+          <button onclick="navigator.clipboard.writeText('${s.pin||''}').then(()=>showToast('PIN copiado','success'))"
+            style="margin-top:5px;font-size:.65rem;color:var(--honey-dark);background:none;border:none;cursor:pointer;font-weight:700;padding:0">📋 Copiar PIN</button>
+        </div>
+        <!-- URL scanner -->
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);margin-bottom:4px">Link de escáner para este local</div>
+          <div style="font-size:.78rem;font-family:monospace;color:var(--brown);background:var(--cream);border:1px solid var(--cream-border);border-radius:5px;padding:6px 10px;margin-bottom:6px;word-break:break-all">${scannerBase}</div>
+          <div style="font-size:.72rem;color:var(--brown-light);margin-bottom:8px">El empleado abre este link e introduce el PIN <strong>${s.pin||'—'}</strong></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="copyStoreUrl('${scannerBase}')" class="btn-sm btn-ghost" style="font-size:.7rem;display:inline-flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:.85rem">content_copy</span> Copiar link</button>
+            <a href="${scannerBase}" target="_blank" class="btn-sm btn-primary" style="font-size:.7rem;display:inline-flex;align-items:center;gap:4px;text-decoration:none"><span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Abrir</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div style="padding:14px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:var(--cream)">
+        <div style="text-align:center">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--brown);font-family:'Bebas Neue',sans-serif">${st.stamps}</div>
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);font-weight:700">Sellos</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--brown);font-family:'Bebas Neue',sans-serif">${st.redeems}</div>
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);font-weight:700">Premios</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:1.4rem;font-weight:900;color:var(--brown);font-family:'Bebas Neue',sans-serif">${st.unique_cards}</div>
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);font-weight:700">Clientes únicos</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:.8rem;font-weight:700;color:var(--brown)">${st.last_activity||'—'}</div>
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);font-weight:700">Última visita</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function showAddStore(){
@@ -7612,6 +7666,12 @@ function copyLoginUrl(){
   const url = 'https://zubcard.com/biz/' + BIZ_SLUG + '/scanner-login';
   navigator.clipboard.writeText(url).then(()=>showToast('URL copiada ✓','success')).catch(()=>{
     prompt('Copia esta URL:', url);
+  });
+}
+
+function copyStoreUrl(url){
+  navigator.clipboard.writeText(url).then(()=>showToast('Link copiado ✓','success')).catch(()=>{
+    prompt('Copia este link:', url);
   });
 }
 
