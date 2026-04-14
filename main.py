@@ -6906,20 +6906,34 @@ async def send_welcome_test(slug: str, pin: str = "", email: str = "", db: Sessi
 
 
 @app.get("/api/biz/{slug}/send-migration-test")
-async def send_migration_test(slug: str, pin: str = "", email: str = "", db: Session = Depends(get_db)):
-    """Temp: send test migration email to given address."""
+async def send_migration_test(slug: str, pin: str = "", email: str = "", card_id: str = "", db: Session = Depends(get_db)):
+    """Temp: send test migration email. Pass card_id for real wallet URL."""
     verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+    # Use real card data if card_id provided
+    stamps = 3
+    real_card_url = f"{BASE_URL}"
+    wallet_url = ""
+    cust_name = "Yanir"
+    if card_id:
+        card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.id == card_id).first()
+        if card:
+            stamps = card.stamps or 0
+            real_card_url = f"{BASE_URL}/card/{card_id}"
+            wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else ""
+            cust = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+            if cust:
+                cust_name = cust.first_name or "Yanir"
     migration_tpl = templates.get_template("email_migration.html")
     html_body = migration_tpl.render(
         subject="Cambiamos a una nueva tarjeta de fidelidad",
-        name="Yanir",
-        card_url=f"{BASE_URL}",
-        stamps=3,
-        wallet_url="",
+        name=cust_name,
+        card_url=real_card_url,
+        stamps=stamps,
+        wallet_url=wallet_url,
         google_wallet_url="",
         **_prog_email_kwargs(prog, biz),
     )
