@@ -2809,9 +2809,12 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
         <!-- Lista de locales con geo -->
         <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;justify-content:space-between">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
             <h3 style="margin:0;color:#0a0a0a;font-size:.95rem">Ubicaciones por local</h3>
-            <button class="btn-sm btn-ghost" onclick="loadGeoStoresList()" style="font-size:.72rem">↺ Actualizar</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn-sm btn-ghost" onclick="loadGeoStoresList()" style="font-size:.72rem">↺ Actualizar</button>
+              <button class="btn-sm btn-primary" style="font-size:.72rem;display:inline-flex;align-items:center;gap:4px" onclick="showSection('stores');setTimeout(showAddStore,300)"><span class="material-symbols-outlined" style="font-size:.85rem">add</span> Nuevo local</button>
+            </div>
           </div>
           <div id="geo-stores-list">
             <p style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Cargando locales…</p>
@@ -2965,9 +2968,12 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
         <!-- Lista per-store -->
         <div class="card-box" style="padding:0;overflow:hidden;margin-bottom:20px">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;justify-content:space-between">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--cream-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
             <h3 style="margin:0;color:#0a0a0a;font-size:.95rem">Link de reseñas por local</h3>
-            <button class="btn-sm btn-ghost" onclick="loadReviewsStoresList()" style="font-size:.72rem">↺ Actualizar</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn-sm btn-ghost" onclick="loadReviewsStoresList()" style="font-size:.72rem">↺ Actualizar</button>
+              <button class="btn-sm btn-primary" style="font-size:.72rem;display:inline-flex;align-items:center;gap:4px" onclick="showSection('stores');setTimeout(showAddStore,300)"><span class="material-symbols-outlined" style="font-size:.85rem">add</span> Nuevo local</button>
+            </div>
           </div>
           <div id="reviews-stores-list">
             <p style="text-align:center;padding:24px;color:var(--brown-light);font-size:.82rem">Cargando locales…</p>
