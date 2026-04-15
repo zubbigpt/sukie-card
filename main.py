@@ -6141,19 +6141,17 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             cid = data.get("customer")
             biz_row = _biz_by_customer(cid)
             if biz_row:
-                # Proteger cuentas con plan bloqueado (owner-account, etc.)
-                stored = db.execute(text(
-                    "SELECT stripe_subscription_id FROM businesses WHERE id=:bid"
-                ), {"bid": str(biz_row[0])}).scalar()
-                if stored and not stored.startswith("sub_"):
-                    print(f"⏭️ invoice.payment_failed ignorado — plan bloqueado ({stored})")
-                else:
-                    # Bajar a free inmediatamente — si el cobro falla no deben tener acceso Pro
-                    db.execute(text(
-                        "UPDATE businesses SET plan='free', stripe_subscription_status='past_due' WHERE id=:bid"
-                    ), {"bid": str(biz_row[0])})
-                    db.commit()
-                    print(f"⚠️ invoice.payment_failed — biz {biz_row[0]} → plan=free, status=past_due")
+                # NO bajamos el plan aquí — Stripe reintenta el cobro automáticamente 3-4 veces
+                # durante ~8 días. Si reintenta y cobra, llega customer.subscription.updated con
+                # status=active y el plan sigue en pro.
+                # Solo bajamos a free cuando Stripe se rinde del todo y envía
+                # customer.subscription.deleted (ya manejado arriba).
+                # Aquí solo marcamos past_due para mostrar el aviso de pago en el dashboard.
+                db.execute(text(
+                    "UPDATE businesses SET stripe_subscription_status='past_due' WHERE id=:bid"
+                ), {"bid": str(biz_row[0])})
+                db.commit()
+                print(f"⚠️ invoice.payment_failed — biz {biz_row[0]} → status=past_due (plan sin cambios, Stripe reintentará)")
 
         else:
             print(f"⏭️ Stripe event ignorado: {etype}")
