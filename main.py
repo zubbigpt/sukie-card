@@ -6886,7 +6886,7 @@ async def register_referral_partner(request: Request, db: Session = Depends(get_
 @app.get("/api/zubadmin/referidos")
 async def admin_get_referidos(request: Request, db: Session = Depends(get_db)):
     """Admin: lista todos los partners de referidos con sus estadísticas."""
-    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+    if not _zubadmin_authenticated(request):
         raise HTTPException(status_code=401, detail="No autorizado")
 
     partners = db.execute(text("""
@@ -6910,7 +6910,7 @@ async def admin_get_referidos(request: Request, db: Session = Depends(get_db)):
 @app.post("/api/zubadmin/referidos/{partner_id}/mark-paid")
 async def admin_mark_commissions_paid(partner_id: str, request: Request, db: Session = Depends(get_db)):
     """Admin: marca todas las comisiones pendientes de un partner como pagadas."""
-    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+    if not _zubadmin_authenticated(request):
         raise HTTPException(status_code=401, detail="No autorizado")
 
     db.execute(text("""
@@ -6925,7 +6925,7 @@ async def admin_mark_commissions_paid(partner_id: str, request: Request, db: Ses
 @app.patch("/api/zubadmin/referidos/{partner_id}")
 async def admin_edit_partner(partner_id: str, request: Request, db: Session = Depends(get_db)):
     """Admin: edita datos de un partner (wallet, comisión %, notas, activo)."""
-    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+    if not _zubadmin_authenticated(request):
         raise HTTPException(status_code=401, detail="No autorizado")
     body = await request.json()
     updates = {}
@@ -6947,7 +6947,7 @@ async def admin_edit_partner(partner_id: str, request: Request, db: Session = De
 @app.patch("/api/zubadmin/referidos/{partner_id}/assign-business")
 async def admin_assign_business(partner_id: str, request: Request, db: Session = Depends(get_db)):
     """Admin: asigna o desasigna un restaurante a un partner de referido."""
-    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+    if not _zubadmin_authenticated(request):
         raise HTTPException(status_code=401, detail="No autorizado")
     body = await request.json()
     business_id = body.get("business_id")  # None para desasignar
@@ -6965,7 +6965,7 @@ async def admin_assign_business(partner_id: str, request: Request, db: Session =
 @app.get("/api/zubadmin/businesses-list")
 async def admin_businesses_list(request: Request, db: Session = Depends(get_db)):
     """Admin: lista todos los negocios para el selector de asignación."""
-    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+    if not _zubadmin_authenticated(request):
         raise HTTPException(status_code=401, detail="No autorizado")
     rows = db.execute(text(
         "SELECT id::text, name, email, plan, referral_partner_id::text FROM businesses ORDER BY created_at DESC"
