@@ -833,7 +833,7 @@
   </ul>
   <div class="nav-right">
     <a href="/app/login" class="nav-login">Acceder</a>
-    <a href="/app/register" class="nav-cta">Empezar gratis</a>
+    <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="nav-cta">Empezar gratis</a>
   </div>
   <button class="nav-mobile-toggle" id="mobile-toggle" aria-label="Menú">
     <span></span><span></span><span></span>
@@ -849,7 +849,7 @@
     <h1 class="hero-h1">Tu programa de<br/><em>fidelización</em><br/>en 5 minutos.</h1>
     <p class="hero-sub">Tarjetas digitales para Apple &amp; Google Wallet. Sin apps que descargar, sin papel que perder. Tus clientes regresan más.</p>
     <div class="hero-actions">
-      <a href="/app/register" class="btn-primary">Empieza gratis 14 días</a>
+      <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn-primary">Empieza gratis 14 días</a>
       <a href="/app/login" class="btn-ghost">Acceder →</a>
     </div>
   </div>
@@ -1045,14 +1045,14 @@
 <!-- WALLET BADGES -->
 <div class="wallet-strip">
   <span class="wallet-strip-label">Funciona con</span>
-  <a href="/app/register" class="wallet-badge">
+  <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="wallet-badge">
     <svg width="20" height="20" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46.7 790.7 0 663 0 541.8c0-207.8 134.4-318 266.5-318 49.9 0 91.5 32.8 122.8 32.8 30 0 77.7-34.2 137.8-34.2 22.5 0 108.2 2.6 168.3 74.7zm-56-181.4c-27.5 30.6-72.3 54.3-114.2 54.3-5.2 0-10.4-.6-15-1.9-1.3-41.5 22.5-87.5 51.7-116.5C686.9 61.6 737.8 33.5 783 30c1.3 6.5 1.9 13 1.9 19.5 0 40.2-16.2 83.6-52.8 110z"/></svg>
     <div class="wallet-badge-text">
       <span class="wallet-badge-small">Añadir a</span>
       <span class="wallet-badge-big">Apple Wallet</span>
     </div>
   </a>
-  <a href="/app/register" class="wallet-badge">
+  <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="wallet-badge">
     <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     <div class="wallet-badge-text">
       <span class="wallet-badge-small">Añadir a</span>
@@ -1350,7 +1350,7 @@
         <li><span class="check">✓</span> Dashboard admin completo</li>
         <li><span class="check">✓</span> Soporte prioritario</li>
       </ul>
-      <a href="/app/register" class="price-cta">Empezar 14 días gratis →</a>
+      <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="price-cta">Empezar 14 días gratis →</a>
       <p class="price-cta-sub">No se cobra nada durante el período de prueba</p>
       <a href="/app/login" class="price-login-link">Ya tengo cuenta</a>
       <div class="trust-bar">
@@ -1391,7 +1391,7 @@
   <p class="section-p">Reserva una llamada de 20 minutos. Te enseñamos cómo ZubCard funciona para tu negocio, sin presión y sin coste.</p>
 
   <div class="demo-actions">
-    <a href="https://calendar.app.google/7d4a8FXS1jjy1Qsg7" target="_blank" rel="noopener" class="btn-primary">
+    <a href="{% if ref_code %}/demo/{{ ref_code }}{% else %}/demo{% endif %}" target="_blank" rel="noopener" class="btn-primary">
       Agendar demo gratuita
     </a>
     <a href="mailto:zubcard@gmail.com?subject=Pregunta%20sobre%20ZubCard" class="btn-ghost" style="color:rgba(255,255,255,.75);border-color:rgba(255,255,255,.2)">
@@ -1429,7 +1429,7 @@
     <h2>Empieza hoy.<br/><em>14 días gratis.</em></h2>
     <p>Configura tu programa de fidelización en 5 minutos y dale a tus clientes una razón para volver.</p>
     <div class="actions">
-      <a href="/app/register" class="btn-primary">Crear mi tarjeta gratis</a>
+      <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn-primary">Crear mi tarjeta gratis</a>
       <a href="/app/login" class="btn-ghost">Ya tengo cuenta →</a>
     </div>
   </div>
@@ -1460,7 +1460,7 @@
     <div class="footer-col">
       <h4>Cuenta</h4>
       <ul>
-        <li><a href="/app/register">Registrarse</a></li>
+        <li><a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}">Registrarse</a></li>
         <li><a href="/app/login">Acceder</a></li>
         <li><a href="mailto:hola@zubcard.com">Contacto</a></li>
       </ul>

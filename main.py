@@ -4050,7 +4050,7 @@ async def geo_reverse(lat: float = 0.0, lng: float = 0.0):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/", response_class=HTMLResponse)
 async def zubcard_landing(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request, "ref_code": ""})
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -6847,8 +6847,8 @@ async def referidos_page(request: Request):
 
 @app.get("/r/{code}", response_class=HTMLResponse)
 async def referral_landing(code: str, request: Request):
-    """Landing page de bienvenida con presentación de ZubCard + CTA para registrarse."""
-    return templates.TemplateResponse("referral_landing.html", {"request": request, "ref_code": code.upper()})
+    """Sirve la misma landing de zubcard.com con el ref_code inyectado en los CTAs."""
+    return templates.TemplateResponse("index.html", {"request": request, "ref_code": code.upper()})
 
 
 @app.post("/api/referidos/register")
