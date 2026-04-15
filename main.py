@@ -91,7 +91,7 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_PRICE_ID_PRO    = os.environ.get("STRIPE_PRICE_ID_PRO", "")       # price_xxx
 STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")      # whsec_xxx
 STRIPE_PRO_PRICE_DISPLAY = os.environ.get("STRIPE_PRO_PRICE_DISPLAY", "€39")  # display only
-REFERRAL_COMMISSION_EUR  = float(os.environ.get("REFERRAL_COMMISSION_EUR", "5.0"))  # comisión por referido/mes
+REFERRAL_COMMISSION_PCT  = float(os.environ.get("REFERRAL_COMMISSION_PCT", "20.0"))  # % comisión por referido/mes
 
 # Inicializar Stripe SDK con la clave secreta
 import stripe as _stripe_sdk
@@ -6284,6 +6284,9 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                         if not exists:
                             from datetime import datetime as _dt2
                             period_month = _dt2.now().strftime("%Y-%m")
+                            # amount_paid viene en céntimos → convertir a EUR → aplicar %
+                            amount_paid_cents = data.get("amount_paid", 0)
+                            commission_eur = round(amount_paid_cents / 100 * REFERRAL_COMMISSION_PCT / 100, 2)
                             db.execute(text("""
                                 INSERT INTO referral_commissions
                                     (partner_id, business_id, amount_eur, period_month, stripe_invoice_id)
@@ -6291,12 +6294,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                             """), {
                                 "pid":   str(partner_row[0]),
                                 "bid":   str(biz_row[0]),
-                                "amt":   REFERRAL_COMMISSION_EUR,
+                                "amt":   commission_eur,
                                 "month": period_month,
                                 "inv":   invoice_id,
                             })
                             db.commit()
-                            print(f"✅ Comisión referido registrada: partner {partner_row[0]} ← biz {biz_row[0]} ({REFERRAL_COMMISSION_EUR}€)")
+                            print(f"✅ Comisión referido registrada: partner {partner_row[0]} ← biz {biz_row[0]} ({commission_eur}€ = {REFERRAL_COMMISSION_PCT}% de {amount_paid_cents/100}€)")
 
         elif etype == "invoice.payment_failed":
             cid = data.get("customer")
