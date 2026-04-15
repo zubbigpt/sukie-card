@@ -7,106 +7,394 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     :root {
-      --brown: #26170c; --gold: #ffca48; --gold-dark: #785a00;
-      --surface: #fff8f5; --surface-mid: #ffeade; --r: 12px;
-      --shadow: 0 8px 40px rgba(38,23,12,.13);
+      --brown: #26170c;
+      --gold: #ffca48;
+      --gold-dark: #785a00;
+      --surface: #fff8f5;
+      --surface-mid: #ffeade;
+      --muted: #9a8579;
+      --border: #ede3dc;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, var(--surface) 0%, var(--surface-mid) 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--surface);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
 
-    .card { background: #fff; border-radius: 20px; box-shadow: var(--shadow); max-width: 480px; width: 100%; padding: 44px 40px; }
+    .wrap {
+      width: 100%;
+      max-width: 860px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 12px 48px rgba(38,23,12,.12);
+      overflow: hidden;
+    }
 
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: .05em; color: var(--brown); margin-bottom: 4px; }
-    .logo span { color: var(--gold-dark); }
-    .badge { display: inline-block; background: var(--gold); color: var(--brown); font-size: .7rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+    /* ── LEFT ── */
+    .left {
+      background: var(--brown);
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: .05em;
+      color: #fff;
+    }
+    .logo span { color: var(--gold); }
 
-    h1 { font-size: 1.6rem; font-weight: 900; color: var(--brown); margin-bottom: 8px; line-height: 1.2; }
-    .subtitle { font-size: .9rem; color: #7a6558; line-height: 1.6; margin-bottom: 28px; }
+    .left-head h1 {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .left-head p {
+      font-size: .88rem;
+      color: rgba(255,255,255,.58);
+      line-height: 1.7;
+    }
 
-    .perks { display: grid; gap: 10px; margin-bottom: 28px; }
-    .perk { display: flex; align-items: flex-start; gap: 10px; }
-    .perk-icon { width: 32px; height: 32px; background: #fff3d0; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
-    .perk-text { font-size: .85rem; color: var(--brown); font-weight: 600; line-height: 1.4; }
-    .perk-sub { font-size: .78rem; color: #9a8579; font-weight: 400; }
+    .perks { display: grid; gap: 18px; }
+    .perk { display: flex; gap: 14px; align-items: flex-start; }
+    .perk-icon {
+      width: 38px; height: 38px;
+      border-radius: 9px;
+      background: rgba(255,202,72,.1);
+      border: 1px solid rgba(255,202,72,.18);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .perk-copy strong {
+      display: block;
+      font-size: .88rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .perk-copy span {
+      font-size: .76rem;
+      color: rgba(255,255,255,.48);
+      line-height: 1.5;
+    }
 
-    .divider { border: none; border-top: 1.5px solid #f0e6df; margin: 24px 0; }
+    .left-note {
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,.07);
+      font-size: .73rem;
+      color: rgba(255,255,255,.3);
+      line-height: 1.6;
+    }
 
-    label { display: block; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #9a8579; margin-bottom: 5px; margin-top: 14px; }
-    input { width: 100%; padding: 11px 14px; border: 1.5px solid #e2cfc8; border-radius: 8px; font-size: .92rem; font-family: 'Manrope', sans-serif; outline: none; transition: border-color .15s; }
-    input:focus { border-color: var(--gold-dark); }
-    .hint { font-size: .75rem; color: #b0a098; margin-top: 4px; }
+    /* ── RIGHT ── */
+    .right {
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-    .btn { width: 100%; margin-top: 20px; padding: 14px; background: var(--brown); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; letter-spacing: .03em; transition: background .15s; }
-    .btn:hover { background: #3d2b1f; }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    /* FORM VIEW */
+    .section-label {
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .right h2 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--brown);
+      margin-bottom: 6px;
+    }
+    .right .sub {
+      font-size: .83rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
 
-    /* Resultado */
-    #result { display: none; text-align: center; }
-    .success-icon { width: 64px; height: 64px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.8rem; }
-    #result h2 { font-size: 1.3rem; font-weight: 900; color: var(--brown); margin-bottom: 8px; }
-    #result p { font-size: .88rem; color: #7a6558; margin-bottom: 20px; line-height: 1.6; }
-    .link-box { background: #f7f1ec; border: 1.5px dashed #c5b5ac; border-radius: 10px; padding: 14px 16px; font-size: .85rem; color: var(--brown); font-weight: 700; word-break: break-all; margin-bottom: 14px; cursor: pointer; transition: background .15s; }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .field input {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      font-family: 'Manrope', sans-serif;
+      color: var(--brown);
+      outline: none;
+      transition: border-color .15s;
+      background: var(--surface);
+    }
+    .field input:focus { border-color: var(--brown); background: #fff; }
+    .field-hint {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .error-msg {
+      background: #fff0f0;
+      border: 1px solid #f5c6cb;
+      color: #b71c1c;
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-size: .81rem;
+      margin-bottom: 14px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--brown);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 900;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+      transition: background .15s;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-submit:hover { background: #3d2b1f; }
+    .btn-submit:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* RESULT VIEW */
+    #result { display: none; }
+    .result-check {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: #edf7f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    #result h2 {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--brown);
+      margin-bottom: 8px;
+    }
+    #result p {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 22px;
+    }
+    .link-box {
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 13px 15px;
+      font-size: .83rem;
+      font-family: monospace;
+      color: var(--brown);
+      font-weight: 700;
+      word-break: break-all;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: background .15s;
+      line-height: 1.5;
+    }
     .link-box:hover { background: #f0e8e2; }
-    .copy-btn { width: 100%; padding: 12px; background: var(--gold); color: var(--brown); border: none; border-radius: 8px; font-size: .92rem; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; }
-    .copy-btn:hover { background: #f0bd3a; }
-    .back-link { display: block; text-align: center; margin-top: 14px; font-size: .82rem; color: #b0a098; cursor: pointer; text-decoration: underline; }
 
-    .error-msg { background: #fff0f0; border: 1px solid #ffcdd2; color: #c62828; border-radius: 8px; padding: 10px 14px; font-size: .83rem; margin-top: 12px; display: none; }
+    .btn-copy {
+      width: 100%;
+      padding: 12px;
+      background: var(--gold);
+      color: var(--brown);
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 900;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .15s;
+    }
+    .btn-copy:hover { background: #f5b829; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      font-size: .78rem;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .back-link:hover { color: var(--brown); }
+
+    @media (max-width: 640px) {
+      .wrap { grid-template-columns: 1fr; }
+      .left { padding: 36px 28px; }
+      .right { padding: 36px 28px; }
+      .row-2 { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
+  <div class="wrap">
 
-    <!-- FORMULARIO -->
-    <div id="form-view">
+    <!-- LEFT -->
+    <div class="left">
       <div class="logo">Zub<span>Card</span></div>
-      <div class="badge">Programa de Referidos</div>
 
-      <h1>Gana dinero recomendando ZubCard</h1>
-      <p class="subtitle">Cada restaurante que se afilie con tu link te genera una comisión mensual automática, mientras siga activo.</p>
+      <div class="left-head">
+        <h1>Gana comisión recomendando ZubCard</h1>
+        <p>Comparte tu link con restaurantes y negocios. Cada uno que se afilie te genera ingresos recurrentes mientras siga activo.</p>
+      </div>
 
       <div class="perks">
         <div class="perk">
-          <div class="perk-icon">💸</div>
-          <div class="perk-text">Comisión mensual recurrente<div class="perk-sub">Recibes tu comisión cada mes que el negocio pague</div></div>
+          <div class="perk-icon">
+            <!-- Coin / recurring -->
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+              <circle cx="8.5" cy="8.5" r="6.5" stroke="#ffca48" stroke-width="1.4"/>
+              <path d="M8.5 5.5v1M8.5 10v1" stroke="#ffca48" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M6.5 7.2c0-.9.9-1.7 2-1.7s2 .8 2 1.7c0 2-4 1.5-4 3.3 0 1 .9 1.7 2 1.7s2-.7 2-1.7" stroke="#ffca48" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="perk-copy">
+            <strong>20% mensual recurrente</strong>
+            <span>Cobras cada mes que el negocio pague su suscripción</span>
+          </div>
         </div>
+
         <div class="perk">
-          <div class="perk-icon">🌍</div>
-          <div class="perk-text">Pago en USDT TRC20<div class="perk-sub">Sin fronteras, sin bancos, directo a tu wallet</div></div>
+          <div class="perk-icon">
+            <!-- Globe / network -->
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+              <circle cx="8.5" cy="8.5" r="6.5" stroke="#ffca48" stroke-width="1.4"/>
+              <path d="M8.5 2C8.5 2 6 5 6 8.5s2.5 6.5 2.5 6.5M8.5 2c0 0 3 3 3 6.5S8.5 15 8.5 15" stroke="#ffca48" stroke-width="1.3"/>
+              <path d="M2 8.5h13" stroke="#ffca48" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M3.5 5.5h10M3.5 11.5h10" stroke="#ffca48" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="perk-copy">
+            <strong>Pago en USDT TRC20</strong>
+            <span>Sin bancos, sin fronteras, directo a tu wallet</span>
+          </div>
         </div>
+
         <div class="perk">
-          <div class="perk-icon">🔗</div>
-          <div class="perk-text">Tu link único de por vida<div class="perk-sub">Compártelo y cobra automáticamente</div></div>
+          <div class="perk-icon">
+            <!-- Link chain -->
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+              <path d="M7 10.5l-1.5 1.5a2.8 2.8 0 01-4-4l2-2a2.8 2.8 0 014 0" stroke="#ffca48" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M10 6.5l1.5-1.5a2.8 2.8 0 014 4l-2 2a2.8 2.8 0 01-4 0" stroke="#ffca48" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M6.5 10.5l4-4" stroke="#ffca48" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="perk-copy">
+            <strong>Tu link único de por vida</strong>
+            <span>Regístralo una vez y cobra de forma automática</span>
+          </div>
         </div>
       </div>
 
-      <hr class="divider">
-
-      <label>Nombre</label>
-      <input id="f-name" type="text" placeholder="Tu nombre" autocomplete="given-name">
-
-      <label>Apellido</label>
-      <input id="f-last" type="text" placeholder="Tu apellido" autocomplete="family-name">
-
-      <label>Wallet USDT TRC20</label>
-      <input id="f-wallet" type="text" placeholder="TRxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" spellcheck="false" autocomplete="off">
-      <div class="hint">Asegúrate de que sea una dirección TRC20 (empieza por T). Ahí recibirás tus comisiones.</div>
-
-      <div class="error-msg" id="error-msg"></div>
-
-      <button class="btn" onclick="submitForm()" id="submit-btn">Obtener mi link de referido →</button>
+      <div class="left-note">
+        ZubCard retiene el 80% y tú recibes el 20%<br>
+        de cada cobro mensual de los negocios que referiste.
+      </div>
     </div>
 
-    <!-- RESULTADO -->
-    <div id="result">
-      <div class="success-icon">🎉</div>
-      <h2>¡Ya eres partner de ZubCard!</h2>
-      <p>Este es tu link único. Compártelo con restaurantes y negocios — cada vez que uno se afilie y pague, recibirás tu comisión en USDT.</p>
-      <div class="link-box" id="link-display" onclick="copyLink()">—</div>
-      <button class="copy-btn" onclick="copyLink()" id="copy-btn">📋 Copiar link</button>
-      <span class="back-link" onclick="resetForm()">Registrar otro partner</span>
-    </div>
+    <!-- RIGHT -->
+    <div class="right">
 
+      <!-- FORMULARIO -->
+      <div id="form-view">
+        <div class="section-label">Programa de referidos</div>
+        <h2>Obtén tu link de partner</h2>
+        <p class="sub">Rellena tus datos y te generamos un link único de por vida.</p>
+
+        <div class="row-2">
+          <div class="field">
+            <label>Nombre</label>
+            <input id="f-name" type="text" placeholder="Tu nombre" autocomplete="given-name">
+          </div>
+          <div class="field">
+            <label>Apellido</label>
+            <input id="f-last" type="text" placeholder="Tu apellido" autocomplete="family-name">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Wallet USDT TRC20</label>
+          <input id="f-wallet" type="text" placeholder="TRxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" spellcheck="false" autocomplete="off">
+          <div class="field-hint">Dirección TRC20 — empieza por T. Aquí recibirás tus comisiones.</div>
+        </div>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <button class="btn-submit" onclick="submitForm()" id="submit-btn">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M7.5 1.5l-1 1 4 4H1v2h9.5l-4 4 1 1 6-6-6-6z" fill="#fff"/>
+          </svg>
+          Obtener mi link
+        </button>
+      </div>
+
+      <!-- RESULTADO -->
+      <div id="result">
+        <div class="result-check">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12.5l5 5 9-9" stroke="#2e7d32" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2>Ya eres partner de ZubCard</h2>
+        <p>Este es tu link único. Compártelo con restaurantes y negocios — cada vez que uno pague su mensualidad, recibirás tu comisión en USDT.</p>
+        <div class="link-box" id="link-display" onclick="copyLink()">—</div>
+        <button class="btn-copy" onclick="copyLink()" id="copy-btn">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <rect x="5" y="5" width="8" height="8" rx="1.5" stroke="#26170c" stroke-width="1.4"/>
+            <path d="M5 4V3a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1h-1" stroke="#26170c" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          Copiar link
+        </button>
+        <span class="back-link" onclick="resetForm()">Registrar otro partner</span>
+      </div>
+
+    </div>
   </div>
 
   <script>
@@ -119,11 +407,11 @@
     errEl.style.display = 'none';
 
     if (!name || !last) { showError('Por favor introduce tu nombre y apellido.'); return; }
-    if (!wallet || wallet.length < 30) { showError('La wallet TRC20 parece incorrecta. Debe tener al menos 34 caracteres y empezar por T.'); return; }
-    if (!wallet.startsWith('T')) { showError('Las wallets TRC20 empiezan por la letra T. Verifica que estás usando la red TRC20.'); return; }
+    if (!wallet || wallet.length < 30) { showError('La wallet TRC20 debe tener al menos 34 caracteres y empezar por T.'); return; }
+    if (!wallet.startsWith('T')) { showError('Las wallets TRC20 empiezan por T. Verifica que usas la red TRC20.'); return; }
 
     btn.disabled = true;
-    btn.textContent = 'Generando tu link…';
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M7.5 2a5.5 5.5 0 015.5 5.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 7.5 7.5" to="360 7.5 7.5" dur=".7s" repeatCount="indefinite"/></path></svg> Generando…';
 
     try {
       const r = await fetch('/api/referidos/register', {
@@ -132,15 +420,19 @@
         body: JSON.stringify({ name, last_name: last, wallet_trc20: wallet })
       });
       const d = await r.json();
-      if (!r.ok) { showError(d.detail || 'Error al registrarse. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Obtener mi link de referido →'; return; }
-
+      if (!r.ok) {
+        showError(d.detail || 'Error al registrarse. Inténtalo de nuevo.');
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5l-1 1 4 4H1v2h9.5l-4 4 1 1 6-6-6-6z" fill="#fff"/></svg> Obtener mi link';
+        return;
+      }
       document.getElementById('link-display').textContent = d.referral_link;
       document.getElementById('form-view').style.display = 'none';
       document.getElementById('result').style.display = 'block';
     } catch(e) {
       showError('Error de conexión. Inténtalo de nuevo.');
       btn.disabled = false;
-      btn.textContent = 'Obtener mi link de referido →';
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5l-1 1 4 4H1v2h9.5l-4 4 1 1 6-6-6-6z" fill="#fff"/></svg> Obtener mi link';
     }
   }
 
@@ -154,8 +446,9 @@
     const link = document.getElementById('link-display').textContent;
     navigator.clipboard.writeText(link).then(() => {
       const btn = document.getElementById('copy-btn');
-      btn.textContent = '✅ ¡Copiado!';
-      setTimeout(() => { btn.textContent = '📋 Copiar link'; }, 2500);
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5l3.5 4 6.5-7" stroke="#26170c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiado';
+      setTimeout(() => { btn.innerHTML = orig; }, 2500);
     });
   }
 
@@ -165,8 +458,9 @@
     document.getElementById('f-name').value = '';
     document.getElementById('f-last').value = '';
     document.getElementById('f-wallet').value = '';
-    document.getElementById('submit-btn').disabled = false;
-    document.getElementById('submit-btn').textContent = 'Obtener mi link de referido →';
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5l-1 1 4 4H1v2h9.5l-4 4 1 1 6-6-6-6z" fill="#fff"/></svg> Obtener mi link';
   }
   </script>
 </body>
