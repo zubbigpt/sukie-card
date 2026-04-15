@@ -7,145 +7,354 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     :root {
-      --brown: #26170c; --gold: #ffca48; --gold-dark: #785a00;
-      --surface: #fff8f5; --surface-mid: #ffeade;
+      --brown: #26170c;
+      --gold: #ffca48;
+      --gold-dark: #785a00;
+      --surface: #fff8f5;
+      --surface-mid: #ffeade;
+      --muted: #9a8579;
+      --border: #ede3dc;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Manrope', sans-serif;
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-mid) 100%);
+      background: var(--surface);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 32px 20px;
+      padding: 40px 20px;
     }
 
-    .card {
+    .wrap {
+      width: 100%;
+      max-width: 860px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 8px 40px rgba(38,23,12,.13);
-      max-width: 480px;
-      width: 100%;
+      box-shadow: 0 12px 48px rgba(38,23,12,.12);
       overflow: hidden;
     }
 
-    /* Header oscuro */
-    .card-header {
+    /* ── LEFT PANEL ── */
+    .left {
       background: var(--brown);
-      padding: 32px 36px 28px;
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: .05em;
       color: #fff;
-      text-align: center;
+      margin-bottom: 40px;
     }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: .05em; margin-bottom: 16px; }
     .logo span { color: var(--gold); }
-    .badge {
-      display: inline-block; background: rgba(255,202,72,.15); border: 1px solid rgba(255,202,72,.4);
-      color: var(--gold); font-size: .7rem; font-weight: 800; padding: 4px 12px;
-      border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;
-    }
-    .card-header h1 { font-size: 1.45rem; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
-    .card-header p { font-size: .88rem; color: rgba(255,255,255,.7); line-height: 1.6; }
 
-    /* Body */
-    .card-body { padding: 28px 36px 36px; }
-
-    /* Info items */
-    .info-list { display: grid; gap: 12px; margin-bottom: 28px; }
-    .info-item { display: flex; gap: 12px; align-items: center; }
-    .info-icon {
-      width: 40px; height: 40px; border-radius: 10px; background: #fff3d0;
-      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    .left h1 {
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 12px;
     }
-    .info-text { font-size: .88rem; color: var(--brown); font-weight: 600; line-height: 1.4; }
-    .info-sub { font-size: .78rem; color: #9a8579; font-weight: 400; }
-
-    /* CTA */
-    .btn-cta {
-      display: block; width: 100%; padding: 15px;
-      background: var(--gold); color: var(--brown);
-      border: none; border-radius: 10px; font-size: 1rem; font-weight: 900;
-      cursor: pointer; font-family: 'Manrope', sans-serif;
-      text-align: center; text-decoration: none; letter-spacing: .02em;
-      transition: background .15s;
+    .left p {
+      font-size: .9rem;
+      color: rgba(255,255,255,.6);
+      line-height: 1.7;
+      margin-bottom: 40px;
     }
-    .btn-cta:hover { background: #f0bd3a; }
 
-    .or { text-align: center; color: #c5b5ac; font-size: .8rem; margin: 16px 0; position: relative; }
-    .or::before, .or::after {
-      content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: #f0e6df;
+    .feat-list { display: grid; gap: 20px; }
+    .feat {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
     }
-    .or::before { left: 0; } .or::after { right: 0; }
+    .feat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255,202,72,.12);
+      border: 1px solid rgba(255,202,72,.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .feat-icon svg { display: block; }
+    .feat-copy strong {
+      display: block;
+      font-size: .88rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .feat-copy span {
+      font-size: .78rem;
+      color: rgba(255,255,255,.5);
+      line-height: 1.4;
+    }
 
-    .btn-register {
-      display: block; width: 100%; padding: 13px;
-      background: var(--brown); color: #fff;
-      border: none; border-radius: 10px; font-size: .92rem; font-weight: 800;
-      cursor: pointer; font-family: 'Manrope', sans-serif;
-      text-align: center; text-decoration: none;
-      transition: background .15s;
+    .left-footer {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      font-size: .75rem;
+      color: rgba(255,255,255,.35);
+      line-height: 1.6;
     }
-    .btn-register:hover { background: #3d2b1f; }
 
-    .footer-note {
-      text-align: center; margin-top: 18px; font-size: .78rem; color: #b0a098; line-height: 1.6;
+    /* ── RIGHT PANEL ── */
+    .right {
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .footer-note a { color: var(--brown); font-weight: 700; text-decoration: none; }
+
+    .right-label {
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .right h2 {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--brown);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .right .sub {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    /* meta chips */
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 11px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--brown);
+    }
+    .chip svg { flex-shrink: 0; }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px 20px;
+      background: var(--gold);
+      color: var(--brown);
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 900;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover { background: #f5b829; transform: translateY(-1px); }
+    .btn-primary svg { flex-shrink: 0; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      font-size: .75rem;
+      color: var(--border);
+      font-weight: 600;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 13px 20px;
+      background: none;
+      color: var(--brown);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: .88rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+      text-align: center;
+      text-decoration: none;
+      transition: border-color .15s, background .15s;
+    }
+    .btn-secondary:hover { border-color: var(--brown); background: var(--surface); }
+
+    .right-footer {
+      margin-top: 22px;
+      font-size: .75rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+    }
+    .right-footer a {
+      color: var(--brown);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    @media (max-width: 640px) {
+      .wrap { grid-template-columns: 1fr; }
+      .left { padding: 36px 28px; }
+      .right { padding: 36px 28px; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="card-header">
-      <div class="logo">Zub<span>Card</span></div>
-      <div class="badge">Demo gratuita</div>
-      <h1>Hablemos de tu negocio</h1>
-      <p>Te mostramos cómo funciona ZubCard en 20 minutos y resolvemos todas tus dudas.</p>
-    </div>
+  <div class="wrap">
 
-    <div class="card-body">
-      <div class="info-list">
-        <div class="info-item">
-          <div class="info-icon">⏱️</div>
-          <div class="info-text">20 minutos
-            <div class="info-sub">Sin compromiso, sin presión</div>
+    <!-- LEFT -->
+    <div class="left">
+      <div>
+        <div class="logo">Zub<span>Card</span></div>
+        <h1>Hablemos de tu negocio</h1>
+        <p>20 minutos. Sin compromiso. Te mostramos el producto en vivo y adaptamos la demo a tu tipo de negocio.</p>
+      </div>
+
+      <div class="feat-list">
+        <div class="feat">
+          <div class="feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6.5" stroke="#ffca48" stroke-width="1.4"/>
+              <path d="M8 4.5V8.2l2.5 1.5" stroke="#ffca48" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="feat-copy">
+            <strong>20 minutos</strong>
+            <span>Directo al grano, sin relleno</span>
           </div>
         </div>
-        <div class="info-item">
-          <div class="info-icon">🎥</div>
-          <div class="info-text">Videollamada por Google Meet
-            <div class="info-sub">Desde tu ordenador o móvil</div>
+
+        <div class="feat">
+          <div class="feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="3.5" width="13" height="9" rx="2" stroke="#ffca48" stroke-width="1.4"/>
+              <path d="M6 6.5l2 1.5 2-1.5" stroke="#ffca48" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="feat-copy">
+            <strong>Google Meet</strong>
+            <span>Desde cualquier dispositivo</span>
           </div>
         </div>
-        <div class="info-item">
-          <div class="info-icon">🗓️</div>
-          <div class="info-text">Elige el horario que mejor te venga
-            <div class="info-sub">Disponible de lunes a viernes</div>
+
+        <div class="feat">
+          <div class="feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="2.5" width="12" height="11" rx="1.5" stroke="#ffca48" stroke-width="1.4"/>
+              <path d="M5 1.5V3.5M11 1.5V3.5M2 6h12" stroke="#ffca48" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="feat-copy">
+            <strong>Tú eliges la fecha</strong>
+            <span>Agenda cuando mejor te venga</span>
           </div>
         </div>
-        <div class="info-item">
-          <div class="info-icon">🎁</div>
-          <div class="info-text">14 días de prueba gratis al terminar
-            <div class="info-sub">Sin tarjeta de crédito hasta el día 15</div>
+
+        <div class="feat">
+          <div class="feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1.5L9.8 5.6l4.5.4-3.3 2.9 1 4.4L8 11l-3.9 2.3 1-4.4L1.7 6l4.5-.4L8 1.5z" stroke="#ffca48" stroke-width="1.3" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="feat-copy">
+            <strong>14 días gratis incluidos</strong>
+            <span>Sin tarjeta hasta el día 15</span>
           </div>
         </div>
       </div>
 
-      <a href="https://calendar.app.google/7d4a8FXS1jjy1Qsg7" target="_blank" class="btn-cta">
-        📅 Elegir fecha y hora →
-      </a>
-
-      <div class="or">o empieza directamente</div>
-
-      <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn-register">
-        Empezar prueba gratuita sin demo →
-      </a>
-
-      <p class="footer-note">
-        ¿Prefieres escribir? <a href="mailto:zubcard@gmail.com">zubcard@gmail.com</a><br>
-        Al reservar la demo, tu solicitud queda registrada con el código de tu asesor.
-      </p>
+      <div class="left-footer">
+        Al reservar, tu solicitud queda vinculada<br>a tu asesor de referidos.
+      </div>
     </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+      <div class="right-label">Reservar demo</div>
+      <h2>Elige tu franja horaria</h2>
+      <p class="sub">Confirma tu reserva en Google Calendar y recibirás el enlace de Meet automáticamente.</p>
+
+      <div class="meta">
+        <div class="chip">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <circle cx="6.5" cy="6.5" r="5.2" stroke="#26170c" stroke-width="1.3"/>
+            <path d="M6.5 3.5V6.8l2 1.2" stroke="#26170c" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          20 min
+        </div>
+        <div class="chip">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="1.2" y="2" width="10.5" height="9" rx="1.5" stroke="#26170c" stroke-width="1.3"/>
+            <path d="M4.2 1V3M8.8 1V3M1.2 5.2h10.5" stroke="#26170c" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          Lun–Vie
+        </div>
+        <div class="chip">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <path d="M6.5 1.5a5 5 0 100 10 5 5 0 000-10z" stroke="#26170c" stroke-width="1.3"/>
+            <path d="M4.5 6.5l1.5 1.5 3-3" stroke="#26170c" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Gratuita
+        </div>
+      </div>
+
+      <a href="https://calendar.app.google/7d4a8FXS1jjy1Qsg7" target="_blank" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1.5" y="2.5" width="13" height="11" rx="1.8" stroke="#26170c" stroke-width="1.4"/>
+          <path d="M4.5 1.5V3.5M11.5 1.5V3.5M1.5 6h13" stroke="#26170c" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M5.5 9.5l1.5 1.5 3.5-3.5" stroke="#26170c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Reservar horario
+      </a>
+
+      <div class="divider">o</div>
+
+      <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn-secondary">
+        Empezar prueba sin demo
+      </a>
+
+      <div class="right-footer">
+        ¿Prefieres escribir?
+        <a href="mailto:zubcard@gmail.com">zubcard@gmail.com</a>
+      </div>
+    </div>
+
   </div>
 </body>
 </html>
