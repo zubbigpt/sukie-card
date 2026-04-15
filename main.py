@@ -529,6 +529,10 @@ def run_migrations():
             created_at        TIMESTAMPTZ DEFAULT NOW()
         )""",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS referral_partner_id UUID",
+        # Comisión % por partner (NULL = usa el global REFERRAL_COMMISSION_PCT)
+        "ALTER TABLE referral_partners ADD COLUMN IF NOT EXISTS commission_pct FLOAT",
+        # Notas internas del partner
+        "ALTER TABLE referral_partners ADD COLUMN IF NOT EXISTS notes TEXT",
 
     ]
     from database import SessionLocal
@@ -4077,7 +4081,8 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     address     = (body.get("address") or "").strip()
     latitude    = body.get("latitude")
     longitude   = body.get("longitude")
-    ref_code    = (body.get("ref") or "").strip().upper()
+    # ref del body, o de la cookie de demo si vino por /demo/{code}
+    ref_code = (body.get("ref") or request.cookies.get("ref_demo", "")).strip().upper()
 
     if not name:
         raise HTTPException(status_code=400, detail="El nombre del negocio es obligatorio")
@@ -6272,8 +6277,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 biz_row = _biz_by_customer(cid)
                 if biz_row:
                     partner_row = db.execute(text(
-                        "SELECT rp.id FROM referral_partners rp "
-                        "JOIN businesses b ON b.referral_partner_id = rp.id "
+                        "SELECT rp.id, rp.commission_pct FROM referral_partners rp "
+                        "JOIN businesses b ON b.referral_partner_id::text = rp.id::text "
                         "WHERE b.id=:bid AND rp.active=TRUE"
                     ), {"bid": str(biz_row[0])}).fetchone()
                     if partner_row:
@@ -6284,9 +6289,10 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                         if not exists:
                             from datetime import datetime as _dt2
                             period_month = _dt2.now().strftime("%Y-%m")
-                            # amount_paid viene en céntimos → convertir a EUR → aplicar %
+                            # Usa comisión del partner si está definida, si no la global
+                            pct = float(partner_row[1]) if partner_row[1] is not None else REFERRAL_COMMISSION_PCT
                             amount_paid_cents = data.get("amount_paid", 0)
-                            commission_eur = round(amount_paid_cents / 100 * REFERRAL_COMMISSION_PCT / 100, 2)
+                            commission_eur = round(amount_paid_cents / 100 * pct / 100, 2)
                             db.execute(text("""
                                 INSERT INTO referral_commissions
                                     (partner_id, business_id, amount_eur, period_month, stripe_invoice_id)
@@ -6299,7 +6305,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                                 "inv":   invoice_id,
                             })
                             db.commit()
-                            print(f"✅ Comisión referido registrada: partner {partner_row[0]} ← biz {biz_row[0]} ({commission_eur}€ = {REFERRAL_COMMISSION_PCT}% de {amount_paid_cents/100}€)")
+                            print(f"✅ Comisión referido: partner {partner_row[0]} ← biz {biz_row[0]} ({commission_eur}€ = {pct}% de {amount_paid_cents/100}€)")
 
         elif etype == "invoice.payment_failed":
             cid = data.get("customer")
@@ -6914,6 +6920,65 @@ async def admin_mark_commissions_paid(partner_id: str, request: Request, db: Ses
     """), {"pid": partner_id})
     db.commit()
     return {"ok": True}
+
+
+@app.patch("/api/zubadmin/referidos/{partner_id}")
+async def admin_edit_partner(partner_id: str, request: Request, db: Session = Depends(get_db)):
+    """Admin: edita datos de un partner (wallet, comisión %, notas, activo)."""
+    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    body = await request.json()
+    updates = {}
+    if "name"           in body: updates["name"]           = body["name"].strip()
+    if "last_name"      in body: updates["last_name"]      = body["last_name"].strip()
+    if "wallet_trc20"   in body: updates["wallet_trc20"]   = body["wallet_trc20"].strip()
+    if "commission_pct" in body: updates["commission_pct"] = float(body["commission_pct"]) if body["commission_pct"] not in (None, "") else None
+    if "active"         in body: updates["active"]         = bool(body["active"])
+    if "notes"          in body: updates["notes"]          = body["notes"].strip()
+    if not updates:
+        raise HTTPException(status_code=400, detail="Nada que actualizar")
+    set_clause = ", ".join(f"{k}=:{k}" for k in updates)
+    updates["pid"] = partner_id
+    db.execute(text(f"UPDATE referral_partners SET {set_clause} WHERE id=:pid::uuid"), updates)
+    db.commit()
+    return {"ok": True}
+
+
+@app.patch("/api/zubadmin/referidos/{partner_id}/assign-business")
+async def admin_assign_business(partner_id: str, request: Request, db: Session = Depends(get_db)):
+    """Admin: asigna o desasigna un restaurante a un partner de referido."""
+    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    body = await request.json()
+    business_id = body.get("business_id")  # None para desasignar
+    action = body.get("action", "assign")  # assign | remove
+    if action == "assign" and business_id:
+        db.execute(text("UPDATE businesses SET referral_partner_id=:pid::uuid WHERE id=:bid::uuid"),
+                   {"pid": partner_id, "bid": business_id})
+    elif action == "remove" and business_id:
+        db.execute(text("UPDATE businesses SET referral_partner_id=NULL WHERE id=:bid::uuid AND referral_partner_id=:pid::uuid"),
+                   {"pid": partner_id, "bid": business_id})
+    db.commit()
+    return {"ok": True}
+
+
+@app.get("/api/zubadmin/businesses-list")
+async def admin_businesses_list(request: Request, db: Session = Depends(get_db)):
+    """Admin: lista todos los negocios para el selector de asignación."""
+    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    rows = db.execute(text(
+        "SELECT id::text, name, email, plan, referral_partner_id::text FROM businesses ORDER BY created_at DESC"
+    )).fetchall()
+    return [dict(r._mapping) for r in rows]
+
+
+@app.get("/demo/{code}", response_class=HTMLResponse)
+async def demo_referral(code: str, request: Request):
+    """Página intermedia: guarda el ref code en cookie y redirige a Google Calendar demo."""
+    response = RedirectResponse("https://calendar.app.google/7d4a8FXS1jjy1Qsg7", status_code=302)
+    response.set_cookie("ref_demo", code.upper(), max_age=60*60*24*30, httponly=False, samesite="lax")
+    return response
 
 
 # ════════════════════════════════════════════════════════════════════════════════

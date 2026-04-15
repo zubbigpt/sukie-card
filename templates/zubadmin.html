@@ -370,6 +370,71 @@
   </div>
 </div>
 
+<!-- ── MODAL EDITAR PARTNER ── -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(38,23,12,.55);z-index:999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div style="font-weight:900;font-size:1.1rem;color:#26170c">Editar partner</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9a8579">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <label style="display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9a8579;margin-bottom:5px">Nombre</label>
+        <input id="ep-name" type="text" style="width:100%;padding:9px 12px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.9rem;font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9a8579;margin-bottom:5px">Apellido</label>
+        <input id="ep-last" type="text" style="width:100%;padding:9px 12px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.9rem;font-family:inherit;outline:none">
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label style="display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9a8579;margin-bottom:5px">Wallet USDT TRC20</label>
+      <input id="ep-wallet" type="text" style="width:100%;padding:9px 12px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.85rem;font-family:monospace;outline:none">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div>
+        <label style="display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9a8579;margin-bottom:5px">Comisión % <span style="text-transform:none;font-weight:400">(vacío = global)</span></label>
+        <input id="ep-pct" type="number" min="0" max="100" step="0.5" placeholder="20" style="width:100%;padding:9px 12px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.9rem;font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9a8579;margin-bottom:5px">Estado</label>
+        <select id="ep-active" style="width:100%;padding:9px 12px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.9rem;font-family:inherit;outline:none;background:#fff">
+          <option value="true">✅ Activo</option>
+          <option value="false">🔴 Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label style="display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9a8579;margin-bottom:5px">Notas internas</label>
+      <textarea id="ep-notes" rows="2" style="width:100%;padding:9px 12px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.85rem;font-family:inherit;outline:none;resize:vertical" placeholder="Notas, canal de captación, país..."></textarea>
+    </div>
+
+    <hr style="border:none;border-top:1.5px solid #f0e6df;margin:20px 0">
+
+    <!-- Restaurantes asignados -->
+    <div style="font-weight:800;font-size:.88rem;color:#26170c;margin-bottom:10px">🏪 Restaurantes asignados</div>
+    <div id="ep-biz-list" style="display:grid;gap:8px;margin-bottom:12px;max-height:180px;overflow-y:auto"></div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="ep-biz-add" style="flex:1;padding:8px 10px;border:1.5px solid #e2cfc8;border-radius:7px;font-size:.82rem;font-family:inherit;outline:none;background:#fff">
+        <option value="">— Asignar restaurante —</option>
+      </select>
+      <button onclick="assignBusiness()" style="padding:8px 14px;background:#26170c;color:#fff;border:none;border-radius:7px;font-size:.82rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">Asignar +</button>
+    </div>
+
+    <div id="ep-error" style="color:#c62828;font-size:.82rem;margin-top:10px;display:none"></div>
+
+    <div style="display:flex;gap:10px;margin-top:22px">
+      <button onclick="closeEditModal()" style="flex:1;padding:11px;background:#f5ede8;color:#26170c;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit">Cancelar</button>
+      <button onclick="savePartner()" id="ep-save-btn" style="flex:2;padding:11px;background:#26170c;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BASE = '';
 
@@ -508,13 +573,15 @@ function showTab(tab) {
 }
 
 // ── REFERIDOS ────────────────────────────────────────────────────────────────
+let _allBiz = [];   // cache negocios para el selector
+let _editId = null; // partner en edición
+
 async function loadReferidos() {
   try {
     const r = await fetch('/api/zubadmin/referidos', { credentials: 'same-origin' });
     if (!r.ok) return;
     const partners = await r.json();
 
-    // Stats
     const totalRefs    = partners.reduce((s, p) => s + (p.total_referidos || 0), 0);
     const totalPending = partners.reduce((s, p) => s + parseFloat(p.pendiente_eur || 0), 0);
     const totalPaid    = partners.reduce((s, p) => s + parseFloat(p.pagado_eur || 0), 0);
@@ -529,40 +596,50 @@ async function loadReferidos() {
       return;
     }
 
-    grid.innerHTML = partners.map(p => `
-      <div style="background:#fff;border-radius:12px;padding:20px 22px;box-shadow:0 2px 12px rgba(38,23,12,.07);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start">
+    grid.innerHTML = partners.map(p => {
+      const pct = p.commission_pct != null ? p.commission_pct + '%' : '20% (global)';
+      const active = p.active !== false;
+      return `
+      <div style="background:#fff;border-radius:12px;padding:20px 22px;box-shadow:0 2px 12px rgba(38,23,12,.07);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;${!active?'opacity:.55':''}">
         <div>
-          <div style="font-weight:900;font-size:1rem;color:#26170c;margin-bottom:2px">${p.name} ${p.last_name}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span style="font-weight:900;font-size:1rem;color:#26170c">${p.name} ${p.last_name}</span>
+            ${!active ? '<span style="background:#ffebee;color:#c62828;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:20px;text-transform:uppercase">Inactivo</span>' : ''}
+          </div>
           <div style="font-size:.78rem;color:#9a8579;margin-bottom:8px">
             Código: <b style="color:#26170c">${p.referral_code}</b>
             &nbsp;·&nbsp;
-            <a href="https://zubcard.com/app/register?ref=${p.referral_code}" target="_blank" style="color:#785a00;text-decoration:none">Ver link ↗</a>
+            <a href="https://zubcard.com/r/${p.referral_code}" target="_blank" style="color:#785a00;text-decoration:none">Landing ↗</a>
+            &nbsp;·&nbsp;
+            Comisión: <b style="color:#26170c">${pct}</b>
           </div>
           <div style="font-size:.78rem;color:#7a6558;margin-bottom:6px;word-break:break-all">
-            💰 Wallet: <span style="font-family:monospace">${p.wallet_trc20}</span>
+            💰 <span style="font-family:monospace">${p.wallet_trc20}</span>
           </div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.82rem;margin-top:6px">
+          ${p.notes ? `<div style="font-size:.75rem;color:#9a8579;font-style:italic;margin-bottom:6px">📝 ${p.notes}</div>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:.8rem;margin-top:6px">
             <span style="background:#f0f7ff;color:#1565c0;padding:3px 10px;border-radius:20px;font-weight:700">${p.total_referidos} negocios</span>
-            <span style="background:#fff9c4;color:#785a00;padding:3px 10px;border-radius:20px;font-weight:700">${p.activos_pro} activos Pro</span>
+            <span style="background:#fff9c4;color:#785a00;padding:3px 10px;border-radius:20px;font-weight:700">${p.activos_pro} Pro activos</span>
             ${parseFloat(p.pendiente_eur) > 0
               ? `<span style="background:#ffebee;color:#c62828;padding:3px 10px;border-radius:20px;font-weight:700">€${parseFloat(p.pendiente_eur).toFixed(2)} pendiente</span>`
-              : `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px;font-weight:700">Al día ✓</span>`
-            }
+              : `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px;font-weight:700">Al día ✓</span>`}
             ${parseFloat(p.pagado_eur) > 0
               ? `<span style="background:#e8f5e9;color:#388e3c;padding:3px 10px;border-radius:20px;font-weight:600">€${parseFloat(p.pagado_eur).toFixed(2)} pagado</span>`
-              : ''
-            }
+              : ''}
           </div>
         </div>
-        ${parseFloat(p.pendiente_eur) > 0 ? `
-        <div style="text-align:right">
-          <div style="font-size:1.4rem;font-weight:900;color:#c62828;margin-bottom:6px">€${parseFloat(p.pendiente_eur).toFixed(2)}</div>
-          <button onclick="markPaid('${p.id}', this)" style="padding:7px 14px;background:#26170c;color:#fff;border:none;border-radius:6px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:inherit">
-            Marcar pagado ✓
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          ${parseFloat(p.pendiente_eur) > 0 ? `
+            <div style="font-size:1.3rem;font-weight:900;color:#c62828">€${parseFloat(p.pendiente_eur).toFixed(2)}</div>
+            <button onclick="markPaid('${p.id}', this)" style="padding:7px 12px;background:#26170c;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">
+              Marcar pagado ✓
+            </button>` : '<div style="color:#2e7d32;font-size:1.1rem">✓</div>'}
+          <button onclick="openEditModal(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="padding:7px 12px;background:#f5ede8;color:#26170c;border:none;border-radius:6px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit">
+            ✏️ Editar
           </button>
-        </div>` : '<div style="color:#2e7d32;font-size:1.1rem;text-align:right">✓</div>'}
-      </div>
-    `).join('');
+        </div>
+      </div>`;
+    }).join('');
   } catch(e) {
     console.error('Error cargando referidos:', e);
   }
@@ -570,15 +647,120 @@ async function loadReferidos() {
 
 async function markPaid(partnerId, btn) {
   if (!confirm('¿Confirmas que ya enviaste el USDT a este partner?')) return;
-  btn.disabled = true;
-  btn.textContent = 'Guardando…';
+  btn.disabled = true; btn.textContent = 'Guardando…';
   try {
-    const r = await fetch(`/api/zubadmin/referidos/${partnerId}/mark-paid`, {
-      method: 'POST', credentials: 'same-origin'
-    });
+    const r = await fetch(`/api/zubadmin/referidos/${partnerId}/mark-paid`, { method: 'POST', credentials: 'same-origin' });
     if (r.ok) { loadReferidos(); }
-    else { btn.disabled = false; btn.textContent = 'Marcar pagado ✓'; alert('Error al marcar'); }
+    else { btn.disabled = false; btn.textContent = 'Marcar pagado ✓'; alert('Error'); }
   } catch(e) { btn.disabled = false; }
+}
+
+// ── MODAL EDICIÓN ──
+async function openEditModal(p) {
+  _editId = p.id;
+  document.getElementById('ep-name').value   = p.name || '';
+  document.getElementById('ep-last').value   = p.last_name || '';
+  document.getElementById('ep-wallet').value = p.wallet_trc20 || '';
+  document.getElementById('ep-pct').value    = p.commission_pct != null ? p.commission_pct : '';
+  document.getElementById('ep-active').value = p.active !== false ? 'true' : 'false';
+  document.getElementById('ep-notes').value  = p.notes || '';
+  document.getElementById('ep-error').style.display = 'none';
+
+  // Cargar negocios
+  if (!_allBiz.length) {
+    const rb = await fetch('/api/zubadmin/businesses-list', { credentials: 'same-origin' });
+    if (rb.ok) _allBiz = await rb.json();
+  }
+  renderBizList(p.id);
+
+  const modal = document.getElementById('edit-modal');
+  modal.style.display = 'flex';
+}
+
+function renderBizList(partnerId) {
+  const assigned = _allBiz.filter(b => b.referral_partner_id === partnerId);
+  const listEl   = document.getElementById('ep-biz-list');
+  if (!assigned.length) {
+    listEl.innerHTML = '<div style="font-size:.8rem;color:#9a8579">Sin restaurantes asignados aún.</div>';
+  } else {
+    listEl.innerHTML = assigned.map(b => `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#f7f1ec;border-radius:8px;padding:8px 12px;font-size:.82rem">
+        <div>
+          <b style="color:#26170c">${b.name}</b>
+          <span style="color:#9a8579;margin-left:6px">${b.email}</span>
+          <span style="background:${b.plan==='pro'?'#fff9c4':'#f5ede8'};color:${b.plan==='pro'?'#785a00':'#9a8579'};padding:1px 7px;border-radius:10px;font-size:.7rem;font-weight:700;margin-left:6px">${b.plan.toUpperCase()}</span>
+        </div>
+        <button onclick="removeBusiness('${b.id}')" style="background:#ffebee;color:#c62828;border:none;border-radius:6px;padding:4px 9px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit">Quitar</button>
+      </div>`).join('');
+  }
+  // Selector de asignación — sólo los no asignados a este partner
+  const assignedIds = new Set(assigned.map(b => b.id));
+  const sel = document.getElementById('ep-biz-add');
+  sel.innerHTML = '<option value="">— Asignar restaurante —</option>' +
+    _allBiz.filter(b => !assignedIds.has(b.id)).map(b =>
+      `<option value="${b.id}">${b.name} (${b.email}) · ${b.plan}</option>`
+    ).join('');
+}
+
+async function assignBusiness() {
+  const bizId = document.getElementById('ep-biz-add').value;
+  if (!bizId) return;
+  const r = await fetch(`/api/zubadmin/referidos/${_editId}/assign-business`, {
+    method: 'PATCH', credentials: 'same-origin',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ business_id: bizId, action: 'assign' })
+  });
+  if (r.ok) {
+    const biz = _allBiz.find(b => b.id === bizId);
+    if (biz) biz.referral_partner_id = _editId;
+    renderBizList(_editId);
+  }
+}
+
+async function removeBusiness(bizId) {
+  const r = await fetch(`/api/zubadmin/referidos/${_editId}/assign-business`, {
+    method: 'PATCH', credentials: 'same-origin',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ business_id: bizId, action: 'remove' })
+  });
+  if (r.ok) {
+    const biz = _allBiz.find(b => b.id === bizId);
+    if (biz) biz.referral_partner_id = null;
+    renderBizList(_editId);
+  }
+}
+
+async function savePartner() {
+  const btn = document.getElementById('ep-save-btn');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const pctVal = document.getElementById('ep-pct').value;
+  const body = {
+    name:           document.getElementById('ep-name').value.trim(),
+    last_name:      document.getElementById('ep-last').value.trim(),
+    wallet_trc20:   document.getElementById('ep-wallet').value.trim(),
+    commission_pct: pctVal !== '' ? parseFloat(pctVal) : null,
+    active:         document.getElementById('ep-active').value === 'true',
+    notes:          document.getElementById('ep-notes').value.trim(),
+  };
+  try {
+    const r = await fetch(`/api/zubadmin/referidos/${_editId}`, {
+      method: 'PATCH', credentials: 'same-origin',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (r.ok) { closeEditModal(); loadReferidos(); }
+    else {
+      const d = await r.json();
+      document.getElementById('ep-error').textContent = d.detail || 'Error al guardar';
+      document.getElementById('ep-error').style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Guardar cambios';
+    }
+  } catch(e) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+  _editId = null;
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
