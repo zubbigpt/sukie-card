@@ -4293,6 +4293,13 @@ async def checkout_success_redirect(token: str = "", slug: str = "", db: Session
         biz = get_business_by_slug(slug, db)
     if not biz:
         return RedirectResponse("/app/login?checkout_ok=1", status_code=302)
+    # Subir a pro inmediatamente — el webhook confirmará después.
+    # Así el usuario ve todas las funciones Pro desde el primer segundo, sin esperar el webhook.
+    db.execute(text(
+        "UPDATE businesses SET plan='pro', stripe_subscription_status='trialing' "
+        "WHERE id=:bid AND plan != 'pro'"
+    ), {"bid": str(biz.id)})
+    db.commit()
     target_slug = biz.slug
     response = RedirectResponse(f"/biz/{target_slug}/dashboard?stripe_success=1", status_code=302)
     response.set_cookie(
@@ -5979,6 +5986,7 @@ async def create_checkout_session(slug: str, request: Request, db: Session = Dep
             customer=customer_id,
             mode="subscription",
             line_items=[{"price": STRIPE_PRICE_ID_PRO, "quantity": 1}],
+            payment_method_collection="always",   # siempre pedir tarjeta, incluso en trial
             success_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_success=1",
             cancel_url=f"{BASE_URL}/biz/{slug}/dashboard?stripe_cancel=1",
             subscription_data={"metadata": {"biz_id": str(biz.id), "biz_slug": slug}, "trial_period_days": 14},
@@ -6133,11 +6141,19 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             cid = data.get("customer")
             biz_row = _biz_by_customer(cid)
             if biz_row:
-                db.execute(text(
-                    "UPDATE businesses SET stripe_subscription_status='past_due' WHERE id=:bid"
-                ), {"bid": str(biz_row[0])})
-                db.commit()
-                print(f"⚠️ invoice.payment_failed — biz {biz_row[0]}")
+                # Proteger cuentas con plan bloqueado (owner-account, etc.)
+                stored = db.execute(text(
+                    "SELECT stripe_subscription_id FROM businesses WHERE id=:bid"
+                ), {"bid": str(biz_row[0])}).scalar()
+                if stored and not stored.startswith("sub_"):
+                    print(f"⏭️ invoice.payment_failed ignorado — plan bloqueado ({stored})")
+                else:
+                    # Bajar a free inmediatamente — si el cobro falla no deben tener acceso Pro
+                    db.execute(text(
+                        "UPDATE businesses SET plan='free', stripe_subscription_status='past_due' WHERE id=:bid"
+                    ), {"bid": str(biz_row[0])})
+                    db.commit()
+                    print(f"⚠️ invoice.payment_failed — biz {biz_row[0]} → plan=free, status=past_due")
 
         else:
             print(f"⏭️ Stripe event ignorado: {etype}")
