@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>ZubCard – Tarjeta de Fidelización Digital para tu Negocio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown: #26170c; --gold: #ffca48; --gold-dark: #785a00;
+      --surface: #fff8f5; --surface-mid: #ffeade; --r: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Manrope', sans-serif; background: var(--surface); color: var(--brown); }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--brown);
+      color: #fff;
+      padding: 64px 24px 72px;
+      text-align: center;
+    }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: .05em; margin-bottom: 32px; }
+    .logo span { color: var(--gold); }
+
+    .hero-badge {
+      display: inline-block; background: var(--gold); color: var(--brown);
+      font-size: .72rem; font-weight: 800; padding: 5px 14px; border-radius: 20px;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .hero h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 900; line-height: 1.15; margin-bottom: 18px; }
+    .hero h1 span { color: var(--gold); }
+    .hero p { font-size: 1.05rem; color: rgba(255,255,255,.75); max-width: 520px; margin: 0 auto 36px; line-height: 1.7; }
+
+    .btn-cta {
+      display: inline-block; background: var(--gold); color: var(--brown);
+      padding: 16px 36px; border-radius: 10px; font-size: 1.05rem; font-weight: 900;
+      text-decoration: none; letter-spacing: .02em; transition: background .15s;
+    }
+    .btn-cta:hover { background: #f0bd3a; }
+    .btn-sub { display: block; margin-top: 14px; font-size: .8rem; color: rgba(255,255,255,.5); }
+
+    /* ── HOW IT WORKS ── */
+    .section { padding: 60px 24px; max-width: 900px; margin: 0 auto; }
+    .section-title { font-size: 1.5rem; font-weight: 900; text-align: center; margin-bottom: 8px; }
+    .section-sub { text-align: center; color: #9a8579; font-size: .9rem; margin-bottom: 40px; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .step-card { background: #fff; border-radius: var(--r); padding: 28px 22px; box-shadow: 0 4px 20px rgba(38,23,12,.08); }
+    .step-num { width: 36px; height: 36px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: .9rem; color: var(--brown); margin-bottom: 14px; }
+    .step-card h3 { font-size: .95rem; font-weight: 800; margin-bottom: 6px; }
+    .step-card p { font-size: .82rem; color: #7a6558; line-height: 1.6; }
+
+    /* ── FEATURES ── */
+    .features-bg { background: var(--surface-mid); }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .feat { display: flex; gap: 14px; align-items: flex-start; }
+    .feat-icon { width: 44px; height: 44px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(38,23,12,.1); }
+    .feat-text h4 { font-size: .9rem; font-weight: 800; margin-bottom: 4px; }
+    .feat-text p { font-size: .8rem; color: #7a6558; line-height: 1.5; }
+
+    /* ── PRICING ── */
+    .price-card {
+      max-width: 420px; margin: 0 auto; background: #fff; border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(38,23,12,.13); padding: 40px 36px; text-align: center;
+    }
+    .price-badge { display: inline-block; background: var(--gold); color: var(--brown); font-size: .7rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+    .price-amount { font-size: 3.2rem; font-weight: 900; line-height: 1; }
+    .price-amount sup { font-size: 1.4rem; vertical-align: top; margin-top: 10px; }
+    .price-amount span { font-size: 1rem; font-weight: 500; color: #9a8579; }
+    .price-desc { color: #9a8579; font-size: .88rem; margin: 10px 0 26px; }
+    .price-features { list-style: none; text-align: left; margin-bottom: 30px; }
+    .price-features li { display: flex; gap: 10px; align-items: center; font-size: .87rem; padding: 7px 0; border-bottom: 1px solid #f0e6df; }
+    .price-features li:last-child { border-bottom: none; }
+    .price-features li::before { content: '✓'; color: #2e7d32; font-weight: 900; font-size: .9rem; flex-shrink: 0; }
+    .price-trial { font-size: .8rem; color: #9a8579; margin-top: 12px; }
+
+    /* ── CTA FOOTER ── */
+    .cta-footer { background: var(--brown); color: #fff; padding: 64px 24px; text-align: center; }
+    .cta-footer h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 12px; }
+    .cta-footer p { color: rgba(255,255,255,.7); font-size: .95rem; margin-bottom: 32px; max-width: 460px; margin-left: auto; margin-right: auto; }
+
+    /* ── CARD MOCKUP ── */
+    .mockup-wrap { margin: 0 auto 48px; max-width: 340px; }
+    .card-mockup {
+      background: linear-gradient(135deg, #1a0a02 0%, #3d2015 100%);
+      border-radius: 18px; padding: 28px 24px; color: #fff;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .card-mockup .biz { font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; }
+    .card-mockup .sub { font-size: .78rem; opacity: .6; margin-bottom: 24px; }
+    .stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 24px; }
+    .stamp { width: 100%; aspect-ratio: 1; background: rgba(255,255,255,.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .stamp.filled { background: var(--gold); }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .card-footer .pts { font-size: .75rem; opacity: .6; }
+    .card-footer .pts strong { color: var(--gold); font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="logo">Zub<span>Card</span></div>
+    <div class="hero-badge">Te lo recomienda un amigo 👋</div>
+    <h1>La tarjeta de fidelización<br><span>digital</span> para tu negocio</h1>
+    <p>Sin plásticos, sin apps. Tus clientes acumulan sellos desde el móvil y vuelven más. Configúralo en 2 minutos.</p>
+    <a href="/app/register?ref={{ ref_code }}" class="btn-cta">Empieza gratis — 14 días de prueba →</a>
+    <span class="btn-sub">Sin tarjeta de crédito hasta el día 15</span>
+  </div>
+
+  <!-- CARD MOCKUP -->
+  <div class="section" style="padding-bottom:0;padding-top:48px">
+    <div class="mockup-wrap">
+      <div class="card-mockup">
+        <div class="biz">Tu Negocio</div>
+        <div class="sub">Tarjeta de fidelización</div>
+        <div class="stamps">
+          <div class="stamp filled">☕</div>
+          <div class="stamp filled">☕</div>
+          <div class="stamp filled">☕</div>
+          <div class="stamp filled">☕</div>
+          <div class="stamp filled">☕</div>
+          <div class="stamp filled">☕</div>
+          <div class="stamp filled">☕</div>
+          <div class="stamp">☕</div>
+          <div class="stamp">☕</div>
+          <div class="stamp">☕</div>
+        </div>
+        <div class="card-footer">
+          <div class="pts">Sellos: <strong>7</strong>/10</div>
+          <div style="font-size:.78rem;opacity:.6">3 sellos para tu premio 🎁</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CÓMO FUNCIONA -->
+  <div class="section">
+    <div class="section-title">¿Cómo funciona?</div>
+    <div class="section-sub">Tres pasos y tus clientes ya están fidelizados</div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Crea tu tarjeta</h3>
+        <p>Personaliza colores, nombre y cuántos sellos necesitan para el premio. Listo en 2 minutos.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Comparte el QR</h3>
+        <p>Pon el QR en el mostrador. Tus clientes lo escanean y se apuntan sin instalar ninguna app.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Sella y premia</h3>
+        <p>Con un clic en tu panel añades sellos. Al completar la tarjeta, el cliente canjea su premio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features-bg">
+    <div class="section">
+      <div class="section-title">Todo lo que necesitas</div>
+      <div class="section-sub">Incluido desde el primer día</div>
+      <div class="features">
+        <div class="feat">
+          <div class="feat-icon">📱</div>
+          <div class="feat-text">
+            <h4>Apple Wallet & Google Wallet</h4>
+            <p>Tus clientes guardan la tarjeta en el móvil. Sin apps, sin fricción.</p>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🎂</div>
+          <div class="feat-text">
+            <h4>Email de cumpleaños</h4>
+            <p>Envío automático con descuento personalizado el día del cumpleaños.</p>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">📊</div>
+          <div class="feat-text">
+            <h4>Dashboard en tiempo real</h4>
+            <p>Visitas, sellos, clientes activos. Todo en un panel limpio.</p>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🔔</div>
+          <div class="feat-text">
+            <h4>Push notifications</h4>
+            <p>Manda promos directamente al móvil de tus clientes con un clic.</p>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">⭐</div>
+          <div class="feat-text">
+            <h4>Reviews automáticas</h4>
+            <p>Solicita reseña en Google cuando el cliente llega a X sellos.</p>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🌍</div>
+          <div class="feat-text">
+            <h4>Sin fronteras</h4>
+            <p>Funciona en cualquier país. Soporte en español e inglés.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRECIO -->
+  <div class="section">
+    <div class="section-title">Precio simple</div>
+    <div class="section-sub">Un plan. Todo incluido. Sin sorpresas.</div>
+    <div class="price-card">
+      <div class="price-badge">Plan Pro</div>
+      <div class="price-amount"><sup>€</sup>39<span>/mes</span></div>
+      <div class="price-desc">IVA incluido · Cancela cuando quieras</div>
+      <ul class="price-features">
+        <li>Clientes ilimitados</li>
+        <li>Sellos y premios ilimitados</li>
+        <li>Apple Wallet + Google Wallet</li>
+        <li>Emails automáticos (bienvenida, cumpleaños)</li>
+        <li>Push notifications</li>
+        <li>Dashboard y estadísticas</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <a href="/app/register?ref={{ ref_code }}" class="btn-cta" style="display:block;text-align:center">
+        Empezar 14 días gratis →
+      </a>
+      <p class="price-trial">No se cobra nada hasta el día 15</p>
+    </div>
+  </div>
+
+  <!-- CTA FOOTER -->
+  <div class="cta-footer">
+    <h2>¿Listo para fidelizar más clientes?</h2>
+    <p>Únete a los negocios que ya usan ZubCard para hacer volver a sus clientes semana tras semana.</p>
+    <a href="/app/register?ref={{ ref_code }}" class="btn-cta">Crear mi cuenta gratis →</a>
+  </div>
+
+</body>
+</html>

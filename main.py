@@ -6839,10 +6839,10 @@ async def referidos_page(request: Request):
     return templates.TemplateResponse("referidos.html", {"request": request})
 
 
-@app.get("/r/{code}")
-async def referral_redirect(code: str):
-    """Redirige al registro de ZubCard con el código de referido en la URL."""
-    return RedirectResponse(f"/app/register?ref={code.upper()}", status_code=302)
+@app.get("/r/{code}", response_class=HTMLResponse)
+async def referral_landing(code: str, request: Request):
+    """Landing page de bienvenida con presentación de ZubCard + CTA para registrarse."""
+    return templates.TemplateResponse("referral_landing.html", {"request": request, "ref_code": code.upper()})
 
 
 @app.post("/api/referidos/register")
@@ -6880,22 +6880,19 @@ async def register_referral_partner(request: Request, db: Session = Depends(get_
 @app.get("/api/zubadmin/referidos")
 async def admin_get_referidos(request: Request, db: Session = Depends(get_db)):
     """Admin: lista todos los partners de referidos con sus estadísticas."""
-    # Verificar cookie de admin
-    admin_pin = request.cookies.get("zubadmin_pin", "")
-    stored = db.execute(text("SELECT pin FROM admin_users LIMIT 1")).fetchone()
-    if not stored or admin_pin != stored[0]:
+    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
         raise HTTPException(status_code=401, detail="No autorizado")
 
     partners = db.execute(text("""
         SELECT
-            rp.id, rp.name, rp.last_name, rp.wallet_trc20, rp.referral_code,
-            rp.active, rp.created_at,
+            rp.id::text, rp.name, rp.last_name, rp.wallet_trc20, rp.referral_code,
+            rp.active, rp.created_at::text,
             COUNT(DISTINCT b.id) AS total_referidos,
             COUNT(DISTINCT CASE WHEN b.plan='pro' THEN b.id END) AS activos_pro,
-            COALESCE(SUM(CASE WHEN rc.status='pending' THEN rc.amount_eur END), 0) AS pendiente_eur,
-            COALESCE(SUM(CASE WHEN rc.status='paid'    THEN rc.amount_eur END), 0) AS pagado_eur
+            COALESCE(SUM(CASE WHEN rc.status='pending' THEN rc.amount_eur END), 0)::float AS pendiente_eur,
+            COALESCE(SUM(CASE WHEN rc.status='paid'    THEN rc.amount_eur END), 0)::float AS pagado_eur
         FROM referral_partners rp
-        LEFT JOIN businesses b ON b.referral_partner_id = rp.id::text::uuid
+        LEFT JOIN businesses b ON b.referral_partner_id::text = rp.id::text
         LEFT JOIN referral_commissions rc ON rc.partner_id = rp.id
         GROUP BY rp.id
         ORDER BY rp.created_at DESC
@@ -6907,9 +6904,7 @@ async def admin_get_referidos(request: Request, db: Session = Depends(get_db)):
 @app.post("/api/zubadmin/referidos/{partner_id}/mark-paid")
 async def admin_mark_commissions_paid(partner_id: str, request: Request, db: Session = Depends(get_db)):
     """Admin: marca todas las comisiones pendientes de un partner como pagadas."""
-    admin_pin = request.cookies.get("zubadmin_pin", "")
-    stored = db.execute(text("SELECT pin FROM admin_users LIMIT 1")).fetchone()
-    if not stored or admin_pin != stored[0]:
+    if request.cookies.get(ZUBADMIN_COOKIE) != ZUBADMIN_PIN:
         raise HTTPException(status_code=401, detail="No autorizado")
 
     db.execute(text("""
