@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Demo gratuita – ZubCard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown: #26170c; --gold: #ffca48; --gold-dark: #785a00;
+      --surface: #fff8f5; --surface-mid: #ffeade;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-mid) 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(38,23,12,.13);
+      max-width: 480px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Header oscuro */
+    .card-header {
+      background: var(--brown);
+      padding: 32px 36px 28px;
+      color: #fff;
+      text-align: center;
+    }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: .05em; margin-bottom: 16px; }
+    .logo span { color: var(--gold); }
+    .badge {
+      display: inline-block; background: rgba(255,202,72,.15); border: 1px solid rgba(255,202,72,.4);
+      color: var(--gold); font-size: .7rem; font-weight: 800; padding: 4px 12px;
+      border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .card-header h1 { font-size: 1.45rem; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+    .card-header p { font-size: .88rem; color: rgba(255,255,255,.7); line-height: 1.6; }
+
+    /* Body */
+    .card-body { padding: 28px 36px 36px; }
+
+    /* Info items */
+    .info-list { display: grid; gap: 12px; margin-bottom: 28px; }
+    .info-item { display: flex; gap: 12px; align-items: center; }
+    .info-icon {
+      width: 40px; height: 40px; border-radius: 10px; background: #fff3d0;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .info-text { font-size: .88rem; color: var(--brown); font-weight: 600; line-height: 1.4; }
+    .info-sub { font-size: .78rem; color: #9a8579; font-weight: 400; }
+
+    /* CTA */
+    .btn-cta {
+      display: block; width: 100%; padding: 15px;
+      background: var(--gold); color: var(--brown);
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 900;
+      cursor: pointer; font-family: 'Manrope', sans-serif;
+      text-align: center; text-decoration: none; letter-spacing: .02em;
+      transition: background .15s;
+    }
+    .btn-cta:hover { background: #f0bd3a; }
+
+    .or { text-align: center; color: #c5b5ac; font-size: .8rem; margin: 16px 0; position: relative; }
+    .or::before, .or::after {
+      content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: #f0e6df;
+    }
+    .or::before { left: 0; } .or::after { right: 0; }
+
+    .btn-register {
+      display: block; width: 100%; padding: 13px;
+      background: var(--brown); color: #fff;
+      border: none; border-radius: 10px; font-size: .92rem; font-weight: 800;
+      cursor: pointer; font-family: 'Manrope', sans-serif;
+      text-align: center; text-decoration: none;
+      transition: background .15s;
+    }
+    .btn-register:hover { background: #3d2b1f; }
+
+    .footer-note {
+      text-align: center; margin-top: 18px; font-size: .78rem; color: #b0a098; line-height: 1.6;
+    }
+    .footer-note a { color: var(--brown); font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="logo">Zub<span>Card</span></div>
+      <div class="badge">Demo gratuita</div>
+      <h1>Hablemos de tu negocio</h1>
+      <p>Te mostramos cómo funciona ZubCard en 20 minutos y resolvemos todas tus dudas.</p>
+    </div>
+
+    <div class="card-body">
+      <div class="info-list">
+        <div class="info-item">
+          <div class="info-icon">⏱️</div>
+          <div class="info-text">20 minutos
+            <div class="info-sub">Sin compromiso, sin presión</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">🎥</div>
+          <div class="info-text">Videollamada por Google Meet
+            <div class="info-sub">Desde tu ordenador o móvil</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">🗓️</div>
+          <div class="info-text">Elige el horario que mejor te venga
+            <div class="info-sub">Disponible de lunes a viernes</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">🎁</div>
+          <div class="info-text">14 días de prueba gratis al terminar
+            <div class="info-sub">Sin tarjeta de crédito hasta el día 15</div>
+          </div>
+        </div>
+      </div>
+
+      <a href="https://calendar.app.google/7d4a8FXS1jjy1Qsg7" target="_blank" class="btn-cta">
+        📅 Elegir fecha y hora →
+      </a>
+
+      <div class="or">o empieza directamente</div>
+
+      <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn-register">
+        Empezar prueba gratuita sin demo →
+      </a>
+
+      <p class="footer-note">
+        ¿Prefieres escribir? <a href="mailto:zubcard@gmail.com">zubcard@gmail.com</a><br>
+        Al reservar la demo, tu solicitud queda registrada con el código de tu asesor.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

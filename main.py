@@ -6975,10 +6975,16 @@ async def admin_businesses_list(request: Request, db: Session = Depends(get_db))
 
 @app.get("/demo/{code}", response_class=HTMLResponse)
 async def demo_referral(code: str, request: Request):
-    """Página intermedia: guarda el ref code en cookie y redirige a Google Calendar demo."""
-    response = RedirectResponse("https://calendar.app.google/7d4a8FXS1jjy1Qsg7", status_code=302)
+    """Página de demo con diseño ZubCard — guarda ref cookie y abre Google Calendar."""
+    response = templates.TemplateResponse("demo_booking.html", {"request": request, "ref_code": code.upper()})
     response.set_cookie("ref_demo", code.upper(), max_age=60*60*24*30, httponly=False, samesite="lax")
     return response
+
+
+@app.get("/demo", response_class=HTMLResponse)
+async def demo_page(request: Request):
+    """Página de demo sin código de referido."""
+    return templates.TemplateResponse("demo_booking.html", {"request": request, "ref_code": ""})
 
 
 # ════════════════════════════════════════════════════════════════════════════════
