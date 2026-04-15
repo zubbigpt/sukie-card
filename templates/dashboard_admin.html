@@ -4065,12 +4065,12 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       <span class="material-symbols-outlined" style="font-size:2rem;color:#e53935;font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 48">credit_card_off</span>
     </div>
     <!-- Título -->
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em;color:#1a1a1a;margin-bottom:8px">Pago rechazado</h2>
+    <h2 id="pf-title" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em;color:#1a1a1a;margin-bottom:8px">Pago rechazado</h2>
     <!-- Mensaje -->
-    <p style="font-size:.95rem;color:#555;line-height:1.6;margin-bottom:6px">
+    <p id="pf-msg1" style="font-size:.95rem;color:#555;line-height:1.6;margin-bottom:6px">
       No hemos podido cobrar tu suscripción ZubCard Pro.
     </p>
-    <p style="font-size:.85rem;color:#888;line-height:1.55;margin-bottom:28px">
+    <p id="pf-msg2" style="font-size:.85rem;color:#888;line-height:1.55;margin-bottom:28px">
       Actualiza tu método de pago para seguir usando ZubCard sin interrupciones. Solo tardas un minuto.
     </p>
     <!-- Botón principal -->
@@ -6759,9 +6759,9 @@ async function loadSubscriptionInfo(){
     renderPlanSection();
     // Cargar datos fiscales si es Pro
     if(BIZ_PLAN === 'pro') loadBillingDetails();
-    // Mostrar popup bloqueante si el pago está pendiente
-    if(_subInfo.subscription_status === 'past_due'){
-      showPaymentFailedModal();
+    // Mostrar popup bloqueante si el pago falló o la suscripción fue cancelada por impago
+    if(_subInfo.subscription_status === 'past_due' || _subInfo.subscription_status === 'canceled'){
+      showPaymentFailedModal(_subInfo.subscription_status);
     }
   }catch(e){}
 }
@@ -6847,8 +6847,18 @@ async function saveBillingDetails(){
 }
 
 // ── PAGO FALLIDO ───────────────────────────────────────────────
-function showPaymentFailedModal(){
+function showPaymentFailedModal(status){
   const overlay = document.getElementById('payment-failed-overlay');
+  const title   = document.getElementById('pf-title');
+  const msg1    = document.getElementById('pf-msg1');
+  const msg2    = document.getElementById('pf-msg2');
+  if(status === 'canceled'){
+    if(title) title.textContent = 'Suscripción cancelada';
+    if(msg1)  msg1.textContent  = 'Tu suscripción ZubCard Pro ha sido cancelada por falta de pago.';
+    if(msg2)  msg2.textContent  = 'Para seguir usando ZubCard activa de nuevo tu suscripción. Solo tardas un minuto.';
+    const btn = document.getElementById('payment-failed-btn');
+    if(btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem">credit_card</span> Reactivar suscripción';
+  }
   if(overlay) overlay.style.display='flex';
 }
 async function fixPayment(){
