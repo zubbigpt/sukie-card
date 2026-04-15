@@ -97,6 +97,58 @@ import stripe as _stripe_sdk
 if STRIPE_SECRET_KEY:
     _stripe_sdk.api_key = STRIPE_SECRET_KEY
 
+# SHOPIFY CONFIG (OAuth 2 Client Credentials — tokens duran ~24h)
+SHOPIFY_CLIENT_ID     = os.environ.get("SHOPIFY_CLIENT_ID", "")
+SHOPIFY_CLIENT_SECRET = os.environ.get("SHOPIFY_CLIENT_SECRET", "")
+SHOPIFY_STORE         = os.environ.get("SHOPIFY_STORE", "0dadft-cc.myshopify.com")
+
+# Cache del token en memoria (single-replica)
+_shopify_token_cache: dict = {"token": None, "expires_at": 0.0}
+
+async def shopify_get_token() -> str | None:
+    """Obtiene (o renueva) el access_token de Shopify via client_credentials.
+    Cachea el token en memoria y lo renueva si queda menos de 5 min de vida."""
+    if not SHOPIFY_CLIENT_ID or not SHOPIFY_CLIENT_SECRET:
+        return None
+    now = time.time()
+    if _shopify_token_cache["token"] and now < _shopify_token_cache["expires_at"] - 300:
+        return _shopify_token_cache["token"]
+    url = f"https://{SHOPIFY_STORE}/admin/oauth/access_token"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(
+                url,
+                content=f"grant_type=client_credentials&client_id={SHOPIFY_CLIENT_ID}&client_secret={SHOPIFY_CLIENT_SECRET}",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+        if resp.status_code != 200:
+            print(f"❌ Shopify token error {resp.status_code}: {resp.text}")
+            return None
+        data = resp.json()
+        token = data.get("access_token")
+        # expires_in viene en segundos; si no está asumimos 24h
+        expires_in = data.get("expires_in", 86400)
+        _shopify_token_cache["token"] = token
+        _shopify_token_cache["expires_at"] = now + expires_in
+        print(f"✅ Shopify token renovado, expira en {expires_in}s")
+        return token
+    except Exception as e:
+        print(f"❌ Shopify token exception: {e}")
+        return None
+
+async def shopify_api(method: str, path: str, **kwargs):
+    """Wrapper genérico para llamadas a la Admin REST API de Shopify.
+    Renueva el token automáticamente si expira.
+    path ejemplo: '/admin/api/2024-10/customers.json'"""
+    token = await shopify_get_token()
+    if not token:
+        raise HTTPException(status_code=503, detail="Shopify no configurado")
+    url = f"https://{SHOPIFY_STORE}{path}"
+    headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await getattr(client, method.lower())(url, headers=headers, **kwargs)
+    return resp
+
 # PLAN LIMITS (Free tier)
 FREE_LIMITS = {
     "max_customers":     100,
@@ -1959,6 +2011,86 @@ def get_card(card_id: str, db: Session = Depends(get_db)):
     card = get_card_or_404(card_id, db)
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     return card_to_dict(card, customer)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SHOPIFY — SYNC CUSTOMER
+# ══════════════════════════════════════════════════════════════════════════════
+@app.post("/api/shopify/sync")
+async def shopify_sync_customer(request: Request, db: Session = Depends(get_db)):
+    """Crea o actualiza un cliente en Shopify a partir de un customer de ZubCard.
+    Body JSON: { "customer_id": "<uuid>" }
+    Requiere API key en header X-API-Key."""
+    verify_api_key(request)
+    body = await request.json()
+    customer_id = body.get("customer_id")
+    if not customer_id:
+        raise HTTPException(status_code=400, detail="customer_id requerido")
+
+    customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    shopify_payload = {
+        "customer": {
+            "email": customer.email,
+            "first_name": customer.first_name or "",
+            "last_name": customer.last_name or "",
+            "phone": customer.phone or None,
+            "tags": "zubcard",
+            "metafields": [
+                {
+                    "namespace": "zubcard",
+                    "key": "card_url",
+                    "value": f"{BASE_URL}/card/{customer.id}",
+                    "type": "single_line_text_field",
+                }
+            ],
+        }
+    }
+
+    # Si ya tiene shopify_id → PUT (actualizar), si no → POST (crear)
+    if customer.shopify_id:
+        resp = await shopify_api(
+            "put",
+            f"/admin/api/2024-10/customers/{customer.shopify_id}.json",
+            json=shopify_payload,
+        )
+    else:
+        resp = await shopify_api(
+            "post",
+            "/admin/api/2024-10/customers.json",
+            json=shopify_payload,
+        )
+
+    if resp.status_code not in (200, 201):
+        raise HTTPException(status_code=502, detail=f"Shopify error {resp.status_code}: {resp.text[:300]}")
+
+    data = resp.json().get("customer", {})
+    new_shopify_id = str(data.get("id", ""))
+    if new_shopify_id and not customer.shopify_id:
+        customer.shopify_id = new_shopify_id
+        db.commit()
+
+    return {"ok": True, "shopify_id": new_shopify_id}
+
+
+@app.get("/api/shopify/token-status")
+async def shopify_token_status():
+    """Verifica si el token de Shopify está activo y cuánto le queda."""
+    if not SHOPIFY_CLIENT_ID:
+        return {"configured": False}
+    now = time.time()
+    cached = _shopify_token_cache
+    if cached["token"] and now < cached["expires_at"]:
+        secs_left = int(cached["expires_at"] - now)
+        return {"configured": True, "token_cached": True, "seconds_remaining": secs_left}
+    # Intentar obtener uno nuevo
+    token = await shopify_get_token()
+    if token:
+        secs_left = int(_shopify_token_cache["expires_at"] - time.time())
+        return {"configured": True, "token_cached": True, "seconds_remaining": secs_left}
+    return {"configured": True, "token_cached": False, "error": "No se pudo obtener token"}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
