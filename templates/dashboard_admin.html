@@ -1140,11 +1140,61 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           <!-- Billing actions (Pro) -->
           <div class="card" style="margin-top:16px">
             <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:14px">Facturación</h3>
-            <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px">Gestiona tu suscripción, cambia de plan, descarga facturas o cancela desde el portal de Stripe.</p>
+            <p style="font-size:.85rem;color:var(--brown-light);margin-bottom:14px">Gestiona tu suscripción, descarga facturas o cancela desde el portal de Stripe.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <button class="btn-sm btn-primary" onclick="openBillingPortal()" id="portal-btn">
                 <span class="material-symbols-outlined" style="font-size:.85rem">open_in_new</span> Portal de facturación
               </button>
+            </div>
+          </div>
+
+          <!-- Datos fiscales para facturas -->
+          <div class="card" style="margin-top:16px">
+            <h3 style="font-size:.85rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brown-light);margin-bottom:4px">Datos fiscales</h3>
+            <p style="font-size:.82rem;color:var(--brown-light);margin-bottom:16px">Si necesitas factura con los datos de tu empresa, rellena estos campos. Stripe los incluirá automáticamente en tus facturas.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="billing-form">
+              <div style="grid-column:1/-1">
+                <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);display:block;margin-bottom:5px">Razón social</label>
+                <input id="bf-name" type="text" placeholder="Ej: Restaurante Casa Juan SL" style="width:100%;padding:10px 12px;border:1.5px solid #e8e0d6;border-radius:8px;font-size:.9rem;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='var(--honey-dark)'" onblur="this.style.borderColor='#e8e0d6'">
+              </div>
+              <div>
+                <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);display:block;margin-bottom:5px">CIF / NIF</label>
+                <input id="bf-tax-id" type="text" placeholder="Ej: B12345678" maxlength="12" style="width:100%;padding:10px 12px;border:1.5px solid #e8e0d6;border-radius:8px;font-size:.9rem;box-sizing:border-box;outline:none;text-transform:uppercase" onfocus="this.style.borderColor='var(--honey-dark)'" onblur="this.style.borderColor='#e8e0d6'" oninput="this.value=this.value.toUpperCase()">
+              </div>
+              <div>
+                <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);display:block;margin-bottom:5px">País</label>
+                <select id="bf-country" style="width:100%;padding:10px 12px;border:1.5px solid #e8e0d6;border-radius:8px;font-size:.9rem;box-sizing:border-box;outline:none;background:#fff" onfocus="this.style.borderColor='var(--honey-dark)'" onblur="this.style.borderColor='#e8e0d6'">
+                  <option value="ES">🇪🇸 España</option>
+                  <option value="FR">🇫🇷 Francia</option>
+                  <option value="DE">🇩🇪 Alemania</option>
+                  <option value="IT">🇮🇹 Italia</option>
+                  <option value="PT">🇵🇹 Portugal</option>
+                  <option value="GB">🇬🇧 Reino Unido</option>
+                  <option value="MX">🇲🇽 México</option>
+                  <option value="AR">🇦🇷 Argentina</option>
+                  <option value="CO">🇨🇴 Colombia</option>
+                  <option value="CL">🇨🇱 Chile</option>
+                  <option value="OTHER">Otro</option>
+                </select>
+              </div>
+              <div style="grid-column:1/-1">
+                <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);display:block;margin-bottom:5px">Dirección fiscal</label>
+                <input id="bf-address" type="text" placeholder="Ej: Calle Mayor 1, 2º A" style="width:100%;padding:10px 12px;border:1.5px solid #e8e0d6;border-radius:8px;font-size:.9rem;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='var(--honey-dark)'" onblur="this.style.borderColor='#e8e0d6'">
+              </div>
+              <div>
+                <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);display:block;margin-bottom:5px">Ciudad</label>
+                <input id="bf-city" type="text" placeholder="Ej: Madrid" style="width:100%;padding:10px 12px;border:1.5px solid #e8e0d6;border-radius:8px;font-size:.9rem;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='var(--honey-dark)'" onblur="this.style.borderColor='#e8e0d6'">
+              </div>
+              <div>
+                <label style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);display:block;margin-bottom:5px">Código postal</label>
+                <input id="bf-postal" type="text" placeholder="Ej: 28001" maxlength="10" style="width:100%;padding:10px 12px;border:1.5px solid #e8e0d6;border-radius:8px;font-size:.9rem;box-sizing:border-box;outline:none" onfocus="this.style.borderColor='var(--honey-dark)'" onblur="this.style.borderColor='#e8e0d6'">
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:12px">
+              <button class="btn-sm btn-primary" onclick="saveBillingDetails()" id="bf-save-btn">
+                <span class="material-symbols-outlined" style="font-size:.85rem">save</span> Guardar datos fiscales
+              </button>
+              <span id="bf-saved-msg" style="display:none;font-size:.82rem;color:#2e7d32;font-weight:700">✓ Guardado correctamente</span>
             </div>
           </div>
         </div>
@@ -6707,6 +6757,8 @@ async function loadSubscriptionInfo(){
     if(proPrice) proPrice.textContent = price;
     // Update Plan & Billing section if visible
     renderPlanSection();
+    // Cargar datos fiscales si es Pro
+    if(BIZ_PLAN === 'pro') loadBillingDetails();
     // Mostrar popup bloqueante si el pago está pendiente
     if(_subInfo.subscription_status === 'past_due'){
       showPaymentFailedModal();
@@ -6746,6 +6798,52 @@ function openUpgradeModal(reason){
 function closeUpgradeModal(){
   const overlay = document.getElementById('upgrade-overlay');
   if(overlay) overlay.style.display='none';
+}
+
+// ── DATOS FISCALES ─────────────────────────────────────────────
+async function loadBillingDetails(){
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/billing-details?pin=${PIN}`);
+    if(!r.ok) return;
+    const d = await r.json();
+    const f = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+    f('bf-name',    d.billing_name);
+    f('bf-tax-id',  d.billing_tax_id);
+    f('bf-address', d.billing_address_line);
+    f('bf-city',    d.billing_city);
+    f('bf-postal',  d.billing_postal_code);
+    const country = document.getElementById('bf-country');
+    if(country) country.value = d.billing_country || 'ES';
+  }catch(e){}
+}
+
+async function saveBillingDetails(){
+  const btn = document.getElementById('bf-save-btn');
+  const msg = document.getElementById('bf-saved-msg');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="material-symbols-outlined" style="font-size:.85rem">sync</span> Guardando…'; }
+  if(msg) msg.style.display='none';
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/billing-details`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        pin:                  PIN,
+        billing_name:         document.getElementById('bf-name')?.value.trim()    || '',
+        billing_tax_id:       document.getElementById('bf-tax-id')?.value.trim()  || '',
+        billing_address_line: document.getElementById('bf-address')?.value.trim() || '',
+        billing_city:         document.getElementById('bf-city')?.value.trim()    || '',
+        billing_postal_code:  document.getElementById('bf-postal')?.value.trim()  || '',
+        billing_country:      document.getElementById('bf-country')?.value        || 'ES',
+      })
+    });
+    const d = await r.json();
+    if(!r.ok){ showToast(d.detail || 'Error al guardar','error'); return; }
+    if(msg){ msg.style.display='inline'; setTimeout(()=>{ msg.style.display='none'; }, 4000); }
+    showToast('✅ Datos fiscales guardados y sincronizados con Stripe','success');
+  }catch(e){
+    showToast('Error de conexión','error');
+  }finally{
+    if(btn){ btn.disabled=false; btn.innerHTML='<span class="material-symbols-outlined" style="font-size:.85rem">save</span> Guardar datos fiscales'; }
+  }
 }
 
 // ── PAGO FALLIDO ───────────────────────────────────────────────

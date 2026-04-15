@@ -463,6 +463,13 @@ def run_migrations():
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_subscription_status VARCHAR",
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS stripe_current_period_end TIMESTAMPTZ",
+        # ── Datos fiscales para facturas ──────────────────────────────────────────
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS billing_name VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS billing_tax_id VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS billing_address_line VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS billing_city VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS billing_postal_code VARCHAR DEFAULT ''",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS billing_country VARCHAR DEFAULT 'ES'",
         # ── Campaign promo message (shown on Wallet pass via changeMessage) ─────────
         "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS promo_message VARCHAR DEFAULT ''",
         # ── Google Reviews ─────────────────────────────────────────────────────────
@@ -5952,6 +5959,91 @@ def get_subscription(slug: str, pin: str = "", db: Session = Depends(get_db)):
         "current_period_end": period_end.isoformat() if period_end else None,
         "price_display": STRIPE_PRO_PRICE_DISPLAY,
     }
+
+
+@app.get("/api/biz/{slug}/billing-details")
+def get_billing_details(slug: str, pin: str = "", db: Session = Depends(get_db)):
+    """Devuelve los datos fiscales guardados para facturas."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return {
+        "billing_name":         getattr(biz, "billing_name", "") or "",
+        "billing_tax_id":       getattr(biz, "billing_tax_id", "") or "",
+        "billing_address_line": getattr(biz, "billing_address_line", "") or "",
+        "billing_city":         getattr(biz, "billing_city", "") or "",
+        "billing_postal_code":  getattr(biz, "billing_postal_code", "") or "",
+        "billing_country":      getattr(biz, "billing_country", "") or "ES",
+    }
+
+
+@app.post("/api/biz/{slug}/billing-details")
+async def save_billing_details(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Guarda datos fiscales en la DB y los sincroniza con el Customer de Stripe."""
+    body = await request.json()
+    verify_pin(str(body.get("pin", "")), db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    billing_name         = (body.get("billing_name") or "").strip()
+    billing_tax_id       = (body.get("billing_tax_id") or "").strip().upper()
+    billing_address_line = (body.get("billing_address_line") or "").strip()
+    billing_city         = (body.get("billing_city") or "").strip()
+    billing_postal_code  = (body.get("billing_postal_code") or "").strip()
+    billing_country      = (body.get("billing_country") or "ES").strip().upper()
+
+    # Guardar en DB
+    db.execute(text(
+        "UPDATE businesses SET billing_name=:name, billing_tax_id=:tax_id, "
+        "billing_address_line=:addr, billing_city=:city, "
+        "billing_postal_code=:postal, billing_country=:country WHERE id=:bid"
+    ), {
+        "name": billing_name, "tax_id": billing_tax_id, "addr": billing_address_line,
+        "city": billing_city, "postal": billing_postal_code,
+        "country": billing_country, "bid": str(biz.id),
+    })
+    db.commit()
+
+    # Sincronizar con Stripe Customer si existe
+    customer_id = getattr(biz, "stripe_customer_id", None)
+    if customer_id and STRIPE_SECRET_KEY:
+        try:
+            # Actualizar nombre y dirección fiscal en el Customer de Stripe
+            update_kwargs = {}
+            if billing_name:
+                update_kwargs["name"] = billing_name
+            if billing_address_line or billing_city or billing_postal_code:
+                update_kwargs["address"] = {
+                    "line1":       billing_address_line,
+                    "city":        billing_city,
+                    "postal_code": billing_postal_code,
+                    "country":     billing_country,
+                }
+            if update_kwargs:
+                _stripe_sdk.Customer.modify(customer_id, **update_kwargs)
+
+            # Sincronizar CIF/NIF como Tax ID (tipo eu_vat para España)
+            if billing_tax_id and billing_country == "ES":
+                # El valor para eu_vat en España debe tener prefijo "ES"
+                vat_value = billing_tax_id if billing_tax_id.startswith("ES") else f"ES{billing_tax_id}"
+                # Eliminar tax IDs anteriores para evitar duplicados
+                existing = _stripe_sdk.Customer.list_tax_ids(customer_id, limit=10)
+                for t in existing.auto_paging_iter():
+                    try:
+                        _stripe_sdk.Customer.delete_tax_id(customer_id, t.id)
+                    except Exception:
+                        pass
+                # Crear el nuevo
+                _stripe_sdk.Customer.create_tax_id(customer_id, type="eu_vat", value=vat_value)
+                print(f"✅ Tax ID sincronizado en Stripe: {vat_value} para {customer_id}")
+
+        except Exception as e:
+            print(f"⚠️ Error sincronizando datos fiscales con Stripe para {slug}: {e}")
+            # No falla la request — los datos ya están guardados en DB
+
+    return {"ok": True, "message": "Datos fiscales guardados correctamente"}
 
 
 @app.post("/api/biz/{slug}/subscription/checkout")

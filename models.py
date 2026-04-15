@@ -164,6 +164,13 @@ class Business(Base):
     stripe_subscription_id    = Column(String, nullable=True)   # sub_xxx
     stripe_subscription_status = Column(String, nullable=True)  # active | past_due | canceled | trialing
     stripe_current_period_end = Column(DateTime(timezone=True), nullable=True)
+    # ── Datos fiscales para facturas ───────────────────────────────────────────
+    billing_name         = Column(String, nullable=True, default="")   # Razón social
+    billing_tax_id       = Column(String, nullable=True, default="")   # CIF/NIF (sin prefijo ES)
+    billing_address_line = Column(String, nullable=True, default="")   # Dirección fiscal
+    billing_city         = Column(String, nullable=True, default="")
+    billing_postal_code  = Column(String, nullable=True, default="")
+    billing_country      = Column(String, nullable=True, default="ES")
     # ── Birthday voucher config ────────────────────────────────────────────────
     birthday_gift_type          = Column(String, default="discount")  # discount | product
     birthday_gift_product       = Column(String, nullable=True, default="")
