@@ -4007,6 +4007,31 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
   </div>
 </div>
 
+<!-- PAYMENT FAILED MODAL ─────────────────────────────────── -->
+<div id="payment-failed-overlay" style="display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:rgba(20,10,5,.55)">
+  <div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:36px 32px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.35);position:relative">
+    <!-- Icono error -->
+    <div style="width:64px;height:64px;background:#fff0f0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+      <span class="material-symbols-outlined" style="font-size:2rem;color:#e53935;font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 48">credit_card_off</span>
+    </div>
+    <!-- Título -->
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em;color:#1a1a1a;margin-bottom:8px">Pago rechazado</h2>
+    <!-- Mensaje -->
+    <p style="font-size:.95rem;color:#555;line-height:1.6;margin-bottom:6px">
+      No hemos podido cobrar tu suscripción ZubCard Pro.
+    </p>
+    <p style="font-size:.85rem;color:#888;line-height:1.55;margin-bottom:28px">
+      Actualiza tu método de pago para seguir usando ZubCard sin interrupciones. Solo tardas un minuto.
+    </p>
+    <!-- Botón principal -->
+    <button id="payment-failed-btn" onclick="fixPayment()" style="width:100%;padding:14px;background:#e53935;color:white;border:none;border-radius:8px;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.04em;transition:background .15s">
+      <span class="material-symbols-outlined" style="font-size:1.1rem">credit_card</span>
+      Actualizar método de pago
+    </button>
+    <p style="font-size:.72rem;color:#bbb;margin-top:12px">Serás redirigido al portal de pago seguro de Stripe</p>
+  </div>
+</div>
+
 <!-- CAMPAIGN EDITOR MODAL ─────────────────────────────────── -->
 <div id="camp-editor-overlay" class="camp-modal-overlay">
   <div class="camp-modal">
@@ -6682,6 +6707,10 @@ async function loadSubscriptionInfo(){
     if(proPrice) proPrice.textContent = price;
     // Update Plan & Billing section if visible
     renderPlanSection();
+    // Mostrar popup bloqueante si el pago está pendiente
+    if(_subInfo.subscription_status === 'past_due'){
+      showPaymentFailedModal();
+    }
   }catch(e){}
 }
 
@@ -6717,6 +6746,32 @@ function openUpgradeModal(reason){
 function closeUpgradeModal(){
   const overlay = document.getElementById('upgrade-overlay');
   if(overlay) overlay.style.display='none';
+}
+
+// ── PAGO FALLIDO ───────────────────────────────────────────────
+function showPaymentFailedModal(){
+  const overlay = document.getElementById('payment-failed-overlay');
+  if(overlay) overlay.style.display='flex';
+}
+async function fixPayment(){
+  const btn = document.getElementById('payment-failed-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Abriendo portal seguro…'; }
+  try{
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/subscription/portal`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({pin:PIN})
+    });
+    const d = await r.json();
+    if(!r.ok){
+      showToast(d.detail || 'Error al abrir el portal','error');
+      if(btn){ btn.disabled=false; btn.innerHTML='<span class="material-symbols-outlined" style="font-size:1.1rem">credit_card</span> Actualizar método de pago'; }
+      return;
+    }
+    window.location.href = d.portal_url;
+  }catch(e){
+    showToast('Error de conexión','error');
+    if(btn){ btn.disabled=false; btn.innerHTML='<span class="material-symbols-outlined" style="font-size:1.1rem">credit_card</span> Actualizar método de pago'; }
+  }
 }
 
 /** Gate: if on Free plan, show upgrade modal and return false. Otherwise return true. */
