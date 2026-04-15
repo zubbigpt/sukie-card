@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Programa de Referidos – ZubCard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown: #26170c; --gold: #ffca48; --gold-dark: #785a00;
+      --surface: #fff8f5; --surface-mid: #ffeade; --r: 12px;
+      --shadow: 0 8px 40px rgba(38,23,12,.13);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, var(--surface) 0%, var(--surface-mid) 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+
+    .card { background: #fff; border-radius: 20px; box-shadow: var(--shadow); max-width: 480px; width: 100%; padding: 44px 40px; }
+
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: .05em; color: var(--brown); margin-bottom: 4px; }
+    .logo span { color: var(--gold-dark); }
+    .badge { display: inline-block; background: var(--gold); color: var(--brown); font-size: .7rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+
+    h1 { font-size: 1.6rem; font-weight: 900; color: var(--brown); margin-bottom: 8px; line-height: 1.2; }
+    .subtitle { font-size: .9rem; color: #7a6558; line-height: 1.6; margin-bottom: 28px; }
+
+    .perks { display: grid; gap: 10px; margin-bottom: 28px; }
+    .perk { display: flex; align-items: flex-start; gap: 10px; }
+    .perk-icon { width: 32px; height: 32px; background: #fff3d0; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
+    .perk-text { font-size: .85rem; color: var(--brown); font-weight: 600; line-height: 1.4; }
+    .perk-sub { font-size: .78rem; color: #9a8579; font-weight: 400; }
+
+    .divider { border: none; border-top: 1.5px solid #f0e6df; margin: 24px 0; }
+
+    label { display: block; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #9a8579; margin-bottom: 5px; margin-top: 14px; }
+    input { width: 100%; padding: 11px 14px; border: 1.5px solid #e2cfc8; border-radius: 8px; font-size: .92rem; font-family: 'Manrope', sans-serif; outline: none; transition: border-color .15s; }
+    input:focus { border-color: var(--gold-dark); }
+    .hint { font-size: .75rem; color: #b0a098; margin-top: 4px; }
+
+    .btn { width: 100%; margin-top: 20px; padding: 14px; background: var(--brown); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; letter-spacing: .03em; transition: background .15s; }
+    .btn:hover { background: #3d2b1f; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* Resultado */
+    #result { display: none; text-align: center; }
+    .success-icon { width: 64px; height: 64px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.8rem; }
+    #result h2 { font-size: 1.3rem; font-weight: 900; color: var(--brown); margin-bottom: 8px; }
+    #result p { font-size: .88rem; color: #7a6558; margin-bottom: 20px; line-height: 1.6; }
+    .link-box { background: #f7f1ec; border: 1.5px dashed #c5b5ac; border-radius: 10px; padding: 14px 16px; font-size: .85rem; color: var(--brown); font-weight: 700; word-break: break-all; margin-bottom: 14px; cursor: pointer; transition: background .15s; }
+    .link-box:hover { background: #f0e8e2; }
+    .copy-btn { width: 100%; padding: 12px; background: var(--gold); color: var(--brown); border: none; border-radius: 8px; font-size: .92rem; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; }
+    .copy-btn:hover { background: #f0bd3a; }
+    .back-link { display: block; text-align: center; margin-top: 14px; font-size: .82rem; color: #b0a098; cursor: pointer; text-decoration: underline; }
+
+    .error-msg { background: #fff0f0; border: 1px solid #ffcdd2; color: #c62828; border-radius: 8px; padding: 10px 14px; font-size: .83rem; margin-top: 12px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- FORMULARIO -->
+    <div id="form-view">
+      <div class="logo">Zub<span>Card</span></div>
+      <div class="badge">Programa de Referidos</div>
+
+      <h1>Gana dinero recomendando ZubCard</h1>
+      <p class="subtitle">Cada restaurante que se afilie con tu link te genera una comisión mensual automática, mientras siga activo.</p>
+
+      <div class="perks">
+        <div class="perk">
+          <div class="perk-icon">💸</div>
+          <div class="perk-text">Comisión mensual recurrente<div class="perk-sub">Recibes tu comisión cada mes que el negocio pague</div></div>
+        </div>
+        <div class="perk">
+          <div class="perk-icon">🌍</div>
+          <div class="perk-text">Pago en USDT TRC20<div class="perk-sub">Sin fronteras, sin bancos, directo a tu wallet</div></div>
+        </div>
+        <div class="perk">
+          <div class="perk-icon">🔗</div>
+          <div class="perk-text">Tu link único de por vida<div class="perk-sub">Compártelo y cobra automáticamente</div></div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <label>Nombre</label>
+      <input id="f-name" type="text" placeholder="Tu nombre" autocomplete="given-name">
+
+      <label>Apellido</label>
+      <input id="f-last" type="text" placeholder="Tu apellido" autocomplete="family-name">
+
+      <label>Wallet USDT TRC20</label>
+      <input id="f-wallet" type="text" placeholder="TRxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" spellcheck="false" autocomplete="off">
+      <div class="hint">Asegúrate de que sea una dirección TRC20 (empieza por T). Ahí recibirás tus comisiones.</div>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <button class="btn" onclick="submitForm()" id="submit-btn">Obtener mi link de referido →</button>
+    </div>
+
+    <!-- RESULTADO -->
+    <div id="result">
+      <div class="success-icon">🎉</div>
+      <h2>¡Ya eres partner de ZubCard!</h2>
+      <p>Este es tu link único. Compártelo con restaurantes y negocios — cada vez que uno se afilie y pague, recibirás tu comisión en USDT.</p>
+      <div class="link-box" id="link-display" onclick="copyLink()">—</div>
+      <button class="copy-btn" onclick="copyLink()" id="copy-btn">📋 Copiar link</button>
+      <span class="back-link" onclick="resetForm()">Registrar otro partner</span>
+    </div>
+
+  </div>
+
+  <script>
+  async function submitForm() {
+    const name   = document.getElementById('f-name').value.trim();
+    const last   = document.getElementById('f-last').value.trim();
+    const wallet = document.getElementById('f-wallet').value.trim();
+    const errEl  = document.getElementById('error-msg');
+    const btn    = document.getElementById('submit-btn');
+    errEl.style.display = 'none';
+
+    if (!name || !last) { showError('Por favor introduce tu nombre y apellido.'); return; }
+    if (!wallet || wallet.length < 30) { showError('La wallet TRC20 parece incorrecta. Debe tener al menos 34 caracteres y empezar por T.'); return; }
+    if (!wallet.startsWith('T')) { showError('Las wallets TRC20 empiezan por la letra T. Verifica que estás usando la red TRC20.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Generando tu link…';
+
+    try {
+      const r = await fetch('/api/referidos/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, last_name: last, wallet_trc20: wallet })
+      });
+      const d = await r.json();
+      if (!r.ok) { showError(d.detail || 'Error al registrarse. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Obtener mi link de referido →'; return; }
+
+      document.getElementById('link-display').textContent = d.referral_link;
+      document.getElementById('form-view').style.display = 'none';
+      document.getElementById('result').style.display = 'block';
+    } catch(e) {
+      showError('Error de conexión. Inténtalo de nuevo.');
+      btn.disabled = false;
+      btn.textContent = 'Obtener mi link de referido →';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function copyLink() {
+    const link = document.getElementById('link-display').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✅ ¡Copiado!';
+      setTimeout(() => { btn.textContent = '📋 Copiar link'; }, 2500);
+    });
+  }
+
+  function resetForm() {
+    document.getElementById('form-view').style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-last').value = '';
+    document.getElementById('f-wallet').value = '';
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').textContent = 'Obtener mi link de referido →';
+  }
+  </script>
+</body>
+</html>

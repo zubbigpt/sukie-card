@@ -433,6 +433,7 @@
   </div>
 
   <script>
+    const REF_CODE = '{{ ref_code }}';   // Jinja2 — vacío si no hay referido
     let selectedIndustry = 'other';
 
     // ── Password show/hide ──
@@ -633,7 +634,8 @@
           body: JSON.stringify({ name, email, password: pw, industry: selectedIndustry,
             description: description || null,
             address: address || null,
-            latitude, longitude })
+            latitude, longitude,
+            ref: REF_CODE || null })
         });
         const d = await r.json();
 
@@ -679,7 +681,8 @@
 
     // ── Google ──
     function googleRegister() {
-      window.location.href = '/auth/google';
+      const url = REF_CODE ? `/auth/google?ref=${encodeURIComponent(REF_CODE)}` : '/auth/google';
+      window.location.href = url;
     }
   </script>
 </body>

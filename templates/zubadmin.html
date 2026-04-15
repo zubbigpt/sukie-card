@@ -327,22 +327,45 @@
   </div>
 
   <div class="main-content">
-    <div class="page-title">Negocios afiliados</div>
-    <div class="page-sub" id="page-sub">Cargando...</div>
-
-    <div class="stats-row" id="stats-row">
-      <div class="stat-box"><div class="stat-val" id="st-total">—</div><div class="stat-label">Negocios</div></div>
-      <div class="stat-box"><div class="stat-val" id="st-pro">—</div><div class="stat-label">Plan Pro</div></div>
-      <div class="stat-box"><div class="stat-val" id="st-free">—</div><div class="stat-label">Plan Free</div></div>
-      <div class="stat-box"><div class="stat-val" id="st-clients">—</div><div class="stat-label">Clientes totales</div></div>
+    <!-- NAV TABS -->
+    <div style="display:flex;gap:8px;margin-bottom:24px;border-bottom:2px solid #f0e6df;padding-bottom:0">
+      <button onclick="showTab('negocios')" id="tab-negocios" style="padding:10px 20px;background:none;border:none;border-bottom:3px solid #26170c;font-weight:800;font-size:.9rem;color:#26170c;cursor:pointer;margin-bottom:-2px">Negocios</button>
+      <button onclick="showTab('referidos')" id="tab-referidos" style="padding:10px 20px;background:none;border:none;border-bottom:3px solid transparent;font-weight:700;font-size:.9rem;color:#9a8579;cursor:pointer;margin-bottom:-2px">Referidos 🔗</button>
     </div>
 
-    <div class="search-wrap">
-      <input type="text" id="search-input" placeholder="Buscar negocio..." oninput="filterBiz()">
+    <!-- TAB: NEGOCIOS -->
+    <div id="view-negocios">
+      <div class="page-title">Negocios afiliados</div>
+      <div class="page-sub" id="page-sub">Cargando...</div>
+      <div class="stats-row" id="stats-row">
+        <div class="stat-box"><div class="stat-val" id="st-total">—</div><div class="stat-label">Negocios</div></div>
+        <div class="stat-box"><div class="stat-val" id="st-pro">—</div><div class="stat-label">Plan Pro</div></div>
+        <div class="stat-box"><div class="stat-val" id="st-free">—</div><div class="stat-label">Plan Free</div></div>
+        <div class="stat-box"><div class="stat-val" id="st-clients">—</div><div class="stat-label">Clientes totales</div></div>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Buscar negocio..." oninput="filterBiz()">
+      </div>
+      <div class="biz-grid" id="biz-grid">
+        <div class="empty-state">Cargando negocios...</div>
+      </div>
     </div>
 
-    <div class="biz-grid" id="biz-grid">
-      <div class="empty-state">Cargando negocios...</div>
+    <!-- TAB: REFERIDOS -->
+    <div id="view-referidos" style="display:none">
+      <div class="page-title">Partners de Referidos</div>
+      <div class="page-sub">Personas que refieren negocios a ZubCard y sus comisiones pendientes.</div>
+
+      <div class="stats-row" style="margin-top:16px">
+        <div class="stat-box"><div class="stat-val" id="ref-st-partners">—</div><div class="stat-label">Partners</div></div>
+        <div class="stat-box"><div class="stat-val" id="ref-st-referidos">—</div><div class="stat-label">Negocios referidos</div></div>
+        <div class="stat-box"><div class="stat-val" id="ref-st-pendiente" style="color:#e53935">—</div><div class="stat-label">Pendiente pago</div></div>
+        <div class="stat-box"><div class="stat-val" id="ref-st-pagado" style="color:#2e7d32">—</div><div class="stat-label">Total pagado</div></div>
+      </div>
+
+      <div id="ref-grid" style="margin-top:20px;display:grid;gap:14px">
+        <div style="color:#9a8579;text-align:center;padding:40px">Cargando partners...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -471,6 +494,91 @@ function filterBiz() {
     (b.slug || '').toLowerCase().includes(q) ||
     (b.email || '').toLowerCase().includes(q)
   ));
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.getElementById('view-negocios').style.display  = tab === 'negocios'  ? '' : 'none';
+  document.getElementById('view-referidos').style.display = tab === 'referidos' ? '' : 'none';
+  document.getElementById('tab-negocios').style.borderBottomColor  = tab === 'negocios'  ? '#26170c' : 'transparent';
+  document.getElementById('tab-referidos').style.borderBottomColor = tab === 'referidos' ? '#26170c' : 'transparent';
+  document.getElementById('tab-negocios').style.color  = tab === 'negocios'  ? '#26170c' : '#9a8579';
+  document.getElementById('tab-referidos').style.color = tab === 'referidos' ? '#26170c' : '#9a8579';
+  if (tab === 'referidos') loadReferidos();
+}
+
+// ── REFERIDOS ────────────────────────────────────────────────────────────────
+async function loadReferidos() {
+  try {
+    const r = await fetch('/api/zubadmin/referidos', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    const partners = await r.json();
+
+    // Stats
+    const totalRefs    = partners.reduce((s, p) => s + (p.total_referidos || 0), 0);
+    const totalPending = partners.reduce((s, p) => s + parseFloat(p.pendiente_eur || 0), 0);
+    const totalPaid    = partners.reduce((s, p) => s + parseFloat(p.pagado_eur || 0), 0);
+    document.getElementById('ref-st-partners').textContent  = partners.length;
+    document.getElementById('ref-st-referidos').textContent = totalRefs;
+    document.getElementById('ref-st-pendiente').textContent = '€' + totalPending.toFixed(2);
+    document.getElementById('ref-st-pagado').textContent    = '€' + totalPaid.toFixed(2);
+
+    const grid = document.getElementById('ref-grid');
+    if (!partners.length) {
+      grid.innerHTML = '<div style="text-align:center;color:#9a8579;padding:40px">Aún no hay partners registrados.</div>';
+      return;
+    }
+
+    grid.innerHTML = partners.map(p => `
+      <div style="background:#fff;border-radius:12px;padding:20px 22px;box-shadow:0 2px 12px rgba(38,23,12,.07);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start">
+        <div>
+          <div style="font-weight:900;font-size:1rem;color:#26170c;margin-bottom:2px">${p.name} ${p.last_name}</div>
+          <div style="font-size:.78rem;color:#9a8579;margin-bottom:8px">
+            Código: <b style="color:#26170c">${p.referral_code}</b>
+            &nbsp;·&nbsp;
+            <a href="https://zubcard.com/app/register?ref=${p.referral_code}" target="_blank" style="color:#785a00;text-decoration:none">Ver link ↗</a>
+          </div>
+          <div style="font-size:.78rem;color:#7a6558;margin-bottom:6px;word-break:break-all">
+            💰 Wallet: <span style="font-family:monospace">${p.wallet_trc20}</span>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.82rem;margin-top:6px">
+            <span style="background:#f0f7ff;color:#1565c0;padding:3px 10px;border-radius:20px;font-weight:700">${p.total_referidos} negocios</span>
+            <span style="background:#fff9c4;color:#785a00;padding:3px 10px;border-radius:20px;font-weight:700">${p.activos_pro} activos Pro</span>
+            ${parseFloat(p.pendiente_eur) > 0
+              ? `<span style="background:#ffebee;color:#c62828;padding:3px 10px;border-radius:20px;font-weight:700">€${parseFloat(p.pendiente_eur).toFixed(2)} pendiente</span>`
+              : `<span style="background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px;font-weight:700">Al día ✓</span>`
+            }
+            ${parseFloat(p.pagado_eur) > 0
+              ? `<span style="background:#e8f5e9;color:#388e3c;padding:3px 10px;border-radius:20px;font-weight:600">€${parseFloat(p.pagado_eur).toFixed(2)} pagado</span>`
+              : ''
+            }
+          </div>
+        </div>
+        ${parseFloat(p.pendiente_eur) > 0 ? `
+        <div style="text-align:right">
+          <div style="font-size:1.4rem;font-weight:900;color:#c62828;margin-bottom:6px">€${parseFloat(p.pendiente_eur).toFixed(2)}</div>
+          <button onclick="markPaid('${p.id}', this)" style="padding:7px 14px;background:#26170c;color:#fff;border:none;border-radius:6px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:inherit">
+            Marcar pagado ✓
+          </button>
+        </div>` : '<div style="color:#2e7d32;font-size:1.1rem;text-align:right">✓</div>'}
+      </div>
+    `).join('');
+  } catch(e) {
+    console.error('Error cargando referidos:', e);
+  }
+}
+
+async function markPaid(partnerId, btn) {
+  if (!confirm('¿Confirmas que ya enviaste el USDT a este partner?')) return;
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  try {
+    const r = await fetch(`/api/zubadmin/referidos/${partnerId}/mark-paid`, {
+      method: 'POST', credentials: 'same-origin'
+    });
+    if (r.ok) { loadReferidos(); }
+    else { btn.disabled = false; btn.textContent = 'Marcar pagado ✓'; alert('Error al marcar'); }
+  } catch(e) { btn.disabled = false; }
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────

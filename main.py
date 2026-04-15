@@ -91,6 +91,7 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_PRICE_ID_PRO    = os.environ.get("STRIPE_PRICE_ID_PRO", "")       # price_xxx
 STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")      # whsec_xxx
 STRIPE_PRO_PRICE_DISPLAY = os.environ.get("STRIPE_PRO_PRICE_DISPLAY", "€39")  # display only
+REFERRAL_COMMISSION_EUR  = float(os.environ.get("REFERRAL_COMMISSION_EUR", "5.0"))  # comisión por referido/mes
 
 # Inicializar Stripe SDK con la clave secreta
 import stripe as _stripe_sdk
@@ -506,6 +507,28 @@ def run_migrations():
         )""",
         # Clean up orphaned wallet_devices entries left from deleted cards
         "DELETE FROM wallet_devices WHERE card_id IS NULL",
+        # ── Sistema de referidos ──────────────────────────────────────────────────
+        """CREATE TABLE IF NOT EXISTS referral_partners (
+            id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name         VARCHAR NOT NULL,
+            last_name    VARCHAR NOT NULL,
+            wallet_trc20 VARCHAR NOT NULL,
+            referral_code VARCHAR UNIQUE NOT NULL,
+            active       BOOLEAN DEFAULT TRUE,
+            created_at   TIMESTAMPTZ DEFAULT NOW()
+        )""",
+        """CREATE TABLE IF NOT EXISTS referral_commissions (
+            id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            partner_id        UUID REFERENCES referral_partners(id),
+            business_id       UUID REFERENCES businesses(id),
+            amount_eur        DECIMAL(10,2) NOT NULL,
+            period_month      VARCHAR NOT NULL,
+            status            VARCHAR DEFAULT 'pending',
+            paid_at           TIMESTAMPTZ,
+            stripe_invoice_id VARCHAR UNIQUE,
+            created_at        TIMESTAMPTZ DEFAULT NOW()
+        )""",
+        "ALTER TABLE businesses ADD COLUMN IF NOT EXISTS referral_partner_id UUID",
 
     ]
     from database import SessionLocal
@@ -4038,8 +4061,8 @@ async def app_login(request: Request):
 
 
 @app.get("/app/register", response_class=HTMLResponse)
-async def app_register_page(request: Request):
-    return templates.TemplateResponse("app_register.html", {"request": request})
+async def app_register_page(request: Request, ref: str = ""):
+    return templates.TemplateResponse("app_register.html", {"request": request, "ref_code": ref.upper() if ref else ""})
 
 
 @app.post("/api/app/register")
@@ -4054,6 +4077,7 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
     address     = (body.get("address") or "").strip()
     latitude    = body.get("latitude")
     longitude   = body.get("longitude")
+    ref_code    = (body.get("ref") or "").strip().upper()
 
     if not name:
         raise HTTPException(status_code=400, detail="El nombre del negocio es obligatorio")
@@ -4082,6 +4106,15 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
         slug = f"{base_slug}{counter}"
         counter += 1
 
+    # Resolver partner de referido si viene con ref_code
+    referral_partner_id = None
+    if ref_code:
+        partner_row = db.execute(text(
+            "SELECT id FROM referral_partners WHERE referral_code=:c AND active=TRUE"
+        ), {"c": ref_code}).fetchone()
+        if partner_row:
+            referral_partner_id = str(partner_row[0])
+
     business = models.Business(
         name                = name,
         slug                = slug,
@@ -4097,6 +4130,7 @@ async def register_business(request: Request, db: Session = Depends(get_db)):
         latitude            = float(latitude) if latitude else None,
         longitude           = float(longitude) if longitude else None,
         plan                = "free",
+        referral_partner_id = referral_partner_id,
     )
     db.add(business)
     db.commit()
@@ -6229,6 +6263,41 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                     db.commit()
                     print(f"✅ {etype} — biz {biz_row[0]} status={status} plan={new_plan}")
 
+        elif etype == "invoice.paid":
+            # Registrar comisión para el partner de referido (si existe)
+            cid        = data.get("customer")
+            invoice_id = data.get("id")
+            # Solo facturas de suscripción (no one-time)
+            if data.get("subscription") and cid and invoice_id:
+                biz_row = _biz_by_customer(cid)
+                if biz_row:
+                    partner_row = db.execute(text(
+                        "SELECT rp.id FROM referral_partners rp "
+                        "JOIN businesses b ON b.referral_partner_id = rp.id "
+                        "WHERE b.id=:bid AND rp.active=TRUE"
+                    ), {"bid": str(biz_row[0])}).fetchone()
+                    if partner_row:
+                        # Evitar duplicados por invoice
+                        exists = db.execute(text(
+                            "SELECT 1 FROM referral_commissions WHERE stripe_invoice_id=:inv"
+                        ), {"inv": invoice_id}).fetchone()
+                        if not exists:
+                            from datetime import datetime as _dt2
+                            period_month = _dt2.now().strftime("%Y-%m")
+                            db.execute(text("""
+                                INSERT INTO referral_commissions
+                                    (partner_id, business_id, amount_eur, period_month, stripe_invoice_id)
+                                VALUES (:pid, :bid, :amt, :month, :inv)
+                            """), {
+                                "pid":   str(partner_row[0]),
+                                "bid":   str(biz_row[0]),
+                                "amt":   REFERRAL_COMMISSION_EUR,
+                                "month": period_month,
+                                "inv":   invoice_id,
+                            })
+                            db.commit()
+                            print(f"✅ Comisión referido registrada: partner {partner_row[0]} ← biz {biz_row[0]} ({REFERRAL_COMMISSION_EUR}€)")
+
         elif etype == "invoice.payment_failed":
             cid = data.get("customer")
             biz_row = _biz_by_customer(cid)
@@ -6752,13 +6821,114 @@ def activity_log(
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE REFERIDOS
+# ════════════════════════════════════════════════════════════════════════════════
+
+def _gen_referral_code() -> str:
+    """Genera un código único de 8 caracteres para el link de referido."""
+    chars = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(chars) for _ in range(8))
+
+
+@app.get("/referidos", response_class=HTMLResponse)
+async def referidos_page(request: Request):
+    """Landing pública para que partners se registren y obtengan su link de referido."""
+    return templates.TemplateResponse("referidos.html", {"request": request})
+
+
+@app.get("/r/{code}")
+async def referral_redirect(code: str):
+    """Redirige al registro de ZubCard con el código de referido en la URL."""
+    return RedirectResponse(f"/app/register?ref={code.upper()}", status_code=302)
+
+
+@app.post("/api/referidos/register")
+async def register_referral_partner(request: Request, db: Session = Depends(get_db)):
+    """Registra un nuevo partner de referidos y devuelve su link único."""
+    body      = await request.json()
+    name      = (body.get("name") or "").strip()
+    last_name = (body.get("last_name") or "").strip()
+    wallet    = (body.get("wallet_trc20") or "").strip()
+
+    if not name or not last_name:
+        raise HTTPException(status_code=400, detail="Nombre y apellido son obligatorios")
+    if not wallet or len(wallet) < 20:
+        raise HTTPException(status_code=400, detail="Wallet USDT TRC20 inválida")
+
+    # Generar código único
+    code = _gen_referral_code()
+    attempts = 0
+    while db.execute(text("SELECT 1 FROM referral_partners WHERE referral_code=:c"), {"c": code}).fetchone():
+        code = _gen_referral_code()
+        attempts += 1
+        if attempts > 20:
+            raise HTTPException(status_code=500, detail="Error generando código único")
+
+    db.execute(text(
+        "INSERT INTO referral_partners (name, last_name, wallet_trc20, referral_code) "
+        "VALUES (:name, :last, :wallet, :code)"
+    ), {"name": name, "last": last_name, "wallet": wallet, "code": code})
+    db.commit()
+
+    referral_link = f"https://zubcard.com/app/register?ref={code}"
+    return {"ok": True, "referral_code": code, "referral_link": referral_link}
+
+
+@app.get("/api/zubadmin/referidos")
+async def admin_get_referidos(request: Request, db: Session = Depends(get_db)):
+    """Admin: lista todos los partners de referidos con sus estadísticas."""
+    # Verificar cookie de admin
+    admin_pin = request.cookies.get("zubadmin_pin", "")
+    stored = db.execute(text("SELECT pin FROM admin_users LIMIT 1")).fetchone()
+    if not stored or admin_pin != stored[0]:
+        raise HTTPException(status_code=401, detail="No autorizado")
+
+    partners = db.execute(text("""
+        SELECT
+            rp.id, rp.name, rp.last_name, rp.wallet_trc20, rp.referral_code,
+            rp.active, rp.created_at,
+            COUNT(DISTINCT b.id) AS total_referidos,
+            COUNT(DISTINCT CASE WHEN b.plan='pro' THEN b.id END) AS activos_pro,
+            COALESCE(SUM(CASE WHEN rc.status='pending' THEN rc.amount_eur END), 0) AS pendiente_eur,
+            COALESCE(SUM(CASE WHEN rc.status='paid'    THEN rc.amount_eur END), 0) AS pagado_eur
+        FROM referral_partners rp
+        LEFT JOIN businesses b ON b.referral_partner_id = rp.id::text::uuid
+        LEFT JOIN referral_commissions rc ON rc.partner_id = rp.id
+        GROUP BY rp.id
+        ORDER BY rp.created_at DESC
+    """)).fetchall()
+
+    return [dict(r._mapping) for r in partners]
+
+
+@app.post("/api/zubadmin/referidos/{partner_id}/mark-paid")
+async def admin_mark_commissions_paid(partner_id: str, request: Request, db: Session = Depends(get_db)):
+    """Admin: marca todas las comisiones pendientes de un partner como pagadas."""
+    admin_pin = request.cookies.get("zubadmin_pin", "")
+    stored = db.execute(text("SELECT pin FROM admin_users LIMIT 1")).fetchone()
+    if not stored or admin_pin != stored[0]:
+        raise HTTPException(status_code=401, detail="No autorizado")
+
+    db.execute(text("""
+        UPDATE referral_commissions
+        SET status='paid', paid_at=NOW()
+        WHERE partner_id=:pid AND status='pending'
+    """), {"pid": partner_id})
+    db.commit()
+    return {"ok": True}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # GOOGLE OAUTH 2.0
 # ════════════════════════════════════════════════════════════════════════════════
 
 @app.get("/auth/google")
-async def auth_google_redirect(slug: str = ""):
+async def auth_google_redirect(slug: str = "", ref: str = ""):
     """Redirect user to Google's OAuth consent screen.
-    Optionally pass ?slug=... to remember which business they're logging into."""
+    Optionally pass ?slug=... to remember which business they're logging into.
+    Optionally pass ?ref=... to track referral partner."""
+    # state format: "slug|ref" — allows passing both values through OAuth state
+    state = f"{slug}|{ref.upper()}" if ref else slug
     params = {
         "client_id":     GOOGLE_CLIENT_ID,
         "redirect_uri":  GOOGLE_REDIRECT_URI,
@@ -6766,7 +6936,7 @@ async def auth_google_redirect(slug: str = ""):
         "scope":         "openid email profile",
         "access_type":   "online",
         "prompt":        "select_account",
-        "state":         slug,
+        "state":         state,
     }
     google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
     return RedirectResponse(google_auth_url)
@@ -6818,6 +6988,10 @@ async def auth_google_callback(
     if not email:
         return RedirectResponse(f"/app/login?error=no_email")
 
+    # Extraer ref_code del state (formato: "slug|REF_CODE" o solo "slug")
+    state_parts = state.split("|", 1)
+    ref_code = state_parts[1].strip().upper() if len(state_parts) > 1 else ""
+
     # 1) Find by google_id first, then by email
     biz = db.query(models.Business).filter(models.Business.google_id == google_sub).first()
     if not biz:
@@ -6839,16 +7013,26 @@ async def auth_google_callback(
             counter += 1
 
         random_pin = "".join(secrets.choice(string.digits) for _ in range(6))
+        # Resolver partner de referido si viene con ref_code
+        g_referral_partner_id = None
+        if ref_code:
+            p_row = db.execute(text(
+                "SELECT id FROM referral_partners WHERE referral_code=:c AND active=TRUE"
+            ), {"c": ref_code}).fetchone()
+            if p_row:
+                g_referral_partner_id = str(p_row[0])
+
         biz = models.Business(
-            name            = full_name,
-            slug            = slug,
-            email           = email,
-            google_id       = google_sub,
-            admin_pin       = random_pin,
-            email_confirmed = True,   # Google verifies email — no confirmation needed
-            api_key         = generate_api_key(),
-            industry        = "other",
-            plan            = "free",
+            name                = full_name,
+            slug                = slug,
+            email               = email,
+            google_id           = google_sub,
+            admin_pin           = random_pin,
+            email_confirmed     = True,   # Google verifies email — no confirmation needed
+            api_key             = generate_api_key(),
+            industry            = "other",
+            plan                = "free",
+            referral_partner_id = g_referral_partner_id,
         )
         db.add(biz)
         db.commit()
