@@ -1947,6 +1947,18 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
     except Exception as _email_err:
         print(f"Welcome email setup failed (non-fatal): {_email_err}")
 
+    # Shopify sync automático (background, nunca bloquea el registro)
+    if SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET:
+        try:
+            from database import SessionLocal as _ShopifySessionLocal
+            background_tasks.add_task(
+                _shopify_push_customer_bg,
+                str(customer.id),
+                _ShopifySessionLocal,
+            )
+        except Exception as _sh_err:
+            print(f"Shopify sync enqueue failed (non-fatal): {_sh_err}")
+
     return {
         "message":  "Tu tarjeta ya te espera" if is_returning else "Tarjeta creada",
         "card_id":  str(card.id),
@@ -2091,6 +2103,75 @@ async def shopify_token_status():
         secs_left = int(_shopify_token_cache["expires_at"] - time.time())
         return {"configured": True, "token_cached": True, "seconds_remaining": secs_left}
     return {"configured": True, "token_cached": False, "error": "No se pudo obtener token"}
+
+
+async def _shopify_push_customer_bg(customer_id: str, db_session_factory):
+    """Background task: crea o actualiza el cliente en Shopify tras el registro.
+    - tags: 'zubcard,tienda-fisica'
+    - email_marketing_consent.state: 'subscribed'
+    - NO dispara Klaviyo welcome (se crea via API, no por Forms app)
+    """
+    if not SHOPIFY_CLIENT_ID or not SHOPIFY_CLIENT_SECRET:
+        return
+    try:
+        db = db_session_factory()
+        try:
+            customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+            if not customer:
+                print(f"[Shopify sync] customer {customer_id} no encontrado")
+                return
+
+            shopify_payload = {
+                "customer": {
+                    "email":      customer.email,
+                    "first_name": customer.first_name or "",
+                    "last_name":  customer.last_name  or "",
+                    "tags":       "zubcard,tienda-fisica",
+                    "email_marketing_consent": {
+                        "state":            "subscribed",
+                        "opt_in_level":     "single_opt_in",
+                        "consent_updated_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                    "metafields": [
+                        {
+                            "namespace": "zubcard",
+                            "key":       "card_url",
+                            "value":     f"{BASE_URL}/card/{customer.id}",
+                            "type":      "single_line_text_field",
+                        }
+                    ],
+                }
+            }
+            # phone solo si no está vacío (Shopify rechaza strings vacíos en phone)
+            if customer.phone and customer.phone.strip():
+                shopify_payload["customer"]["phone"] = customer.phone.strip()
+
+            if customer.shopify_id:
+                resp = await shopify_api(
+                    "put",
+                    f"/admin/api/2024-10/customers/{customer.shopify_id}.json",
+                    json=shopify_payload,
+                )
+            else:
+                resp = await shopify_api(
+                    "post",
+                    "/admin/api/2024-10/customers.json",
+                    json=shopify_payload,
+                )
+
+            if resp.status_code in (200, 201):
+                data = resp.json().get("customer", {})
+                new_id = str(data.get("id", ""))
+                if new_id and not customer.shopify_id:
+                    customer.shopify_id = new_id
+                    db.commit()
+                print(f"[Shopify sync] OK — customer {customer.email} → shopify_id {new_id or customer.shopify_id}")
+            else:
+                print(f"[Shopify sync] ERROR {resp.status_code}: {resp.text[:300]}")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"[Shopify sync] excepción: {e}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
