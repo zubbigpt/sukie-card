@@ -7808,7 +7808,7 @@ async function toggleStoreActivity(storeId) {
 
   try {
     const days = 30;
-    const r = await apiFetch(`/api/biz/${BIZ_SLUG}/stores/${storeId}/activity?pin=${BIZ_PIN}&days=${days}`);
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${storeId}/activity?pin=${PIN}&days=${days}`);
     if (!r.ok) { panel.innerHTML = `<div style="padding:20px;color:red;font-size:.82rem">Error cargando actividad</div>`; return; }
     const d = await r.json();
     _activityCache[storeId] = d;
@@ -7919,7 +7919,7 @@ async function loadStoreActivity(storeId, days) {
   const panel = document.getElementById(`act-panel-${storeId}`);
   panel.innerHTML = `<div style="padding:24px;text-align:center;color:var(--brown-light);font-size:.85rem">Cargando…</div>`;
   try {
-    const r = await apiFetch(`/api/biz/${BIZ_SLUG}/stores/${storeId}/activity?pin=${BIZ_PIN}&days=${days}`);
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores/${storeId}/activity?pin=${PIN}&days=${days}`);
     if (!r.ok) return;
     const d = await r.json();
     renderStoreActivityPanel(storeId, d, days);
