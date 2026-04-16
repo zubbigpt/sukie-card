@@ -5599,6 +5599,122 @@ def get_stores_stats(slug: str, pin: str = "", db: Session = Depends(get_db)):
     return {"stats": result}
 
 
+@app.get("/api/biz/{slug}/stores/{store_id}/activity")
+def get_store_activity(slug: str, store_id: str, pin: str = "", days: int = 30, db: Session = Depends(get_db)):
+    """Actividad detallada por tienda: desglose por cliente + detección de anomalías."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    verify_pin(pin, db)
+
+    # Verificar que la tienda pertenece al negocio
+    store_row = db.execute(text(
+        "SELECT id, name FROM stores WHERE id=:sid::uuid AND business_id=:bid LIMIT 1"
+    ), {"sid": store_id, "bid": str(biz.id)}).fetchone()
+    if not store_row:
+        raise HTTPException(status_code=404, detail="Local no encontrado")
+    store_name = store_row[1]
+
+    since = f"NOW() - INTERVAL '{days} days'"
+
+    # ── Por cliente: total sellos, visitas, media, max en una sola transacción ──
+    customer_rows = db.execute(text(f"""
+        SELECT
+            c.id::text,
+            c.first_name,
+            c.last_name,
+            c.email,
+            COUNT(st.id)                             AS visit_count,
+            COALESCE(SUM(st.stamps_added), 0)        AS total_stamps,
+            ROUND(AVG(st.stamps_added)::numeric, 1)  AS avg_per_visit,
+            MAX(st.stamps_added)                     AS max_single_tx,
+            MAX(st.created_at)                       AS last_visit,
+            -- Visitas en el mismo día (para detectar trampa)
+            MAX(day_visits.visits_that_day)          AS max_visits_in_a_day
+        FROM stamp_transactions st
+        JOIN loyalty_cards lc ON lc.id = st.card_id
+        JOIN customers c      ON c.id  = lc.customer_id
+        -- Sub-query: cuántas veces se selló al mismo cliente en el mismo día desde esta tienda
+        JOIN (
+            SELECT
+                lc2.customer_id,
+                DATE(st2.created_at) AS tx_day,
+                COUNT(*)             AS visits_that_day
+            FROM stamp_transactions st2
+            JOIN loyalty_cards lc2 ON lc2.id = st2.card_id
+            WHERE st2.transaction_type = 'stamp'
+              AND (st2.store_id::text = :sid OR st2.store = :sname)
+              AND st2.created_at >= {since}
+            GROUP BY lc2.customer_id, DATE(st2.created_at)
+        ) day_visits ON day_visits.customer_id = c.id
+        WHERE c.business_id = :bid
+          AND st.transaction_type = 'stamp'
+          AND (st.store_id::text = :sid OR st.store = :sname)
+          AND st.created_at >= {since}
+        GROUP BY c.id, c.first_name, c.last_name, c.email
+        ORDER BY total_stamps DESC
+        LIMIT 200
+    """), {"bid": str(biz.id), "sid": store_id, "sname": store_name}).fetchall()
+
+    max_stamps_alert = 5   # sello único > este valor → alerta
+    max_day_visits   = 3   # mismo cliente >X veces en un día → alerta
+
+    customers = []
+    for r in customer_rows:
+        flags = []
+        if r[7] and int(r[7]) > max_stamps_alert:
+            flags.append(f"Transacción de {r[7]} sellos de una vez")
+        if r[9] and int(r[9]) > max_day_visits:
+            flags.append(f"{r[9]}x en un mismo día")
+        customers.append({
+            "customer_id":   r[0],
+            "name":          f"{r[1] or ''} {r[2] or ''}".strip(),
+            "email":         r[3],
+            "visit_count":   int(r[4]),
+            "total_stamps":  int(r[5]),
+            "avg_per_visit": float(r[6]) if r[6] else 0,
+            "max_single_tx": int(r[7]) if r[7] else 0,
+            "last_visit":    str(r[8])[:16] if r[8] else None,
+            "flagged":       len(flags) > 0,
+            "flag_reasons":  flags,
+        })
+
+    # ── Historial reciente (últimas 60 transacciones) ──────────────────────────
+    recent_rows = db.execute(text(f"""
+        SELECT
+            c.first_name, c.last_name, c.email,
+            st.stamps_added, st.transaction_type, st.note, st.created_at
+        FROM stamp_transactions st
+        JOIN loyalty_cards lc ON lc.id = st.card_id
+        JOIN customers c      ON c.id  = lc.customer_id
+        WHERE c.business_id = :bid
+          AND (st.store_id::text = :sid OR st.store = :sname)
+          AND st.created_at >= {since}
+        ORDER BY st.created_at DESC
+        LIMIT 60
+    """), {"bid": str(biz.id), "sid": store_id, "sname": store_name}).fetchall()
+
+    recent = [{
+        "name":  f"{r[0] or ''} {r[1] or ''}".strip(),
+        "email": r[2],
+        "stamps_added":   int(r[3]),
+        "type":           r[4],
+        "note":           r[5],
+        "created_at":     str(r[6])[:16] if r[6] else None,
+    } for r in recent_rows]
+
+    total_flagged = sum(1 for c in customers if c["flagged"])
+
+    return {
+        "store_id":      store_id,
+        "store_name":    store_name,
+        "days":          days,
+        "total_flagged": total_flagged,
+        "customers":     customers,
+        "recent":        recent,
+    }
+
+
 # ════════════════════════════════════════════════════════════════════════════════
 # SCANNER DEVICE AUTHORIZATION
 # ════════════════════════════════════════════════════════════════════════════════

@@ -7788,6 +7788,145 @@ async function loadStores(){
   }catch(e){ renderStores([]); }
 }
 
+// ── ACTIVIDAD POR TIENDA ─────────────────────────────────────────────────────
+const _activityCache = {};
+
+async function toggleStoreActivity(storeId) {
+  const panel = document.getElementById(`act-panel-${storeId}`);
+  const btn   = document.getElementById(`btn-act-${storeId}`);
+  if (!panel) return;
+
+  if (panel.style.display !== 'none') {
+    panel.style.display = 'none';
+    btn.style.background = 'var(--cream)';
+    return;
+  }
+
+  panel.style.display = 'block';
+  btn.style.background = 'var(--honey-light)';
+  panel.innerHTML = `<div style="padding:24px;text-align:center;color:var(--brown-light);font-size:.85rem">Cargando actividad…</div>`;
+
+  try {
+    const days = 30;
+    const r = await apiFetch(`/api/biz/${BIZ_SLUG}/stores/${storeId}/activity?pin=${BIZ_PIN}&days=${days}`);
+    if (!r.ok) { panel.innerHTML = `<div style="padding:20px;color:red;font-size:.82rem">Error cargando actividad</div>`; return; }
+    const d = await r.json();
+    _activityCache[storeId] = d;
+    renderStoreActivityPanel(storeId, d, days);
+  } catch(e) {
+    panel.innerHTML = `<div style="padding:20px;color:red;font-size:.82rem">Error: ${e.message}</div>`;
+  }
+}
+
+function renderStoreActivityPanel(storeId, d, days) {
+  const panel = document.getElementById(`act-panel-${storeId}`);
+  if (!panel) return;
+
+  const flaggedCustomers = d.customers.filter(c => c.flagged);
+
+  const alertBanner = flaggedCustomers.length ? `
+    <div style="margin-bottom:16px;background:#fff8e1;border:1.5px solid #ffe082;border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;margin-top:1px">
+        <path d="M9 2L1.5 15h15L9 2z" stroke="#b45309" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M9 7v4M9 12.5v.5" stroke="#b45309" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-size:.8rem;font-weight:800;color:#92400e;margin-bottom:4px">${flaggedCustomers.length} cliente${flaggedCustomers.length>1?'s':''} con actividad inusual</div>
+        <div style="font-size:.74rem;color:#b45309;line-height:1.5">${flaggedCustomers.map(c=>`<b>${c.name}</b>: ${c.flag_reasons.join(', ')}`).join(' &nbsp;·&nbsp; ')}</div>
+      </div>
+    </div>` : '';
+
+  const customerRows = d.customers.map(c => {
+    const flagDot = c.flagged ? `<span style="display:inline-block;width:7px;height:7px;background:#e53935;border-radius:50%;margin-right:6px;flex-shrink:0"></span>` : '';
+    return `<tr style="${c.flagged?'background:#fff5f5':''}">
+      <td style="padding:9px 12px;font-size:.82rem;font-weight:700;color:var(--brown);white-space:nowrap">
+        <div style="display:flex;align-items:center">${flagDot}${c.name}</div>
+        <div style="font-size:.72rem;font-weight:400;color:var(--brown-light)">${c.email}</div>
+      </td>
+      <td style="padding:9px 12px;text-align:center;font-size:.88rem;font-weight:900;color:var(--brown)">${c.total_stamps}</td>
+      <td style="padding:9px 12px;text-align:center;font-size:.82rem;font-weight:700;color:var(--brown)">${c.visit_count}</td>
+      <td style="padding:9px 12px;text-align:center;font-size:.82rem;color:var(--brown-light)">${c.avg_per_visit}</td>
+      <td style="padding:9px 12px;text-align:center;font-size:.82rem;color:${c.max_single_tx>5?'#e53935':'var(--brown-light)'};font-weight:${c.max_single_tx>5?'800':'400'}">${c.max_single_tx}</td>
+      <td style="padding:9px 12px;text-align:right;font-size:.75rem;color:var(--brown-light);white-space:nowrap">${c.last_visit?c.last_visit.slice(0,10):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const recentRows = d.recent.slice(0, 20).map(t => {
+    const isRedeem = t.type === 'redeem';
+    return `<tr>
+      <td style="padding:7px 12px;font-size:.78rem;color:var(--brown-light)">${t.created_at?t.created_at.slice(0,16).replace('T',' '):'—'}</td>
+      <td style="padding:7px 12px;font-size:.8rem;font-weight:700;color:var(--brown)">${t.name}<div style="font-size:.7rem;font-weight:400;color:var(--brown-light)">${t.email}</div></td>
+      <td style="padding:7px 12px;text-align:center">
+        <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:800;background:${isRedeem?'#e8f5e9':'var(--honey-light)'};color:${isRedeem?'#2e7d32':'var(--honey-dark)'}">
+          ${isRedeem?'Premio':'+'+t.stamps_added}
+        </span>
+      </td>
+      <td style="padding:7px 12px;font-size:.72rem;color:var(--brown-light)">${t.note||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div style="padding:20px 20px 24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--brown-light)">Actividad — últimos ${days} días</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="loadStoreActivity('${storeId}',7)" style="padding:4px 10px;font-size:.7rem;font-weight:700;border:1.5px solid var(--cream-border);border-radius:4px;background:var(--cream);cursor:pointer;font-family:inherit;color:var(--brown)">7d</button>
+          <button onclick="loadStoreActivity('${storeId}',30)" style="padding:4px 10px;font-size:.7rem;font-weight:700;border:1.5px solid var(--brown);border-radius:4px;background:var(--honey-light);cursor:pointer;font-family:inherit;color:var(--brown)">30d</button>
+          <button onclick="loadStoreActivity('${storeId}',90)" style="padding:4px 10px;font-size:.7rem;font-weight:700;border:1.5px solid var(--cream-border);border-radius:4px;background:var(--cream);cursor:pointer;font-family:inherit;color:var(--brown)">90d</button>
+        </div>
+      </div>
+
+      ${alertBanner}
+
+      ${d.customers.length === 0 ? `<div style="text-align:center;padding:32px;color:var(--brown-light);font-size:.85rem;border:1.5px dashed var(--cream-border);border-radius:8px">Sin actividad en este período</div>` : `
+      <!-- Tabla clientes -->
+      <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:8px">Por cliente</div>
+      <div style="overflow-x:auto;border-radius:8px;border:1.5px solid var(--cream-border);margin-bottom:20px">
+        <table style="width:100%;border-collapse:collapse;background:#fff">
+          <thead>
+            <tr style="background:var(--cream)">
+              <th style="padding:8px 12px;text-align:left;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Cliente</th>
+              <th style="padding:8px 12px;text-align:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Total sellos</th>
+              <th style="padding:8px 12px;text-align:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Visitas</th>
+              <th style="padding:8px 12px;text-align:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Media/visita</th>
+              <th style="padding:8px 12px;text-align:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Max 1 tx</th>
+              <th style="padding:8px 12px;text-align:right;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Última visita</th>
+            </tr>
+          </thead>
+          <tbody>${customerRows}</tbody>
+        </table>
+      </div>
+
+      <!-- Historial reciente -->
+      <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--brown-light);margin-bottom:8px">Historial reciente</div>
+      <div style="overflow-x:auto;border-radius:8px;border:1.5px solid var(--cream-border)">
+        <table style="width:100%;border-collapse:collapse;background:#fff">
+          <thead>
+            <tr style="background:var(--cream)">
+              <th style="padding:7px 12px;text-align:left;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Fecha</th>
+              <th style="padding:7px 12px;text-align:left;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Cliente</th>
+              <th style="padding:7px 12px;text-align:center;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Sellos</th>
+              <th style="padding:7px 12px;text-align:left;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light)">Nota</th>
+            </tr>
+          </thead>
+          <tbody>${recentRows}</tbody>
+        </table>
+      </div>`}
+    </div>`;
+}
+
+async function loadStoreActivity(storeId, days) {
+  const panel = document.getElementById(`act-panel-${storeId}`);
+  panel.innerHTML = `<div style="padding:24px;text-align:center;color:var(--brown-light);font-size:.85rem">Cargando…</div>`;
+  try {
+    const r = await apiFetch(`/api/biz/${BIZ_SLUG}/stores/${storeId}/activity?pin=${BIZ_PIN}&days=${days}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    renderStoreActivityPanel(storeId, d, days);
+  } catch(e) {}
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function renderStores(stores){
   const container=document.getElementById('stores-cards-container');
   if(!container) return;
@@ -7864,6 +8003,22 @@ function renderStores(stores){
           <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:var(--brown-light);font-weight:700">Última visita</div>
         </div>
       </div>
+
+      <!-- Botón actividad -->
+      <div style="padding:12px 20px;background:#fff;border-top:1px solid var(--cream-border)">
+        <button onclick="toggleStoreActivity('${s.id}')" id="btn-act-${s.id}"
+          style="display:inline-flex;align-items:center;gap:7px;padding:7px 14px;background:var(--cream);border:1.5px solid var(--cream-border);border-radius:6px;font-size:.78rem;font-weight:800;color:var(--brown);cursor:pointer;font-family:inherit;transition:background .15s">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M4 1v2M10 1v2M1 6h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M4 9h2M8 9h2M4 11h1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          Ver actividad por cliente
+        </button>
+      </div>
+
+      <!-- Panel actividad (colapsable) -->
+      <div id="act-panel-${s.id}" style="display:none;border-top:1px solid var(--cream-border)"></div>
     </div>`;
   }).join('');
 }
