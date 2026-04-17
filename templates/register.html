@@ -455,17 +455,10 @@ async function doRegister() {
     const googleBtn = document.getElementById('wallet-google');
     const walletUrl  = d.wallet_url  || (API_BASE + '/card/' + d.card_id + '/wallet.pkpass');
     const gWalletUrl = d.google_wallet_url || '';
-    if (isIOS) {
-      appleBtn.href = walletUrl;
-      appleBtn.style.display = 'flex';
-    } else if (isAndroid) {
-      if (gWalletUrl) { googleBtn.href = gWalletUrl; googleBtn.style.display = 'flex'; }
-      else { appleBtn.href = walletUrl; appleBtn.style.display = 'flex'; }
-    } else {
-      appleBtn.href = walletUrl;
-      appleBtn.style.display = 'flex';
-      if (gWalletUrl) { googleBtn.href = gWalletUrl; googleBtn.style.display = 'flex'; }
-    }
+    // Mostrar siempre ambos botones si están disponibles
+    appleBtn.href = walletUrl;
+    appleBtn.style.display = 'flex';
+    if (gWalletUrl) { googleBtn.href = gWalletUrl; googleBtn.style.display = 'flex'; }
 
   } catch(e) {
     showErr('Error de conexión. Inténtalo de nuevo.');

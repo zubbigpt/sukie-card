@@ -491,15 +491,9 @@ body {
   var isAndroid = /Android/.test(ua);
   var appleBtn  = document.getElementById('apple-wallet-btn');
   var googleBtn = document.getElementById('google-wallet-btn');
-  if (isIOS) {
-    if (appleBtn) appleBtn.style.display = 'flex';
-  } else if (isAndroid) {
-    if (googleBtn) googleBtn.style.display = 'flex';
-    else if (appleBtn) appleBtn.style.display = 'flex';
-  } else {
-    if (appleBtn) appleBtn.style.display = 'flex';
-    if (googleBtn) googleBtn.style.display = 'flex';
-  }
+  // Mostrar siempre ambos botones si están disponibles
+  if (appleBtn) appleBtn.style.display = 'flex';
+  if (googleBtn) googleBtn.style.display = 'flex';
 })();
 </script>
 {% endif %}
