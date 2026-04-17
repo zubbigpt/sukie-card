@@ -5609,7 +5609,7 @@ def get_store_activity(slug: str, store_id: str, pin: str = "", days: int = 30, 
 
     # Verificar que la tienda pertenece al negocio
     store_row = db.execute(text(
-        "SELECT id, name FROM stores WHERE id=:sid::uuid AND business_id=:bid LIMIT 1"
+        "SELECT id::text, name FROM stores WHERE id=CAST(:sid AS UUID) AND business_id=CAST(:bid AS UUID) LIMIT 1"
     ), {"sid": store_id, "bid": str(biz.id)}).fetchone()
     if not store_row:
         raise HTTPException(status_code=404, detail="Local no encontrado")
