@@ -277,13 +277,41 @@
     return tok;
   }
 
-  // ── On load: if device already known, check its status silently ────────────
-  window.addEventListener('DOMContentLoaded', () => {
-    const key = 'zc_device_' + SLUG;
-    if (localStorage.getItem(key)) {
-      // Don't auto-login, but hide the "first time" hint if already registered
-      document.getElementById('toggle-device-name').style.display = 'none';
+  // ── On load: si el dispositivo ya está aprobado, entrar directo sin PIN ─────
+  const SESSION_DAYS = 21; // días antes de pedir el PIN de nuevo
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    const key     = 'zc_device_' + SLUG;
+    const tsKey   = 'zc_approved_at_' + SLUG;
+    const tok     = localStorage.getItem(key);
+
+    if (!tok) return; // primera vez — mostrar formulario normal
+
+    // Ocultar hint de "primer uso"
+    const hint = document.getElementById('toggle-device-name');
+    if (hint) hint.style.display = 'none';
+
+    // Comprobar si la sesión guardada sigue válida (< 21 días)
+    const approvedAt = parseInt(localStorage.getItem(tsKey) || '0', 10);
+    const ageMs      = Date.now() - approvedAt;
+    const expiredMs  = SESSION_DAYS * 24 * 60 * 60 * 1000;
+
+    if (approvedAt && ageMs < expiredMs) {
+      // Sesión en plazo — verificar con el servidor directamente
+      try {
+        const r = await fetch(`${BASE}/api/scanner/device-status/${tok}`);
+        if (r.ok) {
+          const d = await r.json();
+          if (d.status === 'approved') {
+            redirectToScanner(d);
+            return;
+          }
+        }
+      } catch(e) {}
     }
+
+    // Token existe pero sesión expirada o no aprobada → mostrar PIN
+    // (mantenemos el token para que no necesite re-aprobación de admin)
   });
 
   function toggleDeviceName() {
@@ -336,6 +364,7 @@
       }
 
       if (d.status === 'approved') {
+        localStorage.setItem('zc_approved_at_' + SLUG, Date.now().toString());
         redirectToScanner(d);
       } else if (d.status === 'pending') {
         showPending(deviceToken);
@@ -363,6 +392,7 @@
         const d = await r.json();
         if (d.status === 'approved') {
           clearInterval(pollInterval);
+          localStorage.setItem('zc_approved_at_' + SLUG, Date.now().toString());
           redirectToScanner(d);
         } else if (d.status === 'rejected') {
           clearInterval(pollInterval);
