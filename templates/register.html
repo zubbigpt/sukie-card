@@ -114,6 +114,12 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 .success-screen p{font-size:.9rem;color:var(--outline);line-height:1.8;margin-bottom:1.75rem}
 .btn-view-card{display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 2rem;background:var(--primary);color:var(--on-primary);font-size:.8rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border-radius:var(--r-sm);transition:background .18s}
 .btn-view-card:hover{background:var(--primary-mid)}
+.wallet-btns{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:16px;width:100%}
+.wallet-btns a{display:block;width:100%;max-width:260px}
+.wallet-btns img{width:100%;height:48px;object-fit:contain}
+.wallet-divider{font-size:.75rem;color:var(--outline);margin:4px 0;opacity:.7}
+#wallet-apple{display:none}
+#wallet-google{display:none}
 
 @keyframes fade-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
@@ -364,6 +370,19 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
       <h2 id="success-title">¡BIENVENIDO!</h2>
       <p id="success-text">Tu tarjeta está lista. Muéstrala en caja en tu próxima visita para empezar a acumular sellos.</p>
       <a href="#" id="view-card-btn" class="btn-view-card">Ver mi tarjeta →</a>
+
+      <!-- Wallet buttons — shown instantly, no need to wait for email -->
+      <div class="wallet-btns">
+        <div class="wallet-divider">Añade tu tarjeta al móvil ahora</div>
+        <a href="#" id="wallet-apple">
+          <img src="https://developer.apple.com/wallet/add-to-apple-wallet-guidelines-images/button_new.png"
+               alt="Añadir a Apple Wallet">
+        </a>
+        <a href="#" id="wallet-google" target="_blank" rel="noopener">
+          <img src="https://wallet.google.com/intl/en_us/images/signin-button/v1/saves/en_save_to_google_wallet_outlined.svg"
+               alt="Guardar en Google Wallet">
+        </a>
+      </div>
     </div>
   </div>
 
@@ -428,6 +447,29 @@ async function doRegister() {
         `¡Hola ${first_name}! Tu tarjeta está lista. Muéstrala en caja en tu próxima visita. Por cada ${STAMPS_REWARD} compras, ¡premio!`;
     }
     document.getElementById('view-card-btn').href = d.card_url || (API_BASE + '/card/' + d.card_id);
+
+    // Wallet buttons — show correct one based on platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const appleBtn  = document.getElementById('wallet-apple');
+    const googleBtn = document.getElementById('wallet-google');
+    const walletUrl  = d.wallet_url  || (API_BASE + '/card/' + d.card_id + '/wallet.pkpass');
+    const gWalletUrl = d.google_wallet_url || '';
+    if (isIOS) {
+      appleBtn.href = walletUrl;
+      appleBtn.style.display = 'block';
+    } else if (isAndroid && gWalletUrl) {
+      googleBtn.href = gWalletUrl;
+      googleBtn.style.display = 'block';
+    } else {
+      // Desktop or unknown — show both if available
+      appleBtn.href = walletUrl;
+      appleBtn.style.display = 'block';
+      if (gWalletUrl) {
+        googleBtn.href = gWalletUrl;
+        googleBtn.style.display = 'block';
+      }
+    }
 
   } catch(e) {
     showErr('Error de conexión. Inténtalo de nuevo.');

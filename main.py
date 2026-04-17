@@ -1993,12 +1993,44 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
         except Exception as _sh_err:
             print(f"Shopify sync enqueue failed (non-fatal): {_sh_err}")
 
+    _ret_wallet_url = f"{BASE_URL}/card/{card.id}/wallet.pkpass" if os.environ.get("APPLE_P12_B64") else f"{BASE_URL}/card/{card.id}/wallet.pkpass"
+    _ret_gw_url = ""
+    try:
+        _ret_slug = slug or (biz.slug if biz else "")
+        if _ret_slug:
+            _ret_prog = _prog_for_email if '_prog_for_email' in dir() else None
+            try:
+                _ret_prog = db.query(models.CardProgram).filter(
+                    models.CardProgram.business_id == biz_id
+                ).first() if biz_id and not _ret_prog else _ret_prog
+            except Exception:
+                pass
+            _ret_gw_url = generate_google_wallet_url(
+                card_id=str(card.id),
+                biz_slug=_ret_slug,
+                biz_name=biz.name if biz else "",
+                customer_name=fn,
+                stamps=card.stamps or 0,
+                stamps_per_reward=(_ret_prog.stamps_per_reward if _ret_prog else 10),
+                card_url=f"{BASE_URL}/card/{card.id}",
+                primary_color=(_ret_prog.bg_color if _ret_prog else "#26170c"),
+                accent_color=(_ret_prog.accent_color if _ret_prog else "#ffca48"),
+                reward_name=((_ret_prog.reward_name if _ret_prog and _ret_prog.reward_name else None) or "Premio"),
+                logo_url=((biz.logo_url if biz and biz.logo_url else "") or ""),
+                award_balance=card.award_balance or 0,
+                card_name=((_ret_prog.name if _ret_prog and _ret_prog.name else None) or (biz.name if biz else "")),
+            ) or ""
+    except Exception:
+        _ret_gw_url = ""
+
     return {
-        "message":  "Tu tarjeta ya te espera" if is_returning else "Tarjeta creada",
-        "card_id":  str(card.id),
-        "card_url": f"{BASE_URL}/card/{card.id}",
-        "name":     fn,
-        "returning": is_returning,
+        "message":          "Tu tarjeta ya te espera" if is_returning else "Tarjeta creada",
+        "card_id":          str(card.id),
+        "card_url":         f"{BASE_URL}/card/{card.id}",
+        "name":             fn,
+        "returning":        is_returning,
+        "wallet_url":       _ret_wallet_url,
+        "google_wallet_url": _ret_gw_url,
     }
 
 
