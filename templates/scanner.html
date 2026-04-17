@@ -623,6 +623,20 @@ let adminPin = "", currentCardId = "", currentCard = null;
 let employeeRole = "", employeeStore = URL_STORE_NAME, employeeStoreId = URL_STORE_ID;
 let scanActive = false, videoStream = null, quickCount = 1;
 
+// ── Auto-login si el PIN está guardado (evita pedir PIN cada vez) ──────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const savedPin   = localStorage.getItem('zc_pin_' + SLUG);
+  const approvedAt = parseInt(localStorage.getItem('zc_approved_at_' + SLUG) || '0', 10);
+  const SESSION_MS = 21 * 24 * 60 * 60 * 1000; // 21 días
+  if (savedPin && approvedAt && (Date.now() - approvedAt) < SESSION_MS) {
+    const pinInput = document.getElementById('pin-input');
+    if (pinInput) {
+      pinInput.value = savedPin;
+      await doLogin(true); // silent: no mostrar error si falla
+    }
+  }
+});
+
 const PRODUCTS = [
   { id:"unit1",  name:"Unidad",       sub:"1 sello por unidad", stamps:1 },
   { id:"pack6",  name:"Pack 6",       sub:"6 sellos",           stamps:6 },
@@ -637,16 +651,19 @@ function showScreen(id) {
 }
 
 // PIN LOGIN — validates against this business's slug
-async function doLogin() {
+// silent=true: called from auto-login; on failure just stays on PIN screen without showing error
+async function doLogin(silent = false) {
   const pin = document.getElementById('pin-input').value.trim();
   if (!pin) return;
   const errEl = document.getElementById('pin-error');
   try {
     const resp = await fetch(`{{ base_url }}/api/biz/${SLUG}/verify-pin?pin=${encodeURIComponent(pin)}`);
     if (resp.status === 403 || resp.status === 404) {
-      errEl.style.display = 'block';
-      document.getElementById('pin-input').value = '';
-      document.getElementById('pin-input').focus();
+      if (!silent) {
+        errEl.style.display = 'block';
+        document.getElementById('pin-input').value = '';
+        document.getElementById('pin-input').focus();
+      }
       return;
     }
     const data = await resp.json();
@@ -657,8 +674,10 @@ async function doLogin() {
     errEl.style.display = 'none';
     startCamera();
   } catch(e) {
-    errEl.textContent = 'Error de red. Inténtalo de nuevo.';
-    errEl.style.display = 'block';
+    if (!silent) {
+      errEl.textContent = 'Error de red. Inténtalo de nuevo.';
+      errEl.style.display = 'block';
+    }
   }
 }
 
@@ -676,6 +695,9 @@ function logout() {
   employeeStore = "";
   currentCardId = "";
   currentCard = null;
+  // Borrar PIN guardado para forzar re-autenticación tras logout manual
+  localStorage.removeItem('zc_pin_' + SLUG);
+  localStorage.removeItem('zc_approved_at_' + SLUG);
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').style.display = 'none';
   document.getElementById('employee-badge').textContent = 'Caja';
