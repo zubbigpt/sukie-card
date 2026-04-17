@@ -462,29 +462,40 @@ body {
   </div>
 </div>
 
-{% if google_wallet_url %}
-<div class="wallet-btn-wrap" id="google-wallet-wrap">
-  <a href="{{ google_wallet_url }}" target="_blank" rel="noopener">
-    <img
-      src="https://wallet.google.com/intl/en_us/images/signin-button/v1/saves/en_save_to_google_wallet_outlined.svg"
-      alt="Save to Google Wallet"
-    >
-  </a>
-</div>
-{% endif %}
-
-{% if wallet_url %}
+{% if wallet_url or google_wallet_url %}
 <div class="wallet-btn-wrap" id="apple-wallet-wrap" style="display:none;justify-content:center;margin:8px 0">
   <a href="{{ wallet_url }}">
     <img src="https://developer.apple.com/wallet/add-to-apple-wallet-guidelines-images/button_new.png"
          alt="Añadir a Apple Wallet" style="height:44px">
   </a>
 </div>
+{% if google_wallet_url %}
+<div class="wallet-btn-wrap" id="google-wallet-wrap" style="display:none">
+  <a href="{{ google_wallet_url }}" target="_blank" rel="noopener">
+    <img
+      src="https://wallet.google.com/intl/en_us/images/signin-button/v1/saves/en_save_to_google_wallet_outlined.svg"
+      alt="Guardar en Google Wallet"
+    >
+  </a>
+</div>
+{% endif %}
 <script>
-if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
-  var appleBtn = document.getElementById('apple-wallet-wrap');
-  if (appleBtn) appleBtn.style.display = 'flex';
-}
+(function() {
+  var ua = navigator.userAgent;
+  var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(ua);
+  var appleWrap  = document.getElementById('apple-wallet-wrap');
+  var googleWrap = document.getElementById('google-wallet-wrap');
+  if (isIOS) {
+    if (appleWrap) appleWrap.style.display = 'flex';
+  } else if (isAndroid) {
+    if (googleWrap) googleWrap.style.display = 'block';
+  } else {
+    // Desktop: show both
+    if (appleWrap) appleWrap.style.display = 'flex';
+    if (googleWrap) googleWrap.style.display = 'block';
+  }
+})();
 </script>
 {% endif %}
 

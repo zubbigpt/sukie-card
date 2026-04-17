@@ -1722,6 +1722,7 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
         "biz_slug":          biz_slug,
         "primary_color":     primary_color,
         "accent_color":      accent_color,
+        "wallet_url":             f"{BASE_URL}/card/{card_id}/wallet.pkpass",
         "google_wallet_url":      google_wallet_url or "",
         "google_review_url":      google_review_url,
         "review_trigger_stamps":  review_trigger_stamps,
