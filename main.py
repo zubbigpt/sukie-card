@@ -4086,6 +4086,12 @@ async def zubcard_landing(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "ref_code": ""})
 
 
+@app.get("/preview-landing", response_class=HTMLResponse)
+async def zubcard_landing_preview(request: Request):
+    """Preview del nuevo diseño sin afectar la landing principal."""
+    return templates.TemplateResponse("index_new.html", {"request": request, "ref_code": ""})
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def biz_login_page(request: Request):
     """General business owner login page — enter slug + PIN → redirect to dashboard"""
