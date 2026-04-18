@@ -588,49 +588,22 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
       <p class="sec-lede">Sin costes por cliente, sin comisiones por canje. Pagas por local, punto. Empieza con 14 días gratis — sin tarjeta.</p>
     </div>
 
-    <div class="pricing-wrap">
-      <div class="price-card">
-        <div class="price-tier">— Starter</div>
-        <div class="price-amount">19<sub>/mes</sub></div>
-        <p class="price-desc">Para el local que empieza. Todo lo esencial.</p>
+    <div class="pricing-wrap" style="grid-template-columns: 1fr; max-width: 520px; margin: 0 auto;">
+      <div class="price-card featured">
+        <div class="price-tier">— Pro <span class="price-featured-pill">Todo incluido</span></div>
+        <div class="price-amount">39<sub>/mes</sub></div>
+        <p class="price-desc">Un único plan con todo lo que necesita tu local.</p>
         <ul class="price-features">
-          <li><span class="tick">✓</span> 1 local · clientes ilimitados</li>
+          <li><span class="tick">✓</span> Clientes ilimitados</li>
           <li><span class="tick">✓</span> Apple + Google Wallet</li>
           <li><span class="tick">✓</span> QR registro y scanner</li>
-          <li><span class="tick">✓</span> Personalización básica</li>
-          <li><span class="tick">✓</span> Dashboard con métricas</li>
-        </ul>
-        <div class="price-cta"><a class="btn btn-primary" href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}">Empezar gratis</a></div>
-      </div>
-
-      <div class="price-card featured">
-        <div class="price-tier">— Pro <span class="price-featured-pill">Popular</span></div>
-        <div class="price-amount">39<sub>/mes</sub></div>
-        <p class="price-desc">Para cuando tu programa empieza a funcionar.</p>
-        <ul class="price-features">
-          <li><span class="tick">✓</span> Hasta 3 locales</li>
-          <li><span class="tick">✓</span> Todo lo de Starter</li>
+          <li><span class="tick">✓</span> Dashboard con métricas en tiempo real</li>
           <li><span class="tick">✓</span> Campañas push programadas</li>
           <li><span class="tick">✓</span> Emails de bienvenida y cumpleaños</li>
           <li><span class="tick">✓</span> Programa de referidos integrado</li>
           <li><span class="tick">✓</span> Soporte prioritario</li>
         </ul>
-        <div class="price-cta"><a class="btn btn-primary" href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}">Probar 14 días</a></div>
-      </div>
-
-      <div class="price-card">
-        <div class="price-tier">— Cadena</div>
-        <div class="price-amount"><sup style="font-family: var(--font-ui); font-size: 32px;">a medida</sup></div>
-        <p class="price-desc">Para franquicias y cadenas con varios locales.</p>
-        <ul class="price-features">
-          <li><span class="tick">✓</span> Locales ilimitados</li>
-          <li><span class="tick">✓</span> Dashboard multi-local</li>
-          <li><span class="tick">✓</span> Roles y permisos</li>
-          <li><span class="tick">✓</span> API y exportación</li>
-          <li><span class="tick">✓</span> Onboarding personal</li>
-          <li><span class="tick">✓</span> Account manager</li>
-        </ul>
-        <div class="price-cta"><a class="btn btn-ghost" href="{% if ref_code %}/demo/{{ ref_code }}{% else %}/demo{% endif %}">Hablar con ventas</a></div>
+        <div class="price-cta"><a class="btn btn-primary" href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}">Probar 14 días gratis</a></div>
       </div>
     </div>
   </div>
