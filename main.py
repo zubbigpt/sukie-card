@@ -1706,7 +1706,7 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
         card_name=_gw_cname,
     ) if biz_slug else None
 
-    return templates.TemplateResponse("card.html", {
+    return templates.TemplateResponse("card_new.html", {
         "request":           request,
         "card_id":           card_id,
         "first_name":        first_name,
