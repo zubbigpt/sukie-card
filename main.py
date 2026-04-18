@@ -5146,7 +5146,7 @@ async def change_biz_pin(slug: str, request: Request, db: Session = Depends(get_
     return {"status": "updated"}
 
 
-@app.get("/biz/{slug}/dashboard-preview", response_class=HTMLResponse)
+@app.get("/biz/{slug}/dashboard/preview", response_class=HTMLResponse)
 async def biz_dashboard_preview(slug: str, request: Request, db: Session = Depends(get_db)):
     """Preview del dashboard con el nuevo refresh visual (mismo contexto que /dashboard)."""
     biz = get_business_by_slug(slug, db)
