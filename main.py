@@ -14,6 +14,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text, or_, func as sqlfunc
 from datetime import datetime, timezone, timedelta, date
+try:
+    from zoneinfo import ZoneInfo
+    MADRID_TZ = ZoneInfo("Europe/Madrid")
+except Exception:
+    MADRID_TZ = timezone(timedelta(hours=2))  # fallback CEST
+
+
+def fmt_madrid(dt, with_seconds: bool = False) -> str | None:
+    """Return a timezone-aware datetime as Madrid local time 'YYYY-MM-DD HH:MM'.
+    Assumes naive datetimes are already UTC. Used for timestamps shown in the
+    dashboard so they match the camera footage (Europe/Madrid)."""
+    if not dt:
+        return None
+    try:
+        if getattr(dt, "tzinfo", None) is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.astimezone(MADRID_TZ)
+        return dt.strftime("%Y-%m-%d %H:%M:%S" if with_seconds else "%Y-%m-%d %H:%M")
+    except Exception:
+        return str(dt)[:16]
+
 
 import smtplib
 import secrets
@@ -5864,7 +5885,7 @@ def get_store_activity(slug: str, store_id: str, pin: str = "", days: int = 30, 
             "total_stamps":  int(r[5]),
             "avg_per_visit": float(r[6]) if r[6] else 0,
             "max_single_tx": int(r[7]) if r[7] else 0,
-            "last_visit":    str(r[8])[:16] if r[8] else None,
+            "last_visit":    fmt_madrid(r[8]),
             "flagged":       len(flags) > 0,
             "flag_reasons":  flags,
         })
@@ -5890,7 +5911,7 @@ def get_store_activity(slug: str, store_id: str, pin: str = "", days: int = 30, 
         "stamps_added":   int(r[3]),
         "type":           r[4],
         "note":           r[5],
-        "created_at":     str(r[6])[:16] if r[6] else None,
+        "created_at":     fmt_madrid(r[6]),
     } for r in recent_rows]
 
     total_flagged = sum(1 for c in customers if c["flagged"])
