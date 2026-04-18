@@ -5192,7 +5192,7 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         elapsed = (datetime.now(timezone.utc) - biz.created_at).days
         trial_days_left = max(0, 14 - elapsed)
 
-    return templates.TemplateResponse("dashboard_admin.html", {
+    return templates.TemplateResponse("dashboard_admin_new.html", {
         "request":    request,
         "biz_slug":   slug,
         "biz_api_base": BASE_URL,
@@ -5587,7 +5587,7 @@ def delete_business(slug: str, pin: str = "", db: Session = Depends(get_db)):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_rich(request: Request):
-    return templates.TemplateResponse("dashboard_admin.html", {
+    return templates.TemplateResponse("dashboard_admin_new.html", {
         "request": request,
         "biz_name": "",
         "biz_slug": "",
