@@ -4118,6 +4118,82 @@ async def zubcard_customer_register_preview(request: Request):
     return templates.TemplateResponse("register_customer_new.html", {"request": request})
 
 
+@app.get("/preview-card/{card_id}", response_class=HTMLResponse)
+def preview_card(card_id: str, request: Request, db: Session = Depends(get_db)):
+    """Preview del nuevo diseño de la tarjeta del cliente (mismo contexto que /card/{card_id})."""
+    card = get_card_or_404(card_id, db)
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    first_name = customer.first_name if customer else "Cliente"
+
+    biz = None
+    if customer and customer.business_id:
+        biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first()
+
+    _show_prog = db.query(models.CardProgram).filter(
+        models.CardProgram.business_id == customer.business_id
+    ).first() if customer and customer.business_id else None
+    primary_color        = (_show_prog.bg_color      if _show_prog and _show_prog.bg_color      else None) or (biz.primary_color if biz else None) or "#26170c"
+    accent_color         = (_show_prog.accent_color  if _show_prog and _show_prog.accent_color  else None) or (biz.accent_color  if biz else None) or "#ffca48"
+    biz_name             = (biz.name               if biz else None) or ""
+    biz_slug             = (biz.slug               if biz else None) or ""
+    stamps_per_reward_val = (biz.stamps_per_reward if biz else None) or STAMPS_PER_REWARD
+    google_review_url    = getattr(biz, "google_review_url", "") or "" if biz else ""
+    review_trigger_stamps = getattr(biz, "review_trigger_stamps", 0) or 0 if biz else 0
+
+    card_title = (biz.card_title if biz else None) or biz_name or CARD_TITLE
+    if customer and customer.business_id:
+        row = db.execute(
+            text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
+            {"bid": str(customer.business_id)}
+        ).fetchone()
+        if row:
+            cfg = json.loads(row[0]) if row[0] else {}
+            card_title = cfg.get("general", {}).get("card_title") or \
+                         cfg.get("general", {}).get("card_name") or card_title
+
+    card_url = f"{BASE_URL}/card/{card_id}"
+    _gw_reward = (_show_prog.reward_name if _show_prog and _show_prog.reward_name else None) or "Premio"
+    _gw_logo   = (biz.logo_url if biz and biz.logo_url else "") or ""
+    _gw_cname  = (_show_prog.name if _show_prog and _show_prog.name else None) or biz_name
+    google_wallet_url = generate_google_wallet_url(
+        card_id=card_id,
+        biz_slug=biz_slug,
+        biz_name=biz_name,
+        customer_name=first_name,
+        stamps=card.stamps or 0,
+        stamps_per_reward=stamps_per_reward_val,
+        card_url=card_url,
+        primary_color=primary_color,
+        accent_color=accent_color,
+        reward_name=_gw_reward,
+        logo_url=_gw_logo,
+        award_balance=card.award_balance or 0,
+        card_name=_gw_cname,
+    ) if biz_slug else None
+
+    return templates.TemplateResponse("card_new.html", {
+        "request":           request,
+        "card_id":           card_id,
+        "first_name":        first_name,
+        "name":              first_name,
+        "card_title":        card_title,
+        "api_base":          BASE_URL,
+        "stamps":            card.stamps or 0,
+        "stamps_per_reward": stamps_per_reward_val,
+        "rewards_redeemed":  card.rewards_redeemed or 0,
+        "award_balance":     card.award_balance or 0,
+        "total_stamps":      card.total_stamps or 0,
+        "biz_name":          biz_name,
+        "biz_slug":          biz_slug,
+        "primary_color":     primary_color,
+        "accent_color":      accent_color,
+        "wallet_url":             f"{BASE_URL}/card/{card_id}/wallet.pkpass",
+        "google_wallet_url":      google_wallet_url or "",
+        "google_review_url":      google_review_url,
+        "review_trigger_stamps":  review_trigger_stamps,
+    })
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def biz_login_page(request: Request):
     """General business owner login page — enter slug + PIN → redirect to dashboard"""
