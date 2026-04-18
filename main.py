@@ -5146,6 +5146,38 @@ async def change_biz_pin(slug: str, request: Request, db: Session = Depends(get_
     return {"status": "updated"}
 
 
+@app.get("/biz/{slug}/dashboard-preview", response_class=HTMLResponse)
+async def biz_dashboard_preview(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Preview del dashboard con el nuevo refresh visual (mismo contexto que /dashboard)."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    from datetime import datetime, timezone
+    biz_plan = _get_biz_plan(biz)
+    trial_days_left = None
+    if biz_plan == "free" and biz.created_at:
+        elapsed = (datetime.now(timezone.utc) - biz.created_at).days
+        trial_days_left = max(0, 14 - elapsed)
+    return templates.TemplateResponse("dashboard_admin_new.html", {
+        "request":    request,
+        "biz_slug":   slug,
+        "biz_api_base": BASE_URL,
+        "biz_name":   biz.name,
+        "biz_id":     str(biz.id),
+        "biz_pin":    "",
+        "biz_api_key": biz.api_key,
+        "biz_email":  biz.email,
+        "stamps_per_reward": biz.stamps_per_reward,
+        "card_title": biz.card_title,
+        "biz_plan":   biz_plan,
+        "stripe_configured": bool(STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO),
+        "primary_color": biz.primary_color or "#26170c",
+        "accent_color":  biz.accent_color  or "#ffca48",
+        "logo_url":      biz.logo_url or "",
+        "trial_days_left": trial_days_left,
+    })
+
+
 @app.get("/biz/{slug}/dashboard", response_class=HTMLResponse)
 async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_db)):
     """Business-specific admin dashboard"""
