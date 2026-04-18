@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{{ business_name }} — Caja</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    :root {
+      --surface: #f4ede2;
+      --surface-low: #ede4d5;
+      --surface-mid: #e7ddcc;
+      --primary: {{ primary_color }};
+      --accent: {{ accent_color }};
+      --honey: oklch(0.64 0.15 55);
+      --honey-dark: oklch(0.48 0.14 55);
+      --honey-light: #f3e3c9;
+      --outline: #8a7f71;
+      --outline-var: #d9cdbc;
+      --on-primary: #f4ede2;
+      --r-sm: 0.5rem;
+      --r: 0.875rem;
+      --r-lg: 1.25rem;
+      --shadow: 0 2px 10px rgba(26,20,16,0.06),0 0 0 1px rgba(217,205,188,0.4);
+      --shadow-lg: 0 20px 50px rgba(26,20,16,0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--surface-low);
+      font-family: 'Geist', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .top-bar {
+      width: 100%;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .top-bar .logo-txt {
+      font-family: 'Instrument Serif', sans-serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: #ffffff;
+    }
+    .top-bar .employee-info {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50px;
+      padding: 4px 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #bdbdbd;
+    }
+    .material-symbols-outlined {
+      vertical-align: middle;
+      font-size: inherit;
+    }
+    .wrapper {
+      width: 100%;
+      max-width: 440px;
+      padding: 20px 16px 60px;
+      flex: 1;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--on-primary);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .card-head {
+      background: var(--surface-mid);
+      padding: 20px 24px 14px;
+      text-align: center;
+    }
+    .card-head h2 {
+      font-family: 'Instrument Serif', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .card-head p {
+      font-size: 13px;
+      color: var(--outline);
+      margin-top: 4px;
+    }
+    .card-body { padding: 20px 24px; }
+
+    /* PIN screen */
+    .pin-wrap { text-align: center; padding-top: 30px; }
+    .pin-wrap .icon { font-size: 52px; margin-bottom: 12px; }
+    .pin-wrap h2 {
+      font-family: 'Instrument Serif', sans-serif;
+      color: var(--primary);
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .pin-wrap p { color: var(--outline); font-size: 14px; margin-bottom: 28px; }
+    .pin-desc {
+      color: var(--outline);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    input[type=password] {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: 22px;
+      font-family: 'Geist', sans-serif;
+      color: var(--primary);
+      background: var(--surface);
+      text-align: center;
+      letter-spacing: 6px;
+      outline: none;
+      transition: box-shadow 0.18s;
+      margin-bottom: 14px;
+    }
+    input[type=password]:focus { box-shadow: 0 0 0 2.5px var(--honey); }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      font-weight: 800;
+      font-family: 'Geist', sans-serif;
+      cursor: pointer;
+      transition: all 0.18s;
+      margin-bottom: 10px;
+      letter-spacing: .3px;
+    }
+    .btn-primary { background: var(--primary); color: var(--honey-light); }
+    .btn-primary:hover { filter: brightness(1.12); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-reward { background: var(--honey); color: var(--honey-dark); font-weight: 800; }
+    .btn-danger { background: #c0392b; color: #fff; font-weight: 800; }
+    .btn-danger:hover { filter: brightness(1.1); }
+    .btn-danger:active { transform: scale(0.98); }
+    .btn-ghost { background: transparent; color: var(--outline); font-size: 14px; font-weight: 600; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    /* Camera */
+    .cam-wrap {
+      position: relative;
+      width: 100%;
+      border-radius: var(--r);
+      overflow: hidden;
+      background: #111;
+      aspect-ratio: 1;
+      margin-bottom: 16px;
+    }
+    #cam-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cam-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .cam-frame {
+      width: 62%;
+      aspect-ratio: 1;
+      border: 3px solid rgba(255,202,72,0.9);
+      border-radius: var(--r);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+    }
+    .cam-pulse {
+      position: absolute;
+      width: 62%;
+      aspect-ratio: 1;
+      border-radius: var(--r);
+      border: 2px solid var(--honey);
+      animation: camPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes camPulse { 0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.8;transform:scale(1.05)} }
+    #scan-status {
+      text-align: center;
+      font-size: 14px;
+      color: var(--outline);
+      min-height: 22px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    #scan-status.ok  { color: #27ae60; }
+    #scan-status.err { color: #c0392b; }
+
+    /* ── Loyalty Card Visual (Apple Wallet style) ── */
+    .loyalty-card {
+      width: 100%;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(38,23,12,0.18);
+      margin-bottom: 16px;
+    }
+    .lc-header {
+      background: var(--primary);
+      padding: 16px 18px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .lc-brand { display: flex; flex-direction: column; }
+    .lc-title {
+      font-family: 'Instrument Serif', sans-serif;
+      font-size: 20px;
+      color: var(--honey-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .lc-subtitle {
+      font-size: 9px;
+      color: rgba(255,243,208,0.5);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+    .lc-award-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--honey);
+      color: var(--honey-dark);
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 50px;
+      padding: 4px 10px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    .lc-body {
+      background: var(--surface);
+      padding: 16px 18px 14px;
+    }
+    .lc-member {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .customer-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--honey-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .customer-name {
+      font-family: 'Instrument Serif', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .customer-sub { font-size: 12px; color: var(--outline); margin-top: 2px; }
+
+    /* Stamp grid (5 cols, like Apple Wallet) */
+    .stamps-grid-new {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+    .stamp-cell {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 2px solid var(--outline-var);
+      background: var(--on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    }
+    .stamp-cell.filled {
+      background: var(--primary);
+      border-color: var(--primary);
+      transform: scale(1.04);
+    }
+    .stamp-cell.filled::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.45);
+    }
+    .stamp-cell:not(.filled)::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--outline-var);
+    }
+    .stamps-count {
+      font-size: 11px;
+      color: var(--outline);
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Award pill */
+    .award-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--honey);
+      color: var(--honey-dark);
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 50px;
+      padding: 5px 14px;
+      margin-bottom: 10px;
+    }
+
+    /* Mode tabs */
+    .mode-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .mode-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: var(--r-sm);
+      background: var(--surface-mid);
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Geist', sans-serif;
+      color: var(--outline);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s;
+    }
+    .mode-tab.active {
+      background: var(--primary);
+      color: var(--honey-light);
+    }
+
+    /* Stepper */
+    .stepper { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .stepper-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: none;
+      background: var(--surface-mid);
+      font-size: 28px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--primary);
+      font-family: 'Geist', sans-serif;
+    }
+    .stepper-btn:hover { background: var(--primary); color: var(--honey-light); }
+    .stepper-btn:active { transform: scale(0.92); }
+    #quick-count {
+      flex: 1;
+      font-family: 'Instrument Serif', sans-serif;
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--primary);
+      text-align: center;
+      padding: 10px 0;
+      background: var(--surface);
+      border-radius: var(--r-sm);
+    }
+    #mode-quick label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--outline);
+      margin-bottom: 10px;
+    }
+
+    /* Products grid */
+    .products-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .product-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+    }
+    .product-info { flex: 1; }
+    .product-name { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .product-sub  { font-size: 12px; color: var(--outline); }
+    .product-ctrl { display: flex; align-items: center; gap: 10px; }
+    .p-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: var(--surface-mid);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      color: var(--primary);
+    }
+    .p-btn:hover { background: var(--primary); color: var(--honey-light); }
+    .p-btn:active { transform: scale(0.9); }
+    .p-qty { font-size: 18px; font-weight: 800; color: var(--primary); min-width: 24px; text-align: center; }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--primary);
+      color: var(--honey-light);
+      border-radius: var(--r-sm);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+    }
+    .total-row .lbl { font-size: 14px; opacity: 0.75; }
+    .total-row .val { font-family: 'Instrument Serif', sans-serif; font-size: 24px; font-weight: 900; }
+
+    /* Success screen */
+    .success-wrap { text-align: center; padding: 30px 0; }
+    .success-wrap .big-icon { font-size: 72px; margin-bottom: 12px; }
+    .success-wrap h2 {
+      font-family: 'Instrument Serif', sans-serif;
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .success-wrap p { font-size: 15px; color: var(--outline); margin-bottom: 4px; }
+    .reward-alert {
+      background: var(--honey);
+      color: var(--honey-dark);
+      border-radius: var(--r-sm);
+      padding: 14px;
+      margin: 16px 0;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    /* Error messages */
+    .err-msg { color: #c0392b; font-size: 13px; text-align: center; display: none; margin-bottom: 10px; font-weight: 600; }
+
+    /* Admin action buttons */
+    .admin-actions { margin-top: 16px; border-top: 1px solid var(--outline-var); padding-top: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="logo-txt" id="store-name">{{ business_name }}</span>
+  <span class="employee-info" id="employee-badge">Caja</span>
+</div>
+<div class="wrapper">
+
+  <!-- SCREEN 1: PIN -->
+  <div class="screen active" id="screen-pin">
+    <div class="pin-wrap">
+      <div class="icon"><span class="material-symbols-outlined" style="font-size:52px">lock</span></div>
+      <h2>Acceso de Caja</h2>
+      <p class="pin-desc">
+        <strong>Usuario / PIN del empleado</strong><br>
+        Este es un acceso separado del propietario.<br>
+        Úsalo para acceder a las funciones de caja.
+      </p>
+    </div>
+    <div class="err-msg" id="pin-error">PIN incorrecto. Inténtalo de nuevo.</div>
+    <input type="password" id="pin-input" placeholder="••••" maxlength="8" autocomplete="off">
+    <button class="btn btn-primary" onclick="doLogin()">Entrar →</button>
+  </div>
+
+  <!-- SCREEN 2: CAMERA -->
+  <div class="screen" id="screen-camera">
+    <div class="card">
+      <div class="card-head">
+        <h2><span class="material-symbols-outlined">qr_code_scanner</span> Escanear tarjeta cliente</h2>
+        <p>Apunta la cámara al QR del cliente</p>
+      </div>
+      <div class="card-body" style="padding:16px;">
+        <div class="cam-wrap">
+          <video id="cam-video" autoplay playsinline muted></video>
+          <canvas id="cam-canvas" style="display:none;"></canvas>
+          <div class="cam-overlay">
+            <div class="cam-pulse"></div>
+            <div class="cam-frame"></div>
+          </div>
+        </div>
+        <p id="scan-status">Buscando QR…</p>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="logout()"><span class="material-symbols-outlined">arrow_back</span> Cerrar sesión</button>
+  </div>
+
+  <!-- SCREEN 3: STAMP -->
+  <div class="screen" id="screen-stamp">
+    <!-- Loyalty card visual (Apple Wallet style) -->
+    <div class="loyalty-card">
+      <div class="lc-header">
+        <div class="lc-brand">
+          <div class="lc-title">{{ business_name }}</div>
+          <div class="lc-subtitle">Club de Fidelización</div>
+        </div>
+        <div id="award-wrap"></div>
+      </div>
+      <div class="lc-body">
+        <div class="lc-member">
+          <div class="customer-avatar" id="cust-avatar"><span class="material-symbols-outlined" style="font-size:18px">person</span></div>
+          <div>
+            <div class="customer-name" id="cust-name">—</div>
+            <div class="customer-sub" id="cust-sub">—</div>
+          </div>
+        </div>
+        <div class="stamps-grid-new" id="stamps-bar"></div>
+        <div class="stamps-count" id="stamps-count">0 / 0 sellos</div>
+      </div>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-quick" onclick="setMode('quick')"><span class="material-symbols-outlined">bolt</span> Sello rápido</button>
+      <button class="mode-tab" id="tab-purchase" onclick="setMode('purchase')"><span class="material-symbols-outlined">shopping_bag</span> Modo compra</button>
+    </div>
+    <!-- Quick mode -->
+    <div id="mode-quick">
+      <div class="card">
+        <div class="card-body">
+          <label>¿Cuántos sellos añadir?</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepQuick(-1)">−</button>
+            <div id="quick-count">1</div>
+            <button class="stepper-btn" onclick="stepQuick(+1)">+</button>
+          </div>
+          <div class="err-msg" id="quick-error"></div>
+          <button class="btn btn-primary" id="quick-add-btn" onclick="submitStamps('quick')">
+            <span class="material-symbols-outlined">check_circle</span> Añadir <span id="quick-label">1 sello</span>
+          </button>
+          <div id="redeem-wrap-quick"></div>
+          <button class="btn btn-ghost" onclick="goBackToScanner()"><span class="material-symbols-outlined">qr_code_scanner</span> Escanear otro cliente</button>
+          <div class="admin-actions">
+            <button class="btn btn-danger" id="remove-stamp-quick-btn" onclick="removeStamp()" style="display:none;">
+              <span class="material-symbols-outlined">remove_circle</span> Quitar sello
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Purchase mode -->
+    <div id="mode-purchase" style="display:none;">
+      <div class="card">
+        <div class="card-body">
+          <div class="products-grid" id="products-grid"></div>
+          <div class="total-row">
+            <span class="lbl">Total sellos</span>
+            <span class="val" id="purchase-total">0</span>
+          </div>
+          <div class="err-msg" id="purchase-error"></div>
+          <button class="btn btn-primary" id="purchase-add-btn" onclick="submitStamps('purchase')"><span class="material-symbols-outlined">check_circle</span> Confirmar compra</button>
+          <div id="redeem-wrap-purchase"></div>
+          <button class="btn btn-ghost" onclick="goBackToScanner()"><span class="material-symbols-outlined">qr_code_scanner</span> Escanear otro cliente</button>
+          <div class="admin-actions">
+            <button class="btn btn-danger" id="remove-stamp-purchase-btn" onclick="removeStamp()" style="display:none;">
+              <span class="material-symbols-outlined">remove_circle</span> Quitar sello
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: SUCCESS -->
+  <div class="screen" id="screen-success">
+    <div class="card">
+      <div class="card-body">
+        <div class="success-wrap">
+          <div class="big-icon" id="success-icon"><span class="material-symbols-outlined" style="font-size:72px">check_circle</span></div>
+          <h2 id="success-title">¡Hecho!</h2>
+          <p id="success-name"></p>
+          <p id="success-detail"></p>
+          <div id="success-reward" style="display:none;" class="reward-alert"></div>
+        </div>
+        <button class="btn btn-primary" onclick="goBackToScanner()"><span class="material-symbols-outlined">qr_code_scanner</span> Siguiente cliente</button>
+        <button class="btn btn-ghost" onclick="logout()"><span class="material-symbols-outlined">arrow_back</span> Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const SLUG        = "{{ slug }}";
+const BIZ_NAME    = "{{ business_name }}";
+const BASE_URL    = "{{ base_url }}";
+const DEFAULT_SPR = {{ stamps_per_reward }};
+
+// Read store_id / store_name from URL params (set by scanner_login redirect)
+const _urlParams    = new URLSearchParams(window.location.search);
+const URL_STORE_ID  = _urlParams.get('store_id')   || '';
+const URL_STORE_NAME= _urlParams.get('store_name') || '';
+
+let adminPin = "", currentCardId = "", currentCard = null;
+let employeeRole = "", employeeStore = URL_STORE_NAME, employeeStoreId = URL_STORE_ID;
+let scanActive = false, videoStream = null, quickCount = 1;
+
+// ── Auto-login si el PIN está guardado (evita pedir PIN cada vez) ──────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const savedPin   = localStorage.getItem('zc_pin_' + SLUG);
+  const approvedAt = parseInt(localStorage.getItem('zc_approved_at_' + SLUG) || '0', 10);
+  const SESSION_MS = 21 * 24 * 60 * 60 * 1000; // 21 días
+  if (savedPin && approvedAt && (Date.now() - approvedAt) < SESSION_MS) {
+    const pinInput = document.getElementById('pin-input');
+    if (pinInput) {
+      pinInput.value = savedPin;
+      await doLogin(true); // silent: no mostrar error si falla
+    }
+  }
+});
+
+const PRODUCTS = [
+  { id:"unit1",  name:"Unidad",       sub:"1 sello por unidad", stamps:1 },
+  { id:"pack6",  name:"Pack 6",       sub:"6 sellos",           stamps:6 },
+  { id:"pack12", name:"Pack 12",      sub:"12 sellos",          stamps:12 },
+  { id:"bonus",  name:"Extra / Bono", sub:"1 sello adicional",  stamps:1 },
+];
+let productQty = {};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+// PIN LOGIN — validates against this business's slug
+// silent=true: called from auto-login; on failure just stays on PIN screen without showing error
+async function doLogin(silent = false) {
+  const pin = document.getElementById('pin-input').value.trim();
+  if (!pin) return;
+  const errEl = document.getElementById('pin-error');
+  try {
+    const resp = await fetch(`{{ base_url }}/api/biz/${SLUG}/verify-pin?pin=${encodeURIComponent(pin)}`);
+    if (resp.status === 403 || resp.status === 404) {
+      if (!silent) {
+        errEl.style.display = 'block';
+        document.getElementById('pin-input').value = '';
+        document.getElementById('pin-input').focus();
+      }
+      return;
+    }
+    const data = await resp.json();
+    adminPin = pin;
+    employeeRole = data.role || "";
+    employeeStore = data.store || BIZ_NAME;
+    updateTopBar();
+    errEl.style.display = 'none';
+    startCamera();
+  } catch(e) {
+    if (!silent) {
+      errEl.textContent = 'Error de red. Inténtalo de nuevo.';
+      errEl.style.display = 'block';
+    }
+  }
+}
+
+function updateTopBar() {
+  const badge = document.getElementById('employee-badge');
+  if (employeeStore) {
+    badge.textContent = employeeStore.toUpperCase();
+  }
+}
+
+function logout() {
+  stopCamera();
+  adminPin = "";
+  employeeRole = "";
+  employeeStore = "";
+  currentCardId = "";
+  currentCard = null;
+  // Borrar PIN guardado para forzar re-autenticación tras logout manual
+  localStorage.removeItem('zc_pin_' + SLUG);
+  localStorage.removeItem('zc_approved_at_' + SLUG);
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('employee-badge').textContent = 'Caja';
+  showScreen('pin');
+}
+
+// CAMERA
+async function startCamera() {
+  showScreen('camera');
+  const st = document.getElementById('scan-status');
+  st.textContent = 'Iniciando cámara…'; st.className = '';
+  try {
+    // Try high-res first, fall back to basic environment camera
+    const constraints = [
+      { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+      { video: { facingMode: { ideal: 'environment' } } },
+      { video: true }
+    ];
+    let stream = null;
+    for (const c of constraints) {
+      try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch(e) {}
+    }
+    if (!stream) throw new Error('No camera');
+    videoStream = stream;
+    const v = document.getElementById('cam-video');
+    v.srcObject = videoStream;
+    // Wait for metadata + play
+    await new Promise((res, rej) => {
+      v.onloadedmetadata = () => v.play().then(res).catch(rej);
+      setTimeout(rej, 5000);
+    });
+    scanActive = true; st.textContent = 'Buscando QR…';
+    _scanLoop();
+  } catch(e) {
+    st.textContent = '⚠ Sin acceso a la cámara. Revisa los permisos.'; st.className = 'err';
+    console.error('Camera error:', e);
+  }
+}
+function stopCamera() {
+  scanActive = false;
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+}
+function _scanLoop() {
+  if (!scanActive) return;
+  requestAnimationFrame(scanFrame);
+}
+function scanFrame() {
+  if (!scanActive) return;
+  const v = document.getElementById('cam-video'), c = document.getElementById('cam-canvas');
+  if (!v || v.readyState < v.HAVE_ENOUGH_DATA || v.videoWidth === 0) { _scanLoop(); return; }
+
+  // Use smaller canvas for faster jsQR processing
+  const MAX = 640;
+  const scale = Math.min(1, MAX / Math.max(v.videoWidth, v.videoHeight));
+  c.width  = Math.round(v.videoWidth  * scale);
+  c.height = Math.round(v.videoHeight * scale);
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(v, 0, 0, c.width, c.height);
+  const img = ctx.getImageData(0, 0, c.width, c.height);
+
+  const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+  if (code && code.data) {
+    // Birthday voucher QR? URL contains /birthday/{token}
+    const bdayMatch = code.data.match(/\/birthday\/([a-f0-9]{24})/i);
+    if (bdayMatch) { scanActive = false; stopCamera(); redeemBirthdayVoucher(bdayMatch[1]); return; }
+    // Regular loyalty card UUID (from URL or raw UUID)
+    const id = code.data.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    if (id) { scanActive = false; stopCamera(); loadCustomer(id[0]); return; }
+  }
+  // Continue loop with a small delay to reduce CPU on mobile
+  setTimeout(_scanLoop, 80);
+}
+
+// BIRTHDAY VOUCHER REDEEM
+async function redeemBirthdayVoucher(token) {
+  showScreen('stamp');
+  const st = document.getElementById('scan-status');
+  st.textContent = '🎂 Procesando regalo de cumpleaños…'; st.className = 'ok';
+  try {
+    const r = await fetch(`{{ base_url }}/api/biz/${SLUG}/birthday-voucher/redeem?pin=${encodeURIComponent(adminPin)}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Error');
+
+    // Show big birthday success screen
+    document.getElementById('stamp-screen').innerHTML = `
+      <div style="text-align:center;padding:32px 20px;background:#fff;border-radius:16px;margin:16px">
+        <div style="font-size:3.5rem;margin-bottom:8px">🎂</div>
+        <div style="font-size:1.6rem;font-weight:900;color:#e65100;margin-bottom:4px">${data.discount_pct}% DESCUENTO</div>
+        <div style="font-size:.95rem;font-weight:700;color:#555;margin-bottom:16px">${data.customer_name}</div>
+        <div style="background:#e8f5e9;color:#2e7d32;padding:12px 20px;border-radius:8px;font-size:.88rem;font-weight:700;margin-bottom:20px">
+          ✓ Aplicar ${data.discount_pct}% de descuento en esta compra
+        </div>
+        <div style="font-size:.75rem;color:#aaa;margin-bottom:20px">QR canjeado · Un solo uso</div>
+        <button onclick="showScreen('scan');scanActive=true;startCamera()"
+          style="background:#26170c;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;width:100%">
+          ← Siguiente cliente
+        </button>
+      </div>`;
+  } catch(e) {
+    st.textContent = '⚠ ' + e.message; st.className = 'err';
+    document.getElementById('stamp-screen').innerHTML = `
+      <div style="text-align:center;padding:32px 20px">
+        <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
+        <div style="font-weight:700;color:#cc2222;margin-bottom:16px">${e.message}</div>
+        <button onclick="showScreen('scan');scanActive=true;startCamera()"
+          style="background:#26170c;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer">
+          ← Intentar de nuevo
+        </button>
+      </div>`;
+  }
+}
+
+// LOAD CUSTOMER
+async function loadCustomer(cardId) {
+  const st = document.getElementById('scan-status');
+  st.textContent = 'Cargando datos…'; st.className = 'ok';
+  try {
+    const r = await fetch(`{{ base_url }}/api/cards/${cardId}`);
+    if (!r.ok) throw new Error();
+    currentCard = await r.json();
+    currentCardId = cardId;
+    renderCustomer();
+    showScreen('stamp');
+  } catch(e) {
+    st.textContent = '⚠ Tarjeta no encontrada. Inténtalo de nuevo.'; st.className = 'err';
+    scanActive = true; await startCamera();
+  }
+}
+
+function getSPR() { return (currentCard && currentCard.stampsOnCard) ? currentCard.stampsOnCard : DEFAULT_SPR; }
+
+function renderCustomer() {
+  const c = currentCard, spr = getSPR();
+  const hasAward = (c.awardBalance || 0) > 0;
+  const fullName = c.name || ((c.firstName||'') + ' ' + (c.lastName||'')).trim();
+  document.getElementById('cust-name').textContent = fullName;
+  document.getElementById('cust-sub').textContent = `${c.totalStamps} sellos totales`;
+  // Avatar: initials from customer name, or redeem icon if has award
+  const avatar = document.getElementById('cust-avatar');
+  if (hasAward) {
+    avatar.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px">redeem</span>';
+  } else {
+    const parts = fullName.split(' ').filter(Boolean);
+    const initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : (parts[0] || 'C')[0].toUpperCase();
+    avatar.textContent = initials;
+  }
+
+  // Render stamps grid (Apple Wallet style)
+  const bar = document.getElementById('stamps-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < spr; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'stamp-cell ' + (i < c.stamps ? 'filled' : '');
+    bar.appendChild(cell);
+  }
+  document.getElementById('stamps-count').textContent = `${c.stamps} / ${spr} sellos`;
+
+  // Render awards (header pill)
+  const aw = document.getElementById('award-wrap');
+  aw.innerHTML = hasAward ? `<div class="lc-award-pill"><span class="material-symbols-outlined" style="font-size:13px">redeem</span> ${c.awardBalance} premio${c.awardBalance>1?'s':''}</div>` : '';
+
+  // Show remove stamp button only if customer has stamps
+  const removeButtons = document.querySelectorAll('[id^="remove-stamp-"]');
+  removeButtons.forEach(btn => {
+    btn.style.display = c.stamps > 0 ? 'block' : 'none';
+  });
+
+  quickCount = 1;
+  updateQuickDisplay();
+  resetProducts();
+  renderRedeemButtons();
+}
+
+function setMode(mode) {
+  document.getElementById('tab-quick').classList.toggle('active', mode==='quick');
+  document.getElementById('tab-purchase').classList.toggle('active', mode==='purchase');
+  document.getElementById('mode-quick').style.display = mode==='quick' ? 'block' : 'none';
+  document.getElementById('mode-purchase').style.display = mode==='purchase' ? 'block' : 'none';
+}
+
+function stepQuick(d) { quickCount = Math.max(1, Math.min(50, quickCount+d)); updateQuickDisplay(); }
+function updateQuickDisplay() {
+  document.getElementById('quick-count').textContent = quickCount;
+  const l = document.getElementById('quick-label');
+  if (l) l.textContent = quickCount===1 ? '1 sello' : `${quickCount} sellos`;
+}
+
+function resetProducts() { PRODUCTS.forEach(p => { productQty[p.id]=0; }); renderProducts(); }
+function renderProducts() {
+  const g = document.getElementById('products-grid'); g.innerHTML = '';
+  PRODUCTS.forEach(p => {
+    const r = document.createElement('div'); r.className = 'product-row';
+    r.innerHTML = `<div class="product-info"><div class="product-name">${p.name}</div><div class="product-sub">${p.sub}</div></div>
+      <div class="product-ctrl"><button class="p-btn" onclick="stepP('${p.id}',-1)">−</button>
+      <span class="p-qty" id="qty-${p.id}">0</span>
+      <button class="p-btn" onclick="stepP('${p.id}',+1)">+</button></div>`;
+    g.appendChild(r);
+  });
+  updatePTotal();
+}
+function stepP(id,d) { productQty[id]=Math.max(0,(productQty[id]||0)+d); document.getElementById(`qty-${id}`).textContent=productQty[id]; updatePTotal(); }
+function updatePTotal() { let t=0; PRODUCTS.forEach(p=>{t+=(productQty[p.id]||0)*p.stamps;}); document.getElementById('purchase-total').textContent=t; }
+function getPTotal() { let t=0; PRODUCTS.forEach(p=>{t+=(productQty[p.id]||0)*p.stamps;}); return t; }
+function getPNote()  { return PRODUCTS.filter(p=>productQty[p.id]>0).map(p=>`${p.name} ×${productQty[p.id]}`).join(', '); }
+
+function renderRedeemButtons() {
+  ['quick','purchase'].forEach(mode => {
+    const w = document.getElementById(`redeem-wrap-${mode}`);
+    const n = (currentCard && currentCard.awardBalance) || 0;
+    w.innerHTML = n > 0 ? `<button class="btn btn-reward" onclick="redeemReward()"><span class="material-symbols-outlined">redeem</span> Canjear galleta gratis${n>1?' ('+n+' disponibles)':''}</button>` : '';
+  });
+}
+
+async function redeemReward() {
+  const n = (currentCard&&currentCard.awardBalance)||0;
+  const name = currentCard.name||(currentCard.firstName||'');
+  if (!confirm(`¿Canjear 1 galleta gratis para ${name}? (${n} disponible${n>1?'s':''})`)) return;
+  try {
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/redeem`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:adminPin, store:employeeStore||BIZ_NAME, store_id:employeeStoreId||undefined, source: employeeStoreId ? 'scanner' : 'admin'})});
+    const d = await r.json();
+    document.getElementById('success-icon').innerHTML='<span class="material-symbols-outlined" style="font-size:72px">redeem</span>';
+    document.getElementById('success-title').textContent='¡Premio canjeado!';
+    document.getElementById('success-name').textContent=name;
+    document.getElementById('success-detail').textContent=`Premios restantes: ${d.award_balance}`;
+    document.getElementById('success-reward').style.display='none';
+    showScreen('success');
+  } catch(e) { alert('Error al canjear.'); }
+}
+
+async function removeStamp() {
+  const c = currentCard;
+  if (!c || c.stamps <= 0) {
+    alert('No hay sellos para quitar.');
+    return;
+  }
+  const name = c.name||(c.firstName||'');
+  if (!confirm(`¿Quitar 1 sello a ${name}?`)) return;
+
+  const btn = document.getElementById('remove-stamp-quick-btn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Quitando…';
+
+  try {
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/stamps`,{
+      method:'DELETE',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:adminPin})
+    });
+    const d = await r.json();
+    if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
+    const spr=getSPR();
+    document.getElementById('success-icon').innerHTML='<span class="material-symbols-outlined" style="font-size:72px">remove_circle</span>';
+    document.getElementById('success-title').textContent='Sello eliminado';
+    document.getElementById('success-name').textContent=name;
+    document.getElementById('success-detail').textContent=`−1 sello. Total: ${d.stamps} / ${spr}`;
+    document.getElementById('success-reward').style.display='none';
+    showScreen('success');
+  } catch(e) {
+    btn.disabled=false;
+    btn.textContent=originalText;
+    alert('Error de red.');
+  }
+}
+
+async function submitStamps(mode) {
+  let stamps, note;
+  if (mode==='quick') { stamps=quickCount; note=`Sello rápido: ${stamps} sello${stamps>1?'s':''}`; }
+  else { stamps=getPTotal(); note=getPNote(); if(!stamps){const e=document.getElementById('purchase-error');e.textContent='Añade al menos un producto.';e.style.display='block';return;} }
+  const btnId=mode==='quick'?'quick-add-btn':'purchase-add-btn';
+  const btn=document.getElementById(btnId); btn.disabled=true; btn.textContent='Añadiendo…';
+  try {
+    const r = await fetch(`{{ base_url }}/api/cards/${currentCardId}/stamps`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:adminPin, stamps:stamps, note:note, store:employeeStore||BIZ_NAME, store_id:employeeStoreId||undefined, source: employeeStoreId ? 'scanner' : 'admin'})});
+    const d = await r.json();
+    if (r.status===403) { alert('PIN incorrecto. Cerrando sesión.'); logout(); return; }
+    const spr=getSPR(), name=currentCard.name||(currentCard.firstName||'');
+    document.getElementById('success-icon').innerHTML='<span class="material-symbols-outlined" style="font-size:72px">check_circle</span>';
+    document.getElementById('success-title').textContent='¡Hecho!';
+    document.getElementById('success-name').textContent=name;
+    document.getElementById('success-detail').textContent=`+${stamps} sello${stamps>1?'s':''} añadido${stamps>1?'s':''}. Total: ${d.stamps} / ${spr}`;
+    const aw=(d.award_balance||0), ar=document.getElementById('success-reward');
+    if(aw>0){ar.innerHTML=`<span class="material-symbols-outlined">redeem</span> ¡Premio desbloqueado! ${name} tiene ${aw} galleta${aw>1?'s':''} gratis.`;ar.style.display='block';}
+    else{ar.style.display='none';}
+    showScreen('success');
+  } catch(e) { btn.disabled=false; btn.innerHTML=mode==='quick'?'<span class="material-symbols-outlined">check_circle</span> Añadir sellos':'<span class="material-symbols-outlined">check_circle</span> Confirmar compra'; alert('Error de red.'); }
+}
+
+function goBackToScanner() {
+  currentCardId=''; currentCard=null;
+  // Re-enable add buttons (they get disabled during submitStamps)
+  const qb = document.getElementById('quick-add-btn');
+  if (qb) { qb.disabled=false; qb.innerHTML='<span class="material-symbols-outlined">check_circle</span> Añadir <span id="quick-label">1 sello</span>'; }
+  const pb = document.getElementById('purchase-add-btn');
+  if (pb) { pb.disabled=false; pb.innerHTML='<span class="material-symbols-outlined">check_circle</span> Confirmar compra'; }
+  ['quick-error','purchase-error'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  startCamera();
+}
+
+document.getElementById('pin-input').addEventListener('keydown', e=>{if(e.key==='Enter')doLogin();});
+</script>
+</body>
+</html>

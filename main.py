@@ -5605,6 +5605,23 @@ async def dashboard_rich(request: Request):
 # Acceso: /biz/{slug}/scanner
 # ════════════════════════════════════════════════════════════════════════════════
 
+@app.get("/biz/{slug}/scanner/preview", response_class=HTMLResponse)
+async def scanner_page_preview(request: Request, slug: str, db: Session = Depends(get_db)):
+    """Preview del scanner con el nuevo refresh visual."""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return templates.TemplateResponse("scanner_new.html", {
+        "request":           request,
+        "slug":              slug,
+        "business_name":     biz.name,
+        "primary_color":     biz.primary_color or "#3A3426",
+        "accent_color":      biz.accent_color  or "#FFF3CF",
+        "stamps_per_reward": biz.stamps_per_reward or STAMPS_PER_REWARD,
+        "base_url":          BASE_URL,
+    })
+
+
 @app.get("/biz/{slug}/scanner", response_class=HTMLResponse)
 async def scanner_page(request: Request, slug: str, db: Session = Depends(get_db)):
     """Página de caja: escanea QR del cliente y añade sellos por producto."""
