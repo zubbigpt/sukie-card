@@ -4436,12 +4436,33 @@ let distChart = null;
 let newClientsChart = null;
 
 // ── LOGIN ──────────────────────────────────────────────────────────────────
+// ── Persistent login (7 days) ──
+const PERSIST_KEY = 'zubcard_persist_' + '{{ biz_slug }}';
+const PERSIST_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
+function savePersistentPin(pin){
+  try { localStorage.setItem(PERSIST_KEY, JSON.stringify({ pin: pin, ts: Date.now() })); } catch(e){}
+}
+function readPersistentPin(){
+  try {
+    const raw = localStorage.getItem(PERSIST_KEY);
+    if (!raw) return null;
+    const { pin, ts } = JSON.parse(raw);
+    if (!pin || !ts || (Date.now() - ts) > PERSIST_MAX_AGE_MS) {
+      localStorage.removeItem(PERSIST_KEY);
+      return null;
+    }
+    return pin;
+  } catch(e) { return null; }
+}
+function clearPersistentPin(){ try { localStorage.removeItem(PERSIST_KEY); } catch(e){} }
+
 async function doLogin(){
   const p = document.getElementById('login-pin').value;
   try{
     const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/verify-pin?pin=${p}`);
-    if(r.status===403){document.getElementById('login-err').textContent='PIN incorrecto';return;}
+    if(r.status===403){document.getElementById('login-err').textContent='PIN incorrecto';clearPersistentPin();return;}
     PIN = p;
+    savePersistentPin(p);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -4475,11 +4496,18 @@ setTimeout(function() {
     setTimeout(() => doLogin(), 100);
     return;
   }
-  // 3. Check sessionStorage (short-lived token from login page)
+  // 3. Check sessionStorage (short-lived token from login page) — legacy
   const savedPin = sessionStorage.getItem('zubcard_pin_' + slug);
   if (savedPin) {
     sessionStorage.removeItem('zubcard_pin_' + slug);
     document.getElementById('login-pin').value = savedPin;
+    setTimeout(() => doLogin(), 100);
+    return;
+  }
+  // 4. Persistent login (localStorage, up to 7 days)
+  const persistPin = readPersistentPin();
+  if (persistPin) {
+    document.getElementById('login-pin').value = persistPin;
     setTimeout(() => doLogin(), 100);
     return;
   }
