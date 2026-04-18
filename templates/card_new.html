@@ -119,27 +119,6 @@
   #qrcode { display: inline-block; padding: 12px; background: var(--bg); border-radius: 12px; }
   #qrcode img, #qrcode canvas { display: block; }
 
-  /* REFERRAL */
-  .referral-section {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 16px;
-    background: var(--ink); color: var(--bg);
-    position: relative; overflow: hidden;
-    text-align: center;
-  }
-  .referral-section::before { content: ''; position: absolute; inset: auto -30% -30% auto; width: 60%; height: 80%; background: radial-gradient(ellipse, color-mix(in oklab, var(--accent) 35%, transparent) 0%, transparent 60%); pointer-events: none; }
-  .referral-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); position: relative; z-index: 2; margin-bottom: 8px; }
-  .referral-code { font-family: var(--font-display); font-size: 30px; letter-spacing: -.01em; position: relative; z-index: 2; }
-  .referral-sub { font-size: 12px; color: color-mix(in oklab, var(--bg) 70%, transparent); margin-top: 4px; position: relative; z-index: 2; }
-  .referral-copy-btn {
-    margin-top: 6px; padding: 9px 14px; border-radius: 999px;
-    background: var(--accent); color: var(--accent-ink); border: none;
-    font-family: var(--font-ui); font-size: 12px; font-weight: 600; cursor: pointer;
-    position: relative; z-index: 2;
-  }
-  .referral-copy-btn:hover { background: var(--bg); color: var(--ink); }
-
   /* WALLET BUTTONS */
   .wallet-btn-wrap { width: 100%; max-width: 440px; margin-top: 10px; }
   .btn-wallet {
@@ -210,8 +189,8 @@
 </div>
 
 <div class="club-header" id="club-header">
-  <div class="club-name" id="club-name">— Club VIP</div>
-  <div class="club-tagline" id="club-tagline">Sé parte de algo especial</div>
+  <div class="club-name" id="club-name">— Bienvenido a</div>
+  <div class="club-tagline" id="club-tagline">{{ card_title }}</div>
 </div>
 
 <div class="card">
@@ -266,16 +245,6 @@
       <div id="qrcode"></div>
     </div>
 
-    <!-- Referral -->
-    <div class="referral-section" id="referral-section" style="display:none">
-      <div class="referral-title">— Invita y gana</div>
-      <div class="referral-code" id="referral-code">XXXX</div>
-      <div class="referral-sub">Comparte tu link y los dos ganáis 2 sellos extra</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
-        <button class="referral-copy-btn" onclick="copyReferral()">Copiar link</button>
-        <button class="referral-copy-btn" onclick="shareReferral()" style="background:transparent;color:var(--bg);border:1px solid color-mix(in oklab, var(--bg) 25%, transparent)">Compartir</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -325,10 +294,7 @@ const REVIEW_TRIGGER = 0;
 </script>
 {% endif %}
 
-<button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()">
-  Activar notificaciones
-</button>
-<button class="action-btn btn-secondary" onclick="shareCard()">
+<button class="action-btn btn-primary" onclick="shareCard()">
   Compartir mi tarjeta
 </button>
 
@@ -381,9 +347,6 @@ function renderCard(card, club) {
   const tier = club.current_tier || {};
   const clubInfo = club.club || {};
 
-  document.getElementById('club-name').textContent = '— ' + (clubInfo.nombre || 'Club VIP');
-  document.getElementById('club-tagline').textContent = clubInfo.tagline || '';
-
   document.getElementById('member-number').textContent = 'Miembro #' + String(club.member_number || 1).padStart(3,'0');
   document.getElementById('member-since').textContent = club.member_since ? 'Desde ' + club.member_since : '';
 
@@ -425,38 +388,6 @@ function renderCardBasic(card) {
   });
 }
 
-let _referralUrl = '';
-
-async function loadReferral() {
-  try {
-    const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/referral');
-    const data = await res.json();
-    if (data.referral_code) {
-      document.getElementById('referral-code').textContent = data.referral_code;
-      _referralUrl = data.referral_url || '';
-      document.getElementById('referral-section').style.display = 'block';
-    }
-  } catch(e) {}
-}
-
-function copyReferral() {
-  const text = _referralUrl || document.getElementById('referral-code').textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('Link copiado'));
-}
-
-function shareReferral() {
-  const text = _referralUrl || document.getElementById('referral-code').textContent;
-  if (navigator.share) {
-    navigator.share({
-      title: '¡Únete y gana sellos!',
-      text: '¡Regístrate con mi link y los dos ganamos sellos extra!',
-      url: text
-    });
-  } else {
-    navigator.clipboard.writeText(text).then(() => showToast('Link copiado'));
-  }
-}
-
 function shareCard() {
   if (navigator.share) {
     navigator.share({
@@ -477,29 +408,24 @@ function urlBase64ToUint8Array(base64String) {
   return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
 }
 
-async function activateNotifications() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    showToast('Tu navegador no soporta notificaciones push');
-    return;
-  }
-  const perm = await Notification.requestPermission();
-  if (perm !== 'granted') {
-    showToast('Notificaciones bloqueadas');
-    return;
-  }
+// Silent auto-subscribe: notifications should already be granted at register time.
+// If permission was already granted previously, re-subscribe on load (idempotent backend).
+async function autoSubscribeIfGranted() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (Notification.permission !== 'granted') return;
   try {
     const keyRes = await fetch(API_BASE + '/api/push/vapid-public');
     const keyData = await keyRes.json();
-    if (!keyData.key) {
-      showToast('Permiso concedido (notificaciones no configuradas)');
-      return;
-    }
+    if (!keyData.key) return;
     const swReg = await navigator.serviceWorker.register('/sw.js');
     await navigator.serviceWorker.ready;
-    const subscription = await swReg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(keyData.key)
-    });
+    let subscription = await swReg.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await swReg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(keyData.key)
+      });
+    }
     const subJson = subscription.toJSON();
     await fetch(API_BASE + '/api/push/subscribe', {
       method: 'POST',
@@ -510,13 +436,7 @@ async function activateNotifications() {
         keys: subJson.keys
       })
     });
-    showToast('¡Notificaciones activadas!');
-    const btn = document.getElementById('notif-btn');
-    if (btn) { btn.textContent = 'Notificaciones activas'; btn.disabled = true; }
-  } catch(e) {
-    console.error('Push subscription error:', e);
-    showToast('Error activando notificaciones');
-  }
+  } catch(e) { console.warn('auto-subscribe skipped:', e); }
 }
 
 function maybeShowReviewBanner(totalStamps, stampsOnCard, awardsBalance) {
@@ -530,7 +450,7 @@ function maybeShowReviewBanner(totalStamps, stampsOnCard, awardsBalance) {
 }
 
 loadData();
-loadReferral();
+autoSubscribeIfGranted();
 </script>
 </body>
 </html>
