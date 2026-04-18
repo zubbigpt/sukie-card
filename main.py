@@ -5628,7 +5628,7 @@ async def scanner_page(request: Request, slug: str, db: Session = Depends(get_db
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    return templates.TemplateResponse("scanner.html", {
+    return templates.TemplateResponse("scanner_new.html", {
         "request":           request,
         "slug":              slug,
         "business_name":     biz.name,
