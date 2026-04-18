@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Demo en vivo · ZubCard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede2;
+    --bg-2: #ede4d5;
+    --surface: #ffffff;
+    --ink: #1a1410;
+    --ink-2: #4a4239;
+    --ink-3: #8a7f71;
+    --line: #d9cdbc;
+    --line-soft: #e7ddcc;
+    --accent: oklch(0.64 0.15 55);
+    --accent-ink: #1a1410;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-ui: 'Geist', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --r: 12px;
+    --r-xl: 28px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; }
+  .shell { max-width: 1200px; margin: 0 auto; padding: 40px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; min-height: 100vh; }
+  .back { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; position: absolute; top: 24px; left: 32px; }
+  .back:hover { color: var(--ink); }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+  h1 { font-family: var(--font-display); font-size: clamp(52px, 6vw, 92px); line-height: .96; letter-spacing: -.03em; font-weight: 400; margin: 0; }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 16px; line-height: 1.55; color: var(--ink-2); margin-top: 20px; max-width: 440px; }
+  .feat { display: flex; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; }
+  .feat:last-child { border-bottom: 1px solid var(--line); }
+  .feat-n { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--ink-3); width: 28px; }
+  .feat-t { font-family: var(--font-display); font-size: 20px; letter-spacing: -.01em; flex: 1; }
+  .feat-t em { font-style: italic; color: var(--accent); }
+  .feats { margin-top: 28px; }
+
+  .card-form {
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-xl);
+    padding: 36px; box-shadow: 0 30px 80px rgba(26,20,16,.08);
+  }
+  .form-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; flex-wrap: wrap; gap: 8px; }
+  .form-head .title { font-family: var(--font-display); font-size: 28px; letter-spacing: -.02em; font-weight: 400; }
+  .form-head .title em { font-style: italic; color: var(--accent); }
+  .form-head .duration { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+  .meta { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--bg); font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2);
+  }
+  .chip svg { flex-shrink: 0; }
+
+  .btn-big {
+    width: 100%; padding: 16px 20px; border: none; border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .2s; margin-top: 4px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    text-decoration: none;
+  }
+  .btn-big:hover { background: var(--accent); color: var(--accent-ink); }
+
+  .divider { display: flex; align-items: center; gap: 14px; margin: 18px 0; color: var(--ink-3); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .btn-ghost {
+    width: 100%; padding: 14px 20px; border: 1px solid var(--line); border-radius: 999px;
+    background: transparent; color: var(--ink);
+    font-family: var(--font-ui); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    text-decoration: none;
+  }
+  .btn-ghost:hover { border-color: var(--ink); background: var(--bg-2); }
+
+  .fine { font-size: 13px; color: var(--ink-3); text-align: center; margin-top: 18px; line-height: 1.5; }
+  .fine a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; gap: 28px; padding: 72px 20px 40px; }
+  }
+</style>
+</head>
+<body>
+<a class="back" href="/">← Volver</a>
+<div class="shell">
+  <div>
+    <div class="eyebrow">— Demo · 20 min</div>
+    <h1>Te enseñamos <em>todo</em> en 20 minutos.</h1>
+    <p class="lede">Un humano, tu negocio, tu tarjeta personalizada en vivo. Sin PowerPoints, sin comerciales pesados. Prometido.</p>
+    <div class="feats">
+      <div class="feat"><span class="feat-n">01</span><span class="feat-t">Creamos tu tarjeta <em>en directo</em></span></div>
+      <div class="feat"><span class="feat-n">02</span><span class="feat-t">Ves el scanner y el dashboard <em>funcionando</em></span></div>
+      <div class="feat"><span class="feat-n">03</span><span class="feat-t">Resolvemos tus dudas <em>concretas</em></span></div>
+      <div class="feat"><span class="feat-n">04</span><span class="feat-t">Si encaja, arrancas <em>ese mismo día</em></span></div>
+    </div>
+  </div>
+
+  <div class="card-form">
+    <div class="form-head">
+      <div class="title">Elige una <em>hora</em></div>
+      <div class="duration">20 min · Google Meet</div>
+    </div>
+
+    <div class="meta">
+      <div class="chip">
+        <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
+          <circle cx="6.5" cy="6.5" r="5.2" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M6.5 3.5V6.8l2 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        20 min
+      </div>
+      <div class="chip">
+        <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
+          <rect x="1.2" y="2" width="10.5" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M4.2 1V3M8.8 1V3M1.2 5.2h10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        Lun–Vie
+      </div>
+      <div class="chip">
+        <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 1.5a5 5 0 100 10 5 5 0 000-10z" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M4.5 6.5l1.5 1.5 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Gratuita
+      </div>
+    </div>
+
+    <a href="https://calendar.app.google/7d4a8FXS1jjy1Qsg7" target="_blank" class="btn-big">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1.5" y="2.5" width="13" height="11" rx="1.8" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M4.5 1.5V3.5M11.5 1.5V3.5M1.5 6h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M5.5 9.5l1.5 1.5 3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Reservar horario en Google Calendar
+    </a>
+
+    <div class="divider">O</div>
+
+    <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn-ghost">
+      Empezar prueba sin demo →
+    </a>
+
+    <p class="fine">
+      ¿Prefieres escribir? <a href="mailto:zubcard@gmail.com">zubcard@gmail.com</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>

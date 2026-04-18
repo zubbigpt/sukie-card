@@ -4092,6 +4092,32 @@ async def zubcard_landing_preview(request: Request):
     return templates.TemplateResponse("index_new.html", {"request": request, "ref_code": ""})
 
 
+@app.get("/preview-demo", response_class=HTMLResponse)
+async def zubcard_demo_preview(request: Request):
+    return templates.TemplateResponse("demo_new.html", {"request": request, "ref_code": ""})
+
+
+@app.get("/preview-referidos", response_class=HTMLResponse)
+async def zubcard_referidos_preview(request: Request):
+    return templates.TemplateResponse("referidos_new.html", {"request": request})
+
+
+@app.get("/preview-app-login", response_class=HTMLResponse)
+async def zubcard_app_login_preview(request: Request):
+    return templates.TemplateResponse("app_login_new.html", {"request": request})
+
+
+@app.get("/preview-app-register", response_class=HTMLResponse)
+async def zubcard_app_register_preview(request: Request, ref: str = ""):
+    return templates.TemplateResponse("app_register_new.html", {"request": request, "ref_code": ref.upper() if ref else ""})
+
+
+@app.get("/preview-customer-register", response_class=HTMLResponse)
+async def zubcard_customer_register_preview(request: Request):
+    """Preview visual del landing de registro del cliente final (escaneando QR de negocio)."""
+    return templates.TemplateResponse("register_customer_new.html", {"request": request})
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def biz_login_page(request: Request):
     """General business owner login page — enter slug + PIN → redirect to dashboard"""

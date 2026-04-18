@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Activa tu tarjeta · ZubCard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4ede2;
+    --bg-2: #ede4d5;
+    --surface: #ffffff;
+    --ink: #1a1410;
+    --ink-2: #4a4239;
+    --ink-3: #8a7f71;
+    --line: #d9cdbc;
+    --line-soft: #e7ddcc;
+    --accent: oklch(0.64 0.15 55);
+    --accent-ink: #1a1410;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-ui: 'Geist', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; }
+  .brand .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
+  .brand span { font-family: var(--font-display); font-style: italic; font-size: 20px; }
+
+  .step-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; text-align: center; }
+
+  h1 { font-family: var(--font-display); font-size: clamp(42px, 6.5vw, 64px); line-height: .98; letter-spacing: -.03em; font-weight: 400; text-align: center; max-width: 560px; margin: 0; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .lede { font-size: 15px; color: var(--ink-2); text-align: center; max-width: 440px; margin-top: 14px; line-height: 1.55; }
+
+  /* Phone preview (card example) */
+  .phone-wrap { margin: 28px 0 20px; }
+  .phone { width: 260px; aspect-ratio: 9/19; border-radius: 36px; background: #1a1410; padding: 7px; box-shadow: 0 30px 80px rgba(26,20,16,.22); }
+  .phone-screen { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; background: #f2f2f7; position: relative; }
+  .phone-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 76px; height: 20px; background: #000; border-radius: 12px; z-index: 3; }
+  .top-bar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 0; font-family: -apple-system, system-ui, sans-serif; font-size: 10px; color: #000; font-weight: 600; }
+  .wallet-title { font-size: 12px; color: #8a8a8e; text-align: center; font-weight: 500; padding: 12px 0 8px; font-family: -apple-system, system-ui, sans-serif; }
+  .wcard { margin: 0 12px; border-radius: 16px; padding: 14px; background: var(--ink); color: var(--bg); font-family: -apple-system, system-ui, sans-serif; }
+  .wc-head { display: flex; justify-content: space-between; margin-bottom: 12px; }
+  .wc-logo { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--accent); }
+  .wc-biz { font-size: 8px; letter-spacing: .15em; text-transform: uppercase; opacity: .55; margin-top: 2px; }
+  .wc-n { text-align: right; }
+  .wc-n .n { font-family: var(--font-display); font-size: 26px; line-height: 1; color: var(--accent); }
+  .wc-n .l { font-size: 7px; letter-spacing: .12em; text-transform: uppercase; opacity: .55; margin-top: 2px; }
+  .wc-stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 0; }
+  .wcs { aspect-ratio: 1; border-radius: 50%; border: 1px dashed rgba(244,237,226,.25); }
+  .wcs.on { background: var(--accent); border-color: var(--accent); }
+
+  /* Form */
+  .form {
+    width: 100%; max-width: 440px; margin-top: 28px;
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: 20px; padding: 30px 28px;
+  }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .field label .opt { font-size: 10px; color: var(--ink-3); text-transform: none; letter-spacing: 0; font-family: var(--font-ui); }
+  .field input {
+    padding: 13px 14px; border: 1px solid var(--line); border-radius: 11px;
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font-ui); font-size: 14px; outline: none;
+    transition: all .18s;
+  }
+  .field input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent); }
+
+  .optin {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px; background: var(--bg-2); border-radius: 12px;
+    margin: 16px 0 4px;
+  }
+  .optin input[type=checkbox] { margin-top: 2px; accent-color: var(--accent); width: 16px; height: 16px; }
+  .optin-text { flex: 1; }
+  .optin-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .optin-desc { font-size: 12px; color: var(--ink-3); margin-top: 2px; line-height: 1.4; }
+
+  .btn-big {
+    width: 100%; padding: 15px 20px; border: none; border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .2s; margin-top: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-big:hover { background: var(--accent); color: var(--accent-ink); }
+
+  .fine { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 14px; max-width: 400px; line-height: 1.5; }
+  .fine a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+  .preview-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: color-mix(in oklab, var(--accent) 20%, transparent);
+    border: 1px solid var(--accent);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
+    color: var(--accent-ink); text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="brand"><div class="mk">Z</div><span>ZubCard</span></div>
+
+<div class="preview-chip">
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="3"/></svg>
+  Preview · Landing cliente
+</div>
+
+<div class="step-label">— Paso 1 de 1 · Solo nos toma 30 segundos</div>
+
+<h1>Tu tarjeta de <em>Café Nómada</em> te espera.</h1>
+<p class="lede">Regístrate con tu email. Recibes tu primera tarjeta al instante y la guardas en el wallet de tu móvil. Cero apps.</p>
+
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="phone-notch"></div>
+      <div class="top-bar"><span>9:41</span><span></span><span>100%</span></div>
+      <div class="wallet-title">Tarjeta</div>
+      <div class="wcard">
+        <div class="wc-head">
+          <div><div class="wc-logo">Café Nómada</div><div class="wc-biz">Madrid</div></div>
+          <div class="wc-n"><div class="n">0/10</div><div class="l">Sellos</div></div>
+        </div>
+        <div class="wc-stamps">
+          <div class="wcs"></div><div class="wcs"></div><div class="wcs"></div><div class="wcs"></div><div class="wcs"></div>
+          <div class="wcs"></div><div class="wcs"></div><div class="wcs"></div><div class="wcs"></div><div class="wcs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form class="form" onsubmit="event.preventDefault(); alert('Preview — formulario no funcional. El diseño está listo para integrar.');">
+  <div class="field">
+    <label>Nombre <span style="color:var(--accent)">*</span></label>
+    <div class="row-2">
+      <input type="text" placeholder="Nombre" autocomplete="given-name">
+      <input type="text" placeholder="Apellido" autocomplete="family-name">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Email <span style="color:var(--accent)">*</span></label>
+    <input type="email" placeholder="tu@email.com" autocomplete="email">
+  </div>
+
+  <div class="field">
+    <label>Teléfono <span class="opt">— opcional</span></label>
+    <input type="tel" placeholder="+34 600 000 000" autocomplete="tel">
+  </div>
+
+  <div class="field">
+    <label>Fecha de nacimiento <span class="opt">— para tu sorpresa</span></label>
+    <input type="text" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="bday">
+  </div>
+
+  <div class="optin">
+    <input type="checkbox" checked>
+    <div class="optin-text">
+      <div class="optin-label">Emails exclusivos</div>
+      <div class="optin-desc">Ofertas, novedades y tu regalo de cumpleaños. Sin spam.</div>
+    </div>
+  </div>
+
+  <button class="btn-big" type="submit">Activar mi tarjeta →</button>
+
+  <p class="fine">
+    Al registrarte aceptas nuestra <a href="/privacidad">política de privacidad</a>.<br>
+    Puedes darte de baja en cualquier momento.
+  </p>
+</form>
+</body>
+</html>
