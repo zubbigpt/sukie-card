@@ -4083,7 +4083,7 @@ async def geo_reverse(lat: float = 0.0, lng: float = 0.0):
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/", response_class=HTMLResponse)
 async def zubcard_landing(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "ref_code": ""})
+    return templates.TemplateResponse("index_new.html", {"request": request, "ref_code": ""})
 
 
 @app.get("/preview-landing", response_class=HTMLResponse)
@@ -4126,12 +4126,12 @@ async def biz_login_page(request: Request):
 
 @app.get("/app/login", response_class=HTMLResponse)
 async def app_login(request: Request):
-    return templates.TemplateResponse("app_login.html", {"request": request})
+    return templates.TemplateResponse("app_login_new.html", {"request": request})
 
 
 @app.get("/app/register", response_class=HTMLResponse)
 async def app_register_page(request: Request, ref: str = ""):
-    return templates.TemplateResponse("app_register.html", {"request": request, "ref_code": ref.upper() if ref else ""})
+    return templates.TemplateResponse("app_register_new.html", {"request": request, "ref_code": ref.upper() if ref else ""})
 
 
 @app.post("/api/app/register")
@@ -7023,13 +7023,13 @@ def _gen_referral_code() -> str:
 @app.get("/referidos", response_class=HTMLResponse)
 async def referidos_page(request: Request):
     """Landing pública para que partners se registren y obtengan su link de referido."""
-    return templates.TemplateResponse("referidos.html", {"request": request})
+    return templates.TemplateResponse("referidos_new.html", {"request": request})
 
 
 @app.get("/r/{code}", response_class=HTMLResponse)
 async def referral_landing(code: str, request: Request):
     """Sirve la misma landing de zubcard.com con el ref_code inyectado en los CTAs."""
-    return templates.TemplateResponse("index.html", {"request": request, "ref_code": code.upper()})
+    return templates.TemplateResponse("index_new.html", {"request": request, "ref_code": code.upper()})
 
 
 @app.post("/api/referidos/register")
@@ -7157,7 +7157,7 @@ async def admin_businesses_list(request: Request, db: Session = Depends(get_db))
 @app.get("/demo/{code}", response_class=HTMLResponse)
 async def demo_referral(code: str, request: Request):
     """Página de demo con diseño ZubCard — guarda ref cookie y abre Google Calendar."""
-    response = templates.TemplateResponse("demo_booking.html", {"request": request, "ref_code": code.upper()})
+    response = templates.TemplateResponse("demo_new.html", {"request": request, "ref_code": code.upper()})
     response.set_cookie("ref_demo", code.upper(), max_age=60*60*24*30, httponly=False, samesite="lax")
     return response
 
@@ -7165,7 +7165,7 @@ async def demo_referral(code: str, request: Request):
 @app.get("/demo", response_class=HTMLResponse)
 async def demo_page(request: Request):
     """Página de demo sin código de referido."""
-    return templates.TemplateResponse("demo_booking.html", {"request": request, "ref_code": ""})
+    return templates.TemplateResponse("demo_new.html", {"request": request, "ref_code": ""})
 
 
 # ════════════════════════════════════════════════════════════════════════════════
