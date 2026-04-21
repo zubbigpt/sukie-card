@@ -5829,6 +5829,8 @@ def get_store_activity(slug: str, store_id: str, pin: str = "", days: int = 30, 
     since = f"NOW() - INTERVAL '{days} days'"
 
     # ── Por cliente: total sellos, visitas, media, max en una sola transacción ──
+    # NOTE: day_visits must be pre-aggregated to ONE row per customer (MAX per customer)
+    # to avoid row multiplication in the outer JOIN (which inflates COUNT and SUM).
     customer_rows = db.execute(text(f"""
         SELECT
             c.id::text,
@@ -5841,28 +5843,32 @@ def get_store_activity(slug: str, store_id: str, pin: str = "", days: int = 30, 
             MAX(st.stamps_added)                     AS max_single_tx,
             MAX(st.created_at)                       AS last_visit,
             -- Visitas en el mismo día (para detectar trampa)
-            MAX(day_visits.visits_that_day)          AS max_visits_in_a_day
+            COALESCE(day_max.max_visits_in_a_day, 1) AS max_visits_in_a_day
         FROM stamp_transactions st
         JOIN loyalty_cards lc ON lc.id = st.card_id
         JOIN customers c      ON c.id  = lc.customer_id
-        -- Sub-query: cuántas veces se selló al mismo cliente en el mismo día desde esta tienda
-        JOIN (
-            SELECT
-                lc2.customer_id,
-                DATE(st2.created_at) AS tx_day,
-                COUNT(*)             AS visits_that_day
-            FROM stamp_transactions st2
-            JOIN loyalty_cards lc2 ON lc2.id = st2.card_id
-            WHERE st2.transaction_type = 'stamp'
-              AND (st2.store_id::text = :sid OR st2.store = :sname)
-              AND st2.created_at >= {since}
-            GROUP BY lc2.customer_id, DATE(st2.created_at)
-        ) day_visits ON day_visits.customer_id = c.id
+        -- Pre-aggregate to ONE row per customer to avoid JOIN row multiplication
+        LEFT JOIN (
+            SELECT customer_id, MAX(visits_that_day) AS max_visits_in_a_day
+            FROM (
+                SELECT
+                    lc2.customer_id,
+                    DATE(st2.created_at) AS tx_day,
+                    COUNT(*)             AS visits_that_day
+                FROM stamp_transactions st2
+                JOIN loyalty_cards lc2 ON lc2.id = st2.card_id
+                WHERE st2.transaction_type = 'stamp'
+                  AND (st2.store_id::text = :sid OR st2.store = :sname)
+                  AND st2.created_at >= {since}
+                GROUP BY lc2.customer_id, DATE(st2.created_at)
+            ) daily_counts
+            GROUP BY customer_id
+        ) day_max ON day_max.customer_id = c.id
         WHERE c.business_id = :bid
           AND st.transaction_type = 'stamp'
           AND (st.store_id::text = :sid OR st.store = :sname)
           AND st.created_at >= {since}
-        GROUP BY c.id, c.first_name, c.last_name, c.email
+        GROUP BY c.id, c.first_name, c.last_name, c.email, day_max.max_visits_in_a_day
         ORDER BY total_stamps DESC
         LIMIT 200
     """), {"bid": str(biz.id), "sid": store_id, "sname": store_name}).fetchall()
