@@ -3637,8 +3637,39 @@ async def send_email_to_customer(card_id: str, request: Request, db: Session = D
         _biz2 = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer.business_id else None
         _prog2 = db.query(models.CardProgram).filter(models.CardProgram.business_id == _biz2.id).first() if _biz2 else None
         wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass"
+
+        # Google Wallet URL for Android (if configured)
+        gw_url = ""
+        try:
+            if _biz2 and _biz2.slug:
+                gw_color  = (_prog2.bg_color      if _prog2 else None) or "#26170c"
+                gw_accent = (_prog2.accent_color  if _prog2 else None) or "#ffca48"
+                gw_spr    = (_prog2.stamps_per_reward if _prog2 else None) or 10
+                gw_reward = (_prog2.reward_name   if _prog2 and _prog2.reward_name else None) or "Premio"
+                gw_logo   = (_biz2.logo_url       if _biz2 and _biz2.logo_url else "") or ""
+                gw_cname  = (_prog2.name          if _prog2 and _prog2.name else None) or (_biz2.name if _biz2 else "")
+                gw_url = generate_google_wallet_url(
+                    card_id=str(card_id),
+                    biz_slug=_biz2.slug,
+                    biz_name=_biz2.name or "",
+                    customer_name=name,
+                    stamps=card.stamps or 0,
+                    stamps_per_reward=gw_spr,
+                    card_url=card_url,
+                    primary_color=gw_color,
+                    accent_color=gw_accent,
+                    reward_name=gw_reward,
+                    logo_url=gw_logo,
+                    award_balance=card.award_balance or 0,
+                    card_name=gw_cname,
+                ) or ""
+        except Exception as _e:
+            print(f"[send-email] Google Wallet URL generation failed: {_e}")
+            gw_url = ""
+
         html    = render_welcome_email(name, card_url, card.stamps or 0,
                                        wallet_url=wallet_url,
+                                       google_wallet_url=gw_url,
                                        **_prog_email_kwargs(_prog2, _biz2))
         subject = "¡Bienvenido/a! 🎉"
     # Per-business email branding
@@ -7791,19 +7822,62 @@ async def zubadmin_logout():
 
 
 @app.get("/api/biz/{slug}/send-welcome-test")
-async def send_welcome_test(slug: str, pin: str = "", email: str = "", db: Session = Depends(get_db)):
-    """Temp: send test welcome email using first card of the business."""
+async def send_welcome_test(slug: str, pin: str = "", email: str = "", card_id: str = "", db: Session = Depends(get_db)):
+    """Temp: send test welcome email. Pass card_id to get real Apple + Google Wallet URLs."""
     verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
     prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+
+    # Use real card data if provided
+    name_for_email = "Yanir"
+    stamps = 3
+    real_card_url = f"{BASE_URL}"
+    wallet_url = ""
+    gw_url = ""
+    if card_id:
+        card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.id == card_id).first()
+        if card:
+            stamps = card.stamps or 0
+            real_card_url = f"{BASE_URL}/card/{card_id}"
+            wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass"
+            cust = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+            if cust and cust.first_name:
+                name_for_email = cust.first_name
+            # Google Wallet URL
+            try:
+                gw_color  = (prog.bg_color      if prog else None) or "#26170c"
+                gw_accent = (prog.accent_color  if prog else None) or "#ffca48"
+                gw_spr    = (prog.stamps_per_reward if prog else None) or 10
+                gw_reward = (prog.reward_name   if prog and prog.reward_name else None) or "Premio"
+                gw_logo   = (biz.logo_url       if biz and biz.logo_url else "") or ""
+                gw_cname  = (prog.name          if prog and prog.name else None) or (biz.name or "")
+                gw_url = generate_google_wallet_url(
+                    card_id=str(card_id),
+                    biz_slug=slug,
+                    biz_name=biz.name or "",
+                    customer_name=name_for_email,
+                    stamps=stamps,
+                    stamps_per_reward=gw_spr,
+                    card_url=real_card_url,
+                    primary_color=gw_color,
+                    accent_color=gw_accent,
+                    reward_name=gw_reward,
+                    logo_url=gw_logo,
+                    award_balance=card.award_balance or 0,
+                    card_name=gw_cname,
+                ) or ""
+            except Exception as _e:
+                print(f"[send-welcome-test] Google Wallet URL error: {_e}")
+                gw_url = ""
+
     html_body = render_welcome_email(
-        name="Yanir",
-        card_url=f"{BASE_URL}",
-        stamps=3,
-        wallet_url="",
-        google_wallet_url="",
+        name=name_for_email,
+        card_url=real_card_url,
+        stamps=stamps,
+        wallet_url=wallet_url,
+        google_wallet_url=gw_url,
         **_prog_email_kwargs(prog, biz),
     )
     sent = send_email(
@@ -7812,7 +7886,13 @@ async def send_welcome_test(slug: str, pin: str = "", email: str = "", db: Sessi
         html_body=html_body,
         from_name=biz.email_from_name or biz.name,
     )
-    return {"sent": sent, "to": email or "yanir.mgta@gmail.com"}
+    return {
+        "sent": sent,
+        "to": email or "yanir.mgta@gmail.com",
+        "wallet_url_included": bool(wallet_url),
+        "google_wallet_url_included": bool(gw_url),
+        "google_wallet_configured": bool(GOOGLE_WALLET_ISSUER_ID and GOOGLE_WALLET_CREDENTIALS),
+    }
 
 
 @app.get("/api/biz/{slug}/send-migration-test")
