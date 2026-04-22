@@ -123,6 +123,9 @@ if STRIPE_SECRET_KEY:
 SHOPIFY_CLIENT_ID     = os.environ.get("SHOPIFY_CLIENT_ID", "")
 SHOPIFY_CLIENT_SECRET = os.environ.get("SHOPIFY_CLIENT_SECRET", "")
 SHOPIFY_STORE         = os.environ.get("SHOPIFY_STORE", "0dadft-cc.myshopify.com")
+# Guard multi-tenant: solo sincronizar clientes del business con este slug.
+# Configurable via env; default = "sukiecookie" (único cliente con Shopify conectado).
+SHOPIFY_BUSINESS_SLUG = os.environ.get("SHOPIFY_BUSINESS_SLUG", "sukiecookie")
 
 # Cache del token en memoria (single-replica)
 _shopify_token_cache: dict = {"token": None, "expires_at": 0.0}
@@ -2188,6 +2191,12 @@ async def shopify_sync_customer(request: Request, db: Session = Depends(get_db))
     if not customer:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
+    # Guard multi-tenant: solo clientes del business configurado (Sukie Cookie por defecto)
+    if SHOPIFY_BUSINESS_SLUG:
+        biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer.business_id else None
+        if not biz or biz.slug != SHOPIFY_BUSINESS_SLUG:
+            raise HTTPException(status_code=403, detail=f"Cliente no pertenece al business con Shopify conectado ({SHOPIFY_BUSINESS_SLUG})")
+
     shopify_payload = {
         "customer": {
             "email": customer.email,
@@ -2265,6 +2274,13 @@ async def _shopify_push_customer_bg(customer_id: str, db_session_factory):
             if not customer:
                 print(f"[Shopify sync] customer {customer_id} no encontrado")
                 return
+
+            # Guard multi-tenant: solo clientes del business configurado
+            if SHOPIFY_BUSINESS_SLUG:
+                biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if customer.business_id else None
+                if not biz or biz.slug != SHOPIFY_BUSINESS_SLUG:
+                    print(f"[Shopify sync] skip customer {customer_id}: business={biz.slug if biz else 'none'} != {SHOPIFY_BUSINESS_SLUG}")
+                    return
 
             shopify_payload = {
                 "customer": {
