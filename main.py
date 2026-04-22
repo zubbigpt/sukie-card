@@ -2504,13 +2504,55 @@ async def redeem(card_id: str, request: Request, db: Session = Depends(get_db)):
 # HISTORIAL
 # ══════════════════════════════════════════════════════════════════════════════
 @app.get("/api/cards/{card_id}/history")
-def card_history(card_id: str, pin: str = "", db: Session = Depends(get_db)):
+def card_history(
+    card_id: str, pin: str = "",
+    filter: str = "all",
+    sort_by: str = "created_at", sort_order: str = "desc",
+    date_from: str = "", date_to: str = "",
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
     verify_pin(pin, db)
     card = get_card_or_404(card_id, db)
-    txs = (db.query(models.StampTransaction)
-           .filter(models.StampTransaction.card_id == card.id)
-           .order_by(models.StampTransaction.created_at.desc())
-           .limit(100).all())
+    q = db.query(models.StampTransaction).filter(models.StampTransaction.card_id == card.id)
+
+    # Type filter
+    if filter == "stamp":
+        q = q.filter(models.StampTransaction.transaction_type.in_(["stamp", "passcode", "adjust"]))
+    elif filter == "redeem":
+        q = q.filter(models.StampTransaction.transaction_type == "redeem")
+    elif filter == "register":
+        q = q.filter(models.StampTransaction.transaction_type == "register")
+    elif filter == "passcode":
+        q = q.filter(models.StampTransaction.transaction_type == "passcode")
+    elif filter == "adjust":
+        q = q.filter(models.StampTransaction.transaction_type == "adjust")
+
+    # Date range
+    if date_from:
+        try:
+            df = datetime.fromisoformat(date_from)
+            q = q.filter(models.StampTransaction.created_at >= df)
+        except (ValueError, TypeError):
+            pass
+    if date_to:
+        try:
+            dt_ = datetime.fromisoformat(date_to)
+            dt_ = dt_.replace(hour=23, minute=59, second=59)
+            q = q.filter(models.StampTransaction.created_at <= dt_)
+        except (ValueError, TypeError):
+            pass
+
+    # Sort
+    sort_map = {
+        "created_at": models.StampTransaction.created_at,
+        "amount": models.StampTransaction.stamps_added,
+        "type": models.StampTransaction.transaction_type,
+    }
+    col = sort_map.get(sort_by, models.StampTransaction.created_at)
+    q = q.order_by(col.desc() if sort_order == "desc" else col.asc())
+
+    txs = q.limit(max(1, min(limit, 500))).all()
     def _src_label(src, store):
         if src == "scanner" and store: return f"📱 {store}"
         if src == "scanner": return "📱 Scanner"
@@ -2536,6 +2578,7 @@ def card_history(card_id: str, pin: str = "", db: Session = Depends(get_db)):
 def list_customers(
     pin: str = "", search: str = "", active: str = "",
     sort_by: str = "created_at", sort_order: str = "desc",
+    date_from: str = "", date_to: str = "",
     page: int = Query(1, ge=1), page_size: int = Query(200, ge=1, le=500),
     slug: str = "",
     db: Session = Depends(get_db),
@@ -2563,6 +2606,22 @@ def list_customers(
         q = q.filter(models.Customer.card_active == True)
     elif active == "false":
         q = q.filter(models.Customer.card_active == False)
+
+    # Date range filter on registration date
+    if date_from:
+        try:
+            df = datetime.fromisoformat(date_from)
+            q = q.filter(models.Customer.created_at >= df)
+        except (ValueError, TypeError):
+            pass
+    if date_to:
+        try:
+            dt_ = datetime.fromisoformat(date_to)
+            # include full day
+            dt_ = dt_.replace(hour=23, minute=59, second=59)
+            q = q.filter(models.Customer.created_at <= dt_)
+        except (ValueError, TypeError):
+            pass
 
     sort_map = {
         "created_at": models.Customer.created_at,
@@ -7170,6 +7229,9 @@ def delete_custom_qr(slug: str, qr_id: str, pin: str = "", db: Session = Depends
 def activity_log(
     slug: str, pin: str = "", filter: str = "all",
     limit: int = 50, offset: int = 0,
+    date_from: str = "", date_to: str = "",
+    search: str = "", store: str = "",
+    sort_by: str = "created_at", sort_order: str = "desc",
     db: Session = Depends(get_db)
 ):
     verify_pin(pin, db)
@@ -7196,7 +7258,7 @@ def activity_log(
         "total_redeemed": int(stats_row[2]) if stats_row else 0,
     }
 
-    # Build type filter
+    # Build filters
     type_filter = ""
     if filter == "stamp":
         type_filter = " AND st.transaction_type IN ('stamp', 'passcode', 'adjust')"
@@ -7204,6 +7266,49 @@ def activity_log(
         type_filter = " AND st.transaction_type = 'redeem'"
     elif filter == "register":
         type_filter = " AND st.transaction_type = 'register'"
+
+    params = {"bid": bid, "limit": limit, "offset": offset}
+
+    # Date range
+    date_filter = ""
+    if date_from:
+        try:
+            datetime.fromisoformat(date_from)
+            date_filter += " AND st.created_at >= :date_from"
+            params["date_from"] = date_from
+        except (ValueError, TypeError):
+            pass
+    if date_to:
+        try:
+            datetime.fromisoformat(date_to)
+            date_filter += " AND st.created_at <= (CAST(:date_to AS timestamp) + INTERVAL '1 day' - INTERVAL '1 second')"
+            params["date_to"] = date_to
+        except (ValueError, TypeError):
+            pass
+
+    # Search by customer name/email
+    search_filter = ""
+    if search and len(search) >= 2:
+        search_filter = (" AND (c.first_name ILIKE :search OR c.last_name ILIKE :search "
+                         "OR c.email ILIKE :search OR c.phone ILIKE :search)")
+        params["search"] = f"%{search}%"
+
+    # Store filter
+    store_filter = ""
+    if store:
+        store_filter = " AND COALESCE(st.store, '') = :store"
+        params["store"] = store
+
+    # Sort
+    sort_col_map = {
+        "created_at": "st.created_at",
+        "amount": "COALESCE(st.stamps_added, 0)",
+        "name": "c.first_name",
+        "type": "st.transaction_type",
+        "store": "COALESCE(st.store, '')",
+    }
+    sort_col = sort_col_map.get(sort_by, "st.created_at")
+    sort_dir = "ASC" if sort_order == "asc" else "DESC"
 
     rows = db.execute(text(f"""
         SELECT st.created_at, c.first_name, c.last_name, c.email,
@@ -7216,9 +7321,12 @@ def activity_log(
         WHERE c.business_id = :bid
           AND c.email NOT LIKE '%placeholder%'
           {type_filter}
-        ORDER BY st.created_at DESC
+          {date_filter}
+          {search_filter}
+          {store_filter}
+        ORDER BY {sort_col} {sort_dir}, st.created_at DESC
         LIMIT :limit OFFSET :offset
-    """), {"bid": bid, "limit": limit, "offset": offset}).fetchall()
+    """), params).fetchall()
 
     def source_label(source: str, store: str) -> str:
         if source == "scanner" and store:

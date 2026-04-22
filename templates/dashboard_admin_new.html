@@ -2387,11 +2387,57 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
           </div>
           <button class="btn-sm btn-primary" onclick="showSection('new-client')">+ Nuevo cliente</button>
         </div>
-        <div class="search-bar">
-          <input id="search-input" placeholder="Buscar por nombre, email o teléfono…" onkeydown="if(event.key==='Enter')searchClients()">
-          <button onclick="searchClients()">Buscar</button>
-          <button onclick="loadClients(1)" class="btn-sm btn-ghost" style="padding:10px 16px">Todos</button>
+        <!-- Filter bar -->
+        <div class="card" style="padding:16px 20px;margin-bottom:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:220px">
+              <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Buscar</label>
+              <input id="search-input" placeholder="Nombre, email o teléfono…"
+                onkeydown="if(event.key==='Enter')applyClientFilters()"
+                oninput="_debouncedClientSearch()"
+                style="width:100%;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.85rem;font-family:inherit;color:var(--brown);outline:none">
+            </div>
+            <div style="min-width:170px">
+              <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Ordenar por</label>
+              <select id="cli-sort" onchange="applyClientFilters()"
+                style="width:100%;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.85rem;font-family:inherit;color:var(--brown);outline:none;cursor:pointer">
+                <option value="created_at|desc">Más recientes</option>
+                <option value="created_at|asc">Más antiguos</option>
+                <option value="stamps|desc">Sellos ↓ (mayor)</option>
+                <option value="stamps|asc">Sellos ↑ (menor)</option>
+                <option value="total_stamps|desc">Sellos históricos ↓</option>
+                <option value="award_balance|desc">Premios pendientes ↓</option>
+                <option value="first_name|asc">Nombre A-Z</option>
+                <option value="first_name|desc">Nombre Z-A</option>
+                <option value="email|asc">Email A-Z</option>
+                <option value="updated_at|desc">Última actividad</option>
+              </select>
+            </div>
+            <div style="min-width:130px">
+              <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Estado</label>
+              <select id="cli-status" onchange="applyClientFilters()"
+                style="width:100%;padding:9px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.85rem;font-family:inherit;color:var(--brown);outline:none;cursor:pointer">
+                <option value="">Todos</option>
+                <option value="true">Activas</option>
+                <option value="false">Inactivas</option>
+              </select>
+            </div>
+            <div style="min-width:140px">
+              <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Registro desde</label>
+              <input id="cli-date-from" type="date" onchange="applyClientFilters()"
+                style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.82rem;font-family:inherit;color:var(--brown);outline:none">
+            </div>
+            <div style="min-width:140px">
+              <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Hasta</label>
+              <input id="cli-date-to" type="date" onchange="applyClientFilters()"
+                style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.82rem;font-family:inherit;color:var(--brown);outline:none">
+            </div>
+            <button onclick="resetClientFilters()" class="btn-sm btn-ghost" style="padding:9px 14px;white-space:nowrap">
+              <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;margin-right:2px">refresh</span>Limpiar
+            </button>
+          </div>
         </div>
+
         <div class="card" style="padding:0;overflow:hidden">
           <div style="overflow-x:auto">
             <table id="clients-table" class="stitch-table">
@@ -2591,14 +2637,56 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
         </div>
         <!-- Activity log -->
         <div class="card" style="padding:0;overflow:hidden">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid rgba(210,196,188,.2)">
-            <h3 style="font-family:'Instrument Serif',sans-serif;font-size:1.4rem;letter-spacing:.05em;color:var(--primary)">Registro de actividad</h3>
-            <select id="act-filter" onchange="loadActivity()" style="padding:8px 12px;background:var(--surface-low);border:1px solid rgba(210,196,188,.25);border-radius:var(--r-sm);font-size:.82rem;color:var(--brown);font-family:inherit;outline:none">
-              <option value="all">Toda la actividad</option>
-              <option value="stamp">Solo sellos</option>
-              <option value="redeem">Solo canjes</option>
-              <option value="register">Solo altas</option>
-            </select>
+          <div style="padding:18px 24px;border-bottom:1px solid rgba(210,196,188,.2)">
+            <h3 style="font-family:'Instrument Serif',sans-serif;font-size:1.4rem;letter-spacing:.05em;color:var(--primary);margin-bottom:14px">Registro de actividad</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="flex:1;min-width:200px">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Buscar cliente</label>
+                <input id="act-search" placeholder="Nombre, email o teléfono…"
+                  oninput="_debouncedActivitySearch()"
+                  onkeydown="if(event.key==='Enter')loadActivityLog()"
+                  style="width:100%;padding:8px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.82rem;font-family:inherit;color:var(--brown);outline:none">
+              </div>
+              <div style="min-width:150px">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Tipo</label>
+                <select id="act-filter" onchange="loadActivityLog()" style="width:100%;padding:8px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.82rem;color:var(--brown);font-family:inherit;outline:none;cursor:pointer">
+                  <option value="all">Toda la actividad</option>
+                  <option value="stamp">Solo sellos</option>
+                  <option value="redeem">Solo canjes</option>
+                  <option value="register">Solo altas</option>
+                </select>
+              </div>
+              <div style="min-width:140px">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Ordenar por</label>
+                <select id="act-sort" onchange="loadActivityLog()" style="width:100%;padding:8px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.82rem;color:var(--brown);font-family:inherit;outline:none;cursor:pointer">
+                  <option value="created_at|desc">Más recientes</option>
+                  <option value="created_at|asc">Más antiguos</option>
+                  <option value="amount|desc">Cantidad ↓</option>
+                  <option value="amount|asc">Cantidad ↑</option>
+                  <option value="name|asc">Cliente A-Z</option>
+                  <option value="store|asc">Tienda A-Z</option>
+                </select>
+              </div>
+              <div style="min-width:140px">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Tienda</label>
+                <select id="act-store" onchange="loadActivityLog()" style="width:100%;padding:8px 12px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.82rem;color:var(--brown);font-family:inherit;outline:none;cursor:pointer">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div style="min-width:130px">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Desde</label>
+                <input id="act-date-from" type="date" onchange="loadActivityLog()"
+                  style="width:100%;padding:7px 10px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.8rem;font-family:inherit;color:var(--brown);outline:none">
+              </div>
+              <div style="min-width:130px">
+                <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Hasta</label>
+                <input id="act-date-to" type="date" onchange="loadActivityLog()"
+                  style="width:100%;padding:7px 10px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.8rem;font-family:inherit;color:var(--brown);outline:none">
+              </div>
+              <button onclick="resetActivityFilters()" class="btn-sm btn-ghost" style="padding:8px 12px;white-space:nowrap">
+                <span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:middle">refresh</span> Limpiar
+              </button>
+            </div>
           </div>
           <div style="overflow-x:auto">
             <table class="stitch-table" style="font-size:.83rem">
@@ -4371,6 +4459,26 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
     <!-- TAB: ACTIVIDAD -->
     <div class="tab-content" id="tab-activity">
+      <!-- Filter bar -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--cream-border)">
+        <select id="dact-filter" onchange="loadActivity_client(currentCardId)"
+          style="flex:1;min-width:120px;padding:7px 10px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.78rem;color:var(--brown);font-family:inherit;outline:none;cursor:pointer">
+          <option value="all">Todos los tipos</option>
+          <option value="stamp">🍪 Solo sellos</option>
+          <option value="redeem">🎁 Solo canjes</option>
+          <option value="register">✨ Altas</option>
+          <option value="passcode">🔑 PassCode</option>
+          <option value="adjust">✏ Ajustes</option>
+        </select>
+        <select id="dact-sort" onchange="loadActivity_client(currentCardId)"
+          style="flex:1;min-width:120px;padding:7px 10px;border:1.5px solid var(--cream-border);border-radius:var(--r-sm);background:#fff;font-size:.78rem;color:var(--brown);font-family:inherit;outline:none;cursor:pointer">
+          <option value="created_at|desc">Más recientes</option>
+          <option value="created_at|asc">Más antiguos</option>
+          <option value="amount|desc">Cantidad ↓</option>
+          <option value="amount|asc">Cantidad ↑</option>
+          <option value="type|asc">Por tipo</option>
+        </select>
+      </div>
       <div id="d-activity-log" class="activity-log"><div class="empty-state">Cargando...</div></div>
     </div>
 
@@ -5270,19 +5378,35 @@ async function loadBI(){
 }
 
 // ── CLIENTS ───────────────────────────────────────────────────────────────
-async function loadClients(page=1, q=''){
+async function loadClients(page=1, q=undefined){
   currentPage=page;
-  if(q!==undefined&&q!=='__keep') searchQuery=q;
-  const url=searchQuery
-    ?`${BASE}/api/admin/search?pin=${PIN}&q=${encodeURIComponent(searchQuery)}&page=${page}&limit=20&slug=${BIZ_SLUG}`
-    :`${BASE}/api/admin/customers?pin=${PIN}&page=${page}&page_size=20&slug=${BIZ_SLUG}`;
+  // Sync search from input if not explicitly passed
+  if(q!==undefined && q!=='__keep') searchQuery=q;
+  else if(q===undefined){
+    const si=document.getElementById('search-input');
+    if(si) searchQuery=si.value.trim();
+  }
+  // Build params from filter controls
+  const sortVal=(document.getElementById('cli-sort')?.value||'created_at|desc').split('|');
+  const status=document.getElementById('cli-status')?.value||'';
+  const dFrom=document.getElementById('cli-date-from')?.value||'';
+  const dTo=document.getElementById('cli-date-to')?.value||'';
+  const params=new URLSearchParams({
+    pin:PIN, page:String(page), page_size:'20', slug:BIZ_SLUG,
+    sort_by:sortVal[0]||'created_at',
+    sort_order:sortVal[1]||'desc',
+  });
+  if(searchQuery) params.set('search',searchQuery);
+  if(status) params.set('active',status);
+  if(dFrom) params.set('date_from',dFrom);
+  if(dTo) params.set('date_to',dTo);
+  const url=`${BASE}/api/admin/customers?${params.toString()}`;
   const r=await fetch(url); const d=await r.json();
-  // Backend uses camelCase from card_to_dict; list returns {customers,total,total_pages} or {results:[...]}
   const items=d.items||d.results||d.customers||d||[];
   totalPages=d.total_pages||d.pages||1;
   const total=d.total||items.length;
   const tbody=document.getElementById('clients-tbody');
-  if(items.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--brown-light)">Sin resultados</td></tr>';return;}
+  if(items.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--brown-light)">Sin resultados</td></tr>';renderPagination(1,1);document.getElementById('clients-total-label').textContent='0 clientes';return;}
   tbody.innerHTML=items.map(c=>`
     <tr style="cursor:pointer" onclick="openDrawer('${c.id||c.card_id}')">
       <td><strong>${c.firstName||c.first_name} ${c.lastName||c.last_name||''}</strong></td>
@@ -5300,6 +5424,27 @@ async function loadClients(page=1, q=''){
 function searchClients(){
   searchQuery=document.getElementById('search-input').value.trim();
   loadClients(1,searchQuery);
+}
+
+function applyClientFilters(){
+  loadClients(1);
+}
+
+function resetClientFilters(){
+  const si=document.getElementById('search-input'); if(si) si.value='';
+  const s=document.getElementById('cli-sort'); if(s) s.value='created_at|desc';
+  const st=document.getElementById('cli-status'); if(st) st.value='';
+  const df=document.getElementById('cli-date-from'); if(df) df.value='';
+  const dt=document.getElementById('cli-date-to'); if(dt) dt.value='';
+  searchQuery='';
+  loadClients(1,'');
+}
+
+// Debounced search-as-you-type
+let _cliSearchTimer=null;
+function _debouncedClientSearch(){
+  clearTimeout(_cliSearchTimer);
+  _cliSearchTimer=setTimeout(()=>applyClientFilters(), 350);
 }
 
 function renderPagination(current,total){
@@ -5394,9 +5539,18 @@ async function loadDrawerData(cardId){
 }
 
 async function loadActivity_client(cardId){
-  const r=await fetch(`${BASE}/api/cards/${cardId}/history?limit=30&pin=${PIN}`);
-  const data=await r.json();
+  if(!cardId) return;
+  const filter=document.getElementById('dact-filter')?.value||'all';
+  const sortVal=(document.getElementById('dact-sort')?.value||'created_at|desc').split('|');
+  const p=new URLSearchParams({
+    pin: PIN, limit: '100', filter,
+    sort_by: sortVal[0]||'created_at',
+    sort_order: sortVal[1]||'desc',
+  });
   const log=document.getElementById('d-activity-log');
+  if(log) log.innerHTML='<div class="empty-state">Cargando...</div>';
+  const r=await fetch(`${BASE}/api/cards/${cardId}/history?${p.toString()}`);
+  const data=await r.json();
   if(!data||data.length===0){log.innerHTML='<div class="empty-state">Sin actividad registrada</div>';return;}
   const _actEmoji = Object.values(window._cardRegistry||{})[0]?.emoji || '⭐';
   const _ms = n=>`<span class="material-symbols-outlined">${n}</span>`;
@@ -6697,13 +6851,31 @@ async function deleteCustomQR(id){
 let _actOffset = 0;
 const _actLimit = 50;
 
+function _buildActivityParams(offset){
+  const filter = document.getElementById('act-filter')?.value||'all';
+  const search = document.getElementById('act-search')?.value?.trim()||'';
+  const sortVal = (document.getElementById('act-sort')?.value||'created_at|desc').split('|');
+  const store = document.getElementById('act-store')?.value||'';
+  const dFrom = document.getElementById('act-date-from')?.value||'';
+  const dTo = document.getElementById('act-date-to')?.value||'';
+  const p = new URLSearchParams({
+    pin: PIN, filter, limit: String(_actLimit), offset: String(offset),
+    sort_by: sortVal[0]||'created_at',
+    sort_order: sortVal[1]||'desc',
+  });
+  if(search) p.set('search', search);
+  if(store) p.set('store', store);
+  if(dFrom) p.set('date_from', dFrom);
+  if(dTo) p.set('date_to', dTo);
+  return p.toString();
+}
+
 async function loadActivityLog(){
   _actOffset = 0;
-  const filter = document.getElementById('act-filter')?.value||'all';
   const tbody = document.getElementById('activity-tbody');
   if(tbody) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Cargando...</td></tr>';
   try{
-    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/activity-log?pin=${PIN}&filter=${filter}&limit=${_actLimit}&offset=0`);
+    const r = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/activity-log?${_buildActivityParams(0)}`);
     const data = await r.json();
     if(data.stats){
       const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -6716,6 +6888,8 @@ async function loadActivityLog(){
     const btn=document.getElementById('act-load-more');
     if(btn) btn.style.display=(data.rows||[]).length>=_actLimit?'inline-block':'none';
     _actOffset=(data.rows||[]).length;
+    // Populate store dropdown on first load (lazy)
+    _populateActivityStoreOptions();
   }catch(e){
     const tbody=document.getElementById('activity-tbody');
     if(tbody) tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--brown-light)">Error cargando actividad</td></tr>';
@@ -6723,15 +6897,52 @@ async function loadActivityLog(){
 }
 
 async function loadMoreActivity(){
-  const filter=document.getElementById('act-filter')?.value||'all';
   try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/activity-log?pin=${PIN}&filter=${filter}&limit=${_actLimit}&offset=${_actOffset}`);
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/activity-log?${_buildActivityParams(_actOffset)}`);
     const data=await r.json();
     renderActivityRows(data.rows||[], true);
     const btn=document.getElementById('act-load-more');
     if(btn) btn.style.display=(data.rows||[]).length>=_actLimit?'inline-block':'none';
-    _actOffset+=( data.rows||[]).length;
+    _actOffset+=(data.rows||[]).length;
   }catch(e){ showToast('Error','error'); }
+}
+
+function resetActivityFilters(){
+  const ids=['act-search','act-date-from','act-date-to'];
+  ids.forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  const f=document.getElementById('act-filter'); if(f) f.value='all';
+  const s=document.getElementById('act-sort'); if(s) s.value='created_at|desc';
+  const st=document.getElementById('act-store'); if(st) st.value='';
+  loadActivityLog();
+}
+
+// Debounced search
+let _actSearchTimer=null;
+function _debouncedActivitySearch(){
+  clearTimeout(_actSearchTimer);
+  _actSearchTimer=setTimeout(()=>loadActivityLog(), 350);
+}
+
+// Populate store dropdown once
+let _actStoresLoaded=false;
+async function _populateActivityStoreOptions(){
+  if(_actStoresLoaded) return;
+  const sel=document.getElementById('act-store');
+  if(!sel) return;
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/stores?pin=${PIN}`);
+    if(!r.ok) return;
+    const data=await r.json();
+    const stores=data.stores||data||[];
+    if(!Array.isArray(stores)||stores.length===0){_actStoresLoaded=true; return;}
+    const current=sel.value;
+    const opts=['<option value="">Todas</option>'].concat(
+      stores.map(s=>`<option value="${(s.name||s.store_name||'').replace(/"/g,'&quot;')}">${s.name||s.store_name||'(sin nombre)'}</option>`)
+    );
+    sel.innerHTML=opts.join('');
+    sel.value=current;
+    _actStoresLoaded=true;
+  }catch(e){ /* silent */ }
 }
 
 function renderActivityRows(rows, append){
