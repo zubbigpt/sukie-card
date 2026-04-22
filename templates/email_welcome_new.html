@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light only">
+  <title>{{ subject }}</title>
+  <!-- Claude Design fonts (degradan con elegancia en Gmail/Outlook) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Fallback progresivo — si el cliente no carga Google Fonts, usa Georgia/system-ui */
+    .serif { font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif; }
+    .sans  { font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    body   { font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+  </style>
+</head>
+
+{# ─── Resolución de colores: prioridad a config del negocio, con fallback Claude ─── #}
+{% set bg          = wel_hdr_color    or card_bg_color    or '#1a1410' %}
+{% set accent      = wel_accent_color or card_accent_color or '#c77b3e' %}
+{% set tc          = wel_text_color   or card_text_color  or '#ffffff' %}
+{% set outer_bg    = wel_bg_color     or '#f4ede2' %}
+{% set emoji       = card_emoji       or '⭐' %}
+{% set spr         = card_stamps_per_reward or 10 %}
+{% set cols        = 5 %}
+{% set biz_name    = card_biz_name    or 'ZubCard' %}
+{% set reward_name = card_reward_name or 'Premio' %}
+
+<body style="margin:0;padding:0;background:{{ outer_bg }};font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#1a1410;-webkit-font-smoothing:antialiased">
+
+<!-- ═══════════════════════════ WRAPPER ═══════════════════════════ -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:{{ outer_bg }}">
+<tr><td align="center" style="padding:32px 16px">
+
+<!-- ═══════════════════════════ MAIN CONTAINER ═══════════════════════════ -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 12px 40px rgba(26,20,16,0.08)">
+
+  <!-- ─────────── HEADER: nombre del negocio + subtítulo ─────────── -->
+  <tr><td style="background:{{ bg }};padding:32px 32px 28px;text-align:center">
+    {% if card_logo_url %}
+    <img src="{{ card_logo_url }}" width="56" height="56" alt="{{ biz_name }}" style="width:56px;height:56px;border-radius:14px;object-fit:contain;display:block;margin:0 auto 14px;background:#ffffff;padding:4px">
+    {% endif %}
+    <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:32px;font-weight:400;color:{{ tc }};letter-spacing:-0.5px;line-height:1.1;margin:0">{{ biz_name }}</div>
+    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:11px;color:{{ accent }};margin-top:8px;letter-spacing:2.4px;text-transform:uppercase;font-weight:600;opacity:0.9">Tarjeta de Fidelidad</div>
+  </td></tr>
+
+  <!-- ─────────── HERO: saludo ─────────── -->
+  {% if wel_banner_url %}
+  <tr><td style="background-image:url('{{ wel_banner_url }}');background-size:cover;background-position:center;background-color:{{ bg }};padding:44px 32px;text-align:center;position:relative">
+    <div style="position:absolute;inset:0;background:{{ bg }};opacity:0.62"></div>
+    <div style="position:relative;z-index:1">
+      <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:28px;font-weight:400;color:{{ tc }};letter-spacing:-0.3px;line-height:1.25;margin:0 0 10px">{{ welcome_greeting or ('¡Bienvenida/o, ' + name + '! ' + emoji) }}</div>
+      <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:14px;color:{{ tc }};opacity:0.72;line-height:1.5;margin:0">Tu tarjeta de fidelidad está lista para empezar</div>
+    </div>
+  </td></tr>
+  {% else %}
+  <tr><td style="background:{{ bg }};padding:40px 32px;text-align:center">
+    <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:28px;font-weight:400;color:{{ tc }};letter-spacing:-0.3px;line-height:1.25;margin:0 0 10px">{{ welcome_greeting or ('¡Bienvenida/o, ' + name + '! ' + emoji) }}</div>
+    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:14px;color:{{ tc }};opacity:0.72;line-height:1.5;margin:0">Tu tarjeta de fidelidad está lista para empezar</div>
+  </td></tr>
+  {% endif %}
+
+  <!-- ─────────── MINI TARJETA (estilo Apple Wallet refinado) ─────────── -->
+  <tr><td style="padding:36px 32px 28px;background:{{ outer_bg }}">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:340px;margin:0 auto;background:{{ bg }};border-radius:20px;overflow:hidden;box-shadow:0 14px 44px rgba(26,20,16,0.28)">
+
+      <!-- Top strip: logo + contador -->
+      <tr><td style="{% if card_strip_bg_url %}background-image:url('{{ card_strip_bg_url }}');background-size:cover;background-position:center;{% endif %}background-color:{{ bg }};padding:16px 18px 14px">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="vertical-align:middle;width:56px">
+            {% if card_logo_url %}
+            <img src="{{ card_logo_url }}" width="48" height="48" alt="" style="width:48px;height:48px;border-radius:12px;object-fit:contain;display:block;background:#ffffff;padding:3px">
+            {% else %}
+            <span style="font-size:38px;line-height:1;display:block">{{ emoji }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align:right;vertical-align:top;padding-top:2px">
+            <div style="font-size:8px;font-weight:700;color:{{ accent }};letter-spacing:1.6px;text-transform:uppercase;opacity:0.8;margin-bottom:3px">SELLOS</div>
+            <div style="font-size:32px;font-weight:700;color:{{ tc }};line-height:1;letter-spacing:-1.2px">{{ stamps }}<span style="font-size:15px;font-weight:500;opacity:0.5">/{{ spr }}</span></div>
+          </td>
+        </tr>
+        </table>
+      </td></tr>
+
+      <!-- Card program name -->
+      <tr><td style="padding:6px 18px 0;border-top:1px solid rgba(255,255,255,0.12)">
+        <div style="font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:{{ tc }};opacity:0.42">{{ card_name or biz_name }}</div>
+      </td></tr>
+
+      <!-- Stamp grid -->
+      <tr><td style="padding:12px 18px 16px">
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto">
+        {% for row_start in range(0, spr, cols) %}
+        <tr>
+          {% for i in range(row_start, [row_start + cols, spr]|min) %}
+          <td style="padding:3px">
+            <span style="display:inline-block;width:32px;height:32px;border-radius:50%;{% if (i+1) <= stamps %}background:{{ accent }};box-shadow:0 0 10px {{ accent }}66;{% else %}background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);{% endif %}line-height:32px;font-size:15px;text-align:center;color:{{ tc }}">{% if (i+1) <= stamps %}{{ emoji }}{% endif %}</span>
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+        </table>
+      </td></tr>
+
+      <!-- Bottom: titular + premio -->
+      <tr><td style="padding:12px 18px 16px;border-top:1px solid rgba(255,255,255,0.12)">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="font-size:7px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:{{ accent }};opacity:0.72">TITULAR</td>
+          <td style="text-align:right;font-size:7px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:{{ accent }};opacity:0.72">PREMIO</td>
+        </tr>
+        <tr>
+          <td style="font-size:12px;font-weight:700;color:{{ tc }};padding-top:4px;letter-spacing:0.3px">{{ name|upper }}</td>
+          <td style="text-align:right;font-size:12px;font-weight:700;color:{{ tc }};padding-top:4px">{{ reward_name }}</td>
+        </tr>
+        </table>
+      </td></tr>
+
+    </table>
+    <!-- Subtitle below card -->
+    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;text-align:center;margin-top:16px;letter-spacing:0.2px">
+      {{ stamps }}/{{ spr }} sellos · {{ reward_name }} al completar
+    </div>
+  </td></tr>
+
+  <!-- ─────────── CTA BUTTONS: Apple + Google Wallet ─────────── -->
+  <tr><td style="padding:8px 32px 36px;background:{{ outer_bg }};text-align:center">
+
+    {% if wallet_url %}
+    <!-- Apple Wallet -->
+    <a href="{{ wallet_url }}" style="display:inline-block;background:#1a1410;color:#ffffff;padding:15px 34px;border-radius:14px;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:-0.1px;margin-bottom:12px;font-family:'Geist',-apple-system,sans-serif;box-shadow:0 6px 18px rgba(26,20,16,0.18)">
+      Añadir a Apple Wallet
+    </a>
+    <br>
+    {% endif %}
+
+    {% if google_wallet_url %}
+    <!-- Google Wallet -->
+    <a href="{{ google_wallet_url }}" style="display:inline-block;background:#1a73e8;color:#ffffff;padding:15px 34px;border-radius:14px;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:-0.1px;margin-bottom:12px;font-family:'Geist',-apple-system,sans-serif;box-shadow:0 6px 18px rgba(26,115,232,0.22)">
+      Añadir a Google Wallet
+    </a>
+    <br>
+    {% else %}
+    <!-- Fallback Android: link a tarjeta web con instrucciones -->
+    <a href="{{ card_url }}" style="display:inline-block;background:#2e7d32;color:#ffffff;padding:15px 34px;border-radius:14px;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:-0.1px;margin-bottom:12px;font-family:'Geist',-apple-system,sans-serif;box-shadow:0 6px 18px rgba(46,125,50,0.22)">
+      Ver mi tarjeta (Android)
+    </a>
+    <br>
+    <div style="background:#ffffff;border:1px solid #e8dcc8;border-radius:14px;padding:14px 18px;margin-top:10px;text-align:left;max-width:340px;display:inline-block;font-family:'Geist',-apple-system,sans-serif">
+      <div style="font-size:11px;font-weight:700;color:{{ bg }};margin-bottom:6px;text-transform:uppercase;letter-spacing:1.2px">Guárdala en tu Android</div>
+      <div style="font-size:12px;color:#6b5e50;line-height:1.65">
+        1. Abre el link de arriba en Chrome<br>
+        2. Toca el menú <strong style="color:#1a1410">⋮</strong> → <strong style="color:#1a1410">"Añadir a pantalla de inicio"</strong><br>
+        3. Tu tarjeta queda como una app
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Link navegador (fallback universal) -->
+    <div style="margin-top:14px">
+      <a href="{{ card_url }}" class="sans" style="color:#8a7a6c;font-size:12px;text-decoration:underline;font-family:'Geist',-apple-system,sans-serif;letter-spacing:0.2px">
+        Ver tarjeta en el navegador
+      </a>
+    </div>
+  </td></tr>
+
+  <!-- ─────────── CÓMO FUNCIONA (3 pasos) ─────────── -->
+  <tr><td style="padding:36px 32px 40px;background:#ffffff;border-top:1px solid #f0e6d6">
+    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:11px;font-weight:700;color:#8a7a6c;letter-spacing:2.4px;text-transform:uppercase;text-align:center;margin-bottom:24px">Cómo funciona</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td width="33%" style="text-align:center;padding:0 8px;vertical-align:top">
+        <div style="width:52px;height:52px;background:{{ outer_bg }};border-radius:14px;margin:0 auto 12px;line-height:52px;font-size:24px;text-align:center">🛍️</div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-weight:400;color:#1a1410;margin-bottom:4px;letter-spacing:-0.2px">Compra</div>
+        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.5">En {{ biz_name }}</div>
+      </td>
+      <td width="33%" style="text-align:center;padding:0 8px;vertical-align:top">
+        <div style="width:52px;height:52px;background:{{ outer_bg }};border-radius:14px;margin:0 auto 12px;line-height:52px;font-size:24px;text-align:center">{{ emoji }}</div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-weight:400;color:#1a1410;margin-bottom:4px;letter-spacing:-0.2px">Acumula</div>
+        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.5">Sellos en cada visita</div>
+      </td>
+      <td width="33%" style="text-align:center;padding:0 8px;vertical-align:top">
+        <div style="width:52px;height:52px;background:{{ outer_bg }};border-radius:14px;margin:0 auto 12px;line-height:52px;font-size:24px;text-align:center">🎁</div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-weight:400;color:#1a1410;margin-bottom:4px;letter-spacing:-0.2px">Canjea</div>
+        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.5">Tu {{ reward_name|lower }}</div>
+      </td>
+    </tr>
+    </table>
+  </td></tr>
+
+  <!-- ─────────── FOOTER ─────────── -->
+  <tr><td style="padding:28px 32px;background:#1a1410;color:#ffffff;text-align:center">
+    <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:20px;font-weight:400;letter-spacing:-0.2px;margin-bottom:6px">{{ biz_name }}</div>
+    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:14px;line-height:1.5">{{ welcome_footer or ('Tarjeta de Fidelización © 2026') }}</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.32);letter-spacing:0.3px">
+      <a href="{{ card_url }}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-family:'Geist',-apple-system,sans-serif">Ver tarjeta</a>
+      <span style="margin:0 8px;opacity:0.4">·</span>
+      <span style="font-family:'Geist',-apple-system,sans-serif">Powered by ZubCard</span>
+    </div>
+  </td></tr>
+
+</table>
+
+</td></tr>
+</table>
+
+</body>
+</html>

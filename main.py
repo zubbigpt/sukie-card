@@ -914,6 +914,63 @@ def _prog_email_kwargs(prog, biz=None) -> dict:
     )
 
 
+def render_welcome_email_new(
+    name: str,
+    card_url: str,
+    stamps: int = 0,
+    referral_code: str = "",
+    referral_url: str = "",
+    wallet_url: str = "",
+    google_wallet_url: str = "",
+    card_bg_color: str = "#1a1410",
+    card_accent_color: str = "#c77b3e",
+    card_text_color: str = "#ffffff",
+    card_emoji: str = "⭐",
+    card_reward_name: str = "Premio",
+    card_stamps_per_reward: int = 10,
+    card_name: str = "",
+    card_biz_name: str = "ZubCard",
+    card_logo_url: str = "",
+    card_strip_bg_url: str = "",
+    welcome_greeting: str = "",
+    welcome_footer: str = "",
+    wel_hdr_color: str = "",
+    wel_text_color: str = "",
+    wel_bg_color: str = "#f4ede2",
+    wel_accent_color: str = "",
+    wel_banner_url: str = "",
+) -> str:
+    """Render welcome email with the new Claude Design template."""
+    template = templates.get_template("email_welcome_new.html")
+    return template.render(
+        name=name,
+        card_url=card_url,
+        stamps=stamps,
+        referral_code=referral_code,
+        referral_url=referral_url,
+        wallet_url=wallet_url,
+        google_wallet_url=google_wallet_url,
+        subject="¡Bienvenido/a!",
+        card_bg_color=card_bg_color,
+        card_accent_color=card_accent_color,
+        card_text_color=card_text_color,
+        card_emoji=card_emoji,
+        card_reward_name=card_reward_name,
+        card_stamps_per_reward=card_stamps_per_reward,
+        card_name=card_name,
+        card_biz_name=card_biz_name,
+        card_logo_url=card_logo_url,
+        card_strip_bg_url=card_strip_bg_url,
+        welcome_greeting=welcome_greeting or f"¡Bienvenida/o, {name}! {card_emoji}",
+        welcome_footer=welcome_footer or "Tarjeta de Fidelización © 2026",
+        wel_hdr_color=wel_hdr_color,
+        wel_text_color=wel_text_color,
+        wel_bg_color=wel_bg_color,
+        wel_accent_color=wel_accent_color,
+        wel_banner_url=wel_banner_url,
+    )
+
+
 def render_birthday_email(name: str, card_url: str) -> str:
     template = templates.get_template("email_birthday.html")
     return template.render(name=name, card_url=card_url)
@@ -7625,8 +7682,9 @@ async def update_welcome_email_config(slug: str, request: Request, db: Session =
 
 
 @app.get("/api/biz/{slug}/welcome-email-preview", response_class=HTMLResponse)
-def welcome_email_preview(slug: str, pin: str = "", db: Session = Depends(get_db)):
-    """Return rendered welcome email HTML for in-dashboard preview."""
+def welcome_email_preview(slug: str, pin: str = "", v: str = "", db: Session = Depends(get_db)):
+    """Return rendered welcome email HTML for in-dashboard preview.
+    Pass ?v=new to preview the Claude Design template (safe, doesn't affect prod)."""
     verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
     if not biz:
@@ -7640,10 +7698,13 @@ def welcome_email_preview(slug: str, pin: str = "", db: Session = Depends(get_db
     acc_color  = getattr(biz, "welcome_email_accent_color", "") or ""
     banner_url = getattr(biz, "welcome_email_banner_url", "") or ""
     served_banner = f"{BASE_URL}/biz/{slug}/welcome-banner.jpg" if banner_url else ""
-    html = render_welcome_email(
+    render_fn = render_welcome_email_new if v == "new" else render_welcome_email
+    html = render_fn(
         name="María",
         card_url=f"{BASE_URL}/biz/{slug}/register",
-        stamps=0,
+        stamps=3,
+        wallet_url=f"{BASE_URL}/preview/wallet.pkpass",
+        google_wallet_url=f"{BASE_URL}/preview/google-wallet",
         welcome_greeting=greeting,
         welcome_footer=footer,
         wel_hdr_color=hdr_color,
@@ -7654,6 +7715,98 @@ def welcome_email_preview(slug: str, pin: str = "", db: Session = Depends(get_db
         **_prog_email_kwargs(prog, biz),
     )
     return HTMLResponse(content=html)
+
+
+@app.get("/api/biz/{slug}/send-welcome-test-new")
+async def send_welcome_test_new(slug: str, pin: str = "", email: str = "", card_id: str = "", db: Session = Depends(get_db)):
+    """Send test email using the NEW Claude Design template.
+    Pass card_id to get real Apple + Google Wallet URLs."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+
+    name_for_email = "Yanir"
+    stamps = 3
+    real_card_url = f"{BASE_URL}"
+    wallet_url = ""
+    gw_url = ""
+    if card_id:
+        card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.id == card_id).first()
+        if card:
+            stamps = card.stamps or 0
+            real_card_url = f"{BASE_URL}/card/{card_id}"
+            wallet_url = f"{BASE_URL}/card/{card_id}/wallet.pkpass"
+            cust = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+            if cust and cust.first_name:
+                name_for_email = cust.first_name
+            try:
+                gw_color  = (prog.bg_color      if prog else None) or "#1a1410"
+                gw_accent = (prog.accent_color  if prog else None) or "#c77b3e"
+                gw_spr    = (prog.stamps_per_reward if prog else None) or 10
+                gw_reward = (prog.reward_name   if prog and prog.reward_name else None) or "Premio"
+                gw_logo   = (biz.logo_url       if biz and biz.logo_url else "") or ""
+                gw_cname  = (prog.name          if prog and prog.name else None) or (biz.name or "")
+                gw_url = generate_google_wallet_url(
+                    card_id=str(card_id),
+                    biz_slug=slug,
+                    biz_name=biz.name or "",
+                    customer_name=name_for_email,
+                    stamps=stamps,
+                    stamps_per_reward=gw_spr,
+                    card_url=real_card_url,
+                    primary_color=gw_color,
+                    accent_color=gw_accent,
+                    reward_name=gw_reward,
+                    logo_url=gw_logo,
+                    award_balance=card.award_balance or 0,
+                    card_name=gw_cname,
+                ) or ""
+            except Exception as _e:
+                print(f"[send-welcome-test-new] Google Wallet URL error: {_e}")
+                gw_url = ""
+
+    # Pull per-business email customization
+    greeting   = getattr(biz, "welcome_email_greeting", "") or ""
+    footer     = getattr(biz, "welcome_email_footer", "") or ""
+    hdr_color  = getattr(biz, "welcome_email_header_color", "") or ""
+    text_color = getattr(biz, "welcome_email_text_color", "") or ""
+    bg_color   = getattr(biz, "welcome_email_bg_color", "") or ""
+    acc_color  = getattr(biz, "welcome_email_accent_color", "") or ""
+    banner_url = getattr(biz, "welcome_email_banner_url", "") or ""
+    served_banner = f"{BASE_URL}/biz/{slug}/welcome-banner.jpg" if banner_url else ""
+
+    html_body = render_welcome_email_new(
+        name=name_for_email,
+        card_url=real_card_url,
+        stamps=stamps,
+        wallet_url=wallet_url,
+        google_wallet_url=gw_url,
+        welcome_greeting=greeting,
+        welcome_footer=footer,
+        wel_hdr_color=hdr_color,
+        wel_text_color=text_color,
+        wel_bg_color=bg_color,
+        wel_accent_color=acc_color,
+        wel_banner_url=served_banner,
+        **_prog_email_kwargs(prog, biz),
+    )
+    custom_subject = (prog.welcome_email_subject if prog and prog.welcome_email_subject else None) or f"Bienvenido/a a {biz.name}"
+    sent = send_email(
+        to_email=email or "yanir.mgta@gmail.com",
+        subject=custom_subject,
+        html_body=html_body,
+        from_name=biz.email_from_name or biz.name,
+    )
+    return {
+        "sent": sent,
+        "to": email or "yanir.mgta@gmail.com",
+        "template": "email_welcome_new.html",
+        "wallet_url_included": bool(wallet_url),
+        "google_wallet_url_included": bool(gw_url),
+        "google_wallet_configured": bool(GOOGLE_WALLET_ISSUER_ID and GOOGLE_WALLET_CREDENTIALS),
+    }
 
 
 @app.get("/biz/{slug}/welcome-banner.jpg")
