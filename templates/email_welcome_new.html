@@ -150,12 +150,10 @@
       Ver mi tarjeta (Android)
     </a>
     <br>
-    <div style="background:#ffffff;border:1px solid #e8dcc8;border-radius:14px;padding:14px 18px;margin-top:10px;text-align:left;max-width:340px;display:inline-block;font-family:'Geist',-apple-system,sans-serif">
-      <div style="font-size:11px;font-weight:700;color:{{ bg }};margin-bottom:6px;text-transform:uppercase;letter-spacing:1.2px">Guárdala en tu Android</div>
-      <div style="font-size:12px;color:#6b5e50;line-height:1.65">
-        1. Abre el link de arriba en Chrome<br>
-        2. Toca el menú <strong style="color:#1a1410">⋮</strong> → <strong style="color:#1a1410">"Añadir a pantalla de inicio"</strong><br>
-        3. Tu tarjeta queda como una app
+    <div style="background:#ffffff;border:1px solid #e8dcc8;border-radius:14px;padding:16px 20px;margin-top:10px;text-align:left;max-width:340px;display:inline-block;font-family:'Geist',-apple-system,sans-serif">
+      <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:15px;font-weight:400;color:#1a1410;margin-bottom:8px;letter-spacing:-0.2px">Guárdala en tu Android</div>
+      <div style="font-size:12px;color:#6b5e50;line-height:1.7">
+        Abre el link en Chrome, toca el menú <strong style="color:#1a1410">⋮</strong> y elige <strong style="color:#1a1410">"Añadir a pantalla de inicio"</strong>.
       </div>
     </div>
     {% endif %}
@@ -168,25 +166,28 @@
     </div>
   </td></tr>
 
-  <!-- ─────────── CÓMO FUNCIONA (3 pasos) ─────────── -->
-  <tr><td style="padding:36px 32px 40px;background:#ffffff;border-top:1px solid #f0e6d6">
-    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:11px;font-weight:700;color:#8a7a6c;letter-spacing:2.4px;text-transform:uppercase;text-align:center;margin-bottom:24px">Cómo funciona</div>
+  <!-- ─────────── CÓMO FUNCIONA (3 pasos, numeración serif) ─────────── -->
+  <tr><td style="padding:40px 32px 44px;background:#ffffff;border-top:1px solid #f0e6d6">
+    <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:11px;font-weight:700;color:#8a7a6c;letter-spacing:2.4px;text-transform:uppercase;text-align:center;margin-bottom:28px">Cómo funciona</div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td width="33%" style="text-align:center;padding:0 8px;vertical-align:top">
-        <div style="width:52px;height:52px;background:{{ outer_bg }};border-radius:14px;margin:0 auto 12px;line-height:52px;font-size:24px;text-align:center">🛍️</div>
-        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-weight:400;color:#1a1410;margin-bottom:4px;letter-spacing:-0.2px">Compra</div>
-        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.5">En {{ biz_name }}</div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:13px;font-weight:400;color:{{ accent }};letter-spacing:3px;margin-bottom:10px;font-style:italic">01</div>
+        <div style="width:40px;height:1px;background:#e8dcc8;margin:0 auto 14px"></div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:20px;font-weight:400;color:#1a1410;margin-bottom:6px;letter-spacing:-0.3px;line-height:1.15">Visita</div>
+        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.55;max-width:140px;margin:0 auto">{{ biz_name }}</div>
       </td>
       <td width="33%" style="text-align:center;padding:0 8px;vertical-align:top">
-        <div style="width:52px;height:52px;background:{{ outer_bg }};border-radius:14px;margin:0 auto 12px;line-height:52px;font-size:24px;text-align:center">{{ emoji }}</div>
-        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-weight:400;color:#1a1410;margin-bottom:4px;letter-spacing:-0.2px">Acumula</div>
-        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.5">Sellos en cada visita</div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:13px;font-weight:400;color:{{ accent }};letter-spacing:3px;margin-bottom:10px;font-style:italic">02</div>
+        <div style="width:40px;height:1px;background:#e8dcc8;margin:0 auto 14px"></div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:20px;font-weight:400;color:#1a1410;margin-bottom:6px;letter-spacing:-0.3px;line-height:1.15">Acumula</div>
+        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.55;max-width:140px;margin:0 auto">Un sello en cada visita</div>
       </td>
       <td width="33%" style="text-align:center;padding:0 8px;vertical-align:top">
-        <div style="width:52px;height:52px;background:{{ outer_bg }};border-radius:14px;margin:0 auto 12px;line-height:52px;font-size:24px;text-align:center">🎁</div>
-        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-weight:400;color:#1a1410;margin-bottom:4px;letter-spacing:-0.2px">Canjea</div>
-        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.5">Tu {{ reward_name|lower }}</div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:13px;font-weight:400;color:{{ accent }};letter-spacing:3px;margin-bottom:10px;font-style:italic">03</div>
+        <div style="width:40px;height:1px;background:#e8dcc8;margin:0 auto 14px"></div>
+        <div class="serif" style="font-family:'Instrument Serif',Georgia,serif;font-size:20px;font-weight:400;color:#1a1410;margin-bottom:6px;letter-spacing:-0.3px;line-height:1.15">Disfruta</div>
+        <div class="sans" style="font-family:'Geist',-apple-system,sans-serif;font-size:12px;color:#8a7a6c;line-height:1.55;max-width:140px;margin:0 auto">Tu {{ reward_name|lower }}</div>
       </td>
     </tr>
     </table>
