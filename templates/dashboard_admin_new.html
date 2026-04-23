@@ -4185,6 +4185,7 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
     <!-- Header -->
     <div class="camp-modal-header">
       <span class="material-symbols-outlined" style="color:var(--brown-light);font-size:1.1rem">campaign</span>
+      <span id="cmp-modal-title" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--brown-light);flex-shrink:0">Nueva campaña</span>
       <input id="cmp-name" class="camp-name-input" placeholder="Nombre de la campaña…" oninput="campUpdatePreview()">
       <div id="cmp-msg" style="font-size:.75rem;color:var(--brown-light);flex:1;text-align:right"></div>
       <button class="drawer-close" style="position:static;flex-shrink:0" onclick="closeCampModal()">✕</button>
@@ -7306,6 +7307,7 @@ function renderCampaigns(){
       <td style="padding:10px 14px"><span style="padding:2px 8px;border-radius:2px;font-size:.72rem;font-weight:700;${sb[c.status]||''}">${c.status}</span></td>
       <td style="padding:10px 14px;color:var(--brown-light);font-size:.8rem">${dt}</td>
       <td style="padding:10px 14px;text-align:center">
+        ${c.status==='draft'?`<button class="btn-sm btn-ghost" style="font-size:.72rem;margin-right:4px" onclick="editCampaign('${c.id}')">Editar</button>`:''}
         ${c.status==='draft'?`<button class="btn-sm btn-primary" style="font-size:.72rem;margin-right:4px" onclick="sendCampaign('${c.id}')">Enviar</button>`:''}
         <button class="btn-sm btn-ghost" style="font-size:.72rem;color:#c62828" onclick="deleteCampaign('${c.id}')">🗑</button>
       </td>
@@ -7332,6 +7334,18 @@ function switchCampTab(tab){
 
 function showNewCampaign(){
   if(!requirePro('Las campañas son una función del plan Pro. Actualiza para enviar email y push ilimitados.')) return;
+  // Clear edit state so a fresh campaign starts clean
+  window._campEditingId=null;
+  const title=document.getElementById('cmp-modal-title');
+  if(title) title.textContent='Nueva campaña';
+  const n=document.getElementById('cmp-name'); if(n) n.value='';
+  const s=document.getElementById('cmp-subject'); if(s) s.value='';
+  const ed=document.getElementById('cmp-editor'); if(ed) ed.innerHTML='';
+  const pb=document.getElementById('cmp-push-body'); if(pb) pb.value='';
+  const img=document.getElementById('cmp-img-url'); if(img) img.value='';
+  const cta=document.getElementById('cmp-cta'); if(cta) cta.value='';
+  const ctaUrl=document.getElementById('cmp-cta-url'); if(ctaUrl) ctaUrl.value='';
+  if(typeof campRefreshImagePreview==='function') campRefreshImagePreview();
   _campEditorType='email';
   setCampType('email');
   openCampModal();
@@ -7376,6 +7390,56 @@ function openCampModal(){
 function closeCampModal(){
   const overlay=document.getElementById('camp-editor-overlay');
   if(overlay) overlay.classList.remove('open');
+  // Reset edit state + form so the next "Nueva campaña" starts clean
+  window._campEditingId=null;
+  const title=document.getElementById('cmp-modal-title');
+  if(title) title.textContent='Nueva campaña';
+  const n=document.getElementById('cmp-name'); if(n) n.value='';
+  const s=document.getElementById('cmp-subject'); if(s) s.value='';
+  const ed=document.getElementById('cmp-editor'); if(ed) ed.innerHTML='';
+  const pb=document.getElementById('cmp-push-body'); if(pb) pb.value='';
+  const img=document.getElementById('cmp-img-url'); if(img) img.value='';
+  const cta=document.getElementById('cmp-cta'); if(cta) cta.value='';
+  const ctaUrl=document.getElementById('cmp-cta-url'); if(ctaUrl) ctaUrl.value='';
+  const msg=document.getElementById('cmp-msg'); if(msg) msg.textContent='';
+  if(typeof campRefreshImagePreview==='function') campRefreshImagePreview();
+}
+// Load an existing campaign into the editor for editing (drafts only)
+async function editCampaign(id){
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns/${id}?pin=${PIN}`);
+    if(!r.ok){ showToast('No se pudo cargar la campaña','error'); return; }
+    const c=await r.json();
+    window._campEditingId=id;
+    _campEditorType=(c.type||'email');
+    setCampType(_campEditorType);
+    const title=document.getElementById('cmp-modal-title');
+    if(title) title.textContent='Editar campaña';
+    const n=document.getElementById('cmp-name'); if(n) n.value=c.name||'';
+    const s=document.getElementById('cmp-subject'); if(s) s.value=c.subject||'';
+    if(_campEditorType==='push'){
+      const pb=document.getElementById('cmp-push-body');
+      if(pb){ pb.value=c.body||''; if(typeof campPushCounter==='function') campPushCounter(); }
+    }else{
+      const ed=document.getElementById('cmp-editor'); if(ed) ed.innerHTML=c.body||'';
+    }
+    // Segment chips
+    const seg=c.segment||'all';
+    document.querySelectorAll('.seg-chip').forEach(chip=>{
+      chip.classList.toggle('active', (chip.dataset.seg||'all')===seg);
+    });
+    const segHid=document.getElementById('nc-segment'); if(segHid) segHid.value=seg;
+    // Image + CTA meta
+    const img=document.getElementById('cmp-img-url'); if(img) img.value=c.image_url||'';
+    const cta=document.getElementById('cmp-cta'); if(cta) cta.value=c.cta_text||'';
+    const ctaColor=document.getElementById('cmp-cta-color'); if(ctaColor && c.cta_color) ctaColor.value=c.cta_color;
+    const ctaFull=document.getElementById('cmp-cta-full'); if(ctaFull) ctaFull.checked=!!c.cta_full;
+    const ctaRadius=document.getElementById('cmp-cta-radius'); if(ctaRadius && c.cta_radius) ctaRadius.value=c.cta_radius;
+    const ctaUrl=document.getElementById('cmp-cta-url'); if(ctaUrl) ctaUrl.value=c.cta_url||'';
+    if(typeof campRefreshImagePreview==='function') campRefreshImagePreview();
+    openCampModal();
+    campUpdatePreview();
+  }catch(e){ showToast('Error cargando campaña','error'); }
 }
 function selectSeg(el){
   document.querySelectorAll('.seg-chip').forEach(c=>c.classList.remove('active'));
@@ -7643,9 +7707,14 @@ async function campSave(action){
   const hb=document.getElementById('nc-body'); if(hb) hb.value=body;
   const status=action==='send'?'sending':'draft';
   const campType=isPush?'push':'email';
+  const editingId=window._campEditingId||null;
+  const url = editingId
+    ? `${BASE}/api/biz/${BIZ_SLUG}/campaigns/${editingId}?pin=${PIN}`
+    : `${BASE}/api/biz/${BIZ_SLUG}/campaigns?pin=${PIN}`;
+  const method = editingId ? 'PUT' : 'POST';
   try{
-    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns?pin=${PIN}`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch(url,{
+      method,headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,subject,body,segment,type:campType,status,
         image_url:img_url, cta_text:cta, cta_color, cta_full, cta_radius, cta_url})
     });
@@ -7655,7 +7724,8 @@ async function campSave(action){
       if(msgEl){msgEl.textContent='Error al guardar';msgEl.style.color='var(--red)';}return;
     }
     if(msgEl){msgEl.textContent=action==='send'?'Enviando...':'Borrador guardado';msgEl.style.color='var(--green)';}
-    if(action==='send'&&data.id) await sendCampaign(data.id,campType);
+    const effectiveId = editingId || data.id;
+    if(action==='send' && effectiveId) await sendCampaign(effectiveId, campType);
     await loadCampaigns();
     setTimeout(()=>{closeCampModal();if(msgEl)msgEl.textContent='';},1400);
     showToast(action==='send'?'Campaña enviada':'Borrador guardado');

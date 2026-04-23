@@ -467,6 +467,14 @@ def run_migrations():
         "ALTER TABLE card_programs ADD COLUMN IF NOT EXISTS strip_bg_url TEXT",
         # Campaigns: scheduled sending support
         "ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ",
+        # Campaign images (headers / CTAs) — served via HTTP URLs to avoid Gmail stripping data: URIs
+        """CREATE TABLE IF NOT EXISTS campaign_images (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
+            data BYTEA NOT NULL,
+            content_type VARCHAR DEFAULT 'image/jpeg',
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        )""",
         # ── Scanner device authorization ──────────────────────────────────────────
         """CREATE TABLE IF NOT EXISTS scanner_devices (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -6500,7 +6508,8 @@ async def upload_campaign_image(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    """Upload a header image for a campaign. Returns a data URL (base64).
+    """Upload a header image for a campaign. Stores bytes in DB and returns
+    an HTTP URL (Gmail/Outlook strip data: URIs, so we serve via /campaign-images/{id}.jpg).
     Max 8MB. Auto-resized to 1200×480 cover crop and re-encoded as JPEG."""
     verify_pin(pin, db)
     biz = get_business_by_slug(slug, db)
@@ -6516,7 +6525,6 @@ async def upload_campaign_image(
     try:
         from PIL import Image as _PILImg
         import io as _io
-        import base64 as _b64
         img = _PILImg.open(_io.BytesIO(raw)).convert("RGB")
         TW, TH = 1200, 480
         iw, ih = img.size
@@ -6528,10 +6536,113 @@ async def upload_campaign_image(
         img  = img.crop((left, top, left + TW, top + TH))
         buf = _io.BytesIO()
         img.save(buf, format="JPEG", quality=82, optimize=True)
-        data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
+        img_bytes = buf.getvalue()
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Error procesando la imagen: {e}")
-    return {"ok": True, "url": data_url}
+    img_id = str(uuid.uuid4())
+    try:
+        db.execute(text(
+            "INSERT INTO campaign_images (id, business_id, data, content_type) "
+            "VALUES (:id, :bid, :data, :ct)"
+        ), {"id": img_id, "bid": str(biz.id), "data": img_bytes, "ct": "image/jpeg"})
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error guardando la imagen: {e}")
+    http_url = f"{BASE_URL.rstrip('/')}/campaign-images/{img_id}.jpg"
+    return {"ok": True, "url": http_url}
+
+
+@app.get("/campaign-images/{img_id}.jpg")
+def serve_campaign_image(img_id: str, db: Session = Depends(get_db)):
+    """Serve a campaign header image as a public HTTP URL.
+    Public on purpose — embedded in emails, same security posture as a CDN."""
+    try:
+        row = db.execute(text(
+            "SELECT data, content_type FROM campaign_images WHERE id=:id"
+        ), {"id": img_id}).fetchone()
+    except Exception:
+        raise HTTPException(status_code=404, detail="Not found")
+    if not row:
+        raise HTTPException(status_code=404, detail="Not found")
+    from fastapi.responses import Response as _Resp
+    data_bytes = bytes(row[0]) if row[0] is not None else b""
+    return _Resp(
+        content=data_bytes,
+        media_type=row[1] or "image/jpeg",
+        headers={"Cache-Control": "public, max-age=604800, immutable"},
+    )
+
+
+@app.get("/api/biz/{slug}/campaigns/{campaign_id}")
+def get_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Return the full campaign row with meta (image + CTA) parsed out of the body."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    row = db.execute(text(
+        "SELECT id, name, subject, body, type, status, segment, "
+        "created_at, sent_at, scheduled_at "
+        "FROM campaigns WHERE id=:id AND business_id=:bid"
+    ), {"id": campaign_id, "bid": str(biz.id)}).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Campaña no encontrada")
+    meta, body_stripped = _parse_campaign_meta(row[3] or "")
+    cta = meta.get("cta") if isinstance(meta, dict) else None
+    return {
+        "id": str(row[0]),
+        "name": row[1] or "",
+        "subject": row[2] or "",
+        "body": body_stripped,
+        "body_raw": row[3] or "",
+        "type": row[4] or "email",
+        "status": row[5] or "draft",
+        "segment": row[6] or "all",
+        "created_at": str(row[7]),
+        "sent_at": str(row[8]) if row[8] else None,
+        "scheduled_at": str(row[9]) if row[9] else None,
+        "image_url": (meta.get("image_url") or "") if isinstance(meta, dict) else "",
+        "cta_text":   (cta or {}).get("text", "")   if cta else "",
+        "cta_color":  (cta or {}).get("color", "")  if cta else "",
+        "cta_full":   bool((cta or {}).get("full")) if cta else False,
+        "cta_radius": (cta or {}).get("radius", "") if cta else "",
+        "cta_url":    (cta or {}).get("url", "")    if cta else "",
+    }
+
+
+@app.put("/api/biz/{slug}/campaigns/{campaign_id}")
+def update_campaign(slug: str, campaign_id: str, pin: str = "",
+                    payload: dict = Body(...), db: Session = Depends(get_db)):
+    """Update a draft campaign. Repacks image/CTA meta into the body."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_pro(biz)
+    existing = db.execute(text(
+        "SELECT status FROM campaigns WHERE id=:id AND business_id=:bid"
+    ), {"id": campaign_id, "bid": str(biz.id)}).fetchone()
+    if not existing:
+        raise HTTPException(status_code=404, detail="Campaña no encontrada")
+    if (existing[0] or "") == "sent":
+        raise HTTPException(status_code=400, detail="No se puede editar una campaña ya enviada")
+    body_final = _pack_campaign_meta(payload, payload.get("body", ""))
+    db.execute(text(
+        "UPDATE campaigns SET name=:name, subject=:subject, body=:body, "
+        "type=:type, status=:status, segment=:segment, scheduled_at=:scheduled_at "
+        "WHERE id=:id AND business_id=:bid"
+    ), {
+        "id": campaign_id, "bid": str(biz.id),
+        "name": payload.get("name", ""),
+        "subject": payload.get("subject", ""),
+        "body": body_final,
+        "type": payload.get("type", "email"),
+        "status": payload.get("status", "draft"),
+        "segment": payload.get("segment", "all"),
+        "scheduled_at": payload.get("scheduled_at"),
+    })
+    db.commit()
+    return {"id": campaign_id, "status": "updated"}
 
 
 @app.post("/api/biz/{slug}/campaigns")
@@ -6686,7 +6797,15 @@ async def send_campaign_test(slug: str, request: Request, db: Session = Depends(
         stamps=7, reward_name=reward_name)
     subject_final = f"[PRUEBA] {subject_text}"
     try:
-        ok = send_email(test_email, subject_final, full_html)
+        ok = send_email(
+            test_email, subject_final, full_html,
+            from_name=(getattr(biz, "email_from_name", "") or getattr(biz, "name", "") or ""),
+            reply_to=(getattr(biz, "email_reply_to", "") or getattr(biz, "email", "") or ""),
+            smtp_host=(getattr(biz, "email_smtp_host", "") or ""),
+            smtp_port=int(getattr(biz, "email_smtp_port", 0) or 0),
+            smtp_user=(getattr(biz, "email_smtp_user", "") or ""),
+            smtp_pass=(getattr(biz, "email_smtp_pass", "") or ""),
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error enviando email: {e}")
     if not ok:
@@ -6770,7 +6889,15 @@ async def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session 
                 biz, body_content, meta,
                 subject=subject_text, first_name=fname,
                 stamps=stamps, reward_name=reward_name)
-            if send_email(email, subject_text, full_html):
+            if send_email(
+                email, subject_text, full_html,
+                from_name=(getattr(biz, "email_from_name", "") or getattr(biz, "name", "") or ""),
+                reply_to=(getattr(biz, "email_reply_to", "") or getattr(biz, "email", "") or ""),
+                smtp_host=(getattr(biz, "email_smtp_host", "") or ""),
+                smtp_port=int(getattr(biz, "email_smtp_port", 0) or 0),
+                smtp_user=(getattr(biz, "email_smtp_user", "") or ""),
+                smtp_pass=(getattr(biz, "email_smtp_pass", "") or ""),
+            ):
                 sent += 1
         except Exception as e:
             print(f"[Campaign email] send error for {cust[0]}: {e}")
