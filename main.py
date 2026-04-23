@@ -6390,6 +6390,124 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
     return {"id": camp_id, "status": "created", "scheduled_at": scheduled_at}
 
 
+@app.post("/api/biz/{slug}/campaigns/test")
+async def send_campaign_test(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Envía una prueba de la campaña (email o push) a un destinatario concreto.
+    Body: { pin, type: 'email'|'push', subject, body, test_email }
+    - Para email: manda el email usando la plantilla de campaña a test_email.
+    - Para push: busca las devices/subscriptions del customer con ese email y les envía el push.
+    """
+    body = await request.json()
+    pin = str(body.get("pin", ""))
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_pro(biz)
+
+    test_email = (body.get("test_email") or "").strip().lower()
+    if not test_email or "@" not in test_email:
+        raise HTTPException(status_code=400, detail="Email de prueba inválido")
+
+    camp_type = (body.get("type") or "email").lower()
+    subject   = (body.get("subject") or "").strip()
+    body_txt  = (body.get("body") or "").strip()
+
+    if camp_type == "push":
+        title_txt = subject or (biz.name or "ZubCard")
+        msg_txt   = body_txt or ""
+        if not msg_txt:
+            raise HTTPException(status_code=400, detail="El mensaje push no puede estar vacío")
+
+        # Buscar customer por email dentro de este business
+        cust = db.execute(text(
+            "SELECT id, first_name FROM customers WHERE business_id=:bid AND lower(email)=:em LIMIT 1"
+        ), {"bid": str(biz.id), "em": test_email}).fetchone()
+        if not cust:
+            raise HTTPException(status_code=404,
+                detail=f"No existe cliente con email {test_email} en este negocio. Regístrate con ese email primero.")
+
+        # APNs (Apple Wallet) — actualizar promo_message solo de ese cliente sería complejo
+        # porque el promo_message es a nivel business. Reutilizamos el flujo completo pero
+        # filtramos solo la card de este cliente para no spamear a todos.
+        from datetime import datetime as _dt
+        combined_raw = f"{title_txt}: {msg_txt}" if title_txt and msg_txt else (title_txt or msg_txt)
+        ts_suffix = _dt.now().strftime(" · %d/%m %H:%M")
+        combined = (combined_raw + ts_suffix)[:120]
+
+        # Guardar promo_message (afecta a todos, pero el push solo se manda a la card test)
+        try:
+            db.execute(text("UPDATE businesses SET promo_message=:msg WHERE id=:bid"),
+                       {"msg": combined, "bid": str(biz.id)})
+            db.execute(text(
+                "UPDATE loyalty_cards SET updated_at = NOW() WHERE customer_id=:cid"
+            ), {"cid": str(cust[0])})
+            db.commit()
+        except Exception as e:
+            print(f"[Campaign test] promo_message save failed: {e}")
+
+        # Buscar push tokens (Apple Wallet) solo de este cliente
+        apns_rows = db.execute(text(
+            "SELECT wd.push_token FROM wallet_devices wd "
+            "JOIN loyalty_cards lc ON lc.id=wd.card_id WHERE lc.customer_id=:cid"
+        ), {"cid": str(cust[0])}).fetchall()
+        apns_sent = 0
+        for row in apns_rows:
+            try:
+                ok = await _apns_send(row[0], payload={}, push_type="background", priority=10)
+                if ok:
+                    apns_sent += 1
+            except Exception as e:
+                print(f"[Campaign test APNs] err: {e}")
+
+        # Web push (Android/browser)
+        web_rows = db.execute(text(
+            "SELECT ps.endpoint, ps.p256dh, ps.auth FROM push_subscriptions ps "
+            "JOIN loyalty_cards lc ON lc.id=ps.card_id WHERE lc.customer_id=:cid"
+        ), {"cid": str(cust[0])}).fetchall()
+        web_sent = 0
+        if web_rows and VAPID_PUBLIC and VAPID_PRIVATE:
+            web_result = _send_push_to_subscriptions(web_rows, title_txt, msg_txt)
+            web_sent = web_result.get("sent", 0)
+
+        total = apns_sent + web_sent
+        if total == 0:
+            return {
+                "ok": False,
+                "sent": 0,
+                "message": f"El cliente {test_email} existe pero no tiene dispositivos con push activado. Añade la tarjeta al Wallet o acepta notificaciones en Android primero.",
+                "apple_wallet": apns_sent,
+                "android_web": web_sent,
+            }
+        return {
+            "ok": True,
+            "sent": total,
+            "apple_wallet": apns_sent,
+            "android_web": web_sent,
+            "message": f"Push de prueba enviado a {test_email} ({total} dispositivo/s)",
+        }
+
+    # ── EMAIL test ──
+    if not subject:
+        raise HTTPException(status_code=400, detail="El asunto es obligatorio")
+    first_name = test_email.split("@")[0]
+    # Permitir un nombre custom opcional en el body
+    custom_name = (body.get("test_name") or "").strip()
+    if custom_name:
+        first_name = custom_name
+    body_html = f"<p>{body_txt.replace('{nombre}', first_name)}</p>" if body_txt else ""
+    subject_text = subject.replace("{nombre}", first_name)
+    # Añadir prefijo [PRUEBA] al subject para diferenciar
+    subject_final = f"[PRUEBA] {subject_text}"
+    try:
+        ok = send_email(test_email, subject_final, body_html)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error enviando email: {e}")
+    if not ok:
+        raise HTTPException(status_code=502, detail="El proveedor SMTP no aceptó el email")
+    return {"ok": True, "sent": 1, "message": f"Email de prueba enviado a {test_email}"}
+
+
 @app.post("/api/biz/{slug}/campaigns/{campaign_id}/send")
 async def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depends(get_db)):
     """Send email or push campaign to segmented customers"""

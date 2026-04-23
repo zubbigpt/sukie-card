@@ -4313,6 +4313,9 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
       </div>
       <div style="margin-left:auto;display:flex;gap:8px">
         <button class="btn-sm btn-ghost" onclick="closeCampModal()">Cancelar</button>
+        <button class="btn-sm btn-ghost" onclick="campSendTest()" title="Enviar solo a un email de prueba">
+          <span class="material-symbols-outlined" style="font-size:.85rem">science</span> Enviar prueba
+        </button>
         <button class="btn-sm btn-ghost" onclick="campSave('draft')">Guardar borrador</button>
         <button class="btn-sm btn-primary" style="background:var(--green);border-color:var(--green)" onclick="campSave('send')">
           <span class="material-symbols-outlined" style="font-size:.85rem">send</span> Enviar ahora
@@ -7409,6 +7412,50 @@ async function saveCampaign(action){
     setTimeout(()=>{document.getElementById('new-campaign-form').style.display='none';if(msgEl)msgEl.textContent='';},1500);
     showToast(action==='send'?'Campaña enviada ✓':'Borrador guardado ✓','success');
   }catch(e){if(msgEl){msgEl.textContent='Error';msgEl.style.color='#c62828';}}
+}
+
+async function campSendTest(){
+  const isPush=_campEditorType==='push';
+  const subject=document.getElementById('cmp-subject')?.value.trim()||'';
+  const body=isPush
+    ?(document.getElementById('cmp-push-body')?.value.trim()||'')
+    :(document.getElementById('cmp-editor')?.innerText||'');
+  if(isPush && !body){ showToast('Escribe el mensaje push antes de probar','error'); return; }
+  if(!isPush && !subject){ showToast('Escribe el asunto antes de probar','error'); return; }
+
+  const promptMsg = isPush
+    ? 'Email del cliente de prueba (debe estar registrado y tener la tarjeta en Apple Wallet o notificaciones Android activadas):'
+    : 'Email donde enviar la prueba:';
+  const testEmail = prompt(promptMsg, '');
+  if(!testEmail || !testEmail.includes('@')){ return; }
+
+  const msgEl=document.getElementById('cmp-msg');
+  if(msgEl){ msgEl.textContent='Enviando prueba…'; msgEl.style.color='var(--brown-light)'; }
+
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns/test`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        pin:PIN,
+        type:isPush?'push':'email',
+        subject,
+        body,
+        test_email:testEmail.trim().toLowerCase()
+      })
+    });
+    const data=await r.json();
+    if(!r.ok){
+      const err = data.detail || data.message || 'Error al enviar prueba';
+      if(msgEl){ msgEl.textContent=err; msgEl.style.color='var(--red)'; }
+      showToast(err,'error');
+      return;
+    }
+    if(msgEl){ msgEl.textContent=data.message||'Prueba enviada ✓'; msgEl.style.color='var(--green)'; }
+    showToast(data.message || 'Prueba enviada ✓', data.ok?'success':'error');
+  }catch(e){
+    if(msgEl){ msgEl.textContent='Error de conexión'; msgEl.style.color='var(--red)'; }
+    showToast('Error de conexión','error');
+  }
 }
 
 async function sendCampaign(id,type){
