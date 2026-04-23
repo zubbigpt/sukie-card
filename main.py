@@ -6370,6 +6370,170 @@ def list_campaigns(slug: str, pin: str = "", db: Session = Depends(get_db)):
     ]}
 
 
+def _pack_campaign_meta(payload: dict, body: str) -> str:
+    """Prepend a JSON meta comment with image_url + CTA settings to the body.
+    Format: <!--zc-meta:{...}-->actual body html
+    This avoids DB schema migration. Only applied for email campaigns with extras.
+    """
+    if payload.get("type", "email") != "email":
+        return body or ""
+    meta = {}
+    img = (payload.get("image_url") or "").strip()
+    if img:
+        meta["image_url"] = img
+    cta_text = (payload.get("cta_text") or "").strip()
+    if cta_text:
+        meta["cta"] = {
+            "text":   cta_text,
+            "color":  (payload.get("cta_color") or "#b5651d"),
+            "full":   bool(payload.get("cta_full")),
+            "radius": str(payload.get("cta_radius") or "8"),
+            "url":    (payload.get("cta_url") or "").strip(),
+        }
+    if not meta:
+        return body or ""
+    import json as _json
+    try:
+        meta_str = _json.dumps(meta, separators=(",", ":"), ensure_ascii=False)
+    except Exception:
+        return body or ""
+    return f"<!--zc-meta:{meta_str}-->{body or ''}"
+
+
+def _parse_campaign_meta(body: str):
+    """Return (meta_dict, stripped_body). If no meta, returns ({}, body)."""
+    if not body:
+        return {}, ""
+    if not body.startswith("<!--zc-meta:"):
+        return {}, body
+    end = body.find("-->")
+    if end < 0:
+        return {}, body
+    meta_json = body[len("<!--zc-meta:"):end]
+    import json as _json
+    try:
+        meta = _json.loads(meta_json)
+    except Exception:
+        return {}, body
+    return meta, body[end + 3:]
+
+
+def _resolve_campaign_vars(text_str: str, *, first_name: str = "", stamps: int = 0,
+                           reward_name: str = "", biz_name: str = "") -> str:
+    if not text_str:
+        return ""
+    from datetime import datetime as _dt
+    today = _dt.now()
+    fecha_hoy = today.strftime("%d/%m/%Y")
+    return (text_str
+        .replace("{nombre}",    first_name or "")
+        .replace("{sellos}",    str(stamps or 0))
+        .replace("{premio}",    reward_name or "tu premio")
+        .replace("{negocio}",   biz_name or "")
+        .replace("{fecha_hoy}", fecha_hoy))
+
+
+def _render_campaign_email_html(biz, body_content_html: str, meta: dict,
+                                subject: str, first_name: str, stamps: int,
+                                reward_name: str) -> str:
+    """Wrap the user-written body with a styled email chrome (header, CTA, footer).
+    Uses the same design as the preview in the dashboard for consistency."""
+    biz_name = getattr(biz, "name", None) or "ZubCard"
+    header_bg = "#26170c"
+    header_color = "#ffffff"
+    # Resolve variables in body + subject
+    body_html = _resolve_campaign_vars(body_content_html or "", first_name=first_name,
+                                       stamps=stamps, reward_name=reward_name, biz_name=biz_name)
+    # Image header
+    img_url = (meta.get("image_url") or "").strip() if isinstance(meta, dict) else ""
+    img_html = (f'<img src="{img_url}" alt="" style="width:100%;max-height:260px;object-fit:cover;display:block;border:0">'
+                if img_url else "")
+    # CTA button
+    cta_html = ""
+    cta = meta.get("cta") if isinstance(meta, dict) else None
+    if cta and (cta.get("text") or "").strip():
+        cta_text   = _resolve_campaign_vars(cta.get("text", ""), first_name=first_name,
+                                            stamps=stamps, reward_name=reward_name, biz_name=biz_name)
+        cta_color  = cta.get("color") or "#b5651d"
+        cta_radius = cta.get("radius") or "8"
+        cta_full   = bool(cta.get("full"))
+        cta_url    = (cta.get("url") or "").strip() or f"{BASE_URL}/"
+        display    = "block" if cta_full else "inline-block"
+        width_css  = "width:auto" if not cta_full else "width:80%"
+        cta_html = (
+            f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 24px 0">'
+            f'<tr><td style="padding:4px 24px;text-align:center">'
+            f'<a href="{cta_url}" style="display:{display};{width_css};background:{cta_color};color:#fff;padding:14px 32px;border-radius:{cta_radius}px;'
+            f'font-weight:700;font-size:15px;text-decoration:none;letter-spacing:.03em;font-family:Arial,Helvetica,sans-serif" target="_blank">{cta_text}</a>'
+            f'</td></tr></table>'
+        )
+    # Full email HTML
+    return f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{subject}</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#26170c">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f5f5;padding:24px 12px">
+  <tr><td align="center">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06)">
+      {f'<tr><td style="padding:0">{img_html}</td></tr>' if img_html else ''}
+      <tr><td style="background:{header_bg};color:{header_color};padding:20px 24px;text-align:center;font-size:20px;font-weight:700;letter-spacing:.02em">{biz_name}</td></tr>
+      <tr><td style="padding:28px 28px 8px;font-size:15px;line-height:1.65;color:#26170c">{body_html}</td></tr>
+      {f'<tr><td style="padding:8px 0">{cta_html}</td></tr>' if cta_html else '<tr><td style="padding:0 0 24px"></td></tr>'}
+      <tr><td style="padding:18px 24px;background:#faf7f3;border-top:1px solid #eee;font-size:11px;color:#888;text-align:center;line-height:1.6">
+        Has recibido este email porque eres parte del programa de fidelización de {biz_name}.<br>
+        © {_now_year()} {biz_name}
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>"""
+
+
+def _now_year():
+    from datetime import datetime as _dt
+    return _dt.now().year
+
+
+@app.post("/api/biz/{slug}/campaigns/upload-image")
+async def upload_campaign_image(
+    slug: str, pin: str = "",
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """Upload a header image for a campaign. Returns a data URL (base64).
+    Max 8MB. Auto-resized to 1200×480 cover crop and re-encoded as JPEG."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_pro(biz)
+    ct = file.content_type or ""
+    if not ct.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Solo imágenes (JPG/PNG/WEBP)")
+    raw = await file.read()
+    if len(raw) > 8 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Imagen demasiado grande (máx 8 MB)")
+    try:
+        from PIL import Image as _PILImg
+        import io as _io
+        import base64 as _b64
+        img = _PILImg.open(_io.BytesIO(raw)).convert("RGB")
+        TW, TH = 1200, 480
+        iw, ih = img.size
+        scale_f = max(TW / iw, TH / ih)
+        nw, nh = round(iw * scale_f), round(ih * scale_f)
+        img = img.resize((nw, nh), _PILImg.LANCZOS)
+        left = (nw - TW) // 2
+        top  = (nh - TH) // 2
+        img  = img.crop((left, top, left + TW, top + TH))
+        buf = _io.BytesIO()
+        img.save(buf, format="JPEG", quality=82, optimize=True)
+        data_url = "data:image/jpeg;base64," + _b64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Error procesando la imagen: {e}")
+    return {"ok": True, "url": data_url}
+
+
 @app.post("/api/biz/{slug}/campaigns")
 def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Session = Depends(get_db)):
     verify_pin(pin, db)
@@ -6379,11 +6543,13 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
     _require_pro(biz)   # ← Free plan cannot create campaigns
     camp_id = str(uuid.uuid4())
     scheduled_at = payload.get("scheduled_at")  # ISO string or None
+    # Pack extras (image, CTA settings) into the body as a zc-meta prefix
+    body_final = _pack_campaign_meta(payload, payload.get("body", ""))
     db.execute(text(
         "INSERT INTO campaigns (id, business_id, name, subject, body, type, status, segment, scheduled_at) "
         "VALUES (:id, :bid, :name, :subject, :body, :type, :status, :segment, :scheduled_at)"
     ), {"id": camp_id, "bid": str(biz.id), "name": payload.get("name", ""),
-        "subject": payload.get("subject", ""), "body": payload.get("body", ""),
+        "subject": payload.get("subject", ""), "body": body_final,
         "type": payload.get("type", "email"), "status": payload.get("status", "draft"),
         "segment": payload.get("segment", "all"), "scheduled_at": scheduled_at})
     db.commit()
@@ -6491,16 +6657,36 @@ async def send_campaign_test(slug: str, request: Request, db: Session = Depends(
     if not subject:
         raise HTTPException(status_code=400, detail="El asunto es obligatorio")
     first_name = test_email.split("@")[0]
-    # Permitir un nombre custom opcional en el body
     custom_name = (body.get("test_name") or "").strip()
     if custom_name:
         first_name = custom_name
-    body_html = f"<p>{body_txt.replace('{nombre}', first_name)}</p>" if body_txt else ""
-    subject_text = subject.replace("{nombre}", first_name)
-    # Añadir prefijo [PRUEBA] al subject para diferenciar
+    # Reconstruir meta desde los campos top-level del payload de test
+    test_meta = {}
+    if body.get("image_url"):
+        test_meta["image_url"] = body.get("image_url")
+    if body.get("cta_text"):
+        test_meta["cta"] = {
+            "text":   body.get("cta_text"),
+            "color":  body.get("cta_color") or "#b5651d",
+            "full":   bool(body.get("cta_full")),
+            "radius": str(body.get("cta_radius") or "8"),
+            "url":    body.get("cta_url") or "",
+        }
+    # El body viene del frontend directamente (no tiene zc-meta prefix)
+    reward_name = db.execute(text(
+        "SELECT reward_name FROM card_programs WHERE business_id=:bid "
+        "ORDER BY created_at DESC LIMIT 1"
+    ), {"bid": str(biz.id)}).scalar() or "premio"
+    biz_name = getattr(biz, "name", "") or ""
+    subject_text = _resolve_campaign_vars(subject, first_name=first_name, stamps=7,
+                                          reward_name=reward_name, biz_name=biz_name)
+    full_html = _render_campaign_email_html(
+        biz, body_txt or "", test_meta,
+        subject=subject_text, first_name=first_name,
+        stamps=7, reward_name=reward_name)
     subject_final = f"[PRUEBA] {subject_text}"
     try:
-        ok = send_email(test_email, subject_final, body_html)
+        ok = send_email(test_email, subject_final, full_html)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error enviando email: {e}")
     if not ok:
@@ -6551,23 +6737,43 @@ async def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session 
                 "android_web": web_sent, "status": "sent", "type": "push"}
 
     # ── EMAIL ──
+    # Parse meta (image + CTA settings) packed into the body
+    meta, body_content = _parse_campaign_meta(body_txt or "")
+    # Fetch reward name (for {premio} variable)
+    reward_name = db.execute(text(
+        "SELECT reward_name FROM card_programs WHERE business_id=:bid "
+        "ORDER BY created_at DESC LIMIT 1"
+    ), {"bid": str(biz.id)}).scalar() or "premio"
+    biz_name = getattr(biz, "name", "") or ""
     q_base = (
-        "SELECT c.email, c.first_name FROM customers c "
+        "SELECT c.email, c.first_name, COALESCE(lc.stamps,0) FROM customers c "
         "JOIN loyalty_cards lc ON lc.customer_id=c.id "
         "WHERE c.business_id=:bid AND c.opt_in_email=TRUE AND c.email NOT LIKE '%placeholder%'"
     )
     if segment == "active":
         q_base += " AND lc.stamps > 0"
+    elif segment == "near_reward":
+        q_base += " AND lc.stamps >= (SELECT COALESCE(stamps_per_reward,10) - 2 FROM card_programs WHERE business_id=:bid ORDER BY created_at DESC LIMIT 1)"
+    elif segment == "inactive":
+        q_base += " AND lc.updated_at < NOW() - INTERVAL '30 days'"
+    elif segment == "recent":
+        q_base += " AND c.created_at > NOW() - INTERVAL '30 days'"
     customers = db.execute(text(q_base), {"bid": str(biz.id)}).fetchall()
     sent = 0
     for cust in customers:
         try:
-            body_html = f"<p>{(body_txt or '').replace('{nombre}', cust[1] or '')}</p>"
-            subject_text = (subject or "").replace("{nombre}", cust[1] or "")
-            if send_email(cust[0], subject_text, body_html):
+            email, fname, stamps = cust[0], cust[1] or "", int(cust[2] or 0)
+            subject_text = _resolve_campaign_vars(subject or "", first_name=fname,
+                                                  stamps=stamps, reward_name=reward_name,
+                                                  biz_name=biz_name)
+            full_html = _render_campaign_email_html(
+                biz, body_content, meta,
+                subject=subject_text, first_name=fname,
+                stamps=stamps, reward_name=reward_name)
+            if send_email(email, subject_text, full_html):
                 sent += 1
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[Campaign email] send error for {cust[0]}: {e}")
     db.execute(text(
         "UPDATE campaigns SET status='sent', sent_at=NOW() WHERE id=:id"
     ), {"id": campaign_id})
