@@ -230,8 +230,8 @@ section { padding: 100px 32px; }
 .price-card.featured .price-tier { color: color-mix(in oklab, var(--bg) 55%, transparent); }
 .price-featured-pill { display: inline-block; background: var(--accent); color: var(--accent-ink); font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-left: 8px; letter-spacing: .08em; }
 .price-promo-pill { display: inline-block; background: #e63946; color: #fff; font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-left: 8px; letter-spacing: .08em; text-transform: uppercase; }
-.price-old { font-family: var(--font-ui); font-size: 20px; font-weight: 500; color: color-mix(in oklab, var(--bg) 50%, transparent); margin: 20px 0 4px; display: inline-block; position: relative; }
-.price-old::after { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 2px; background: #e63946; transform: rotate(-8deg); }
+.price-old { font-family: var(--font-ui); font-size: 18px; font-weight: 500; color: color-mix(in oklab, var(--bg) 50%, transparent); margin: 20px 0 4px; }
+.price-old span { text-decoration: line-through; text-decoration-color: #e63946; text-decoration-thickness: 2px; }
 .price-amount { font-family: var(--font-display); font-size: 84px; line-height: 1; letter-spacing: -.04em; margin: 0 0 6px; display: flex; align-items: baseline; gap: 6px; }
 .price-amount .euro { font-size: 44px; font-family: var(--font-display); margin-right: 2px; }
 .price-amount .per { font-size: 18px; font-family: var(--font-ui); font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
@@ -600,7 +600,7 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
     <div class="pricing-wrap" style="grid-template-columns: 1fr; max-width: 520px; margin: 0 auto;">
       <div class="price-card featured">
         <div class="price-tier">— Pro <span class="price-promo-pill">Oferta de lanzamiento</span></div>
-        <div class="price-old">Antes 79€/mes</div>
+        <div class="price-old">Antes <span>79€/mes</span></div>
         <div class="price-amount">39<span class="euro">€</span><span class="per">/mes</span></div>
         <div class="price-save">Ahorras 40€/mes · Solo para los primeros 20 negocios</div>
         <p class="price-desc">Un único plan con todo lo que necesita tu local.</p>
