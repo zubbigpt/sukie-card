@@ -229,7 +229,12 @@ section { padding: 100px 32px; }
 .price-tier { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .price-card.featured .price-tier { color: color-mix(in oklab, var(--bg) 55%, transparent); }
 .price-featured-pill { display: inline-block; background: var(--accent); color: var(--accent-ink); font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-left: 8px; letter-spacing: .08em; }
-.price-amount { font-family: var(--font-display); font-size: 84px; line-height: 1; letter-spacing: -.04em; margin: 20px 0 6px; }
+.price-promo-pill { display: inline-block; background: #e63946; color: #fff; font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-left: 8px; letter-spacing: .08em; text-transform: uppercase; }
+.price-old { font-family: var(--font-display); font-size: 22px; color: var(--ink-3); text-decoration: line-through; margin: 20px 0 0; opacity: .7; }
+.price-card.featured .price-old { color: color-mix(in oklab, var(--bg) 55%, transparent); }
+.price-amount { font-family: var(--font-display); font-size: 84px; line-height: 1; letter-spacing: -.04em; margin: 6px 0 6px; }
+.price-save { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; font-weight: 600; margin-bottom: 18px; }
+.price-card.featured .price-save { color: var(--accent); }
 .price-amount sup { font-size: 30px; vertical-align: top; margin-top: 10px; display: inline-block; font-family: var(--font-ui); font-weight: 500; }
 .price-amount sub { font-size: 16px; font-family: var(--font-ui); font-weight: 500; color: var(--ink-3); }
 .price-card.featured .price-amount sub { color: color-mix(in oklab, var(--bg) 55%, transparent); }
@@ -591,8 +596,10 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
 
     <div class="pricing-wrap" style="grid-template-columns: 1fr; max-width: 520px; margin: 0 auto;">
       <div class="price-card featured">
-        <div class="price-tier">— Pro <span class="price-featured-pill">Todo incluido</span></div>
-        <div class="price-amount">39<sub>/mes</sub></div>
+        <div class="price-tier">— Pro <span class="price-promo-pill">Oferta de lanzamiento</span></div>
+        <div class="price-old">79€<sub style="font-size:14px;font-family:var(--font-ui);font-weight:500;"> /mes</sub></div>
+        <div class="price-amount">39<sup>€</sup><sub>/mes</sub></div>
+        <div class="price-save">Ahorras 40€/mes · Precio bloqueado para siempre</div>
         <p class="price-desc">Un único plan con todo lo que necesita tu local.</p>
         <ul class="price-features">
           <li><span class="tick">✓</span> Clientes ilimitados</li>
