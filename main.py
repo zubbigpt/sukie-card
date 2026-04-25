@@ -5447,6 +5447,20 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
     })
 
 
+@app.get("/biz/{slug}/tarjetas", response_class=HTMLResponse)
+async def biz_tarjetas_studio(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Tarjetas Studio — standalone card program editor"""
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    return templates.TemplateResponse("tarjetas_studio.html", {
+        "request":     request,
+        "biz_slug":    slug,
+        "biz_name":    biz.name,
+        "biz_api_base": BASE_URL,
+    })
+
+
 @app.get("/biz/{slug}/register", response_class=HTMLResponse)
 async def biz_register_page(slug: str, request: Request, ref: str = "", db: Session = Depends(get_db)):
     """Business-specific customer registration page"""
