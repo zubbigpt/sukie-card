@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Zubcard · Rediseño completo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; background: var(--bg); color: var(--ink); min-height: 100vh; }
+  .hero { padding: 56px 48px 40px; max-width: 1400px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; display: flex; justify-content: space-between; }
+  .eyebrow .v { color: var(--accent); }
+  h1 { font-family: var(--font-display); font-size: clamp(64px, 9vw, 148px); line-height: .92; letter-spacing: -.035em; font-weight: 400; margin: 0; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .lede { max-width: 640px; font-size: 18px; line-height: 1.55; color: var(--ink-2); margin-top: 24px; }
+
+  .grid { max-width: 1400px; margin: 40px auto 80px; padding: 0 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-xl); overflow: hidden; text-decoration: none; color: var(--ink); transition: all .25s; display: flex; flex-direction: column; }
+  .card:hover { transform: translateY(-4px); border-color: var(--ink); box-shadow: 0 20px 60px rgba(26,20,16,.08); }
+  .card .thumb { aspect-ratio: 16/10; background: var(--bg-2); position: relative; overflow: hidden; display: grid; place-items: center; }
+  .card .thumb iframe { width: 200%; height: 200%; transform: scale(.5); transform-origin: 0 0; border: none; pointer-events: none; }
+  .card .body { padding: 20px 22px; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .card .n { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; }
+  .card .t { font-family: var(--font-display); font-size: 26px; letter-spacing: -.02em; line-height: 1.05; font-weight: 400; margin-top: 4px; }
+  .card .t em { font-style: italic; color: var(--accent); }
+  .card .d { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+  .card .arr { font-family: var(--font-mono); color: var(--ink); flex-shrink: 0; }
+
+  .section-title { max-width: 1400px; margin: 60px auto 0; padding: 0 48px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 14px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+
+  footer { border-top: 1px solid var(--line-soft); padding: 28px 48px; text-align: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="eyebrow"><span>— Zubcard · Rediseño completo</span><span class="v">v4.2 · 2026</span></div>
+  <h1>Todo el <em>rediseño,</em><br>en una pantalla.</h1>
+  <p class="lede">Doce pantallas: landing, onboarding, panel del negocio, tarjeta del cliente, scanner, programa de referidos, plantillas de email. Un solo sistema de diseño — tipografía serif editorial, acento ámbar, espaciado generoso. Activa <strong>Tweaks</strong> abajo a la derecha para cambiar paleta y fuentes en vivo.</p>
+</section>
+
+<div class="section-title">— Público · Marketing</div>
+<section class="grid">
+  <a class="card" href="landing.html">
+    <div class="thumb"><iframe src="landing.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">01 · Landing</div>
+        <div class="t">Home <em>pública</em></div>
+        <div class="d">Hero, demo flow, features, precios, FAQ</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+  <a class="card" href="demo.html">
+    <div class="thumb"><iframe src="demo.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">02 · Demo</div>
+        <div class="t">Reserva <em>de demo</em></div>
+        <div class="d">Slots, form, cierre en 20 min</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+  <a class="card" href="referidos.html">
+    <div class="thumb"><iframe src="referidos.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">03 · Referidos</div>
+        <div class="t">Programa <em>de invitaciones</em></div>
+        <div class="d">Link único + historial + métricas</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+</section>
+
+<div class="section-title">— Auth</div>
+<section class="grid">
+  <a class="card" href="login.html">
+    <div class="thumb"><iframe src="login.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">04 · Login</div>
+        <div class="t">Acceso <em>al panel</em></div>
+        <div class="d">Split · brand + form</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+  <a class="card" href="register.html">
+    <div class="thumb"><iframe src="register.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">05 · Registro</div>
+        <div class="t">Crear <em>cuenta</em></div>
+        <div class="d">Preview en vivo + palette picker</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+  <a class="card" href="onboarding.html">
+    <div class="thumb"><iframe src="onboarding.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">06 · Onboarding cliente</div>
+        <div class="t">Activar <em>tarjeta</em></div>
+        <div class="d">Flow del cliente final</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+</section>
+
+<div class="section-title">— Negocio · App interna</div>
+<section class="grid">
+  <a class="card" href="dashboard.html">
+    <div class="thumb"><iframe src="dashboard.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">07 · Dashboard</div>
+        <div class="t">Panel del <em>negocio</em></div>
+        <div class="d">KPIs, chart, clientes, actividad live</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+  <a class="card" href="scanner.html">
+    <div class="thumb"><iframe src="scanner.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">08 · Scanner</div>
+        <div class="t">Escanear <em>QR</em></div>
+        <div class="d">Viewfinder + último cliente</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+  <a class="card" href="card.html">
+    <div class="thumb"><iframe src="card.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">09 · Tarjeta cliente</div>
+        <div class="t">Mi <em>tarjeta</em></div>
+        <div class="d">Progreso, wallets, historial</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+</section>
+
+<div class="section-title">— Plantillas de email</div>
+<section class="grid">
+  <a class="card" href="email_welcome.html">
+    <div class="thumb"><iframe src="email_welcome.html" loading="lazy"></iframe></div>
+    <div class="body">
+      <div>
+        <div class="n">10 · Email</div>
+        <div class="t">Bienvenida</div>
+        <div class="d">Al activar tarjeta nueva</div>
+      </div>
+      <span class="arr">→</span>
+    </div>
+  </a>
+</section>
+
+<footer>— Sistema de diseño · Instrument Serif × Geist · Ámbar sobre ink · Tokens en /assets/tokens.css</footer>
+
+<script src="assets/tweaks.js"></script>
+</body>
+</html>

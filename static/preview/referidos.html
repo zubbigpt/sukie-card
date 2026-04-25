@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Referidos · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); }
+  .nav { padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line-soft); }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .logo .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
+  .logo span { font-family: var(--font-display); font-style: italic; font-size: 20px; }
+  .nav a.back { color: var(--ink-2); text-decoration: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+
+  .hero { padding: 80px 32px 40px; max-width: 1200px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+  h1 { font-family: var(--font-display); font-size: clamp(64px, 9vw, 148px); line-height: .92; letter-spacing: -.035em; font-weight: 400; margin: 0; max-width: 1100px; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .lede { font-size: 18px; line-height: 1.55; color: var(--ink-2); margin-top: 24px; max-width: 520px; }
+
+  .grid { max-width: 1200px; margin: 60px auto; padding: 0 32px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 32px; }
+
+  .share-panel {
+    background: var(--ink); color: var(--bg);
+    padding: 36px; border-radius: var(--r-xl);
+    position: relative; overflow: hidden;
+  }
+  .share-panel::before { content: ''; position: absolute; inset: auto -20% -30% -20%; height: 80%; background: radial-gradient(ellipse at 50% 100%, color-mix(in oklab, var(--accent) 25%, transparent) 0%, transparent 60%); pointer-events: none; }
+  .share-panel .s-lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); position: relative; z-index: 2; }
+  .share-panel h2 { font-family: var(--font-display); font-size: 44px; letter-spacing: -.02em; line-height: 1.02; font-weight: 400; margin: 10px 0 24px; position: relative; z-index: 2; }
+  .share-panel h2 em { font-style: italic; color: var(--accent); }
+  .link-box { display: flex; background: color-mix(in oklab, var(--bg) 8%, transparent); border: 1px solid color-mix(in oklab, var(--bg) 18%, transparent); border-radius: 14px; align-items: center; padding: 6px 6px 6px 18px; gap: 10px; position: relative; z-index: 2; }
+  .link-box input { flex: 1; background: none; border: none; outline: none; font-family: var(--font-mono); font-size: 13px; color: var(--bg); letter-spacing: .02em; }
+  .copy-btn { padding: 10px 18px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); border: none; cursor: pointer; font-family: var(--font-ui); font-size: 13px; font-weight: 600; transition: all .18s; }
+  .copy-btn:hover { background: var(--bg); color: var(--ink); }
+  .share-channels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; position: relative; z-index: 2; }
+  .ch { padding: 14px 10px; background: color-mix(in oklab, var(--bg) 8%, transparent); border: 1px solid color-mix(in oklab, var(--bg) 14%, transparent); border-radius: 12px; text-align: center; font-size: 12px; cursor: pointer; transition: all .15s; color: var(--bg); text-decoration: none; }
+  .ch:hover { background: color-mix(in oklab, var(--bg) 14%, transparent); }
+  .ch .ch-l { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: color-mix(in oklab, var(--bg) 55%, transparent); text-transform: uppercase; margin-bottom: 4px; }
+
+  .stats-stack { display: flex; flex-direction: column; gap: 16px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-lg); padding: 24px; }
+  .stat-card .s-lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .stat-card .s-big { font-family: var(--font-display); font-size: 72px; line-height: 1; letter-spacing: -.03em; margin-top: 10px; }
+  .stat-card .s-big em { font-style: italic; color: var(--accent); }
+  .stat-card .s-cap { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+
+  .how { max-width: 1200px; margin: 60px auto; padding: 0 32px; }
+  .how-title { font-family: var(--font-display); font-size: 40px; letter-spacing: -.02em; line-height: 1; margin-bottom: 40px; font-weight: 400; }
+  .how-title em { font-style: italic; color: var(--accent); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .step { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: var(--r-lg); padding: 28px; min-height: 240px; display: flex; flex-direction: column; justify-content: space-between; }
+  .step-n { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .1em; }
+  .step-t { font-family: var(--font-display); font-size: 30px; letter-spacing: -.02em; line-height: 1.05; margin: 16px 0 8px; font-weight: 400; }
+  .step-t em { font-style: italic; color: var(--accent); }
+  .step-d { font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+
+  .history { max-width: 1200px; margin: 0 auto 80px; padding: 0 32px; }
+  .history h3 { font-family: var(--font-display); font-size: 40px; letter-spacing: -.02em; font-weight: 400; margin-bottom: 24px; }
+  .history h3 em { font-style: italic; color: var(--accent); }
+  .ref-list { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-lg); overflow: hidden; }
+  .ref { display: grid; grid-template-columns: 48px 1.5fr 1fr 1fr 100px; gap: 16px; padding: 16px 24px; border-top: 1px solid var(--line-soft); align-items: center; font-size: 14px; }
+  .ref:first-child { border-top: none; }
+  .ref-av { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-2); display: grid; place-items: center; font-family: var(--font-display); font-size: 17px; color: var(--ink-2); }
+  .ref .biz strong { display: block; font-weight: 600; }
+  .ref .biz span { font-size: 12px; color: var(--ink-3); }
+  .ref-date { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; }
+  .ref-state { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; }
+  .ref-state.pending { background: var(--bg-2); color: var(--ink-3); }
+  .ref-state.active { background: var(--ink); color: var(--accent); }
+  .ref-rew { font-family: var(--font-display); font-size: 20px; letter-spacing: -.01em; text-align: right; }
+  .ref-rew em { font-style: italic; color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .ref { grid-template-columns: 40px 1fr 80px; }
+    .ref-date, .ref-state { display: none; }
+  }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a class="logo" href="landing.html"><div class="mk">Z</div><span>Zubcard</span></a>
+  <a class="back" href="dashboard.html">← Volver al panel</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">— Programa de referidos</div>
+  <h1>Recomienda. <em>Gana meses</em> gratis.</h1>
+  <p class="lede">Cada negocio que se registra con tu enlace = 1 mes gratis para ti. Ellos reciben 20% de descuento el primer mes. Sin límite.</p>
+</section>
+
+<section class="grid">
+  <div class="share-panel">
+    <div class="s-lbl">— Tu enlace único</div>
+    <h2>Comparte y <em>gana.</em></h2>
+    <div class="link-box">
+      <input value="zubcard.com/r/laura-nomada" readonly>
+      <button class="copy-btn" onclick="this.textContent='¡Copiado!'; setTimeout(() => this.textContent='Copiar', 1600);">Copiar</button>
+    </div>
+    <div class="share-channels">
+      <a class="ch" href="#"><div class="ch-l">— Por</div>WhatsApp</a>
+      <a class="ch" href="#"><div class="ch-l">— Por</div>Email</a>
+      <a class="ch" href="#"><div class="ch-l">— En</div>Instagram</a>
+      <a class="ch" href="#"><div class="ch-l">— Generar</div>QR</a>
+    </div>
+  </div>
+
+  <div class="stats-stack">
+    <div class="stat-card">
+      <div class="s-lbl">— Referidos activos</div>
+      <div class="s-big"><em>3</em></div>
+      <div class="s-cap">De 7 invitados este trimestre</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-lbl">— Meses gratis ganados</div>
+      <div class="s-big">3</div>
+      <div class="s-cap">Se aplican automáticamente</div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <h2 class="how-title">Cómo <em>funciona.</em></h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">STEP 01 / 03</div>
+      <div>
+        <div class="step-t">Comparte <em>tu enlace.</em></div>
+        <div class="step-d">WhatsApp, email, en una tarjeta impresa. Da igual cómo. Cada clic único cuenta.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">STEP 02 / 03</div>
+      <div>
+        <div class="step-t">Ellos se <em>registran.</em></div>
+        <div class="step-d">Cuando un negocio crea su cuenta con tu link, lo vemos aparecer aquí abajo.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">STEP 03 / 03</div>
+      <div>
+        <div class="step-t">Al contratar, <em>ganas.</em></div>
+        <div class="step-d">Cuando empiezan a pagar, te sumamos 1 mes gratis. Se aplica en tu próxima factura.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="history">
+  <h3>Tus <em>invitados.</em></h3>
+  <div class="ref-list">
+    <div class="ref">
+      <div class="ref-av">P</div>
+      <div class="biz"><strong>Panadería Masa Madre</strong><span>Valencia · Panadería</span></div>
+      <div class="ref-date">Hace 6 días</div>
+      <span class="ref-state active">Activo</span>
+      <div class="ref-rew"><em>+1</em> mes</div>
+    </div>
+    <div class="ref">
+      <div class="ref-av">T</div>
+      <div class="biz"><strong>The Cookie Lab</strong><span>Barcelona · Cookies</span></div>
+      <div class="ref-date">Hace 2 semanas</div>
+      <span class="ref-state active">Activo</span>
+      <div class="ref-rew"><em>+1</em> mes</div>
+    </div>
+    <div class="ref">
+      <div class="ref-av">B</div>
+      <div class="biz"><strong>Barbería Clásica</strong><span>Bilbao · Barbería</span></div>
+      <div class="ref-date">Hace 3 semanas</div>
+      <span class="ref-state active">Activo</span>
+      <div class="ref-rew"><em>+1</em> mes</div>
+    </div>
+    <div class="ref">
+      <div class="ref-av">H</div>
+      <div class="biz"><strong>Helados La Playa</strong><span>Málaga · Heladería</span></div>
+      <div class="ref-date">Hace 1 mes</div>
+      <span class="ref-state pending">Trial</span>
+      <div class="ref-rew" style="color: var(--ink-3);">Pendiente</div>
+    </div>
+  </div>
+</section>
+
+<script src="assets/tweaks.js"></script>
+</body>
+</html>

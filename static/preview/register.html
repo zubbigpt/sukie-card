@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Crear cuenta · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); }
+  .shell { max-width: 1400px; margin: 0 auto; min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+
+  .reg-head { padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; position: absolute; top: 0; left: 0; right: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--font-display); font-style: italic; font-size: 22px; }
+  .logo-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; font-style: normal; }
+  .head-links { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .head-links a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+  .left { padding: 100px 60px 60px; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+  h1 { font-family: var(--font-display); font-size: clamp(56px, 6.5vw, 104px); line-height: .95; letter-spacing: -.03em; font-weight: 400; margin: 0; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .lede { font-size: 16px; line-height: 1.55; color: var(--ink-2); margin: 20px 0 36px; max-width: 440px; }
+
+  .stepper { display: flex; gap: 4px; margin-bottom: 32px; max-width: 440px; }
+  .stp { flex: 1; height: 3px; border-radius: 2px; background: var(--line); }
+  .stp.on { background: var(--ink); }
+  .stp.done { background: var(--accent); }
+
+  .right { background: var(--ink); color: var(--bg); padding: 100px 60px 60px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .right::before { content: ''; position: absolute; inset: auto -20% -20% -20%; height: 70%; background: radial-gradient(ellipse at 50% 100%, color-mix(in oklab, var(--accent) 20%, transparent) 0%, transparent 60%); pointer-events: none; }
+
+  .form-body { width: 100%; max-width: 480px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .field input, .field select {
+    padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface); color: var(--ink);
+    font-family: var(--font-ui); font-size: 15px; outline: none;
+    transition: all .18s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent); }
+  .field-help { font-size: 12px; color: var(--ink-3); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .biz-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .biz-chip {
+    padding: 12px 10px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
+    font-size: 13px; cursor: pointer; text-align: center; transition: all .15s;
+    color: var(--ink-2);
+  }
+  .biz-chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .biz-chip:hover:not(.on) { border-color: var(--ink); }
+
+  .btn-big {
+    width: 100%; padding: 16px 20px; border: none; border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-big:hover { background: var(--accent); color: var(--accent-ink); }
+
+  /* Right side — live preview of card */
+  .preview-wrap { width: 100%; max-width: 380px; position: relative; z-index: 2; }
+  .preview-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); margin-bottom: 14px; }
+  .phone {
+    width: 100%; aspect-ratio: 9/19;
+    border-radius: 40px; background: #1a1410; padding: 8px;
+    box-shadow: 0 40px 100px rgba(0,0,0,.4);
+  }
+  .phone-screen { width: 100%; height: 100%; border-radius: 33px; overflow: hidden; background: #f2f2f7; position: relative; }
+  .phone-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 96px; height: 26px; background: #000; border-radius: 14px; z-index: 3; }
+  .wcard {
+    margin: 58px 14px 0;
+    border-radius: 16px;
+    background: var(--prev-bg, #1a1410);
+    color: var(--prev-fg, #f4ede2);
+    padding: 18px;
+    transition: background .3s, color .3s;
+  }
+  .wc-head { display: flex; justify-content: space-between; margin-bottom: 14px; }
+  .wc-logo { font-family: var(--font-display); font-style: italic; font-size: 17px; color: var(--prev-accent, oklch(0.78 0.14 82)); }
+  .wc-biz { font-size: 9px; letter-spacing: .15em; text-transform: uppercase; opacity: .55; margin-top: 2px; }
+  .wc-num { text-align: right; }
+  .wc-num .n { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--prev-accent, oklch(0.78 0.14 82)); letter-spacing: -.02em; }
+  .wc-num .l { font-size: 8px; letter-spacing: .12em; text-transform: uppercase; opacity: .55; margin-top: 2px; }
+  .wc-stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 10px 0; }
+  .wcs { aspect-ratio: 1; border-radius: 50%; border: 1px dashed rgba(255,255,255,.25); }
+  .wcs.on { background: var(--prev-accent, oklch(0.78 0.14 82)); border-color: var(--prev-accent, oklch(0.78 0.14 82)); }
+  .wc-bot { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.1); font-size: 9px; opacity: .7; }
+  .wc-bot strong { color: var(--prev-accent, oklch(0.78 0.14 82)); font-weight: 500; }
+
+  .palette-picker { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+  .pal-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color .15s; }
+  .pal-dot.on { border-color: var(--bg); }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .right { padding: 60px 30px; }
+    .left { padding: 80px 30px 30px; }
+  }
+</style>
+</head>
+<body>
+<header class="reg-head">
+  <a class="logo" href="landing.html"><span class="logo-mark">Z</span>Zubcard</a>
+  <div class="head-links">¿Ya tienes cuenta? <a href="login.html">Entrar</a></div>
+</header>
+
+<div class="shell">
+  <div class="left">
+    <div class="eyebrow">— Registro · Paso 1 de 3</div>
+    <h1>Crea tu <em>tarjeta digital.</em></h1>
+    <p class="lede">Cuéntanos sobre tu negocio. En 5 minutos tendrás tu primera tarjeta personalizada y un QR listo para imprimir.</p>
+
+    <div class="stepper"><div class="stp on"></div><div class="stp"></div><div class="stp"></div></div>
+
+    <form class="form-body" onsubmit="event.preventDefault(); window.location='onboarding.html'">
+      <div class="field">
+        <label>Nombre del negocio</label>
+        <input type="text" id="biz-name" value="Café Nómada" placeholder="Café Nómada">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>Tu nombre</label>
+          <input type="text" value="Laura">
+        </div>
+        <div class="field">
+          <label>Ciudad</label>
+          <input type="text" value="Madrid">
+        </div>
+      </div>
+      <div class="field">
+        <label>Email de acceso</label>
+        <input type="email" value="laura@cafenomada.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" value="••••••••••">
+        <span class="field-help">Mínimo 8 caracteres</span>
+      </div>
+
+      <div class="field" style="margin-top: 8px;">
+        <label>Tipo de negocio</label>
+      </div>
+      <div class="biz-types" id="biz-types">
+        <div class="biz-chip on">Café</div>
+        <div class="biz-chip">Panadería</div>
+        <div class="biz-chip">Restaurante</div>
+        <div class="biz-chip">Heladería</div>
+        <div class="biz-chip">Cookies</div>
+        <div class="biz-chip">Otro</div>
+      </div>
+
+      <button class="btn-big" type="submit" style="margin-top: 12px;">Siguiente: personalizar tarjeta →</button>
+      <p style="font-size: 12px; color: var(--ink-3); margin-top: 14px; line-height: 1.5;">Al continuar aceptas los <a href="#" style="color: var(--ink);">Términos</a> y la <a href="#" style="color: var(--ink);">Política de privacidad</a>. Sin tarjeta de crédito hasta el final de los 14 días gratis.</p>
+    </form>
+  </div>
+
+  <div class="right">
+    <div class="preview-wrap">
+      <div class="preview-label">— Vista previa · Tu tarjeta</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="wcard" id="wcard">
+            <div class="wc-head">
+              <div>
+                <div class="wc-logo" id="pv-name">Café Nómada</div>
+                <div class="wc-biz" id="pv-biz">Café · Madrid</div>
+              </div>
+              <div class="wc-num">
+                <div class="n">3/10</div>
+                <div class="l">Sellos</div>
+              </div>
+            </div>
+            <div class="wc-stamps">
+              <div class="wcs on"></div>
+              <div class="wcs on"></div>
+              <div class="wcs on"></div>
+              <div class="wcs"></div><div class="wcs"></div><div class="wcs"></div>
+              <div class="wcs"></div><div class="wcs"></div><div class="wcs"></div>
+              <div class="wcs"></div>
+            </div>
+            <div class="wc-bot">
+              <span>Próximo premio</span>
+              <strong>Café gratis ★</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="palette-picker" id="pal-picker">
+        <div class="pal-dot on" data-bg="#1a1410" data-fg="#f4ede2" data-acc="oklch(0.78 0.14 82)" style="background: linear-gradient(135deg, #1a1410 50%, oklch(0.78 0.14 82) 50%);"></div>
+        <div class="pal-dot" data-bg="#0f1a15" data-fg="#eef5ef" data-acc="oklch(0.72 0.14 155)" style="background: linear-gradient(135deg, #0f1a15 50%, oklch(0.72 0.14 155) 50%);"></div>
+        <div class="pal-dot" data-bg="#f4ede2" data-fg="#1a1410" data-acc="oklch(0.64 0.15 55)" style="background: linear-gradient(135deg, #f4ede2 50%, oklch(0.64 0.15 55) 50%);"></div>
+        <div class="pal-dot" data-bg="#1a1220" data-fg="#efe8f0" data-acc="oklch(0.72 0.14 320)" style="background: linear-gradient(135deg, #1a1220 50%, oklch(0.72 0.14 320) 50%);"></div>
+      </div>
+      <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); margin-top: 8px;">Cambia los colores en el siguiente paso</p>
+    </div>
+  </div>
+</div>
+
+<script src="assets/tweaks.js"></script>
+<script>
+  // Live preview updates from form
+  const name = document.getElementById('biz-name');
+  const pvName = document.getElementById('pv-name');
+  const pvBiz = document.getElementById('pv-biz');
+  name.addEventListener('input', () => {
+    pvName.textContent = name.value || 'Tu Negocio';
+  });
+
+  // Business chips
+  document.querySelectorAll('#biz-types .biz-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#biz-types .biz-chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      pvBiz.textContent = `${c.textContent} · Madrid`;
+    });
+  });
+
+  // Palette swap on preview card only
+  const wcard = document.getElementById('wcard');
+  document.querySelectorAll('#pal-picker .pal-dot').forEach(d => {
+    d.addEventListener('click', () => {
+      document.querySelectorAll('#pal-picker .pal-dot').forEach(x => x.classList.remove('on'));
+      d.classList.add('on');
+      wcard.style.setProperty('--prev-bg', d.dataset.bg);
+      wcard.style.setProperty('--prev-fg', d.dataset.fg);
+      wcard.style.setProperty('--prev-accent', d.dataset.acc);
+      wcard.style.background = d.dataset.bg;
+      wcard.style.color = d.dataset.fg;
+    });
+  });
+</script>
+</body>
+</html>

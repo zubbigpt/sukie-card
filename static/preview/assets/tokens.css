@@ -1,0 +1,114 @@
+/* ZubCard redesign — design tokens (palette + type tweakable) */
+:root {
+  /* CREAM palette (default) */
+  --bg: #f4ede2;
+  --bg-2: #ede4d5;
+  --surface: #ffffff;
+  --ink: #1a1410;
+  --ink-2: #4a4239;
+  --ink-3: #8a7f71;
+  --line: #d9cdbc;
+  --line-soft: #e7ddcc;
+  --accent: oklch(0.64 0.15 55);
+  --accent-ink: #1a1410;
+  --accent-soft: oklch(0.92 0.05 70);
+  --success: oklch(0.65 0.13 155);
+  --warn: oklch(0.78 0.15 75);
+  --danger: oklch(0.58 0.18 25);
+
+  /* Typography */
+  --font-display: 'Instrument Serif', 'Fraunces', Georgia, serif;
+  --font-ui: 'Geist', 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* Spacing / radii */
+  --r-sm: 6px;
+  --r: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  /* Motion */
+  --ease: cubic-bezier(.2,.7,.2,1);
+
+  /* Placeholder colors */
+  --ph-bg: var(--bg-2);
+  --ph-fg: var(--ink-3);
+  --ph-stripe-a: rgba(26,20,16,.04);
+  --ph-stripe-b: rgba(26,20,16,.02);
+}
+
+/* ESPRESSO palette */
+html[data-palette="espresso"] {
+  --bg: #f4ede2;
+  --bg-2: #ebe1cf;
+  --surface: #ffffff;
+  --ink: #1a120b;
+  --ink-2: #4a382a;
+  --ink-3: #8a7a66;
+  --line: #d9c8ad;
+  --line-soft: #ece2cd;
+  --accent: oklch(0.78 0.14 82);
+  --accent-ink: #1a120b;
+  --accent-soft: oklch(0.94 0.06 82);
+}
+
+/* MINT palette */
+html[data-palette="mint"] {
+  --bg: #f6f5f0;
+  --bg-2: #edece4;
+  --surface: #ffffff;
+  --ink: #14130f;
+  --ink-2: #3f3e37;
+  --ink-3: #7d7c72;
+  --line: #d4d3c6;
+  --line-soft: #e5e4d8;
+  --accent: oklch(0.68 0.11 155);
+  --accent-ink: #14130f;
+  --accent-soft: oklch(0.92 0.04 155);
+}
+
+/* INK palette (dark mode option) */
+html[data-palette="ink"] {
+  --bg: #14110d;
+  --bg-2: #1e1a14;
+  --surface: #1a1611;
+  --ink: #f4ede2;
+  --ink-2: #c9bfae;
+  --ink-3: #8a7f71;
+  --line: #332c22;
+  --line-soft: #26211a;
+  --accent: oklch(0.78 0.14 82);
+  --accent-ink: #14110d;
+  --accent-soft: oklch(0.3 0.06 75);
+  --ph-bg: var(--bg-2);
+  --ph-fg: var(--ink-3);
+  --ph-stripe-a: rgba(244,237,226,.04);
+  --ph-stripe-b: rgba(244,237,226,.02);
+}
+
+/* Type pairings */
+html[data-type="serif-geist"] {
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Geist', system-ui, sans-serif;
+}
+html[data-type="fraunces-inter"] {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Inter Tight', system-ui, sans-serif;
+}
+html[data-type="epilogue-manrope"] {
+  --font-display: 'Epilogue', system-ui, sans-serif;
+  --font-ui: 'Manrope', system-ui, sans-serif;
+}
+html[data-type="bricolage-dm"] {
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Base */
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--font-ui); -webkit-font-smoothing: antialiased; font-feature-settings: "ss01","cv01"; }
+* { box-sizing: border-box; }
+.display { font-family: var(--font-display); font-weight: 400; letter-spacing: -.02em; }
+.mono { font-family: var(--font-mono); }
+.caps { text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; font-weight: 600; }
+.eyebrow { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }

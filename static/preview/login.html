@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Entrar · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); overflow: hidden; }
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; }
+  .left {
+    position: relative; padding: 40px 48px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    background: var(--ink); color: var(--bg); overflow: hidden;
+  }
+  .left::before {
+    content: ''; position: absolute; inset: -10% -10% auto -10%; height: 70%;
+    background: radial-gradient(ellipse at 30% 30%, color-mix(in oklab, var(--accent) 30%, transparent) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; position: relative; z-index: 2; }
+  .brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--bg); color: var(--ink); display: grid; place-items: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; }
+  .brand-name { font-family: var(--font-display); font-style: italic; font-size: 22px; }
+  .left-meta { position: relative; z-index: 2; font-family: var(--font-mono); font-size: 11px; color: color-mix(in oklab, var(--bg) 55%, transparent); letter-spacing: .14em; text-transform: uppercase; }
+  .left-hero { position: relative; z-index: 2; }
+  .left-hero h1 { font-family: var(--font-display); font-size: clamp(52px, 6vw, 96px); line-height: .96; letter-spacing: -.03em; font-weight: 400; }
+  .left-hero h1 em { font-style: italic; color: var(--accent); }
+  .left-hero p { margin-top: 20px; font-size: 16px; line-height: 1.55; color: color-mix(in oklab, var(--bg) 75%, transparent); max-width: 420px; }
+
+  .preview-card {
+    position: relative; z-index: 2;
+    margin-top: 28px;
+    max-width: 360px;
+    padding: 18px; border-radius: 18px;
+    background: color-mix(in oklab, var(--bg) 6%, transparent);
+    border: 1px solid color-mix(in oklab, var(--bg) 14%, transparent);
+  }
+  .preview-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: color-mix(in oklab, var(--bg) 55%, transparent); text-transform: uppercase; }
+  .preview-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .ps-num { font-family: var(--font-display); font-size: 36px; line-height: 1; letter-spacing: -.03em; color: var(--accent); }
+  .ps-lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 60%, transparent); margin-top: 6px; }
+
+  .right { display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .form-card { width: 100%; max-width: 420px; }
+  .form-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .form-title { font-family: var(--font-display); font-size: 56px; line-height: 1; letter-spacing: -.03em; font-weight: 400; margin-top: 10px; }
+  .form-title em { font-style: italic; color: var(--accent); }
+  .form-sub { color: var(--ink-2); margin: 14px 0 32px; font-size: 15px; line-height: 1.55; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .field input {
+    padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface); color: var(--ink);
+    font-family: var(--font-ui); font-size: 15px; outline: none;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .field input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent); }
+  .field-row { display: flex; justify-content: space-between; align-items: center; margin-top: -6px; margin-bottom: 24px; font-size: 13px; }
+  .field-row a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+  .btn-big {
+    width: 100%; padding: 16px 20px; border: none; border-radius: 999px;
+    background: var(--ink); color: var(--bg);
+    font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-big:hover { background: var(--accent); color: var(--accent-ink); }
+  .divider { display: flex; align-items: center; gap: 14px; margin: 22px 0; color: var(--ink-3); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .form-alt { font-size: 14px; color: var(--ink-2); text-align: center; margin-top: 22px; }
+  .form-alt a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .back { position: absolute; top: 24px; left: 24px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .left { min-height: 280px; padding: 24px; }
+    .preview-card { display: none; }
+  }
+</style>
+</head>
+<body>
+<a class="back" href="landing.html">← Volver</a>
+<div class="split">
+  <div class="left">
+    <div class="brand"><span class="brand-mark">Z</span><span class="brand-name">Zubcard</span></div>
+    <div class="left-hero">
+      <h1>Tu negocio,<br>tus <em>clientes,</em><br>un solo login.</h1>
+      <p>Entra al panel para ver quién vino hoy, gestionar tus locales y enviar campañas. Todo en una sola pantalla.</p>
+      <div class="preview-card">
+        <div class="preview-head"><span>Hoy · Café Nómada</span><span>Actualizado 10:42</span></div>
+        <div class="preview-stats">
+          <div><div class="ps-num">24</div><div class="ps-lbl">Sellos</div></div>
+          <div><div class="ps-num">3</div><div class="ps-lbl">Premios</div></div>
+          <div><div class="ps-num">8</div><div class="ps-lbl">Nuevos</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="left-meta">— Login v4.2 · Para dueños de negocio</div>
+  </div>
+
+  <div class="right">
+    <form class="form-card" onsubmit="event.preventDefault(); window.location='dashboard.html'">
+      <div class="form-eyebrow">— Acceso / Panel</div>
+      <h2 class="form-title">Bienvenido <em>de vuelta.</em></h2>
+      <p class="form-sub">Entra con el email con el que creaste tu tarjeta.</p>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" placeholder="hola@tucafe.com" value="laura@cafenomada.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" value="••••••••" autocomplete="current-password">
+      </div>
+      <div class="field-row">
+        <label style="display: flex; gap: 8px; align-items: center; color: var(--ink-2);"><input type="checkbox" checked> Recuérdame</label>
+        <a href="#">¿Olvidaste la contraseña?</a>
+      </div>
+
+      <button class="btn-big" type="submit">Entrar al panel →</button>
+
+      <div class="divider">O</div>
+
+      <div class="form-alt">
+        ¿Aún no tienes tarjeta? <a href="register.html">Crear cuenta gratis</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="assets/tweaks.js"></script>
+</body>
+</html>

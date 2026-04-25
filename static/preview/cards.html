@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tarjetas · Studio · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); overflow: hidden; }
+  .layout { display: grid; grid-template-columns: 240px 1fr; height: 100vh; }
+
+  /* sidebar (compact reuse from dashboard) */
+  .sidebar { background: var(--ink); color: var(--bg); padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
+  .side-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; }
+  .side-logo .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--bg); color: var(--ink); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 12px; }
+  .side-logo .nm { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--bg); }
+  .biz-sw { padding: 10px 12px; border-radius: 10px; background: color-mix(in oklab, var(--bg) 7%, transparent); border: 1px solid color-mix(in oklab, var(--bg) 14%, transparent); display: flex; justify-content: space-between; cursor: pointer; }
+  .biz-sw .l { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); }
+  .biz-sw .n { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--bg); }
+  .nav-g { display: flex; flex-direction: column; gap: 1px; }
+  .nav-g h5 { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 40%, transparent); margin: 0 8px 6px; font-weight: 600; }
+  .ni { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: color-mix(in oklab, var(--bg) 75%, transparent); cursor: pointer; text-decoration: none; transition: all .15s; }
+  .ni:hover { background: color-mix(in oklab, var(--bg) 8%, transparent); color: var(--bg); }
+  .ni.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .ni .pill { margin-left: auto; font-family: var(--font-mono); font-size: 9px; padding: 1px 6px; border-radius: 3px; background: color-mix(in oklab, var(--bg) 14%, transparent); }
+  .ni.on .pill { background: var(--ink); color: var(--accent); }
+
+  /* main */
+  main { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  .topbar { padding: 22px 32px; border-bottom: 1px solid var(--line-soft); display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+  .topbar h1 { font-family: var(--font-display); font-size: 48px; line-height: 1; letter-spacing: -.025em; font-weight: 400; margin: 0; }
+  .topbar h1 em { font-style: italic; color: var(--accent); }
+  .topbar .sub { font-size: 13px; color: var(--ink-3); margin-top: 6px; }
+  .top-actions { display: flex; gap: 8px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: all .18s; }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); color: var(--accent-ink); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--ink); }
+
+  /* studio split: cards rail · stage · inspector */
+  .studio { display: grid; grid-template-columns: 280px 1fr 320px; min-height: 0; }
+
+  /* RAIL */
+  .rail { border-right: 1px solid var(--line-soft); padding: 18px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .rail-h { display: flex; justify-content: space-between; align-items: baseline; }
+  .rail-h h3 { font-family: var(--font-display); font-size: 22px; letter-spacing: -.01em; font-weight: 400; margin: 0; }
+  .rail-h .count { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; }
+  .new-card-btn { padding: 14px 16px; border: 1.5px dashed var(--line); border-radius: 12px; text-align: center; color: var(--ink-2); font-size: 13px; cursor: pointer; transition: all .18s; background: transparent; font-family: var(--font-ui); }
+  .new-card-btn:hover { border-color: var(--ink); border-style: solid; color: var(--ink); background: var(--surface); }
+  .card-thumb { padding: 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line-soft); cursor: pointer; transition: all .18s; }
+  .card-thumb.on { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 28%, transparent); }
+  .card-thumb:hover:not(.on) { border-color: var(--ink); }
+  .ct-mini { aspect-ratio: 1.6; border-radius: 8px; background: var(--ink); padding: 10px; color: var(--bg); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+  .ct-mini::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 100% 0%, color-mix(in oklab, var(--accent) 25%, transparent), transparent 60%); }
+  .ct-logo { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--accent); position: relative; z-index: 1; }
+  .ct-stamps { display: flex; gap: 2px; position: relative; z-index: 1; }
+  .ct-stamps .s { width: 6px; height: 6px; border-radius: 50%; background: rgba(244,237,226,.25); }
+  .ct-stamps .s.on { background: var(--accent); }
+  .ct-foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; }
+  .ct-foot .name { font-family: var(--font-display); font-size: 15px; letter-spacing: -.01em; }
+  .ct-foot .meta { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .ct-status { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--success); margin-top: 6px; }
+  .ct-status .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
+  .ct-status.draft { color: var(--ink-3); }
+  .ct-status.draft .dot { background: var(--ink-3); }
+
+  /* STAGE — the hero */
+  .stage { position: relative; display: flex; flex-direction: column; min-height: 0; background:
+    radial-gradient(circle at 30% 20%, color-mix(in oklab, var(--accent) 8%, transparent), transparent 50%),
+    radial-gradient(circle at 80% 80%, color-mix(in oklab, var(--ink) 6%, transparent), transparent 50%),
+    var(--bg-2);
+  }
+  .stage-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--ink) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--ink) 5%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  }
+  .stage-bar { padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid color-mix(in oklab, var(--line) 60%, transparent); position: relative; z-index: 2; }
+  .face-tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border-radius: 10px; border: 1px solid var(--line-soft); }
+  .face-tab { padding: 8px 14px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--ink-2); display: flex; gap: 6px; align-items: center; font-weight: 500; }
+  .face-tab.on { background: var(--ink); color: var(--bg); }
+  .face-tab svg { width: 13px; height: 13px; }
+  .device-tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border-radius: 10px; border: 1px solid var(--line-soft); font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .device-tab { padding: 7px 12px; border-radius: 7px; cursor: pointer; color: var(--ink-3); }
+  .device-tab.on { background: var(--ink); color: var(--accent); }
+  .stage-meta { display: flex; align-items: center; gap: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .stage-meta .live { color: var(--success); display: inline-flex; align-items: center; gap: 6px; }
+  .stage-meta .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 50% { opacity: .4; } }
+
+  .stage-canvas { flex: 1; display: grid; place-items: center; padding: 32px; position: relative; z-index: 2; min-height: 0; overflow: auto; }
+
+  /* PHONE — bigger, leans into the space */
+  .phone {
+    width: 360px; aspect-ratio: 9/19;
+    border-radius: 48px;
+    background: linear-gradient(165deg, #2a2018 0%, #1a1410 60%, #0d0a07 100%);
+    padding: 9px;
+    box-shadow:
+      0 60px 140px rgba(26,20,16,.35),
+      0 25px 50px rgba(26,20,16,.18),
+      inset 0 1px 0 rgba(255,255,255,.08);
+    position: relative;
+  }
+  .phone::after {
+    content: 'iPhone 15 Pro · Wallet';
+    position: absolute; left: 50%; bottom: -34px; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap;
+  }
+  .phone-screen { width: 100%; height: 100%; border-radius: 40px; overflow: hidden; background: #000; position: relative; }
+  .dynamic-island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 110px; height: 32px; background: #000; border-radius: 20px; z-index: 5; }
+
+  .ios-status { padding: 18px 22px 0; display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, system-ui; font-size: 13px; color: #fff; font-weight: 600; height: 44px; box-sizing: border-box; }
+  .ios-status .icons { display: flex; gap: 4px; align-items: center; }
+  .ios-status svg { width: 14px; height: 12px; fill: #fff; }
+  .battery { width: 22px; height: 11px; border: 1px solid rgba(255,255,255,.5); border-radius: 3px; padding: 1px; position: relative; }
+  .battery::after { content: ''; position: absolute; right: -3px; top: 3px; width: 2px; height: 5px; background: rgba(255,255,255,.5); border-radius: 0 2px 2px 0; }
+  .battery .lvl { width: 80%; height: 100%; background: #fff; border-radius: 1px; }
+
+  .wallet-frame { padding: 8px 12px 0; height: calc(100% - 44px); background: #000; }
+  .wallet-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 4px 12px; }
+  .wallet-bar .back { color: #2997ff; font-family: -apple-system, system-ui; font-size: 15px; display: flex; align-items: center; gap: 2px; font-weight: 400; }
+  .wallet-bar .more { color: #2997ff; font-family: -apple-system, system-ui; font-size: 18px; }
+
+  /* THE CARD — same as user's design but better presented */
+  .wallet-card {
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card-bg, #1a1410);
+    color: var(--card-fg, #f4ede2);
+    box-shadow: 0 20px 50px rgba(0,0,0,.6);
+    transition: transform .5s var(--ease);
+  }
+  .wallet-card .face {
+    padding: 16px;
+    background-image:
+      radial-gradient(ellipse at 100% 0%, color-mix(in oklab, var(--card-acc, oklch(0.78 0.14 82)) 25%, transparent), transparent 65%),
+      var(--card-bg-img, none);
+    background-size: cover; background-position: center;
+  }
+  .wc-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .wc-logo { font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--card-acc, oklch(0.78 0.14 82)); line-height: 1; }
+  .wc-biz { font-size: 9px; letter-spacing: .15em; text-transform: uppercase; opacity: .55; margin-top: 4px; font-family: var(--font-mono); }
+  .wc-n { text-align: right; }
+  .wc-n .n { font-family: var(--font-display); font-size: 28px; line-height: 1; color: var(--card-acc, oklch(0.78 0.14 82)); letter-spacing: -.02em; }
+  .wc-n .l { font-size: 8px; letter-spacing: .12em; text-transform: uppercase; opacity: .55; margin-top: 3px; font-family: var(--font-mono); }
+  .wc-stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 8px 0; }
+  .wcs { aspect-ratio: 1; border-radius: 50%; border: 1px dashed rgba(255,255,255,.25); display: grid; place-items: center; font-family: var(--font-mono); font-size: 9px; opacity: .55; }
+  .wcs.on { background: var(--card-acc, oklch(0.78 0.14 82)); border-color: var(--card-acc, oklch(0.78 0.14 82)); opacity: 1; color: var(--card-bg, #1a1410); }
+  .wc-bot { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.1); margin-top: 4px; font-size: 9px; opacity: .7; font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+  .wc-bot strong { color: var(--card-acc, oklch(0.78 0.14 82)); font-weight: 500; }
+
+  .wc-divider { height: 1px; background: rgba(255,255,255,.06); }
+  .wc-back-pad { padding: 14px 16px; }
+  .wc-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .wc-f .lbl { font-size: 8px; letter-spacing: .14em; text-transform: uppercase; opacity: .5; font-family: var(--font-mono); }
+  .wc-f .val { font-size: 12px; font-weight: 500; margin-top: 2px; }
+  .wc-qr { background: #fff; border-radius: 6px; padding: 8px; display: grid; place-items: center; aspect-ratio: 1; max-width: 100px; margin: 12px auto 0; }
+  .wc-qr svg { width: 100%; height: 100%; }
+
+  /* INSPECTOR */
+  .inspector { border-left: 1px solid var(--line-soft); display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
+  .insp-tabs { display: flex; border-bottom: 1px solid var(--line-soft); padding: 0 12px; }
+  .insp-tab { padding: 14px 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .insp-tab.on { color: var(--ink); border-bottom-color: var(--ink); }
+  .insp-body { flex: 1; overflow-y: auto; padding: 22px 20px; display: flex; flex-direction: column; gap: 22px; }
+  .insp-section h4 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 12px; font-weight: 600; }
+  .field-row { display: grid; grid-template-columns: 1fr; gap: 4px; margin-bottom: 12px; }
+  .field-row label { font-size: 11px; color: var(--ink-3); }
+  .field-row input, .field-row select, .field-row textarea {
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 13px; font-family: var(--font-ui); outline: none; transition: all .15s;
+  }
+  .field-row input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 28%, transparent); }
+  .palette-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .pal {
+    aspect-ratio: 1; border-radius: 10px; cursor: pointer; position: relative;
+    border: 2px solid transparent; transition: all .15s;
+  }
+  .pal::after { content: ''; position: absolute; inset: 4px; border-radius: 7px; background: var(--p-acc); opacity: 0; transition: opacity .15s; }
+  .pal.on { border-color: var(--ink); }
+  .pal.on::after { opacity: 1; mix-blend-mode: screen; }
+
+  .stamps-counter { display: flex; align-items: center; gap: 10px; }
+  .scnt-btn { width: 30px; height: 30px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 16px; cursor: pointer; }
+  .scnt-val { flex: 1; text-align: center; font-family: var(--font-display); font-size: 22px; }
+
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--line-soft); font-size: 13px; }
+  .toggle-row:first-child { border-top: none; }
+  .toggle { width: 32px; height: 18px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; transition: background .15s; }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .18s; }
+  .toggle.on { background: var(--accent); }
+  .toggle.on::after { transform: translateX(14px); }
+
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-cell { padding: 10px 12px; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; }
+  .stat-cell .l { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .stat-cell .v { font-family: var(--font-display); font-size: 22px; line-height: 1; margin-top: 4px; letter-spacing: -.01em; }
+  .stat-cell .v em { color: var(--accent); font-style: italic; }
+
+  .insp-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; }
+  .insp-foot button { flex: 1; padding: 11px; border-radius: 10px; border: none; font-family: var(--font-ui); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .18s; }
+  .save { background: var(--ink); color: var(--bg); }
+  .save:hover { background: var(--accent); color: var(--accent-ink); }
+  .preview-link { background: var(--surface); border: 1px solid var(--line) !important; color: var(--ink); }
+  .preview-link:hover { border-color: var(--ink) !important; }
+
+  @media (max-width: 1280px) { .studio { grid-template-columns: 240px 1fr 280px; } .phone { width: 320px; } }
+  @media (max-width: 1024px) { .studio { grid-template-columns: 1fr; } .rail, .inspector { display: none; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-logo"><div class="mk">Z</div><div class="nm">Zubcard</div></div>
+    <div class="biz-sw"><div><div class="l">— Local activo</div><div class="n">Sukie Cookie</div></div><span style="opacity:.55">⌄</span></div>
+
+    <div class="nav-g">
+      <h5>Panel</h5>
+      <a class="ni" href="dashboard.html">Resumen</a>
+      <a class="ni on" href="#">Tarjetas <span class="pill">2</span></a>
+      <a class="ni" href="#">Sellos</a>
+      <a class="ni" href="#">Email & QR</a>
+      <a class="ni" href="#">Actividad</a>
+      <a class="ni" href="#">Cumpleaños</a>
+      <a class="ni" href="#">Clientes</a>
+    </div>
+    <div class="nav-g">
+      <h5>Crecimiento</h5>
+      <a class="ni" href="#">Campañas</a>
+      <a class="ni" href="referidos.html">Referidos</a>
+      <a class="ni" href="#">Reseñas Google</a>
+    </div>
+    <div class="nav-g">
+      <h5>Cuenta</h5>
+      <a class="ni" href="#">Tiendas / Locales</a>
+      <a class="ni" href="#">Plan & Billing</a>
+      <a class="ni" href="#">Soporte</a>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Gestión de <em>Tarjetas.</em></h1>
+        <div class="sub">Crea y gestiona tus programas de fidelización · 2 tarjetas activas</div>
+      </div>
+      <div class="top-actions">
+        <a class="btn btn-ghost" href="#">⤓ Exportar passes</a>
+        <a class="btn btn-primary" href="#">＋ Nueva tarjeta</a>
+      </div>
+    </div>
+
+    <div class="studio">
+      <!-- RAIL: cards list -->
+      <aside class="rail">
+        <div class="rail-h"><h3>Tus tarjetas</h3><span class="count">2 / ∞</span></div>
+        <button class="new-card-btn">＋ Nueva tarjeta</button>
+
+        <div class="card-thumb on" data-card="cookie">
+          <div class="ct-mini">
+            <div class="ct-logo">Sukie COOKIE</div>
+            <div class="ct-stamps">
+              <span class="s on"></span><span class="s on"></span><span class="s on"></span><span class="s on"></span><span class="s on"></span>
+              <span class="s"></span><span class="s"></span><span class="s"></span><span class="s"></span><span class="s"></span>
+            </div>
+          </div>
+          <div class="ct-foot"><div class="name">Sukie Cookie</div><div class="meta">10 sellos</div></div>
+          <div class="ct-status"><span class="dot"></span>Activa · 247 clientes</div>
+        </div>
+
+        <div class="card-thumb" data-card="vip">
+          <div class="ct-mini" style="background: #2a1f15;">
+            <div class="ct-logo" style="color: oklch(0.85 0.12 80)">VIP Pass</div>
+            <div class="ct-stamps">
+              <span class="s on" style="background: oklch(0.85 0.12 80)"></span><span class="s on" style="background: oklch(0.85 0.12 80)"></span><span class="s on" style="background: oklch(0.85 0.12 80)"></span><span class="s"></span><span class="s"></span>
+            </div>
+          </div>
+          <div class="ct-foot"><div class="name">VIP Pass</div><div class="meta">5 sellos</div></div>
+          <div class="ct-status draft"><span class="dot"></span>Borrador</div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line-soft);">
+          <p style="font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 8px;">— Tip</p>
+          <p style="font-size: 12px; color: var(--ink-2); line-height: 1.5; margin: 0;">Crea una tarjeta distinta para campañas de temporada (Navidad, San Valentín). Tus clientes pueden tener varias.</p>
+        </div>
+      </aside>
+
+      <!-- STAGE: huge phone preview -->
+      <div class="stage">
+        <div class="stage-grid"></div>
+        <div class="stage-bar">
+          <div class="face-tabs">
+            <div class="face-tab on" data-face="front"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/></svg>Frente</div>
+            <div class="face-tab" data-face="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h10M7 13h6"/></svg>Reverso</div>
+            <div class="face-tab" data-face="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Lock screen</div>
+          </div>
+          <div class="device-tabs">
+            <span class="device-tab on">iOS</span>
+            <span class="device-tab">Android</span>
+          </div>
+          <div class="stage-meta">
+            <span>v3 · auto-guardado 10:42</span>
+            <span class="live">EN VIVO</span>
+          </div>
+        </div>
+
+        <div class="stage-canvas">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="dynamic-island"></div>
+              <div class="ios-status">
+                <span>9:41</span>
+                <div class="icons">
+                  <svg viewBox="0 0 18 12"><path d="M1 6.5 L4 9.5 L17 0.5"/></svg>
+                  <svg viewBox="0 0 16 12"><path d="M0 8 Q8 -2 16 8"/></svg>
+                  <div class="battery"><div class="lvl"></div></div>
+                </div>
+              </div>
+              <div class="wallet-frame">
+                <div class="wallet-bar">
+                  <span class="back">‹ Wallet</span>
+                  <span class="more">···</span>
+                </div>
+                <div class="wallet-card" id="wcard">
+                  <div class="face" id="face-front">
+                    <div class="wc-head">
+                      <div>
+                        <div class="wc-logo">Sukie COOKIE</div>
+                        <div class="wc-biz">Cookies · Madrid</div>
+                      </div>
+                      <div class="wc-n"><div class="n">5/10</div><div class="l">Sellos</div></div>
+                    </div>
+                    <div class="wc-stamps">
+                      <div class="wcs on">★</div><div class="wcs on">★</div><div class="wcs on">★</div>
+                      <div class="wcs on">★</div><div class="wcs on">★</div>
+                      <div class="wcs">6</div><div class="wcs">7</div><div class="wcs">8</div><div class="wcs">9</div><div class="wcs">★</div>
+                    </div>
+                    <div class="wc-bot"><span>Próximo premio</span><strong>Cookie Gratis</strong></div>
+                  </div>
+                  <div class="wc-divider"></div>
+                  <div class="wc-back-pad">
+                    <div class="wc-fields">
+                      <div class="wc-f"><div class="lbl">— Socio</div><div class="val">Sofía V.</div></div>
+                      <div class="wc-f"><div class="lbl">— ID</div><div class="val">A-3142</div></div>
+                    </div>
+                    <div class="wc-qr">
+                      <svg viewBox="0 0 21 21" shape-rendering="crispEdges">
+                        <rect width="21" height="21" fill="#fff"/>
+                        <g fill="#000">
+                          <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+                          <rect x="14" y="0" width="7" height="7"/><rect x="15" y="1" width="5" height="5" fill="#fff"/><rect x="16" y="2" width="3" height="3"/>
+                          <rect x="0" y="14" width="7" height="7"/><rect x="1" y="15" width="5" height="5" fill="#fff"/><rect x="2" y="16" width="3" height="3"/>
+                          <rect x="9" y="0" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="9" y="3" width="2" height="1"/><rect x="12" y="4" width="1" height="1"/>
+                          <rect x="9" y="6" width="3" height="1"/><rect x="0" y="9" width="1" height="1"/><rect x="2" y="9" width="3" height="1"/><rect x="6" y="9" width="2" height="1"/>
+                          <rect x="10" y="9" width="2" height="1"/><rect x="13" y="9" width="3" height="1"/><rect x="17" y="9" width="2" height="1"/>
+                          <rect x="9" y="11" width="1" height="2"/><rect x="11" y="11" width="2" height="2"/><rect x="14" y="12" width="1" height="1"/>
+                          <rect x="16" y="11" width="1" height="2"/><rect x="18" y="12" width="2" height="1"/>
+                          <rect x="9" y="14" width="2" height="1"/><rect x="12" y="14" width="1" height="3"/><rect x="14" y="15" width="3" height="1"/>
+                          <rect x="18" y="14" width="1" height="3"/><rect x="9" y="17" width="3" height="1"/><rect x="13" y="18" width="2" height="1"/>
+                          <rect x="16" y="17" width="2" height="2"/><rect x="19" y="18" width="2" height="1"/>
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INSPECTOR -->
+      <aside class="inspector">
+        <div class="insp-tabs">
+          <span class="insp-tab on">Diseño</span>
+          <span class="insp-tab">Sellos</span>
+          <span class="insp-tab">Stats</span>
+        </div>
+        <div class="insp-body">
+          <div class="insp-section">
+            <h4>— Identidad</h4>
+            <div class="field-row"><label>Nombre del programa</label><input value="Sukie COOKIE"></div>
+            <div class="field-row"><label>Categoría</label><input value="Cookies · Madrid"></div>
+            <div class="field-row"><label>Premio</label><input value="Cookie Gratis"></div>
+          </div>
+
+          <div class="insp-section">
+            <h4>— Paleta</h4>
+            <div class="palette-grid">
+              <div class="pal on" style="background: #1a1410; --p-acc: oklch(0.78 0.14 82);" data-bg="#1a1410" data-fg="#f4ede2" data-acc="oklch(0.78 0.14 82)"></div>
+              <div class="pal" style="background: #2a1810; --p-acc: oklch(0.72 0.15 50);" data-bg="#2a1810" data-fg="#f4ede2" data-acc="oklch(0.72 0.15 50)"></div>
+              <div class="pal" style="background: #0f1a15; --p-acc: oklch(0.72 0.14 155);" data-bg="#0f1a15" data-fg="#eef5ef" data-acc="oklch(0.72 0.14 155)"></div>
+              <div class="pal" style="background: #1a1220; --p-acc: oklch(0.72 0.14 320);" data-bg="#1a1220" data-fg="#efe8f0" data-acc="oklch(0.72 0.14 320)"></div>
+              <div class="pal" style="background: #f4ede2; --p-acc: oklch(0.64 0.15 55);" data-bg="#f4ede2" data-fg="#1a1410" data-acc="oklch(0.64 0.15 55)"></div>
+              <div class="pal" style="background: #ffffff; --p-acc: oklch(0.55 0.18 250);" data-bg="#ffffff" data-fg="#0a0a0a" data-acc="oklch(0.55 0.18 250)"></div>
+              <div class="pal" style="background: #18181b; --p-acc: oklch(0.78 0.14 100);" data-bg="#18181b" data-fg="#fafafa" data-acc="oklch(0.78 0.14 100)"></div>
+              <div class="pal" style="background: linear-gradient(135deg, #f4ede2, #1a1410); --p-acc: oklch(0.78 0.14 82);" data-bg="#1a1410" data-fg="#f4ede2" data-acc="oklch(0.78 0.14 82)"></div>
+            </div>
+          </div>
+
+          <div class="insp-section">
+            <h4>— Sellos</h4>
+            <div class="field-row"><label>Cantidad necesaria para premio</label></div>
+            <div class="stamps-counter">
+              <button class="scnt-btn">−</button>
+              <span class="scnt-val">10</span>
+              <button class="scnt-btn">+</button>
+            </div>
+          </div>
+
+          <div class="insp-section">
+            <h4>— Comportamiento</h4>
+            <div class="toggle-row"><span>Notificación al ganar premio</span><div class="toggle on"></div></div>
+            <div class="toggle-row"><span>Recordatorio si dormido 30d</span><div class="toggle on"></div></div>
+            <div class="toggle-row"><span>Doble sello cumpleaños</span><div class="toggle"></div></div>
+            <div class="toggle-row"><span>QR único por cliente</span><div class="toggle on"></div></div>
+          </div>
+
+          <div class="insp-section">
+            <h4>— Rendimiento</h4>
+            <div class="stat-row">
+              <div class="stat-cell"><div class="l">Clientes</div><div class="v">247</div></div>
+              <div class="stat-cell"><div class="l">Premios</div><div class="v"><em>32</em></div></div>
+              <div class="stat-cell"><div class="l">Sellos / sem</div><div class="v">128</div></div>
+              <div class="stat-cell"><div class="l">Retención</div><div class="v">71%</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="insp-foot">
+          <button class="preview-link">Compartir QR</button>
+          <button class="save">Guardar</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="assets/tweaks.js"></script>
+<script>
+  // Face flip
+  const card = document.getElementById('wcard');
+  const face = document.getElementById('face-front');
+  document.querySelectorAll('.face-tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.face-tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    const which = t.dataset.face;
+    if (which === 'back') {
+      card.style.transform = 'translateY(-180px)';
+    } else if (which === 'lock') {
+      card.style.transform = 'scale(.85)';
+    } else {
+      card.style.transform = '';
+    }
+  }));
+
+  // Palette
+  document.querySelectorAll('.pal').forEach(p => p.addEventListener('click', () => {
+    document.querySelectorAll('.pal').forEach(x => x.classList.remove('on'));
+    p.classList.add('on');
+    card.style.setProperty('--card-bg', p.dataset.bg);
+    card.style.setProperty('--card-fg', p.dataset.fg);
+    card.style.setProperty('--card-acc', p.dataset.acc);
+    card.style.background = p.dataset.bg;
+    card.style.color = p.dataset.fg;
+    // ripple to thumbs
+  }));
+
+  // Stamp counter
+  let stampCount = 10;
+  document.querySelectorAll('.scnt-btn').forEach((b, i) => b.addEventListener('click', () => {
+    stampCount += i === 0 ? -1 : 1;
+    stampCount = Math.max(3, Math.min(20, stampCount));
+    document.querySelector('.scnt-val').textContent = stampCount;
+  }));
+
+  // Toggle
+  document.querySelectorAll('.toggle').forEach(t => t.addEventListener('click', () => t.classList.toggle('on')));
+
+  // Card switcher
+  document.querySelectorAll('.card-thumb').forEach(c => c.addEventListener('click', () => {
+    document.querySelectorAll('.card-thumb').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+  }));
+
+  // Inspector tabs
+  document.querySelectorAll('.insp-tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.insp-tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  }));
+</script>
+</body>
+</html>

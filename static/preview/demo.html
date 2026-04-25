@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Demo en vivo · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); }
+  .shell { max-width: 1200px; margin: 0 auto; padding: 40px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; min-height: 100vh; }
+  .back { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; position: absolute; top: 24px; left: 32px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+  h1 { font-family: var(--font-display); font-size: clamp(52px, 6vw, 92px); line-height: .96; letter-spacing: -.03em; font-weight: 400; margin: 0; }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 16px; line-height: 1.55; color: var(--ink-2); margin-top: 20px; max-width: 440px; }
+  .feat { display: flex; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); align-items: center; }
+  .feat:last-child { border-bottom: 1px solid var(--line); }
+  .feat-n { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--ink-3); width: 28px; }
+  .feat-t { font-family: var(--font-display); font-size: 20px; letter-spacing: -.01em; flex: 1; }
+  .feat-t em { font-style: italic; color: var(--accent); }
+  .feats { margin-top: 28px; }
+
+  .card-form {
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-xl);
+    padding: 36px; box-shadow: 0 30px 80px rgba(26,20,16,.08);
+  }
+  .form-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; }
+  .form-head .title { font-family: var(--font-display); font-size: 28px; letter-spacing: -.02em; font-weight: 400; }
+  .form-head .title em { font-style: italic; color: var(--accent); }
+  .form-head .duration { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+  .slot {
+    padding: 14px 8px; border: 1px solid var(--line); border-radius: 10px;
+    text-align: center; cursor: pointer; font-size: 13px;
+    transition: all .15s; background: var(--bg);
+  }
+  .slot-day { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase; }
+  .slot-date { font-family: var(--font-display); font-size: 22px; margin: 2px 0; letter-spacing: -.02em; }
+  .slot-time { font-size: 12px; color: var(--ink-2); }
+  .slot:hover { border-color: var(--ink); }
+  .slot.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .slot.on .slot-day, .slot.on .slot-time { color: color-mix(in oklab, var(--bg) 70%, transparent); }
+
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .field input, .field textarea, .field select {
+    padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font-ui); font-size: 14px; outline: none; transition: all .18s;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .btn-big { width: 100%; padding: 16px; border: none; border-radius: 999px; background: var(--ink); color: var(--bg); font-family: var(--font-ui); font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 10px; }
+  .btn-big:hover { background: var(--accent); color: var(--accent-ink); }
+  .fine { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 14px; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; gap: 28px; padding: 72px 20px 40px; }
+  }
+</style>
+</head>
+<body>
+<a class="back" href="landing.html">← Volver</a>
+<div class="shell">
+  <div>
+    <div class="eyebrow">— Demo · 20 min</div>
+    <h1>Te enseñamos <em>todo</em> en 20 minutos.</h1>
+    <p class="lede">Un humano, tu negocio, tu tarjeta personalizada en vivo. Sin PowerPoints, sin comerciales pesados. Prometido.</p>
+    <div class="feats">
+      <div class="feat"><span class="feat-n">01</span><span class="feat-t">Creamos tu tarjeta <em>en directo</em></span></div>
+      <div class="feat"><span class="feat-n">02</span><span class="feat-t">Ves el scanner y el dashboard <em>funcionando</em></span></div>
+      <div class="feat"><span class="feat-n">03</span><span class="feat-t">Resolvemos tus dudas <em>concretas</em></span></div>
+      <div class="feat"><span class="feat-n">04</span><span class="feat-t">Si encaja, arrancas <em>ese mismo día</em></span></div>
+    </div>
+  </div>
+
+  <form class="card-form" onsubmit="event.preventDefault(); this.innerHTML='<div style=&quot;text-align:center;padding:60px 0&quot;><div style=&quot;font-family:var(--font-display);font-size:56px;line-height:1;letter-spacing:-.03em&quot;>¡<em style=&quot;color:var(--accent);font-style:italic&quot;>Listo!</em></div><p style=&quot;color:var(--ink-2);margin-top:16px;font-size:15px&quot;>Te mandamos un email de confirmación con el link de la llamada.</p></div>'">
+    <div class="form-head">
+      <div class="title">Elige una <em>hora</em></div>
+      <div class="duration">20 min · Google Meet</div>
+    </div>
+    <div class="slots">
+      <div class="slot on"><div class="slot-day">Mié</div><div class="slot-date">17</div><div class="slot-time">10:00</div></div>
+      <div class="slot"><div class="slot-day">Mié</div><div class="slot-date">17</div><div class="slot-time">16:30</div></div>
+      <div class="slot"><div class="slot-day">Jue</div><div class="slot-date">18</div><div class="slot-time">09:30</div></div>
+      <div class="slot"><div class="slot-day">Jue</div><div class="slot-date">18</div><div class="slot-time">12:00</div></div>
+      <div class="slot"><div class="slot-day">Vie</div><div class="slot-date">19</div><div class="slot-time">11:00</div></div>
+      <div class="slot"><div class="slot-day">Vie</div><div class="slot-date">19</div><div class="slot-time">17:00</div></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Nombre</label><input value="Laura"></div>
+      <div class="field"><label>Negocio</label><input value="Café Nómada"></div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" value="laura@cafenomada.com"></div>
+    <div class="field"><label>¿Qué te gustaría resolver?</label><textarea rows="3" placeholder="Dudas, objetivos...">Tengo un café pequeño, quiero reemplazar la tarjeta de papel.</textarea></div>
+    <button class="btn-big" type="submit">Reservar mi demo →</button>
+    <p class="fine">Gratis · sin compromiso</p>
+  </form>
+</div>
+<script src="assets/tweaks.js"></script>
+<script>
+  document.querySelectorAll('.slot').forEach(s => s.addEventListener('click', () => {
+    document.querySelectorAll('.slot').forEach(x => x.classList.remove('on'));
+    s.classList.add('on');
+  }));
+</script>
+</body>
+</html>

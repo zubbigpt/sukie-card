@@ -1,0 +1,26 @@
+/* Monospace striped placeholders for imagery */
+.placeholder {
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      var(--ph-stripe-a, rgba(0,0,0,.05)) 0 8px,
+      var(--ph-stripe-b, rgba(0,0,0,.02)) 8px 16px
+    ),
+    var(--ph-bg, #eee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ph-fg, #888);
+  text-align: center;
+}
+.placeholder .ph-label {
+  padding: 6px 10px;
+  background: var(--ph-bg, #eee);
+  border: 1px dashed var(--ph-fg, #888);
+}

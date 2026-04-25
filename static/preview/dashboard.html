@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Panel · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); }
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--ink); color: var(--bg);
+    padding: 24px 20px; position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .side-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; }
+  .side-logo .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--bg); color: var(--ink); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
+  .side-logo .name { font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--bg); }
+
+  .biz-switcher {
+    padding: 12px 14px; border-radius: 12px;
+    background: color-mix(in oklab, var(--bg) 7%, transparent);
+    border: 1px solid color-mix(in oklab, var(--bg) 14%, transparent);
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+  }
+  .biz-switcher .bz-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); }
+  .biz-switcher .bz-name { font-family: var(--font-display); font-size: 17px; font-style: italic; color: var(--bg); margin-top: 2px; }
+  .biz-switcher .caret { color: color-mix(in oklab, var(--bg) 55%, transparent); font-family: var(--font-mono); }
+
+  .nav-group { display: flex; flex-direction: column; gap: 2px; }
+  .nav-group h5 { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 40%, transparent); margin: 0 8px 8px; font-weight: 600; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 14px; color: color-mix(in oklab, var(--bg) 75%, transparent);
+    cursor: pointer; text-decoration: none;
+    transition: all .15s;
+  }
+  .nav-item:hover { background: color-mix(in oklab, var(--bg) 8%, transparent); color: var(--bg); }
+  .nav-item.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .nav-item svg { width: 16px; height: 16px; stroke-width: 1.6; }
+  .nav-item .pill { margin-left: auto; font-family: var(--font-mono); font-size: 10px; padding: 2px 6px; border-radius: 4px; background: color-mix(in oklab, var(--bg) 14%, transparent); color: color-mix(in oklab, var(--bg) 75%, transparent); }
+  .nav-item.on .pill { background: var(--ink); color: var(--accent); }
+
+  .side-user {
+    margin-top: auto; padding: 12px; border-radius: 12px;
+    background: color-mix(in oklab, var(--bg) 7%, transparent);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .side-avatar { width: 34px; height: 34px; border-radius: 50%; background-size: cover; background-position: center; }
+  .side-user .who { font-size: 13px; }
+  .side-user .who strong { display: block; font-weight: 600; color: var(--bg); }
+  .side-user .who span { font-size: 11px; color: color-mix(in oklab, var(--bg) 55%, transparent); }
+
+  /* ── MAIN ── */
+  main { padding: 28px 36px 80px; max-width: 1400px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+  .topbar .tb-left h1 { font-family: var(--font-display); font-size: 56px; line-height: 1; letter-spacing: -.03em; font-weight: 400; margin: 0; }
+  .topbar .tb-left h1 em { font-style: italic; color: var(--accent); }
+  .topbar .tb-left .date { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 10px; }
+  .topbar .tb-right { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: all .18s; }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); color: var(--accent-ink); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--ink); }
+
+  /* KPI grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-lg);
+    padding: 20px 22px;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: all .2s;
+  }
+  .kpi:hover { border-color: var(--ink); transform: translateY(-2px); }
+  .kpi .k-lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); display: flex; justify-content: space-between; }
+  .kpi .k-lbl .trend { color: var(--success); font-weight: 600; }
+  .kpi .k-lbl .trend.down { color: var(--danger); }
+  .kpi .k-num { font-family: var(--font-display); font-size: 52px; letter-spacing: -.03em; line-height: 1.05; margin-top: 6px; }
+  .kpi .k-sub { font-size: 12px; color: var(--ink-3); }
+  .kpi .spark { margin-top: 8px; }
+
+  /* 2-col layout */
+  .main-grid { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-lg);
+    padding: 24px;
+  }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
+  .panel-title { font-family: var(--font-display); font-size: 28px; letter-spacing: -.02em; font-weight: 400; }
+  .panel-title em { font-style: italic; color: var(--accent); }
+  .panel-filter { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); display: flex; gap: 14px; }
+  .panel-filter span { cursor: pointer; }
+  .panel-filter span.on { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
+
+  /* Chart */
+  .chart-wrap { height: 240px; position: relative; }
+
+  /* Customer table */
+  .cust-list { display: flex; flex-direction: column; }
+  .cust {
+    display: grid; grid-template-columns: 40px 1.5fr 1fr 100px 80px;
+    gap: 16px; align-items: center;
+    padding: 14px 0; border-top: 1px solid var(--line-soft);
+    font-size: 14px;
+  }
+  .cust:first-child { border-top: none; }
+  .cust-av { width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-position: center; background-color: var(--bg-2); display: grid; place-items: center; font-family: var(--font-display); font-size: 15px; color: var(--ink-2); }
+  .cust-who strong { display: block; font-weight: 600; }
+  .cust-who span { font-size: 12px; color: var(--ink-3); }
+  .cust-date { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+  .stamp-bar { display: flex; gap: 3px; }
+  .sb { width: 6px; height: 18px; border-radius: 2px; background: var(--line); }
+  .sb.on { background: var(--ink); }
+  .sb.reward { background: var(--accent); }
+  .cust-badge { font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; letter-spacing: .08em; text-transform: uppercase; }
+  .cust-badge.new { background: color-mix(in oklab, var(--accent) 25%, transparent); color: var(--ink); }
+  .cust-badge.loyal { background: var(--ink); color: var(--accent); }
+  .cust-badge.reward { background: var(--accent); color: var(--accent-ink); }
+  .cust-badge.idle { background: var(--bg-2); color: var(--ink-3); }
+
+  /* Card preview */
+  .mini-phone { width: 100%; max-width: 280px; margin: 0 auto; aspect-ratio: 9/19; border-radius: 32px; background: #1a1410; padding: 6px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+  .mini-screen { width: 100%; height: 100%; border-radius: 27px; background: var(--bg); position: relative; overflow: hidden; }
+  .mini-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #000; border-radius: 12px; z-index: 3; }
+  .mini-wc { margin: 48px 10px 0; border-radius: 14px; background: var(--ink); color: var(--bg); padding: 14px; }
+  .mini-wc-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .mini-wc-logo { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--accent); }
+  .mini-wc-biz { font-size: 8px; letter-spacing: .15em; text-transform: uppercase; opacity: .55; margin-top: 2px; }
+  .mini-wc-n { text-align: right; }
+  .mini-wc-n .n { font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--accent); }
+  .mini-wc-n .l { font-size: 7px; letter-spacing: .12em; text-transform: uppercase; opacity: .55; margin-top: 2px; }
+  .mini-stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; padding: 8px 0; }
+  .mwcs { aspect-ratio: 1; border-radius: 50%; border: 1px dashed rgba(244,237,226,.25); }
+  .mwcs.on { background: var(--accent); border-color: var(--accent); }
+
+  /* Recent activity ticker */
+  .activity { display: flex; flex-direction: column; }
+  .act {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-top: 1px solid var(--line-soft); align-items: flex-start;
+  }
+  .act:first-child { border-top: none; }
+  .act-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 8px; flex-shrink: 0; }
+  .act-dot.new { background: var(--accent); }
+  .act-dot.stamp { background: var(--ink); }
+  .act-dot.reward { background: var(--success); }
+  .act .a-text { font-size: 13px; line-height: 1.4; }
+  .act .a-text strong { font-weight: 600; }
+  .act .a-time { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 3px; }
+
+  /* Quick actions */
+  .qa-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .qa {
+    padding: 16px; border: 1px solid var(--line-soft); border-radius: 12px;
+    background: var(--bg); cursor: pointer;
+    font-size: 13px; transition: all .15s;
+  }
+  .qa:hover { border-color: var(--ink); background: var(--surface); }
+  .qa .qa-t { font-weight: 600; margin-bottom: 2px; }
+  .qa .qa-d { font-size: 11px; color: var(--ink-3); }
+
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .main-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-logo">
+      <div class="mark">Z</div>
+      <div class="name">Zubcard</div>
+    </div>
+
+    <div class="biz-switcher">
+      <div>
+        <div class="bz-label">— Local activo</div>
+        <div class="bz-name">Café Nómada</div>
+      </div>
+      <span class="caret">⌄</span>
+    </div>
+
+    <div class="nav-group">
+      <h5>Panel</h5>
+      <a class="nav-item on" href="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Resumen
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Clientes <span class="pill">342</span>
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Tarjeta
+      </a>
+      <a class="nav-item" href="scanner.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Scanner
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <h5>Crecimiento</h5>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Campañas <span class="pill">3</span>
+      </a>
+      <a class="nav-item" href="referidos.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+        Referidos
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg>
+        Analíticas
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <h5>Ajustes</h5>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.14a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09c0 .56.33 1.07.85 1.29a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.14c.22.52.73.85 1.29.85H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configuración
+      </a>
+    </div>
+
+    <div class="side-user">
+      <div class="side-avatar" style="background-image: url('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80');"></div>
+      <div class="who"><strong>Laura M.</strong><span>laura@cafenomada.com</span></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="tb-left">
+        <h1>Hola, <em>Laura.</em></h1>
+        <div class="date">— Miércoles, 15 Abril · 10:42</div>
+      </div>
+      <div class="tb-right">
+        <a class="btn btn-ghost" href="scanner.html">Abrir scanner →</a>
+        <a class="btn btn-primary" href="#">Nueva campaña</a>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="k-lbl"><span>— Clientes</span><span class="trend">↑ 12%</span></div>
+        <div class="k-num">342</div>
+        <div class="k-sub">+38 este mes</div>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" height="30" width="100%"><polyline points="0,22 10,20 20,18 30,16 40,14 50,15 60,11 70,12 80,8 90,6 100,4" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg>
+      </div>
+      <div class="kpi">
+        <div class="k-lbl"><span>— Sellos</span><span class="trend">↑ 8%</span></div>
+        <div class="k-num">1.8k</div>
+        <div class="k-sub">124 esta semana</div>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" height="30" width="100%"><polyline points="0,20 10,22 20,15 30,18 40,10 50,14 60,8 70,11 80,6 90,9 100,3" fill="none" stroke="var(--ink)" stroke-width="1.5"/></svg>
+      </div>
+      <div class="kpi">
+        <div class="k-lbl"><span>— Premios</span><span class="trend">↑ 22%</span></div>
+        <div class="k-num">87</div>
+        <div class="k-sub">12 por canjear</div>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" height="30" width="100%"><polyline points="0,25 10,20 20,22 30,14 40,16 50,10 60,12 70,7 80,9 90,5 100,2" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg>
+      </div>
+      <div class="kpi">
+        <div class="k-lbl"><span>— Retención</span><span class="trend down">↓ 2%</span></div>
+        <div class="k-num">64<sub style="font-size: 20px; color: var(--ink-3);">%</sub></div>
+        <div class="k-sub">Vuelven en 30d</div>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" height="30" width="100%"><polyline points="0,10 10,8 20,11 30,13 40,10 50,14 60,12 70,16 80,14 90,18 100,16" fill="none" stroke="var(--ink-3)" stroke-width="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="main-grid">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Chart panel -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Sellos <em>esta semana</em></div>
+            <div class="panel-filter">
+              <span>Día</span>
+              <span class="on">Semana</span>
+              <span>Mes</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <svg viewBox="0 0 700 240" preserveAspectRatio="none" width="100%" height="100%">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="var(--accent)" stop-opacity=".35"/>
+                  <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g stroke="var(--line-soft)" stroke-width="1">
+                <line x1="0" y1="60" x2="700" y2="60"/>
+                <line x1="0" y1="120" x2="700" y2="120"/>
+                <line x1="0" y1="180" x2="700" y2="180"/>
+              </g>
+              <path d="M0,170 L100,130 L200,150 L300,90 L400,110 L500,50 L600,70 L700,40 L700,240 L0,240 Z" fill="url(#g1)"/>
+              <path d="M0,170 L100,130 L200,150 L300,90 L400,110 L500,50 L600,70 L700,40" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <g fill="var(--ink)">
+                <circle cx="0" cy="170" r="4"/><circle cx="100" cy="130" r="4"/><circle cx="200" cy="150" r="4"/><circle cx="300" cy="90" r="4"/><circle cx="400" cy="110" r="4"/><circle cx="500" cy="50" r="4"/><circle cx="600" cy="70" r="4"/>
+                <circle cx="700" cy="40" r="5" fill="var(--accent)" stroke="var(--ink)" stroke-width="2"/>
+              </g>
+            </svg>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; margin-top: 10px;">
+            <span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>HOY</span>
+          </div>
+        </div>
+
+        <!-- Customer list -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Clientes <em>recientes</em></div>
+            <a href="#" style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); letter-spacing: .12em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px;">Ver todos →</a>
+          </div>
+          <div class="cust-list">
+            <div class="cust">
+              <div class="cust-av" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80');"></div>
+              <div class="cust-who"><strong>Sofía Vargas</strong><span>sofia@gmail.com</span></div>
+              <div class="cust-date">hoy, 10:12</div>
+              <div class="stamp-bar"><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb reward"></div><div class="sb"></div><div class="sb"></div></div>
+              <div class="cust-badge loyal">Loyal</div>
+            </div>
+            <div class="cust">
+              <div class="cust-av">M</div>
+              <div class="cust-who"><strong>Marcos León</strong><span>marcos@hey.com</span></div>
+              <div class="cust-date">hoy, 09:48</div>
+              <div class="stamp-bar"><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb reward"></div><div class="sb reward"></div><div class="sb reward"></div><div class="sb reward"></div><div class="sb reward"></div><div class="sb reward"></div><div class="sb reward"></div></div>
+              <div class="cust-badge reward">Premio</div>
+            </div>
+            <div class="cust">
+              <div class="cust-av" style="background-image: url('https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&q=80');"></div>
+              <div class="cust-who"><strong>Paula Serra</strong><span>paula.serra@gmail.com</span></div>
+              <div class="cust-date">ayer, 19:31</div>
+              <div class="stamp-bar"><div class="sb on"></div><div class="sb on"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div></div>
+              <div class="cust-badge new">Nuevo</div>
+            </div>
+            <div class="cust">
+              <div class="cust-av" style="background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80');"></div>
+              <div class="cust-who"><strong>Javier Ruiz</strong><span>j.ruiz@outlook.com</span></div>
+              <div class="cust-date">ayer, 16:04</div>
+              <div class="stamp-bar"><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb on"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div></div>
+              <div class="cust-badge loyal">Loyal</div>
+            </div>
+            <div class="cust">
+              <div class="cust-av">C</div>
+              <div class="cust-who"><strong>Clara Beltrán</strong><span>clara@proton.me</span></div>
+              <div class="cust-date">2 abr, 11:18</div>
+              <div class="stamp-bar"><div class="sb on"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div><div class="sb"></div></div>
+              <div class="cust-badge idle">Dormido</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Card preview panel -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title" style="font-size: 22px;">Tu <em>tarjeta</em></div>
+            <a href="#" style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); letter-spacing: .12em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px;">Editar</a>
+          </div>
+          <div class="mini-phone">
+            <div class="mini-screen">
+              <div class="mini-notch"></div>
+              <div class="mini-wc">
+                <div class="mini-wc-head">
+                  <div>
+                    <div class="mini-wc-logo">Café Nómada</div>
+                    <div class="mini-wc-biz">Madrid</div>
+                  </div>
+                  <div class="mini-wc-n">
+                    <div class="n">7/10</div>
+                    <div class="l">Sellos</div>
+                  </div>
+                </div>
+                <div class="mini-stamps">
+                  <div class="mwcs on"></div><div class="mwcs on"></div><div class="mwcs on"></div>
+                  <div class="mwcs on"></div><div class="mwcs on"></div><div class="mwcs on"></div>
+                  <div class="mwcs on"></div><div class="mwcs"></div><div class="mwcs"></div><div class="mwcs"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title" style="font-size: 22px;">En <em>vivo</em></div>
+            <div style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--success); letter-spacing: .12em; text-transform: uppercase;">
+              <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite;"></span> Online
+            </div>
+          </div>
+          <div class="activity">
+            <div class="act"><span class="act-dot reward"></span><div><div class="a-text"><strong>Marcos León</strong> canjeó un premio</div><div class="a-time">Hace 3 min</div></div></div>
+            <div class="act"><span class="act-dot stamp"></span><div><div class="a-text"><strong>Sofía Vargas</strong> recibió su sello nº 7</div><div class="a-time">Hace 12 min</div></div></div>
+            <div class="act"><span class="act-dot new"></span><div><div class="a-text"><strong>Paula Serra</strong> se registró</div><div class="a-time">Ayer, 19:31</div></div></div>
+            <div class="act"><span class="act-dot stamp"></span><div><div class="a-text"><strong>Javier Ruiz</strong> recibió su sello nº 5</div><div class="a-time">Ayer, 16:04</div></div></div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title" style="font-size: 22px;">Atajos</div>
+          </div>
+          <div class="qa-grid">
+            <div class="qa" onclick="window.location='scanner.html'"><div class="qa-t">Abrir scanner</div><div class="qa-d">Añadir sello manual</div></div>
+            <div class="qa"><div class="qa-t">Descargar QR</div><div class="qa-d">PDF para imprimir</div></div>
+            <div class="qa"><div class="qa-t">Campaña push</div><div class="qa-d">A tus 342 clientes</div></div>
+            <div class="qa" onclick="window.location='referidos.html'"><div class="qa-t">Referidos</div><div class="qa-d">Invita otros locales</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }</style>
+<script src="assets/tweaks.js"></script>
+</body>
+</html>

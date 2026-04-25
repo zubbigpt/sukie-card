@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mi tarjeta · Café Nómada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); padding: 32px 20px 60px; display: flex; flex-direction: column; align-items: center; }
+  .top { width: 100%; max-width: 440px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+  .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); }
+  .brand .mk { width: 22px; height: 22px; border-radius: 6px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 11px; }
+  .brand span { font-family: var(--font-display); font-style: italic; font-size: 16px; }
+  .mini-info { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; }
+
+  .hello { width: 100%; max-width: 440px; margin-bottom: 24px; }
+  .hello .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .hello h1 { font-family: var(--font-display); font-size: 48px; line-height: .98; letter-spacing: -.02em; font-weight: 400; margin-top: 8px; }
+  .hello h1 em { font-style: italic; color: var(--accent); }
+  .hello p { color: var(--ink-2); margin-top: 8px; font-size: 14px; line-height: 1.5; }
+
+  /* The card */
+  .card {
+    width: 100%; max-width: 440px;
+    border-radius: 24px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(26,20,16,.18);
+    background: var(--ink); color: var(--bg);
+  }
+  .card-top { padding: 22px 24px 18px; position: relative; }
+  .card-top::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 0% 0%, color-mix(in oklab, var(--accent) 18%, transparent) 0%, transparent 70%); pointer-events: none; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2; }
+  .card-logo { font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--accent); letter-spacing: -.01em; line-height: 1; }
+  .card-biz { font-family: var(--font-mono); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); margin-top: 6px; }
+  .card-tier { font-family: var(--font-mono); font-size: 10px; padding: 4px 8px; border-radius: 4px; letter-spacing: .1em; text-transform: uppercase; background: color-mix(in oklab, var(--bg) 8%, transparent); color: color-mix(in oklab, var(--bg) 80%, transparent); }
+
+  .card-member { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 28px; position: relative; z-index: 2; }
+  .card-member .name { font-family: var(--font-display); font-size: 32px; letter-spacing: -.02em; line-height: 1; }
+  .card-member .since { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; color: color-mix(in oklab, var(--bg) 55%, transparent); text-transform: uppercase; text-align: right; }
+  .card-member .since strong { color: var(--accent); display: block; font-family: var(--font-display); font-size: 16px; letter-spacing: -.01em; font-weight: 400; text-transform: none; margin-top: 2px; }
+
+  .card-body { background: var(--bg); color: var(--ink); padding: 24px; }
+  .progress-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .progress-head .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .progress-head .count { font-family: var(--font-display); font-size: 36px; letter-spacing: -.02em; line-height: 1; }
+  .progress-head .count em { font-style: italic; color: var(--accent); }
+
+  .stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .stp-cell {
+    aspect-ratio: 1; border-radius: 50%;
+    border: 1.5px dashed var(--line);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-size: 13px; color: var(--ink-3);
+    transition: all .3s var(--ease);
+  }
+  .stp-cell.on {
+    background: var(--ink); color: var(--accent);
+    border: 1.5px solid var(--ink);
+    font-family: var(--font-display); font-size: 20px;
+  }
+  .stp-cell.reward {
+    background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+    font-family: var(--font-display); font-size: 22px;
+  }
+  .stp-cell.next {
+    border-style: solid; border-color: var(--ink); color: var(--ink);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 35%, transparent); } }
+
+  .milestone {
+    margin-top: 22px; padding: 16px; border-radius: 14px;
+    background: var(--bg-2); border: 1px solid var(--line-soft);
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+  }
+  .milestone .m-text .m-lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .milestone .m-text .m-val { font-family: var(--font-display); font-size: 22px; letter-spacing: -.01em; line-height: 1; margin-top: 4px; }
+  .milestone .m-text .m-val em { font-style: italic; color: var(--accent); }
+  .milestone .m-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-display); font-size: 22px; flex-shrink: 0; }
+
+  /* Wallet actions */
+  .wallets {
+    width: 100%; max-width: 440px; margin-top: 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .wbtn {
+    padding: 14px; border-radius: 14px;
+    border: 1px solid var(--line); background: var(--surface);
+    font-family: var(--font-ui); font-size: 13px; color: var(--ink);
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    text-decoration: none; transition: all .18s;
+  }
+  .wbtn:hover { border-color: var(--ink); transform: translateY(-2px); }
+  .wbtn svg { width: 22px; height: 22px; flex-shrink: 0; }
+  .wbtn .w-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; }
+  .wbtn .w-name { font-weight: 600; }
+
+  /* Next reward / bonus */
+  .info-grid { width: 100%; max-width: 440px; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mini-panel { padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line-soft); }
+  .mini-panel .m-lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .mini-panel .m-big { font-family: var(--font-display); font-size: 32px; letter-spacing: -.02em; line-height: 1; margin-top: 6px; }
+  .mini-panel .m-big em { font-style: italic; color: var(--accent); }
+  .mini-panel .m-cap { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+
+  .history { width: 100%; max-width: 440px; margin-top: 28px; }
+  .history h4 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; font-weight: 600; }
+  .hitem { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--line-soft); font-size: 13px; }
+  .hitem:first-of-type { border-top: none; }
+  .hitem .d { font-family: var(--font-mono); color: var(--ink-3); font-size: 11px; letter-spacing: .08em; }
+  .hitem strong { font-weight: 500; }
+  .hitem .icon { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-2); display: inline-grid; place-items: center; font-size: 12px; margin-right: 8px; color: var(--ink); }
+  .hitem .icon.accent { background: var(--accent); color: var(--accent-ink); }
+
+  .referral {
+    width: 100%; max-width: 440px; margin-top: 28px;
+    padding: 20px; border-radius: 16px;
+    background: var(--ink); color: var(--bg);
+    position: relative; overflow: hidden;
+  }
+  .referral::before { content: ''; position: absolute; inset: auto -30% -30% auto; width: 60%; height: 80%; background: radial-gradient(ellipse, color-mix(in oklab, var(--accent) 35%, transparent) 0%, transparent 60%); pointer-events: none; }
+  .referral .r-lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); position: relative; z-index: 2; }
+  .referral h3 { font-family: var(--font-display); font-size: 26px; letter-spacing: -.02em; line-height: 1.05; font-weight: 400; margin-top: 8px; position: relative; z-index: 2; }
+  .referral h3 em { font-style: italic; color: var(--accent); }
+  .referral .r-btn { margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-size: 13px; font-weight: 600; position: relative; z-index: 2; }
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="brand" href="landing.html"><span class="mk">Z</span><span>Zubcard</span></a>
+  <span class="mini-info">Socio #A-3142</span>
+</div>
+
+<div class="hello">
+  <div class="eyebrow">— Mi tarjeta</div>
+  <h1>Hola, <em>Sofía.</em><br>Te faltan <em>3 sellos.</em></h1>
+  <p>Un café más y estás a un paso del premio. ¿Nos vemos hoy?</p>
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <div class="card-head">
+      <div>
+        <div class="card-logo">Café Nómada</div>
+        <div class="card-biz">Madrid · Desde 2021</div>
+      </div>
+      <span class="card-tier">Loyal</span>
+    </div>
+    <div class="card-member">
+      <div>
+        <div class="name">Sofía V.</div>
+      </div>
+      <div class="since">Miembro desde<strong>Feb 2025</strong></div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="progress-head">
+      <span class="lbl">— Progreso</span>
+      <span class="count">7<em>/10</em></span>
+    </div>
+    <div class="stamps">
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell on">★</div>
+      <div class="stp-cell next">8</div>
+      <div class="stp-cell">9</div>
+      <div class="stp-cell reward">★</div>
+    </div>
+
+    <div class="milestone">
+      <div class="m-text">
+        <div class="m-lbl">— Próximo premio</div>
+        <div class="m-val"><em>Café gratis</em> · cualquier tamaño</div>
+      </div>
+      <div class="m-icon">★</div>
+    </div>
+  </div>
+</div>
+
+<div class="wallets">
+  <a class="wbtn" href="#">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+    <div><div class="w-lbl">— Añadir a</div><div class="w-name">Apple Wallet</div></div>
+  </a>
+  <a class="wbtn" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+    <div><div class="w-lbl">— Guardar en</div><div class="w-name">Google Wallet</div></div>
+  </a>
+</div>
+
+<div class="info-grid">
+  <div class="mini-panel">
+    <div class="m-lbl">— Total sellos</div>
+    <div class="m-big">24</div>
+    <div class="m-cap">Desde febrero 2025</div>
+  </div>
+  <div class="mini-panel">
+    <div class="m-lbl">— Premios</div>
+    <div class="m-big"><em>2</em></div>
+    <div class="m-cap">Cafés canjeados</div>
+  </div>
+</div>
+
+<div class="history">
+  <h4>— Últimos movimientos</h4>
+  <div class="hitem"><span><span class="icon">+</span>Sello nº 7</span><span class="d">Hoy, 10:12</span></div>
+  <div class="hitem"><span><span class="icon">+</span>Sello nº 6</span><span class="d">12 abr, 09:40</span></div>
+  <div class="hitem"><span><span class="icon accent">★</span>Premio canjeado · café gratis</span><span class="d">3 abr, 11:22</span></div>
+  <div class="hitem"><span><span class="icon">+</span>Sello nº 5</span><span class="d">30 mar, 08:15</span></div>
+  <div class="hitem"><span><span class="icon">+</span>Sello nº 4</span><span class="d">22 mar, 19:48</span></div>
+</div>
+
+<div class="referral">
+  <div class="r-lbl">— Invita y gana</div>
+  <h3>Invita a un amigo, <em>gana un sello.</em></h3>
+  <a class="r-btn" href="#">Compartir mi enlace →</a>
+</div>
+
+<script src="assets/tweaks.js"></script>
+</body>
+</html>

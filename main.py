@@ -7,6 +7,7 @@ import json
 import time
 from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Request, Query, File, UploadFile, Body
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from urllib.parse import urlencode
 import httpx
 from fastapi.templating import Jinja2Templates
@@ -65,6 +66,12 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ZubCard API")
 templates = Jinja2Templates(directory="templates")
+
+# ── STATIC FILES (Claude Design previews) ────────────────────────────────────
+import os as _os
+_static_dir = _os.path.join(_os.path.dirname(__file__), "static")
+if _os.path.isdir(_static_dir):
+    app.mount("/static", StaticFiles(directory=_static_dir), name="static")
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(

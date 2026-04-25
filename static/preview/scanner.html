@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Scanner · Zubcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Epilogue:wght@400..900&family=Manrope:wght@300..800&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Sans:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--ink); color: var(--bg); overflow: hidden; }
+
+  .scan-shell { display: grid; grid-template-columns: 1.4fr 1fr; min-height: 100vh; }
+
+  /* ── LEFT: viewfinder ── */
+  .viewfinder {
+    position: relative;
+    background: radial-gradient(ellipse at center, #2a1f18 0%, #0f0a06 100%);
+    overflow: hidden;
+  }
+  .vf-top { position: absolute; top: 24px; left: 24px; right: 24px; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+  .back-home {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-radius: 999px;
+    background: color-mix(in oklab, var(--bg) 10%, transparent);
+    color: var(--bg); text-decoration: none;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    border: 1px solid color-mix(in oklab, var(--bg) 18%, transparent);
+    transition: all .18s;
+  }
+  .back-home:hover { background: color-mix(in oklab, var(--bg) 18%, transparent); }
+
+  .vf-mode { display: flex; gap: 4px; padding: 4px; background: color-mix(in oklab, var(--bg) 10%, transparent); border: 1px solid color-mix(in oklab, var(--bg) 16%, transparent); border-radius: 999px; backdrop-filter: blur(10px); }
+  .vf-mode span { padding: 8px 16px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 60%, transparent); cursor: pointer; transition: all .15s; }
+  .vf-mode span.on { background: var(--accent); color: var(--accent-ink); }
+
+  /* Camera viewport */
+  .cam {
+    position: absolute;
+    inset: 80px 40px 160px;
+    border-radius: 24px;
+    background: #1a140f;
+    background-image:
+      radial-gradient(circle at 30% 40%, rgba(244,180,108,.12) 0%, transparent 40%),
+      radial-gradient(circle at 70% 60%, rgba(244,180,108,.06) 0%, transparent 40%),
+      url('https://images.unsplash.com/photo-1559305616-3f99cd43e353?w=1200&q=80');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 80px rgba(0,0,0,.5);
+  }
+  .cam::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(15,10,6,.5) 0%, transparent 30%, transparent 70%, rgba(15,10,6,.6) 100%);
+    pointer-events: none;
+  }
+
+  /* Reticle */
+  .reticle {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(56%, 380px); aspect-ratio: 1;
+    border-radius: 28px;
+    z-index: 3;
+  }
+  .reticle::before {
+    content: ''; position: absolute; inset: 0;
+    box-shadow: 0 0 0 9999px rgba(15,10,6,.55);
+    border-radius: 28px;
+  }
+  .r-corner { position: absolute; width: 44px; height: 44px; border: 3px solid var(--accent); }
+  .r-corner.tl { top: -3px; left: -3px; border-right: none; border-bottom: none; border-top-left-radius: 28px; }
+  .r-corner.tr { top: -3px; right: -3px; border-left: none; border-bottom: none; border-top-right-radius: 28px; }
+  .r-corner.bl { bottom: -3px; left: -3px; border-right: none; border-top: none; border-bottom-left-radius: 28px; }
+  .r-corner.br { bottom: -3px; right: -3px; border-left: none; border-top: none; border-bottom-right-radius: 28px; }
+
+  .scan-line {
+    position: absolute; left: 10%; right: 10%; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%);
+    box-shadow: 0 0 16px var(--accent);
+    animation: scan 2.4s ease-in-out infinite;
+  }
+  @keyframes scan {
+    0%, 100% { top: 12%; }
+    50% { top: 88%; }
+  }
+
+  .vf-hint {
+    position: absolute; left: 50%; transform: translateX(-50%); bottom: 80px;
+    text-align: center; z-index: 4;
+  }
+  .vf-hint-l { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .vf-hint-l::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.4s infinite; }
+  .vf-hint-t { font-family: var(--font-display); font-size: clamp(28px, 3.2vw, 44px); letter-spacing: -.02em; line-height: 1.05; font-weight: 400; color: var(--bg); }
+  .vf-hint-t em { font-style: italic; color: var(--accent); }
+
+  .vf-bottom { position: absolute; left: 24px; right: 24px; bottom: 24px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+  .stat-chip {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 10px 16px; border-radius: 14px;
+    background: color-mix(in oklab, var(--bg) 8%, transparent);
+    border: 1px solid color-mix(in oklab, var(--bg) 14%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .stat-chip .l { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); }
+  .stat-chip .v { font-family: var(--font-display); font-size: 22px; line-height: 1; color: var(--bg); letter-spacing: -.02em; }
+  .stat-chip .v em { font-style: italic; color: var(--accent); }
+
+  .action-row { display: flex; gap: 10px; }
+  .circle-btn {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: color-mix(in oklab, var(--bg) 10%, transparent);
+    border: 1px solid color-mix(in oklab, var(--bg) 18%, transparent);
+    color: var(--bg); display: grid; place-items: center; cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all .18s;
+  }
+  .circle-btn:hover { background: color-mix(in oklab, var(--bg) 18%, transparent); }
+  .circle-btn svg { width: 20px; height: 20px; stroke-width: 1.8; }
+  .circle-btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); width: 64px; height: 64px; }
+  .circle-btn.primary:hover { background: var(--bg); color: var(--ink); }
+
+  /* ── RIGHT: last customer panel ── */
+  .side {
+    background: var(--bg); color: var(--ink);
+    padding: 32px 36px 40px;
+    display: flex; flex-direction: column; gap: 24px;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  .side-head {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .side-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+  .side-logo .mk { width: 24px; height: 24px; border-radius: 7px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 12px; }
+  .side-logo .n { font-family: var(--font-display); font-style: italic; font-size: 18px; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: color-mix(in oklab, var(--success) 14%, transparent);
+    color: var(--success);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .live-pill::before { content: ''; width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 1.4s infinite; }
+
+  .last-head { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .last-title { font-family: var(--font-display); font-size: 48px; line-height: .98; letter-spacing: -.03em; font-weight: 400; margin-top: 8px; }
+  .last-title em { font-style: italic; color: var(--accent); }
+
+  /* customer card */
+  .cust-card {
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-lg);
+  }
+  .cust-row { display: flex; gap: 14px; align-items: center; }
+  .cust-av {
+    width: 56px; height: 56px; border-radius: 50%;
+    background-size: cover; background-position: center;
+    flex-shrink: 0;
+  }
+  .cust-who .name { font-family: var(--font-display); font-size: 26px; letter-spacing: -.02em; line-height: 1; }
+  .cust-who .meta { font-size: 12px; color: var(--ink-3); margin-top: 4px; display: flex; gap: 10px; }
+  .cust-who .meta strong { color: var(--ink-2); font-weight: 500; }
+  .cust-tier {
+    margin-left: auto;
+    font-family: var(--font-mono); font-size: 10px; padding: 4px 8px; border-radius: 4px;
+    background: var(--ink); color: var(--accent);
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+
+  .progress { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line-soft); }
+  .progress-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .progress-head .pl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .progress-head .pc { font-family: var(--font-display); font-size: 26px; line-height: 1; letter-spacing: -.02em; }
+  .progress-head .pc em { font-style: italic; color: var(--accent); }
+  .stamps-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+  .sr-cell {
+    aspect-ratio: 1; border-radius: 50%;
+    border: 1.5px dashed var(--line);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-size: 10px; color: var(--ink-3);
+  }
+  .sr-cell.on { background: var(--ink); color: var(--accent); border: 1.5px solid var(--ink); font-family: var(--font-display); font-size: 11px; }
+  .sr-cell.new { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); animation: pop .6s var(--ease); font-family: var(--font-display); font-size: 13px; }
+  @keyframes pop {
+    0% { transform: scale(.4); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .sr-cell.reward { border-color: var(--accent); color: var(--accent); border-style: solid; }
+
+  .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+  .abtn {
+    padding: 14px; border-radius: 12px;
+    font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    cursor: pointer; transition: all .15s;
+  }
+  .abtn:hover { border-color: var(--ink); }
+  .abtn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .abtn.primary:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .abtn.reward { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); grid-column: 1 / -1; }
+  .abtn.reward:hover { background: var(--ink); color: var(--accent); }
+
+  /* recent */
+  .recent-head { display: flex; align-items: baseline; justify-content: space-between; margin-top: 6px; }
+  .recent-head h3 { font-family: var(--font-display); font-size: 22px; letter-spacing: -.02em; font-weight: 400; margin: 0; }
+  .recent-head h3 em { font-style: italic; color: var(--accent); }
+  .recent-head .v { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+  .recent { display: flex; flex-direction: column; }
+  .recent-item {
+    display: grid; grid-template-columns: 32px 1fr auto auto; gap: 12px;
+    padding: 12px 0; border-top: 1px solid var(--line-soft);
+    align-items: center; font-size: 13px;
+  }
+  .recent-item:first-child { border-top: none; }
+  .ri-av { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-2); background-size: cover; background-position: center; display: grid; place-items: center; font-family: var(--font-display); font-size: 13px; color: var(--ink-2); }
+  .ri-name strong { font-weight: 600; display: block; font-size: 13px; }
+  .ri-name span { font-size: 11px; color: var(--ink-3); }
+  .ri-time { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .08em; }
+  .ri-act { font-family: var(--font-mono); font-size: 10px; padding: 3px 7px; border-radius: 4px; letter-spacing: .08em; text-transform: uppercase; }
+  .ri-act.stamp { background: var(--bg-2); color: var(--ink); }
+  .ri-act.reward { background: var(--accent); color: var(--accent-ink); }
+  .ri-act.new { background: var(--ink); color: var(--accent); }
+
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+
+  @media (max-width: 980px) {
+    .scan-shell { grid-template-columns: 1fr; }
+    .viewfinder { min-height: 70vh; }
+    .cam { inset: 70px 20px 140px; }
+  }
+</style>
+</head>
+<body>
+<div class="scan-shell">
+  <!-- LEFT — viewfinder -->
+  <div class="viewfinder">
+    <div class="vf-top">
+      <a class="back-home" href="dashboard.html">← Panel</a>
+      <div class="vf-mode">
+        <span class="on">QR</span>
+        <span>Manual</span>
+        <span>NFC</span>
+      </div>
+    </div>
+
+    <div class="cam">
+      <div class="reticle">
+        <span class="r-corner tl"></span>
+        <span class="r-corner tr"></span>
+        <span class="r-corner bl"></span>
+        <span class="r-corner br"></span>
+        <div class="scan-line"></div>
+      </div>
+      <div class="vf-hint">
+        <div class="vf-hint-l">Escaneando · Café Nómada</div>
+        <div class="vf-hint-t">Apunta al <em>QR del cliente</em></div>
+      </div>
+    </div>
+
+    <div class="vf-bottom">
+      <div class="stat-chip">
+        <span class="l">— Sellos hoy</span>
+        <span class="v"><em>24</em></span>
+      </div>
+      <div class="action-row">
+        <button class="circle-btn" title="Linterna">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 2h6v6l-3 4-3-4z"/><path d="M12 12v10"/></svg>
+        </button>
+        <button class="circle-btn primary" title="Captura manual">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M23 19V8a2 2 0 0 0-2-2h-3l-2-3H8L6 6H3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2z"/></svg>
+        </button>
+        <button class="circle-btn" title="Historial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+      </div>
+      <div class="stat-chip">
+        <span class="l">— Total sesión</span>
+        <span class="v">1h 42m</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT — last customer -->
+  <aside class="side">
+    <div class="side-head">
+      <a class="side-logo" href="landing.html"><span class="mk">Z</span><span class="n">Zubcard</span></a>
+      <span class="live-pill">Live</span>
+    </div>
+
+    <div>
+      <div class="last-head">— Último cliente · 10:42</div>
+      <h2 class="last-title">Sello <em>añadido.</em></h2>
+    </div>
+
+    <div class="cust-card">
+      <div class="cust-row">
+        <div class="cust-av" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80');"></div>
+        <div class="cust-who">
+          <div class="name">Sofía Vargas</div>
+          <div class="meta"><span>Miembro desde <strong>Feb '25</strong></span><span>·</span><span><strong>24</strong> visitas</span></div>
+        </div>
+        <span class="cust-tier">Loyal</span>
+      </div>
+
+      <div class="progress">
+        <div class="progress-head">
+          <span class="pl">— Progreso actualizado</span>
+          <span class="pc">7<em>/10</em></span>
+        </div>
+        <div class="stamps-row">
+          <div class="sr-cell on">1</div>
+          <div class="sr-cell on">2</div>
+          <div class="sr-cell on">3</div>
+          <div class="sr-cell on">4</div>
+          <div class="sr-cell on">5</div>
+          <div class="sr-cell on">6</div>
+          <div class="sr-cell new">★</div>
+          <div class="sr-cell">8</div>
+          <div class="sr-cell">9</div>
+          <div class="sr-cell reward">★</div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="abtn">Deshacer</button>
+        <button class="abtn primary">+1 Sello más</button>
+      </div>
+    </div>
+
+    <!-- recent -->
+    <div>
+      <div class="recent-head">
+        <h3>Hoy · <em>en vivo</em></h3>
+        <span class="v">Ver todo</span>
+      </div>
+      <div class="recent">
+        <div class="recent-item">
+          <div class="ri-av" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80');"></div>
+          <div class="ri-name"><strong>Sofía Vargas</strong><span>Sello nº 7</span></div>
+          <span class="ri-act stamp">+1 Sello</span>
+          <span class="ri-time">10:42</span>
+        </div>
+        <div class="recent-item">
+          <div class="ri-av">M</div>
+          <div class="ri-name"><strong>Marcos León</strong><span>Premio canjeado</span></div>
+          <span class="ri-act reward">Premio ★</span>
+          <span class="ri-time">10:18</span>
+        </div>
+        <div class="recent-item">
+          <div class="ri-av" style="background-image: url('https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&q=80');"></div>
+          <div class="ri-name"><strong>Paula Serra</strong><span>Se registró</span></div>
+          <span class="ri-act new">Nuevo</span>
+          <span class="ri-time">09:58</span>
+        </div>
+        <div class="recent-item">
+          <div class="ri-av">J</div>
+          <div class="ri-name"><strong>Javier Ruiz</strong><span>Sello nº 5</span></div>
+          <span class="ri-act stamp">+1 Sello</span>
+          <span class="ri-time">09:31</span>
+        </div>
+        <div class="recent-item">
+          <div class="ri-av">C</div>
+          <div class="ri-name"><strong>Clara Beltrán</strong><span>Sello nº 1</span></div>
+          <span class="ri-act stamp">+1 Sello</span>
+          <span class="ri-time">09:04</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script src="assets/tweaks.js"></script>
+<script>
+  // mode switch
+  document.querySelectorAll('.vf-mode span').forEach(s => {
+    s.addEventListener('click', () => {
+      document.querySelectorAll('.vf-mode span').forEach(x => x.classList.remove('on'));
+      s.classList.add('on');
+    });
+  });
+</script>
+</body>
+</html>
