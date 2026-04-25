@@ -3,533 +3,505 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Mi {{ card_title }} – {{ first_name }}</title>
+<title>Mi tarjeta · {{ first_name }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
-<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root {
-  --surface: #fff8f5;
-  --surface-low: #fff1ea;
-  --surface-mid: #ffeade;
-  --surface-high: #f8e2d4;
-  --primary: #26170c;
-  --primary-mid: #3d2b1f;
-  --on-primary: #ffffff;
-  --honey: #ffca48;
-  --honey-dark: #785a00;
-  --honey-light: #fff3d0;
-  --outline: #a08d83;
-  --outline-var: #e2cfc8;
-  --green: #2e7d32;
-  --r-sm: 0.375rem;
-  --r: 0.75rem;
-  --r-lg: 1.25rem;
-  --shadow-sm: 0 2px 12px rgba(38,23,12,0.06);
-  --shadow: 0 4px 24px rgba(38,23,12,0.10);
-  --shadow-lg: 0 8px 40px rgba(38,23,12,0.14);
+  --ink:        {{ primary_color or '#26170c' }};
+  --accent:     {{ accent_color or '#ffca48' }};
+  --bg:         #faf8f5;
+  --bg-2:       #f3ede6;
+  --surface:    #ffffff;
+  --ink-2:      color-mix(in oklab, {{ primary_color or '#26170c' }} 70%, transparent);
+  --ink-3:      color-mix(in oklab, {{ primary_color or '#26170c' }} 42%, transparent);
+  --line:       color-mix(in oklab, {{ primary_color or '#26170c' }} 14%, transparent);
+  --line-soft:  color-mix(in oklab, {{ primary_color or '#26170c' }} 8%, transparent);
+  --accent-ink: color-mix(in oklab, {{ primary_color or '#26170c' }} 90%, transparent);
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+  --font-ui:      'Geist', system-ui, sans-serif;
+  --ease:         cubic-bezier(.4,0,.2,1);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  background: var(--surface-low);
-  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 16px 48px;
+  padding: 28px 16px 60px;
 }
 
-/* === CLUB HEADER === */
-.club-header {
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-  margin-bottom: 16px;
-  padding: 20px 16px 12px;
+/* ── Top brand bar ── */
+.top-bar {
+  width: 100%; max-width: 440px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 28px;
 }
-.club-name {
-  font-family: 'Epilogue', sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--outline);
-  margin-bottom: 4px;
+.brand {
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; color: var(--ink);
 }
-.club-tagline {
-  font-size: 12px;
-  color: var(--outline);
-  font-weight: 500;
+.brand-mark {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: var(--ink); color: var(--bg);
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-weight: 700; font-size: 11px;
+}
+.brand-name {
+  font-family: var(--font-display); font-style: italic; font-size: 17px;
+}
+.member-id {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase;
 }
 
-/* === MAIN CARD === */
+/* ── Greeting ── */
+.hello {
+  width: 100%; max-width: 440px; margin-bottom: 24px;
+}
+.hello .eyebrow {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+}
+.hello h1 {
+  font-family: var(--font-display); font-size: 44px; line-height: .98;
+  letter-spacing: -.02em; font-weight: 400;
+}
+.hello h1 em { font-style: italic; color: var(--accent); filter: brightness(.8); }
+.hello .sub {
+  color: var(--ink-2); margin-top: 8px; font-size: 14px; line-height: 1.5;
+}
+
+/* ── Main card ── */
 .card {
-  width: 100%;
-  max-width: 400px;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 440px;
+  border-radius: 24px; overflow: hidden;
+  box-shadow: 0 28px 72px color-mix(in oklab, var(--ink) 22%, transparent);
   margin-bottom: 16px;
 }
-.card-header {
-  background: var(--primary);
-  padding: 20px 20px 16px;
-  position: relative;
+.card-top {
+  background: var(--ink); color: var(--bg);
+  padding: 22px 24px 20px; position: relative;
 }
-.card-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
+.card-top::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 0% 0%, color-mix(in oklab, var(--accent) 16%, transparent) 0%, transparent 70%);
+  pointer-events: none;
 }
-.card-brand {
-  display: flex;
-  flex-direction: column;
+.card-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  position: relative; z-index: 2;
 }
-.card-title-text {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  color: var(--honey-light);
-  letter-spacing: 1.5px;
+.card-biz-name {
+  font-family: var(--font-display); font-style: italic;
+  font-size: 26px; color: var(--accent); letter-spacing: -.01em; line-height: 1;
+}
+.card-biz-sub {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .15em;
   text-transform: uppercase;
-  line-height: 1;
+  color: color-mix(in oklab, var(--bg) 50%, transparent); margin-top: 5px;
 }
-.card-subtitle {
-  font-size: 10px;
-  color: rgba(255,243,208,0.55);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-top: 4px;
-  font-weight: 600;
+.card-tier {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em;
+  text-transform: uppercase; padding: 4px 9px; border-radius: 4px;
+  background: color-mix(in oklab, var(--bg) 10%, transparent);
+  color: color-mix(in oklab, var(--bg) 70%, transparent);
 }
-.card-member-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card-member {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-top: 28px; position: relative; z-index: 2;
 }
-.member-name {
-  font-family: 'Epilogue', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  color: #ffffff;
+.card-member-name {
+  font-family: var(--font-display); font-size: 30px; letter-spacing: -.02em; line-height: 1;
 }
-.member-meta {
-  text-align: right;
+.card-since {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
+  color: color-mix(in oklab, var(--bg) 50%, transparent);
+  text-transform: uppercase; text-align: right;
 }
-.member-number {
-  font-size: 11px;
-  color: rgba(255,243,208,0.65);
-  font-family: monospace;
-}
-.member-since {
-  font-size: 10px;
-  color: rgba(255,243,208,0.45);
+.card-since strong {
+  color: var(--accent); display: block;
+  font-family: var(--font-display); font-size: 15px;
+  letter-spacing: -.01em; font-weight: 400; text-transform: none; margin-top: 2px;
 }
 
-/* === CARD BODY === */
-.card-body {
-  background: var(--surface);
-  padding: 20px;
-}
-
-/* Stamps */
-.stamps-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.stamps-label span {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--outline);
-}
-.stamps-count {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--primary);
-  background: rgba(38,23,12,0.07);
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-.stamps-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+/* Card body */
+.card-body { background: var(--surface); color: var(--ink); padding: 22px 24px; }
+.progress-head {
+  display: flex; justify-content: space-between; align-items: baseline;
   margin-bottom: 14px;
 }
-.stamp {
-  aspect-ratio: 1;
-  border-radius: var(--r);
-  border: 2px solid var(--outline-var);
-  background: var(--on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  position: relative;
+.progress-lbl {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
 }
-.stamp.filled {
-  background: var(--primary);
-  border-color: var(--primary);
-  transform: scale(1.03);
+.progress-count {
+  font-family: var(--font-display); font-size: 34px; letter-spacing: -.02em; line-height: 1;
 }
-.stamp.filled::after {
-  content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.5);
+.progress-count em { font-style: italic; color: var(--accent); filter: brightness(.75); }
+
+/* Stamps grid */
+.stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.stp {
+  aspect-ratio: 1; border-radius: 50%;
+  border: 1.5px dashed var(--line);
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-3);
+  transition: all .3s var(--ease);
 }
-.stamp:not(.filled)::after {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--outline-var);
+.stp.on {
+  background: var(--ink); color: var(--accent);
+  border: 1.5px solid var(--ink);
+  font-family: var(--font-display); font-size: 18px;
+}
+.stp.reward-cell {
+  background: var(--accent); color: var(--accent-ink);
+  border-color: var(--accent); font-family: var(--font-display); font-size: 20px;
+}
+.stp.next-cell {
+  border-style: solid; border-color: var(--ink); color: var(--ink);
+  animation: stp-pulse 1.8s infinite;
+}
+@keyframes stp-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 30%, transparent); } }
+
+/* Milestone */
+.milestone {
+  margin-top: 20px; padding: 16px; border-radius: 14px;
+  background: var(--bg); border: 1px solid var(--line-soft);
+  display: flex; justify-content: space-between; align-items: center; gap: 14px;
+}
+.m-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px;
+}
+.m-val {
+  font-family: var(--font-display); font-size: 20px; letter-spacing: -.01em; line-height: 1.1;
+}
+.m-val em { font-style: italic; color: var(--accent); filter: brightness(.75); }
+.m-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 22px; flex-shrink: 0;
 }
 
-/* Progress to reward */
-.reward-progress {
-  background: var(--honey-light);
-  border-radius: var(--r);
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.reward-emoji-big { font-size: 28px; }
-.reward-info { flex: 1; }
-.reward-info-title {
-  font-family: 'Epilogue', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 2px;
-}
-.reward-info-sub {
-  font-size: 11px;
-  color: var(--outline);
-}
-.reward-badge {
-  background: var(--honey);
-  color: var(--honey-dark);
-  border-radius: 10px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.reward-badge.has-reward {
-  background: var(--green);
-  color: white;
-  animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* Stats */
-.stats-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.stat-box {
-  background: var(--surface-low);
-  border-radius: var(--r);
-  padding: 12px;
+/* Has reward banner */
+.has-reward-banner {
+  display: none; margin-top: 16px; padding: 14px 16px; border-radius: 12px;
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  border: 1.5px solid var(--accent);
   text-align: center;
 }
-.stat-value {
-  font-family: 'Epilogue', sans-serif;
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--primary);
+.has-reward-banner.visible { display: block; }
+.has-reward-banner .hrb-lbl {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px;
 }
-.stat-label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--outline);
-  margin-top: 2px;
-  font-weight: 700;
+.has-reward-banner .hrb-val {
+  font-family: var(--font-display); font-size: 22px; letter-spacing: -.01em;
+  color: var(--ink);
 }
+.has-reward-banner .hrb-val em { font-style: italic; color: var(--accent); filter: brightness(.7); }
 
-/* QR */
-.qr-section {
-  background: var(--on-primary);
-  border-radius: var(--r);
-  padding: 16px;
-  text-align: center;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
+/* ── Wallet buttons ── */
+.wallets {
+  width: 100%; max-width: 440px; margin-bottom: 14px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
-.qr-label {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--outline);
-  margin-bottom: 12px;
+.wbtn {
+  padding: 14px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--surface);
+  font-family: var(--font-ui); font-size: 13px; color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; text-decoration: none; transition: all .18s;
+}
+.wbtn:hover { border-color: var(--ink); transform: translateY(-2px); }
+.wbtn svg { width: 22px; height: 22px; flex-shrink: 0; }
+.wbtn .w-lbl {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase;
+}
+.wbtn .w-name { font-weight: 600; font-size: 13px; margin-top: 2px; }
+
+/* ── Info panels ── */
+.info-grid {
+  width: 100%; max-width: 440px; margin-bottom: 16px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.mini-panel {
+  padding: 16px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--line-soft);
+}
+.mini-panel .mp-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+}
+.mini-panel .mp-big {
+  font-family: var(--font-display); font-size: 32px;
+  letter-spacing: -.02em; line-height: 1; margin-top: 6px;
+}
+.mini-panel .mp-big em { font-style: italic; color: var(--accent); filter: brightness(.75); }
+.mini-panel .mp-cap { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+
+/* ── QR panel ── */
+.qr-panel {
+  width: 100%; max-width: 440px; margin-bottom: 16px;
+  padding: 20px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line-soft);
+  text-align: center;
+}
+.qr-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px;
 }
 #qrcode { display: flex; justify-content: center; }
 
-/* Referral */
-.referral-section {
-  background: var(--primary);
-  border-radius: var(--r);
-  padding: 16px;
-  margin-bottom: 14px;
-  text-align: center;
-  color: var(--honey-light);
-}
-.referral-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  opacity: 0.7;
-  margin-bottom: 6px;
-}
-.referral-code {
-  font-family: 'Epilogue', sans-serif;
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: 4px;
-  margin-bottom: 6px;
-}
-.referral-sub {
-  font-size: 11px;
-  opacity: 0.6;
-  margin-bottom: 10px;
-}
-.referral-copy-btn {
-  background: var(--honey);
-  color: var(--honey-dark);
-  border: none;
-  border-radius: var(--r-sm);
-  padding: 8px 20px;
-  font-size: 12px;
-  font-weight: 800;
-  cursor: pointer;
-  font-family: 'Manrope', sans-serif;
+/* ── Google Review banner ── */
+#review-banner {
+  width: 100%; max-width: 440px;
+  display: none; margin-bottom: 14px;
+  background: #fffbe6; border: 1.5px solid #f5c518;
+  border-radius: 14px; padding: 16px;  text-align: center;
 }
 
-/* Wallet buttons */
-.wallet-btn-wrap {
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 8px;
+/* ── Actions ── */
+.actions {
+  width: 100%; max-width: 440px;
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;
 }
-.btn-wallet {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 14px 20px;
-  border-radius: 10px;
-  font-size: .9rem;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: .3px;
-  transition: filter .18s;
-  box-sizing: border-box;
-}
-.btn-wallet:hover { filter: brightness(.88); }
-.btn-wallet-apple { background: #000; color: #fff; }
-.btn-wallet-google { background: #fff; color: #3c4043; border: 1.5px solid #dadce0; }
-
-/* Action buttons */
 .action-btn {
-  width: 100%;
-  max-width: 400px;
-  padding: 16px;
-  border-radius: var(--r);
-  border: none;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family: 'Manrope', sans-serif;
-  letter-spacing: .3px;
+  padding: 15px; border-radius: 12px; border: none;
+  font-family: var(--font-ui); font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 8px; transition: all .18s;
+  letter-spacing: .01em;
 }
-.btn-primary {
-  background: var(--primary);
-  color: var(--honey-light);
-}
-.btn-secondary {
-  background: rgba(38,23,12,0.06);
-  color: var(--primary);
-}
+.btn-primary { background: var(--ink); color: var(--bg); }
+.btn-primary:hover { opacity: .88; }
+.btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn-secondary:hover { border-color: var(--ink); }
 
-/* Toast */
+/* ── Referral block ── */
+.referral {
+  width: 100%; max-width: 440px; margin-bottom: 24px;
+  padding: 22px; border-radius: 16px;
+  background: var(--ink); color: var(--bg); position: relative; overflow: hidden;
+}
+.referral::before {
+  content: ''; position: absolute; inset: auto -30% -30% auto;
+  width: 60%; height: 80%;
+  background: radial-gradient(ellipse, color-mix(in oklab, var(--accent) 30%, transparent) 0%, transparent 60%);
+  pointer-events: none;
+}
+.r-eyebrow {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px; position: relative; z-index: 2;
+}
+.referral h3 {
+  font-family: var(--font-display); font-size: 24px; letter-spacing: -.02em;
+  line-height: 1.1; font-weight: 400; position: relative; z-index: 2;
+}
+.referral h3 em { font-style: italic; color: var(--accent); }
+.referral-code-display {
+  font-family: var(--font-mono); font-size: 22px; letter-spacing: .2em;
+  color: var(--accent); margin-top: 12px; position: relative; z-index: 2;
+}
+.referral-btns {
+  display: flex; gap: 8px; margin-top: 14px; position: relative; z-index: 2;
+}
+.r-btn {
+  padding: 10px 16px; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink);
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; transition: opacity .18s;
+}
+.r-btn:hover { opacity: .88; }
+.r-btn-ghost {
+  padding: 10px 16px; border-radius: 999px;
+  background: color-mix(in oklab, var(--bg) 12%, transparent);
+  color: var(--bg); border: none;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity .18s;
+}
+.r-btn-ghost:hover { opacity: .75; }
+
+/* ── Toast ── */
 .toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
+  position: fixed; bottom: 20px; left: 50%;
   transform: translateX(-50%) translateY(100px);
-  background: var(--primary);
-  color: var(--honey-light);
-  padding: 12px 24px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  z-index: 999;
-  transition: transform 0.3s ease;
+  background: var(--ink); color: var(--bg);
+  padding: 12px 24px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; z-index: 999;
+  transition: transform .3s var(--ease);
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<div class="club-header" id="club-header">
-  <div class="club-name" id="club-name">Club VIP</div>
-  <div class="club-tagline" id="club-tagline">Sé parte de algo especial</div>
+<!-- Top bar -->
+<div class="top-bar">
+  <a class="brand" href="/">
+    <div class="brand-mark">Z</div>
+    <span class="brand-name">Zubcard</span>
+  </a>
+  <span class="member-id" id="member-id-display">Miembro</span>
 </div>
 
+<!-- Greeting -->
+<div class="hello">
+  <div class="eyebrow">— Mi tarjeta</div>
+  <h1>Hola, <em>{{ first_name }}.</em><br><span id="hello-stamps">Cargando...</span></h1>
+  <p class="sub" id="hello-sub"></p>
+</div>
+
+<!-- Main card -->
 <div class="card">
-  <div class="card-header" id="card-header">
-    <div class="card-header-top">
-      <div class="card-brand">
-        <div class="card-title-text">{{ card_title }}</div>
-        <div class="card-subtitle">Tarjeta de Fidelidad</div>
+  <div class="card-top">
+    <div class="card-head">
+      <div>
+        <div class="card-biz-name">{{ card_title }}</div>
+        <div class="card-biz-sub" id="card-sub-lbl">Tarjeta de fidelidad</div>
       </div>
+      <span class="card-tier">Loyal</span>
     </div>
-    <div class="card-member-info">
-      <div class="member-name">{{ first_name }}</div>
-      <div class="member-meta">
-        <div class="member-number" id="member-number">Miembro #001</div>
-        <div class="member-since" id="member-since"></div>
+    <div class="card-member">
+      <div class="card-member-name">{{ first_name }}</div>
+      <div class="card-since">
+        Miembro desde
+        <strong id="since-val">—</strong>
       </div>
     </div>
   </div>
 
   <div class="card-body">
-    <!-- Stamps -->
-    <div class="stamps-label">
-      <span>Tus Sellos</span>
-      <span class="stamps-count" id="stamps-count">0/10</span>
+    <div class="progress-head">
+      <span class="progress-lbl">— Progreso</span>
+      <span class="progress-count" id="stamps-count">0<em>/10</em></span>
     </div>
-    <div class="stamps-grid" id="stamps-grid"></div>
+    <div class="stamps" id="stamps-grid"></div>
 
-    <!-- Reward box -->
-    <div class="reward-progress" id="reward-box">
-      <div class="reward-emoji-big" id="reward-emoji"><span class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1">redeem</span></div>
-      <div class="reward-info">
-        <div class="reward-info-title" id="reward-name">Premio</div>
-        <div class="reward-info-sub" id="reward-desc"></div>
+    <!-- Next reward -->
+    <div class="milestone" id="milestone-box">
+      <div>
+        <div class="m-label">— Próximo premio</div>
+        <div class="m-val" id="reward-name-val"><em>Premio</em></div>
       </div>
-      <div class="reward-badge" id="reward-badge">10 más</div>
+      <div class="m-icon">★</div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-value" id="total-stamps">0</div>
-        <div class="stat-label">Sellos totales</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="total-rewards">0</div>
-        <div class="stat-label">Premios canjeados</div>
-      </div>
-    </div>
-
-    <!-- QR -->
-    <div class="qr-section">
-      <div class="qr-label">Muestra este QR en caja</div>
-      <div id="qrcode"></div>
-    </div>
-
-    <!-- Referral -->
-    <div class="referral-section" id="referral-section" style="display:none">
-      <div class="referral-title" style="display:flex;align-items:center;justify-content:center;gap:6px"><span class="material-symbols-outlined" style="font-size:1rem;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">card_giftcard</span> Invita a tus amigos</div>
-      <div class="referral-code" id="referral-code">XXXX</div>
-      <div class="referral-sub">Comparte tu link y los dos ganáis 2 sellos extra</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-        <button class="referral-copy-btn" onclick="copyReferral()" style="display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.85rem">content_copy</span> Copiar link</button>
-        <button class="referral-copy-btn" onclick="shareReferral()" style="display:inline-flex;align-items:center;gap:5px"><span class="material-symbols-outlined" style="font-size:.85rem">share</span> Compartir</button>
-      </div>
+    <!-- Has reward available -->
+    <div class="has-reward-banner" id="has-reward-banner">
+      <div class="hrb-lbl">— Premio disponible</div>
+      <div class="hrb-val"><em id="hrb-count">1</em> premio listo para canjear</div>
     </div>
   </div>
 </div>
 
+<!-- Wallet buttons -->
 {% if wallet_url or google_wallet_url %}
-<div class="wallet-btn-wrap">
-  <a href="{{ wallet_url }}" id="apple-wallet-btn" class="btn-wallet btn-wallet-apple">
-    <svg width="18" height="18" viewBox="0 0 814 1000" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 376.7 0 248.7 0 124.8 0 56.5 17.9 29.3 55.9 29.3c38 0 85.5 39.5 163.5 39.5 78 0 114.2-39.5 165.9-39.5 38.4 0 81.3 17.3 108.2 53.5 26.9 36.2 40.3 77 40.3 122.5 0 10.2-.6 20.4-2.6 29.3 10.9 2 27.5 3.2 41.7 3.2 67.4 0 140.5-42.8 140.5-105.5-.6-59.6-39.5-82.6-73.5-88.1z"/></svg>
-    Añadir a Apple Wallet
+<div class="wallets" id="wallet-section" style="display:none">
+  {% if wallet_url %}
+  <a class="wbtn" href="{{ wallet_url }}" id="apple-wallet-btn">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+    <div>
+      <div class="w-lbl">— Añadir a</div>
+      <div class="w-name">Apple Wallet</div>
+    </div>
   </a>
-</div>
-{% if google_wallet_url %}
-<div class="wallet-btn-wrap">
-  <a href="{{ google_wallet_url }}" id="google-wallet-btn" class="btn-wallet btn-wallet-google" target="_blank" rel="noopener">
-    <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-    Guardar en Google Wallet
+  {% endif %}
+  {% if google_wallet_url %}
+  <a class="wbtn" href="{{ google_wallet_url }}" id="google-wallet-btn" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+    <div>
+      <div class="w-lbl">— Guardar en</div>
+      <div class="w-name">Google Wallet</div>
+    </div>
   </a>
+  {% endif %}
 </div>
-{% endif %}
 <script>
-(function() {
+(function(){
   var ua = navigator.userAgent;
   var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var isAndroid = /Android/.test(ua);
-  var appleBtn  = document.getElementById('apple-wallet-btn');
-  var googleBtn = document.getElementById('google-wallet-btn');
-  // Mostrar siempre ambos botones si están disponibles
-  if (appleBtn) appleBtn.style.display = 'flex';
-  if (googleBtn) googleBtn.style.display = 'flex';
+  var ws = document.getElementById('wallet-section');
+  var ab = document.getElementById('apple-wallet-btn');
+  var gb = document.getElementById('google-wallet-btn');
+  if (ws) ws.style.display = 'grid';
 })();
 </script>
 {% endif %}
 
+<!-- Info panels -->
+<div class="info-grid">
+  <div class="mini-panel">
+    <div class="mp-lbl">— Total sellos</div>
+    <div class="mp-big" id="total-stamps">0</div>
+    <div class="mp-cap">Desde que empezaste</div>
+  </div>
+  <div class="mini-panel">
+    <div class="mp-lbl">— Premios</div>
+    <div class="mp-big"><em id="total-rewards">0</em></div>
+    <div class="mp-cap">Canjeados hasta hoy</div>
+  </div>
+</div>
+
+<!-- QR -->
+<div class="qr-panel">
+  <div class="qr-lbl">— Muestra este QR en caja para ganar sellos</div>
+  <div id="qrcode"></div>
+</div>
+
+<!-- Google Review Banner -->
 {% if google_review_url %}
-<!-- Google Review Banner — shown via JS when customer hits review_trigger_stamps -->
-<div id="review-banner" style="display:none;margin:14px 0 4px;background:#fffbe6;border:1.5px solid #f5c518;border-radius:12px;padding:14px 16px;text-align:center">
-  <div style="margin-bottom:4px"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f5c518;font-variation-settings:'FILL' 1">star</span></div>
-  <div style="font-weight:700;color:#26170c;font-size:.97rem;margin-bottom:6px">¿Te gusta nuestro servicio?</div>
-  <div style="font-size:.85rem;color:#6b5c4e;margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google</div>
+<div id="review-banner">
+  <div style="margin-bottom:6px;font-size:1.1rem">⭐⭐⭐⭐⭐</div>
+  <div style="font-weight:700;color:var(--ink);font-size:.97rem;margin-bottom:6px">¿Te gusta nuestro servicio?</div>
+  <div style="font-size:.85rem;color:var(--ink-2);margin-bottom:10px">Nos ayudaría muchísimo que dejaras una reseña en Google</div>
   <a href="{{ google_review_url }}" target="_blank" rel="noopener"
      style="display:inline-flex;align-items:center;gap:6px;background:#4285F4;color:#fff;font-weight:700;font-size:.9rem;padding:9px 20px;border-radius:8px;text-decoration:none">
-    <span class="material-symbols-outlined" style="font-size:.95rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20">rate_review</span> Dejar reseña en Google
+    Dejar reseña en Google
   </a>
   <div style="margin-top:8px">
     <button onclick="document.getElementById('review-banner').style.display='none';localStorage.setItem('review_dismissed','1')"
-      style="background:none;border:none;color:#aaa;font-size:.78rem;cursor:pointer;text-decoration:underline">No, gracias</button>
+      style="background:none;border:none;color:var(--ink-3);font-size:.78rem;cursor:pointer;text-decoration:underline">No, gracias</button>
   </div>
 </div>
-<script>
-const REVIEW_URL = '{{ google_review_url }}';
-const REVIEW_TRIGGER = {{ review_trigger_stamps|default(0) }};
-</script>
+<script>const REVIEW_URL = '{{ google_review_url }}'; const REVIEW_TRIGGER = {{ review_trigger_stamps|default(0) }};</script>
 {% else %}
-<script>
-const REVIEW_URL = '';
-const REVIEW_TRIGGER = 0;
-</script>
+<script>const REVIEW_URL = ''; const REVIEW_TRIGGER = 0;</script>
 {% endif %}
 
-<button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()" style="display:inline-flex;align-items:center;justify-content:center;gap:7px">
-  <span class="material-symbols-outlined" style="font-size:1rem">notifications</span> Activar notificaciones
-</button>
-<button class="action-btn btn-secondary" onclick="shareCard()" style="display:inline-flex;align-items:center;justify-content:center;gap:7px">
-  <span class="material-symbols-outlined" style="font-size:1rem">share</span> Compartir mi tarjeta
-</button>
+<!-- Actions -->
+<div class="actions">
+  <button class="action-btn btn-primary" id="notif-btn" onclick="activateNotifications()">
+    🔔 Activar notificaciones
+  </button>
+  <button class="action-btn btn-secondary" onclick="shareCard()">
+    ↗ Compartir mi tarjeta
+  </button>
+</div>
+
+<!-- Referral -->
+<div class="referral" id="referral-section" style="display:none">
+  <div class="r-eyebrow">— Invita y gana</div>
+  <h3>Invita a un amigo,<br><em>gana un sello.</em></h3>
+  <div class="referral-code-display" id="referral-code"></div>
+  <div class="referral-btns">
+    <button class="r-btn" onclick="copyReferral()">Copiar link</button>
+    <button class="r-btn-ghost" onclick="shareReferral()">Compartir →</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -548,12 +520,43 @@ function showToast(msg) {
 function buildStamps(current, total) {
   const grid = document.getElementById('stamps-grid');
   grid.innerHTML = '';
+  grid.style.gridTemplateColumns = 'repeat(' + Math.min(total, 5) + ', 1fr)';
   for (let i = 0; i < total; i++) {
     const s = document.createElement('div');
-    s.className = 'stamp' + (i < current ? ' filled' : '');
+    const isOn = i < current;
+    const isNext = i === current && i < total;
+    const isReward = i === total - 1;
+    let cls = 'stp';
+    if (isOn) cls += ' on';
+    else if (isReward) cls += ' reward-cell';
+    else if (isNext) cls += ' next-cell';
+    s.className = cls;
+    if (isOn) s.textContent = '★';
+    else if (isReward) s.textContent = '★';
+    else s.textContent = (i + 1);
     grid.appendChild(s);
   }
-  document.getElementById('stamps-count').textContent = current + '/' + total;
+  const countEl = document.getElementById('stamps-count');
+  countEl.innerHTML = current + '<em>/' + total + '</em>';
+}
+
+function updateGreeting(stamps, total, awardsBalance) {
+  const helloStamps = document.getElementById('hello-stamps');
+  const helloSub = document.getElementById('hello-sub');
+  const remaining = total - stamps;
+  if (awardsBalance > 0) {
+    helloStamps.innerHTML = '<em>¡Tienes ' + awardsBalance + ' premio' + (awardsBalance > 1 ? 's' : '') + '!</em>';
+    helloSub.textContent = 'Muéstraselo al equipo para canjear tu recompensa.';
+  } else if (remaining <= 0) {
+    helloStamps.innerHTML = '<em>¡Premio listo!</em>';
+    helloSub.textContent = 'Canjéalo en tu próxima visita.';
+  } else if (remaining === 1) {
+    helloStamps.innerHTML = 'Te falta <em>1 sello.</em>';
+    helloSub.textContent = '¡Estás a un paso del premio!';
+  } else {
+    helloStamps.innerHTML = 'Te faltan <em>' + remaining + ' sellos.</em>';
+    helloSub.textContent = '¡Sigue viniendo y lo conseguirás!';
+  }
 }
 
 async function loadData() {
@@ -568,7 +571,6 @@ async function loadData() {
     renderCard(card, club);
   } catch(e) {
     console.error('Error loading card data', e);
-    // Fallback basic load
     try {
       const res = await fetch(API_BASE + '/api/cards/' + CARD_ID + '/info');
       const card = await res.json();
@@ -581,32 +583,32 @@ function renderCard(card, club) {
   const tier = club.current_tier || {};
   const clubInfo = club.club || {};
 
-  // Club header
-  document.getElementById('club-name').textContent = clubInfo.nombre || 'VIP Club';
-  document.getElementById('club-tagline').textContent = clubInfo.tagline || '';
+  // Member ID + since
+  const memNum = 'Socio #' + String(club.member_number || 1).padStart(4,'0');
+  document.getElementById('member-id-display').textContent = memNum;
+  const sinceEl = document.getElementById('since-val');
+  if (club.member_since) sinceEl.textContent = club.member_since;
+  else sinceEl.textContent = '—';
 
-  // Member info
-  document.getElementById('member-number').textContent = 'Miembro #' + String(club.member_number || 1).padStart(3,'0');
-  document.getElementById('member-since').textContent = club.member_since ? 'Desde ' + club.member_since : '';
-
-  // Card header background
-  document.getElementById('card-header').style.background = '#26170c';
+  // Biz sub label
+  const cardSubLbl = document.getElementById('card-sub-lbl');
+  if (clubInfo.nombre) cardSubLbl.textContent = clubInfo.nombre;
 
   // Stamps
   const stampsPerReward = tier.sellos_por_premio || 10;
-  buildStamps(club.stamps_on_card || 0, stampsPerReward);
-
-  // Reward box
+  const currentStamps = club.stamps_on_card || 0;
   const awardsBalance = club.award_balance || 0;
-  const toNextReward = club.stamps_to_next_reward || stampsPerReward;
-  document.getElementById('reward-name').textContent = tier.premio_nombre || 'Premio';
-  document.getElementById('reward-desc').textContent = tier.premio_descripcion || '';
-  const rewardBadge = document.getElementById('reward-badge');
+  buildStamps(currentStamps, stampsPerReward);
+  updateGreeting(currentStamps, stampsPerReward, awardsBalance);
+
+  // Reward name
+  const rewardName = tier.premio_nombre || 'Premio';
+  document.getElementById('reward-name-val').innerHTML = '<em>' + rewardName + '</em>';
+
+  // Has reward banner
   if (awardsBalance > 0) {
-    rewardBadge.textContent = '¡' + awardsBalance + ' disponible' + (awardsBalance > 1 ? 's' : '') + '!';
-    rewardBadge.classList.add('has-reward');
-  } else {
-    rewardBadge.textContent = toNextReward + ' más';
+    document.getElementById('hrb-count').textContent = awardsBalance;
+    document.getElementById('has-reward-banner').classList.add('visible');
   }
 
   // Stats
@@ -614,24 +616,27 @@ function renderCard(card, club) {
   document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
 
   // Google Review banner
-  maybeShowReviewBanner(club.total_stamps || 0, club.stamps_on_card || 0, awardsBalance);
+  maybeShowReviewBanner(club.total_stamps || 0, currentStamps, awardsBalance);
 
   // QR
   new QRCode(document.getElementById('qrcode'), {
     text: window.location.href,
-    width: 150, height: 150,
-    colorDark: '#26170c', colorLight: '#fff8f5'
+    width: 148, height: 148,
+    colorDark: '{{ primary_color or "#26170c" }}',
+    colorLight: '#ffffff'
   });
 }
 
 function renderCardBasic(card) {
   buildStamps(card.stamps || 0, 10);
+  updateGreeting(card.stamps || 0, 10, 0);
   document.getElementById('total-stamps').textContent = card.total_stamps || 0;
   document.getElementById('total-rewards').textContent = card.rewards_redeemed || 0;
   new QRCode(document.getElementById('qrcode'), {
     text: window.location.href,
-    width: 150, height: 150,
-    colorDark: '#26170c', colorLight: '#fff8f5'
+    width: 148, height: 148,
+    colorDark: '{{ primary_color or "#26170c" }}',
+    colorLight: '#ffffff'
   });
 }
 
@@ -657,11 +662,7 @@ function copyReferral() {
 function shareReferral() {
   const text = _referralUrl || document.getElementById('referral-code').textContent;
   if (navigator.share) {
-    navigator.share({
-      title: '¡Únete y gana sellos!',
-      text: '¡Regístrate con mi link y los dos ganamos sellos extra!',
-      url: text
-    });
+    navigator.share({ title: '¡Únete y gana sellos!', text: '¡Regístrate con mi link y los dos ganamos sellos extra!', url: text });
   } else {
     navigator.clipboard.writeText(text).then(() => showToast('Link copiado'));
   }
@@ -669,11 +670,7 @@ function shareReferral() {
 
 function shareCard() {
   if (navigator.share) {
-    navigator.share({
-      title: '¡Únete al club!',
-      text: '¡Tienes que conocer esta tarjeta de fidelidad!',
-      url: window.location.href
-    });
+    navigator.share({ title: '¡Únete al club!', text: '¡Tienes que conocer esta tarjeta de fidelidad!', url: window.location.href });
   } else {
     navigator.clipboard.writeText(window.location.href);
     showToast('Enlace copiado');
@@ -689,22 +686,14 @@ function urlBase64ToUint8Array(base64String) {
 
 async function activateNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    showToast('Tu navegador no soporta notificaciones push');
-    return;
+    showToast('Tu navegador no soporta notificaciones push'); return;
   }
   const perm = await Notification.requestPermission();
-  if (perm !== 'granted') {
-    showToast('Notificaciones bloqueadas');
-    return;
-  }
+  if (perm !== 'granted') { showToast('Notificaciones bloqueadas'); return; }
   try {
-    // Fetch VAPID public key from server
     const keyRes = await fetch(API_BASE + '/api/push/vapid-public');
     const keyData = await keyRes.json();
-    if (!keyData.key) {
-      showToast('Permiso concedido (notificaciones no configuradas en servidor)');
-      return;
-    }
+    if (!keyData.key) { showToast('Permiso concedido (notificaciones no configuradas)'); return; }
     const swReg = await navigator.serviceWorker.register('/sw.js');
     await navigator.serviceWorker.ready;
     const subscription = await swReg.pushManager.subscribe({
@@ -713,17 +702,12 @@ async function activateNotifications() {
     });
     const subJson = subscription.toJSON();
     await fetch(API_BASE + '/api/push/subscribe', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        card_id: CARD_ID,
-        endpoint: subJson.endpoint,
-        keys: subJson.keys
-      })
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ card_id: CARD_ID, endpoint: subJson.endpoint, keys: subJson.keys })
     });
     showToast('¡Notificaciones activadas!');
     const btn = document.getElementById('notif-btn');
-    if (btn) { btn.textContent = 'Notificaciones activas'; btn.disabled = true; }
+    if (btn) { btn.textContent = '✓ Notificaciones activas'; btn.disabled = true; }
   } catch(e) {
     console.error('Push subscription error:', e);
     showToast('Error activando notificaciones');
@@ -735,8 +719,6 @@ function maybeShowReviewBanner(totalStamps, stampsOnCard, awardsBalance) {
   if (localStorage.getItem('review_dismissed') === '1') return;
   const banner = document.getElementById('review-banner');
   if (!banner) return;
-  // Show if: trigger is 0 and customer has redeemed at least 1 reward,
-  // OR trigger > 0 and total_stamps >= trigger
   const shouldShow = (REVIEW_TRIGGER === 0 && awardsBalance > 0) ||
                      (REVIEW_TRIGGER > 0 && totalStamps >= REVIEW_TRIGGER);
   if (shouldShow) banner.style.display = 'block';
