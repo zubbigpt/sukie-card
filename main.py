@@ -1151,9 +1151,37 @@ def resend_dns(pin: str, domain_id: str = "", db: Session = Depends(get_db)):
 # ══════════════════════════════════════════════════════════════════════════════
 # PÁGINAS LEGALES
 # ══════════════════════════════════════════════════════════════════════════════
+AVISO_LEGAL_CONTENT = """
+<h2>1. Datos identificativos del titular</h2>
+<p>En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico (LSSI-CE), se informa de los siguientes datos:</p>
+<ul>
+  <li><strong>Titular:</strong> Yanir Lancry Levy</li>
+  <li><strong>NIF:</strong> Y9605705E</li>
+  <li><strong>Domicilio:</strong> Av. Al Vedat 1, piso 5 puerta 9, 46900 Torrent (Valencia), España</li>
+  <li><strong>Email:</strong> <a href="mailto:hola@zubcard.com">hola@zubcard.com</a></li>
+  <li><strong>Actividad:</strong> Servicios de software y plataformas digitales (SaaS)</li>
+</ul>
+
+<h2>2. Objeto</h2>
+<p>ZubCard (zubcard.com) es una plataforma de fidelización digital para negocios locales. El presente aviso legal regula el uso del sitio web y sus servicios.</p>
+
+<h2>3. Propiedad intelectual</h2>
+<p>El diseño, código fuente, marca y contenidos de zubcard.com son propiedad de Yanir Lancry Levy. Queda prohibida su reproducción total o parcial sin autorización expresa.</p>
+
+<h2>4. Condiciones de uso</h2>
+<p>El uso de este sitio web implica la aceptación de las presentes condiciones. El titular se reserva el derecho a modificar los contenidos sin previo aviso.</p>
+
+<h2>5. Precios e IVA</h2>
+<p>Los precios publicados en la web están expresados en euros y no incluyen el IVA (21%), salvo indicación expresa. El IVA aplicable varía según la localización del cliente conforme a la normativa europea de servicios digitales (Directiva 2006/112/CE).</p>
+
+<h2>6. Legislación aplicable y jurisdicción</h2>
+<p>Este aviso legal se rige por la legislación española. Para la resolución de cualquier controversia, las partes se someten a los Juzgados y Tribunales de Valencia (España), con renuncia a cualquier otro fuero que pudiera corresponderles.</p>
+"""
+
 PRIVACY_CONTENT = """
 <h2>1. Responsable del tratamiento</h2>
-<p>ZubCard (en adelante, "la Plataforma") es responsable del tratamiento de los datos personales que se recogen a través de este sitio web y de las tarjetas de fidelización gestionadas por la misma.</p>
+<p><strong>Yanir Lancry Levy</strong> (NIF: Y9605705E), con domicilio en Av. Al Vedat 1, piso 5 puerta 9, 46900 Torrent (Valencia), es responsable del tratamiento de los datos personales recogidos a través de zubcard.com.</p>
+<p>Contacto: <a href="mailto:hola@zubcard.com">hola@zubcard.com</a></p>
 
 <h2>2. Datos que recopilamos</h2>
 <p>Recopilamos los siguientes datos personales de los usuarios finales que se registran en los programas de fidelización:</p>
@@ -1217,8 +1245,11 @@ TERMS_CONTENT = """
 <h2>7. Propiedad intelectual</h2>
 <p>El código, diseño y marca ZubCard son propiedad exclusiva de sus desarrolladores. Los contenidos creados por cada Negocio (nombre, logotipo, textos) son propiedad del Negocio correspondiente.</p>
 
-<h2>8. Ley aplicable</h2>
-<p>Estos términos se rigen por la legislación española. Cualquier controversia se someterá a los juzgados y tribunales de la ciudad de Madrid.</p>
+<h2>8. Precios e IVA</h2>
+<p>Los precios publicados no incluyen IVA. Al formalizar la contratación se añadirá el IVA vigente (21% para clientes en España). Clientes de otros países de la UE con NIF-IVA válido pueden acogerse a la inversión del sujeto pasivo. Clientes fuera de la UE quedan exentos de IVA.</p>
+
+<h2>9. Ley aplicable</h2>
+<p>Estos términos se rigen por la legislación española. Cualquier controversia se someterá a los juzgados y tribunales de Valencia (España).</p>
 """
 
 COOKIES_CONTENT = """
@@ -1282,6 +1313,15 @@ def cookies_page(request: Request):
         "page_title": "Política de Cookies",
         "page_id": "cookies",
         "content": COOKIES_CONTENT,
+    })
+
+@app.get("/aviso-legal", response_class=HTMLResponse)
+def aviso_legal_page(request: Request):
+    return templates.TemplateResponse("legal.html", {
+        "request": request,
+        "page_title": "Aviso Legal",
+        "page_id": "aviso-legal",
+        "content": AVISO_LEGAL_CONTENT,
     })
 
 
