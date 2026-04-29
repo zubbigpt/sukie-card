@@ -638,6 +638,187 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
   .bento-main{grid-column:span 1}
   .stats-grid{grid-template-columns:1fr}
 }
+
+/* ── MOBILE DEEP FIX (iPhone) ──────────────────────────────────────── */
+@media(max-width:768px){
+  /* Prevent any horizontal overflow */
+  html,body,#app,.main,.content{overflow-x:hidden;max-width:100vw}
+
+  /* Form rows collapse to single column */
+  .form-row{grid-template-columns:1fr!important}
+
+  /* Landing preview two-col collapses */
+  .lp-two-col{grid-template-columns:1fr!important}
+
+  /* Section header title smaller on mobile */
+  .section-header h1{font-size:1.9rem!important}
+
+  /* Topbar: prevent overflow, hide separator and date */
+  .topbar{padding:0 12px!important;gap:8px!important;min-width:0}
+  .topbar h2{font-size:.85rem!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+  /* hide date separator on mobile */
+  .topbar-right > div[style*="width:1px"]{display:none!important}
+
+  /* Cards and boxes don't overflow */
+  .card,.card-box,.bento-card,.stat-card{min-width:0;word-break:break-word}
+
+  /* Input/select full width */
+  input,select,textarea{max-width:100%!important}
+
+  /* Drawers full width on very small screens */
+  .drawer{width:100vw!important;max-width:100vw!important}
+
+  /* Activity / clients tables: enforce scroll */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+
+  /* Campaign grid 4-col → 2-col */
+  .grid{grid-template-columns:repeat(2,1fr)!important}
+
+  /* Topbar biz name + avatar: compact */
+  #topbar-bizname{font-size:.78rem!important;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Modal containers that have hard px widths */
+  [style*="width:980px"],[style*="width:780px"],[style*="width:760px"],[style*="width:680px"]{width:100%!important;max-width:98vw!important}
+
+  /* Scanner / escáner section buttons row */
+  .section-header{flex-direction:column;align-items:flex-start}
+
+  /* Padding más agresivo en secciones internas */
+  .content{padding:12px!important}
+}
+
+@media(max-width:420px){
+  .section-header h1{font-size:1.6rem!important}
+  .grid{grid-template-columns:1fr!important}
+  .topbar-right{gap:6px!important}
+  /* Avatar sólo en móvil pequeño */
+  #topbar-bizname{display:none!important}
+}
+
+/* ── Tarjetas Studio ─────────────────────────────────────────────────── */
+#section-tarjetas.active{display:flex!important;flex-direction:column;overflow:hidden}
+.tarj-bleed{margin:-32px;flex:1;display:flex;flex-direction:column;overflow:hidden;height:calc(100vh - 60px)}
+.tarj-topbar{padding:18px 28px;border-bottom:1px solid var(--cream-border);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-shrink:0;background:var(--white)}
+.tarj-topbar h1{font-family:'Instrument Serif',sans-serif;font-size:2rem;letter-spacing:-.025em;font-weight:400;margin:0;line-height:1}
+.tarj-topbar h1 em{font-style:italic;color:var(--honey-dark)}
+.tarj-topbar-sub{font-size:.78rem;color:var(--brown-light);margin-top:4px}
+.tarj-studio{display:grid;grid-template-columns:260px 1fr 300px;flex:1;overflow:hidden;min-height:0}
+/* Rail */
+.tarj-rail{border-right:1px solid var(--cream-border);padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;background:var(--white)}
+.tarj-rail-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.tarj-rail-h h3{font-family:'Instrument Serif',sans-serif;font-size:1.25rem;font-weight:400;margin:0}
+.tarj-rail-h .cnt{font-size:.7rem;color:var(--brown-light);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.tarj-new-btn{padding:12px;border:1.5px dashed var(--outline-var);border-radius:10px;text-align:center;color:var(--brown-light);font-size:.82rem;cursor:pointer;transition:all .18s;background:transparent;font-family:inherit;width:100%}
+.tarj-new-btn:hover{border-color:var(--brown);border-style:solid;color:var(--brown);background:var(--cream)}
+.tarj-thumb{padding:12px;border-radius:12px;background:var(--cream);border:1.5px solid var(--cream-border);cursor:pointer;transition:all .18s}
+.tarj-thumb.on{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklab,var(--honey) 30%,transparent)}
+.tarj-thumb:hover:not(.on){border-color:var(--brown-light)}
+.tarj-ct-mini{aspect-ratio:1.6;border-radius:8px;padding:10px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.tarj-ct-mini::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 100% 0%,color-mix(in oklab,var(--t-acc,#ffca48) 28%,transparent),transparent 60%)}
+.tarj-ct-logo{font-family:'Instrument Serif',sans-serif;font-style:italic;font-size:13px;color:var(--t-acc,#ffca48);position:relative;z-index:1}
+.tarj-ct-dots{display:flex;gap:2px;position:relative;z-index:1}
+.tarj-ct-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2)}
+.tarj-ct-dot.on{background:var(--t-acc,#ffca48)}
+.tarj-ct-foot{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+.tarj-ct-name{font-family:'Instrument Serif',sans-serif;font-size:14px;letter-spacing:-.01em}
+.tarj-ct-meta{font-size:.65rem;color:var(--brown-light);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.tarj-ct-status{display:inline-flex;align-items:center;gap:5px;font-size:.65rem;color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:5px}
+.tarj-ct-status .dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.tarj-ct-status.draft{color:var(--brown-light)}
+.tarj-ct-status.draft .dot{background:var(--brown-light)}
+.tarj-rail-tip{margin-top:auto;padding-top:14px;border-top:1px solid var(--cream-border)}
+.tarj-rail-tip p{font-size:.75rem;color:var(--brown-light);line-height:1.5;margin:0}
+/* Stage */
+.tarj-stage{position:relative;display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  background:radial-gradient(circle at 30% 20%,color-mix(in oklab,var(--honey) 10%,transparent),transparent 50%),
+             radial-gradient(circle at 80% 80%,color-mix(in oklab,var(--primary) 5%,transparent),transparent 50%),
+             var(--cream)}
+.tarj-stage-grid{position:absolute;inset:0;
+  background-image:linear-gradient(to right,color-mix(in oklab,var(--primary) 5%,transparent) 1px,transparent 1px),
+                   linear-gradient(to bottom,color-mix(in oklab,var(--primary) 5%,transparent) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;
+  mask-image:radial-gradient(ellipse at center,#000 30%,transparent 75%)}
+.tarj-stage-bar{padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid color-mix(in oklab,var(--cream-border) 60%,transparent);position:relative;z-index:2;flex-shrink:0}
+.tarj-face-tabs{display:flex;gap:3px;padding:3px;background:var(--white);border-radius:8px;border:1px solid var(--cream-border)}
+.tarj-face-tab{padding:6px 12px;border-radius:6px;font-size:.72rem;cursor:pointer;color:var(--brown-light);display:flex;gap:5px;align-items:center;font-weight:600;transition:all .15s}
+.tarj-face-tab.on{background:var(--primary);color:#fff}
+.tarj-dev-tabs{display:flex;gap:3px;padding:3px;background:var(--white);border-radius:8px;border:1px solid var(--cream-border);font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.tarj-dev-tab{padding:5px 10px;border-radius:5px;cursor:pointer;color:var(--brown-light);transition:all .15s}
+.tarj-dev-tab.on{background:var(--primary);color:var(--honey-light)}
+.tarj-stage-meta{display:flex;align-items:center;gap:10px;font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brown-light)}
+.tarj-stage-meta .live{color:var(--green);display:inline-flex;align-items:center;gap:5px}
+.tarj-stage-meta .live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);animation:tarj-pulse 1.5s infinite}
+@keyframes tarj-pulse{50%{opacity:.4}}
+.tarj-stage-canvas{flex:1;display:grid;place-items:center;padding:28px;position:relative;z-index:2;overflow:auto}
+/* Phone */
+.tarj-phone{width:300px;aspect-ratio:9/19;border-radius:44px;
+  background:linear-gradient(165deg,#2a2018 0%,#1a1410 60%,#0d0a07 100%);padding:8px;
+  box-shadow:0 50px 120px rgba(26,20,16,.4),0 20px 40px rgba(26,20,16,.2),inset 0 1px 0 rgba(255,255,255,.08);position:relative}
+.tarj-phone::after{content:'iPhone 15 Pro · Wallet';position:absolute;left:50%;bottom:-28px;transform:translateX(-50%);
+  font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brown-light);white-space:nowrap;font-weight:600}
+.tarj-phone-screen{width:100%;height:100%;border-radius:37px;overflow:hidden;background:#000;position:relative}
+.tarj-dyn-island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:90px;height:26px;background:#000;border-radius:20px;z-index:5}
+.tarj-ios-status{padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;font-family:-apple-system,system-ui;font-size:11px;color:#fff;font-weight:600;height:38px}
+.tarj-wallet-frame{padding:6px 10px 0;height:calc(100% - 38px);background:#000}
+.tarj-wallet-bar{display:flex;justify-content:space-between;align-items:center;padding:0 2px 10px}
+.tarj-wallet-back{color:#2997ff;font-family:-apple-system,system-ui;font-size:13px;font-weight:400}
+.tarj-wallet-more{color:#2997ff;font-family:-apple-system,system-ui;font-size:16px}
+.tarj-wcard{border-radius:13px;overflow:hidden;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.tarj-wcard-face{padding:13px}
+.tarj-wc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.tarj-wc-logo{font-family:'Instrument Serif',sans-serif;font-style:italic;font-size:15px;line-height:1}
+.tarj-wc-biz{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;opacity:.5;margin-top:3px}
+.tarj-wc-count .n{font-family:'Instrument Serif',sans-serif;font-size:22px;line-height:1;letter-spacing:-.02em}
+.tarj-wc-count .l{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;opacity:.5;text-align:right}
+.tarj-wc-stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 0}
+.tarj-wcs{aspect-ratio:1;border-radius:50%;border:1px dashed rgba(255,255,255,.2);display:grid;place-items:center;font-size:.55rem;opacity:.5}
+.tarj-wcs.on{border-color:transparent;opacity:1}
+.tarj-wc-bot{display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);margin-top:2px;font-size:.55rem;opacity:.6;letter-spacing:.08em;text-transform:uppercase}
+.tarj-wc-divider{height:1px;background:rgba(255,255,255,.06)}
+.tarj-wc-back{padding:12px 13px}
+.tarj-wc-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tarj-wc-f .lbl{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;opacity:.5}
+.tarj-wc-f .val{font-size:.7rem;font-weight:500;margin-top:2px}
+.tarj-wc-qr{background:#fff;border-radius:5px;padding:6px;aspect-ratio:1;max-width:72px;margin:10px auto 0;display:grid;place-items:center}
+/* Inspector */
+.tarj-insp{border-left:1px solid var(--cream-border);display:flex;flex-direction:column;min-height:0;background:var(--white)}
+.tarj-insp-tabs{display:flex;border-bottom:1px solid var(--cream-border);padding:0 10px}
+.tarj-insp-tab{padding:12px 10px;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brown-light);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tarj-insp-tab.on{color:var(--primary);border-bottom-color:var(--honey-dark)}
+.tarj-insp-body{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:18px}
+.tarj-insp-section h4{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brown-light);margin:0 0 10px}
+.tarj-field{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.tarj-field label{font-size:.72rem;color:var(--brown-light)}
+.tarj-field input,.tarj-field select{padding:8px 10px;border:1px solid var(--cream-border);border-radius:7px;background:var(--cream);color:var(--primary);font-size:.82rem;font-family:inherit;outline:none;transition:all .15s}
+.tarj-field input:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in oklab,var(--honey) 30%,transparent)}
+.tarj-palette{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tarj-pal{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.tarj-pal.on{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in oklab,var(--honey) 40%,transparent)}
+.tarj-stamp-ctr{display:flex;align-items:center;gap:8px}
+.tarj-scnt-btn{width:28px;height:28px;border-radius:6px;background:var(--cream);border:1px solid var(--cream-border);font-size:1rem;cursor:pointer;display:grid;place-items:center;transition:all .15s}
+.tarj-scnt-btn:hover{border-color:var(--primary)}
+.tarj-scnt-val{flex:1;text-align:center;font-family:'Instrument Serif',sans-serif;font-size:1.4rem}
+.tarj-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--cream-border);font-size:.82rem}
+.tarj-toggle-row:first-child{border-top:none}
+.tarj-tog{width:30px;height:17px;border-radius:999px;background:var(--cream-border);position:relative;cursor:pointer;transition:background .15s;flex-shrink:0}
+.tarj-tog::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .18s}
+.tarj-tog.on{background:var(--honey-dark)}
+.tarj-tog.on::after{transform:translateX(13px)}
+.tarj-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tarj-stat-cell{padding:10px;background:var(--cream);border:1px solid var(--cream-border);border-radius:8px}
+.tarj-stat-cell .l{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brown-light)}
+.tarj-stat-cell .v{font-family:'Instrument Serif',sans-serif;font-size:1.35rem;line-height:1;margin-top:4px;letter-spacing:-.01em}
+.tarj-stat-cell .v em{color:var(--honey-dark);font-style:italic}
+.tarj-insp-foot{padding:12px 14px;border-top:1px solid var(--cream-border);display:flex;gap:8px;flex-shrink:0}
+.tarj-insp-foot button{flex:1;padding:10px;border-radius:8px;border:none;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .18s}
+.tarj-save-btn{background:var(--primary);color:var(--honey-light)}
+.tarj-save-btn:hover{background:var(--honey-dark)}
+.tarj-qr-btn{background:var(--cream);border:1px solid var(--cream-border)!important;color:var(--primary)}
+.tarj-qr-btn:hover{border-color:var(--primary)!important}
+.tarj-insp-panel{display:none}
+.tarj-insp-panel.on{display:flex;flex-direction:column;gap:18px}
+@media(max-width:1100px){.tarj-studio{grid-template-columns:220px 1fr 260px}}
+@media(max-width:860px){.tarj-studio{grid-template-columns:1fr}.tarj-rail,.tarj-insp{display:none}.tarj-phone{width:240px}}
 </style>
 </head>
 <body>
@@ -1530,14 +1711,188 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
       <!-- ═══ TARJETAS ═══ -->
       <div class="section" id="section-tarjetas">
-        <div class="section-header">
-          <div style="flex:1">
-            <h1>Gestión de Tarjetas</h1>
-            <p style="font-style:italic;font-size:.95rem;color:var(--brown-light)">Crea y gestiona tus programas de fidelización</p>
+        <div class="tarj-bleed">
+          <!-- Topbar -->
+          <div class="tarj-topbar">
+            <div>
+              <h1>Gestión de <em>Tarjetas.</em></h1>
+              <div class="tarj-topbar-sub" id="tarj-sub">Crea y gestiona tus programas de fidelización</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-sm btn-ghost" onclick="tarjExportPasses()" style="font-size:.78rem">⤓ Exportar passes</button>
+              <button class="btn-sm btn-primary" onclick="openNewCardModal()" style="font-size:.78rem">＋ Nueva tarjeta</button>
+            </div>
           </div>
-          <button class="btn-sm btn-primary" onclick="openNewCardModal()" style="padding:10px 18px;font-size:.88rem">+ Nueva tarjeta</button>
-        </div>
-        <div id="tarjetas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;padding-bottom:32px"></div>
+
+          <!-- Studio: Rail · Stage · Inspector -->
+          <div class="tarj-studio">
+
+            <!-- RAIL -->
+            <aside class="tarj-rail" id="tarj-rail">
+              <div class="tarj-rail-h">
+                <h3>Tus tarjetas</h3>
+                <span class="cnt" id="tarj-rail-count">—</span>
+              </div>
+              <button class="tarj-new-btn" onclick="openNewCardModal()">＋ Nueva tarjeta</button>
+              <div id="tarj-thumbs"></div>
+              <div class="tarj-rail-tip">
+                <p>Crea una tarjeta distinta para campañas de temporada (Navidad, San Valentín). Tus clientes pueden tener varias.</p>
+              </div>
+            </aside>
+
+            <!-- STAGE -->
+            <div class="tarj-stage">
+              <div class="tarj-stage-grid"></div>
+              <div class="tarj-stage-bar">
+                <div class="tarj-face-tabs">
+                  <div class="tarj-face-tab on" data-face="front">▣ Frente</div>
+                  <div class="tarj-face-tab" data-face="back">≡ Reverso</div>
+                  <div class="tarj-face-tab" data-face="lock">⊙ Lock</div>
+                </div>
+                <div class="tarj-dev-tabs">
+                  <span class="tarj-dev-tab on" data-dev="ios">iOS</span>
+                  <span class="tarj-dev-tab" data-dev="android">Android</span>
+                </div>
+                <div class="tarj-stage-meta">
+                  <span id="tarj-autosave">v1 · auto-guardado</span>
+                  <span class="live">EN VIVO</span>
+                </div>
+              </div>
+              <div class="tarj-stage-canvas">
+                <div class="tarj-phone">
+                  <div class="tarj-phone-screen">
+                    <div class="tarj-dyn-island"></div>
+                    <div class="tarj-ios-status">
+                      <span>9:41</span>
+                      <div style="display:flex;align-items:center;gap:4px">
+                        <svg width="12" height="9" viewBox="0 0 12 9" fill="#fff"><rect x="0" y="6" width="2" height="3" rx=".3"/><rect x="3" y="4" width="2" height="5" rx=".3"/><rect x="6" y="2" width="2" height="7" rx=".3"/><rect x="9" y="0" width="2" height="9" rx=".3"/></svg>
+                        <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="0" width="13.5" height="10" rx="2" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".8"/><rect x="14.5" y="3" width="1" height="4" rx=".5" fill="#fff" fill-opacity=".45"/><rect x="1" y="1.5" width="10" height="7" rx=".8" fill="#fff"/></svg>
+                      </div>
+                    </div>
+                    <div class="tarj-wallet-frame">
+                      <div class="tarj-wallet-bar">
+                        <span class="tarj-wallet-back">‹ Wallet</span>
+                        <span class="tarj-wallet-more">···</span>
+                      </div>
+                      <!-- Wallet card — updated by tarjSelectCard() -->
+                      <div class="tarj-wcard" id="tarj-wcard">
+                        <div class="tarj-wcard-face" id="tarj-face-front">
+                          <div class="tarj-wc-head">
+                            <div>
+                              <div class="tarj-wc-logo" id="twc-logo">—</div>
+                              <div class="tarj-wc-biz" id="twc-biz">—</div>
+                            </div>
+                            <div class="tarj-wc-count">
+                              <div class="n" id="twc-count">0/10</div>
+                              <div class="l">Sellos</div>
+                            </div>
+                          </div>
+                          <div class="tarj-wc-stamps" id="twc-stamps"></div>
+                          <div class="tarj-wc-bot">
+                            <span>Próximo premio</span>
+                            <strong id="twc-reward">—</strong>
+                          </div>
+                        </div>
+                        <div class="tarj-wc-divider"></div>
+                        <div class="tarj-wc-back">
+                          <div class="tarj-wc-fields">
+                            <div class="tarj-wc-f"><div class="lbl">— Titular</div><div class="val">{{ biz_name }}</div></div>
+                            <div class="tarj-wc-f"><div class="lbl">— ID</div><div class="val">A-0001</div></div>
+                          </div>
+                          <div class="tarj-wc-qr">
+                            <svg viewBox="0 0 21 21" shape-rendering="crispEdges" width="60" height="60">
+                              <rect width="21" height="21" fill="#fff"/>
+                              <g fill="#000">
+                                <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+                                <rect x="14" y="0" width="7" height="7"/><rect x="15" y="1" width="5" height="5" fill="#fff"/><rect x="16" y="2" width="3" height="3"/>
+                                <rect x="0" y="14" width="7" height="7"/><rect x="1" y="15" width="5" height="5" fill="#fff"/><rect x="2" y="16" width="3" height="3"/>
+                                <rect x="9" y="0" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="9" y="3" width="2" height="1"/>
+                                <rect x="9" y="6" width="3" height="1"/><rect x="0" y="9" width="2" height="1"/><rect x="3" y="9" width="2" height="1"/>
+                                <rect x="10" y="9" width="2" height="1"/><rect x="14" y="9" width="3" height="1"/><rect x="18" y="9" width="2" height="1"/>
+                                <rect x="9" y="11" width="1" height="2"/><rect x="11" y="11" width="2" height="2"/><rect x="16" y="11" width="1" height="2"/>
+                                <rect x="9" y="14" width="2" height="1"/><rect x="12" y="14" width="1" height="3"/><rect x="18" y="14" width="1" height="3"/>
+                                <rect x="9" y="17" width="3" height="1"/><rect x="16" y="17" width="2" height="2"/>
+                              </g>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- INSPECTOR -->
+            <aside class="tarj-insp">
+              <div class="tarj-insp-tabs">
+                <span class="tarj-insp-tab on" data-panel="design">Diseño</span>
+                <span class="tarj-insp-tab" data-panel="sellos">Sellos</span>
+                <span class="tarj-insp-tab" data-panel="stats">Stats</span>
+              </div>
+              <div class="tarj-insp-body">
+                <!-- Diseño panel -->
+                <div class="tarj-insp-panel on" id="tarj-panel-design">
+                  <div class="tarj-insp-section">
+                    <h4>— Identidad</h4>
+                    <div class="tarj-field"><label>Nombre del programa</label><input id="ti-name" placeholder="Ej: Club Amigos"></div>
+                    <div class="tarj-field"><label>Categoría / subtítulo</label><input id="ti-cat" placeholder="Ej: Cookies · Madrid"></div>
+                    <div class="tarj-field"><label>Premio</label><input id="ti-reward" placeholder="Ej: Cookie Gratis"></div>
+                  </div>
+                  <div class="tarj-insp-section">
+                    <h4>— Paleta</h4>
+                    <div class="tarj-palette" id="tarj-palette">
+                      <div class="tarj-pal on" style="background:#1a1410" data-bg="#1a1410" data-acc="#ffca48" data-fg="#f4ede2"></div>
+                      <div class="tarj-pal" style="background:#2a1810" data-bg="#2a1810" data-acc="#ff8c42" data-fg="#f4ede2"></div>
+                      <div class="tarj-pal" style="background:#0f1a15" data-bg="#0f1a15" data-acc="#4caf50" data-fg="#eef5ef"></div>
+                      <div class="tarj-pal" style="background:#1a1220" data-bg="#1a1220" data-acc="#c084fc" data-fg="#efe8f0"></div>
+                      <div class="tarj-pal" style="background:#f4ede2" data-bg="#f4ede2" data-acc="#a0522d" data-fg="#1a1410"></div>
+                      <div class="tarj-pal" style="background:#ffffff" data-bg="#ffffff" data-acc="#3b82f6" data-fg="#0a0a0a"></div>
+                      <div class="tarj-pal" style="background:#18181b" data-bg="#18181b" data-acc="#84cc16" data-fg="#fafafa"></div>
+                      <div class="tarj-pal" style="background:linear-gradient(135deg,#f4ede2,#1a1410)" data-bg="#1a1410" data-acc="#ffca48" data-fg="#f4ede2"></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Sellos panel -->
+                <div class="tarj-insp-panel" id="tarj-panel-sellos">
+                  <div class="tarj-insp-section">
+                    <h4>— Sellos</h4>
+                    <div class="tarj-field"><label>Cantidad necesaria para premio</label></div>
+                    <div class="tarj-stamp-ctr">
+                      <button class="tarj-scnt-btn" id="tarj-scount-minus">−</button>
+                      <span class="tarj-scnt-val" id="tarj-scount-val">10</span>
+                      <button class="tarj-scnt-btn" id="tarj-scount-plus">+</button>
+                    </div>
+                  </div>
+                  <div class="tarj-insp-section">
+                    <h4>— Comportamiento</h4>
+                    <div class="tarj-toggle-row"><span>Notificación al ganar premio</span><div class="tarj-tog on"></div></div>
+                    <div class="tarj-toggle-row"><span>Recordatorio si dormido 30d</span><div class="tarj-tog on"></div></div>
+                    <div class="tarj-toggle-row"><span>Doble sello cumpleaños</span><div class="tarj-tog"></div></div>
+                    <div class="tarj-toggle-row"><span>QR único por cliente</span><div class="tarj-tog on"></div></div>
+                  </div>
+                </div>
+                <!-- Stats panel -->
+                <div class="tarj-insp-panel" id="tarj-panel-stats">
+                  <div class="tarj-insp-section">
+                    <h4>— Rendimiento</h4>
+                    <div class="tarj-stat-grid">
+                      <div class="tarj-stat-cell"><div class="l">Clientes</div><div class="v" id="ts-clients">—</div></div>
+                      <div class="tarj-stat-cell"><div class="l">Premios</div><div class="v"><em id="ts-rewards">—</em></div></div>
+                      <div class="tarj-stat-cell"><div class="l">Sellos / sem</div><div class="v" id="ts-week">—</div></div>
+                      <div class="tarj-stat-cell"><div class="l">Retención</div><div class="v" id="ts-retention">—</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tarj-insp-foot">
+                <button class="tarj-qr-btn" onclick="tarjShareQR()">Compartir QR</button>
+                <button class="tarj-save-btn" id="tarj-save-btn" onclick="tarjSaveCard()">Guardar</button>
+              </div>
+            </aside>
+
+          </div><!-- /studio -->
+        </div><!-- /tarj-bleed -->
       </div>
 
       <!-- ═══ MODAL NUEVA TARJETA ═══ -->
@@ -9422,33 +9777,250 @@ function switchPassTab(platform, cid) {
   }
 }
 
+// ── TARJETAS STUDIO ─────────────────────────────────────────────────────────
+let _tarjPrograms = [];
+let _tarjSelected = null;
+let _tarjStampCount = 10;
+
 async function loadTarjetas(){
-  const grid = document.getElementById('tarjetas-grid');
-  grid.innerHTML = '<div style="color:var(--brown-light);font-size:.9rem;padding:8px">Cargando...</div>';
+  const thumbsEl = document.getElementById('tarj-thumbs');
+  if(thumbsEl) thumbsEl.innerHTML = '<div style="font-size:.78rem;color:var(--brown-light);padding:4px">Cargando...</div>';
   try {
     const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs?pin=${PIN}`);
-    const programs = await res.json();
+    _tarjPrograms = await res.json();
 
-    grid.innerHTML = '';
-    if(!programs.length){
-      grid.innerHTML = `<div style="color:var(--brown-light);font-size:.9rem;padding:16px 0">
-        Aún no tienes tarjetas. Haz clic en <strong>+ Nueva tarjeta</strong> para crear la primera.</div>`;
-      return;
+    const countEl = document.getElementById('tarj-rail-count');
+    if(countEl) countEl.textContent = _tarjPrograms.length + ' / ∞';
+    const subEl = document.getElementById('tarj-sub');
+    if(subEl) subEl.textContent = `Crea y gestiona tus programas de fidelización · ${_tarjPrograms.length} tarjeta${_tarjPrograms.length!==1?'s':''}`;
+
+    if(thumbsEl){
+      thumbsEl.innerHTML = '';
+      if(!_tarjPrograms.length){
+        thumbsEl.innerHTML = '<div style="font-size:.78rem;color:var(--brown-light);padding:8px 0">Aún no tienes tarjetas.</div>';
+        return;
+      }
+      _tarjPrograms.forEach(p => thumbsEl.appendChild(tarjBuildThumb(p)));
     }
-    programs.forEach(p => grid.appendChild(buildCardMockup(p)));
-
-    // Portal: move all dropdowns to <body> so they escape overflow:hidden + transform containers
-    document.querySelectorAll('.tarjeta-dropdown').forEach(dd => {
-      document.body.appendChild(dd);
-    });
-
-    document.addEventListener('click', function(e){
-      if(!e.target.closest('.tarjeta-actions')) closeTarjetaDropdowns();
-    });
+    // Select first
+    if(_tarjPrograms.length) tarjSelectCard(_tarjPrograms[0]);
   } catch(e){
-    grid.innerHTML = `<div style="color:var(--red);font-size:.85rem">Error cargando tarjetas.</div>`;
     console.error('loadTarjetas', e);
   }
+}
+
+function tarjBuildThumb(p){
+  const bg  = p.bg_color     || '#26170c';
+  const acc = p.accent_color || '#ffca48';
+  const spr = p.stamps_per_reward || p.stamps || 10;
+  const isDraft = !p.is_active;
+
+  const el = document.createElement('div');
+  el.className = 'tarj-thumb' + (_tarjSelected && _tarjSelected.id === p.id ? ' on' : '');
+  el.dataset.id = p.id;
+  el.onclick = () => tarjSelectCard(p);
+
+  // stamp dots (max 10 shown)
+  const dotCount = Math.min(spr, 10);
+  const filledDots = Math.min(Math.round(dotCount * 0.5), dotCount);
+  let dots = '';
+  for(let i=0;i<dotCount;i++) dots += `<span class="tarj-ct-dot${i<filledDots?' on':''}" style="${i<filledDots?'background:'+acc:''}"></span>`;
+
+  el.innerHTML = `
+    <div class="tarj-ct-mini" style="background:${bg};--t-acc:${acc}">
+      <div class="tarj-ct-logo">${p.name || '—'}</div>
+      <div class="tarj-ct-dots">${dots}</div>
+    </div>
+    <div class="tarj-ct-foot">
+      <div class="tarj-ct-name">${p.name || '—'}</div>
+      <div class="tarj-ct-meta">${spr} sellos</div>
+    </div>
+    <div class="tarj-ct-status${isDraft?' draft':''}">
+      <span class="dot"></span>${isDraft ? 'Borrador' : 'Activa'}
+    </div>`;
+  return el;
+}
+
+function tarjSelectCard(p){
+  _tarjSelected = p;
+  _tarjStampCount = p.stamps_per_reward || p.stamps || 10;
+
+  // Highlight rail thumb
+  document.querySelectorAll('.tarj-thumb').forEach(t => t.classList.toggle('on', t.dataset.id === p.id));
+
+  const bg  = p.bg_color     || '#26170c';
+  const acc = p.accent_color || '#ffca48';
+  const fg  = p.text_color   || '#ffffff';
+  const name   = p.name          || '—';
+  const reward = p.reward_name   || '—';
+  const spr    = _tarjStampCount;
+
+  // Update phone preview
+  tarjUpdatePreview(bg, acc, fg, spr, name, reward, p.card_name || name);
+
+  // Inspector: populate Diseño fields
+  const tiName   = document.getElementById('ti-name');
+  const tiCat    = document.getElementById('ti-cat');
+  const tiReward = document.getElementById('ti-reward');
+  if(tiName)   tiName.value   = name;
+  if(tiCat)    tiCat.value    = p.card_name || '';
+  if(tiReward) tiReward.value = reward;
+
+  // Stamp counter
+  const scv = document.getElementById('tarj-scount-val');
+  if(scv) scv.textContent = spr;
+
+  // Stats (pull from card program data if available)
+  const setS = (id, v) => { const el=document.getElementById(id); if(el) el.textContent = v??'—'; };
+  setS('ts-clients',   p.customer_count   ?? '—');
+  setS('ts-rewards',   p.rewards_redeemed ?? '—');
+  setS('ts-week',      p.stamps_this_week ?? '—');
+  setS('ts-retention', p.retention_rate ? p.retention_rate+'%' : '—');
+
+  // Autosave label
+  const as = document.getElementById('tarj-autosave');
+  if(as) as.textContent = `v${p.version||1} · ${name}`;
+
+  // Select matching palette swatch (best match)
+  document.querySelectorAll('.tarj-pal').forEach(pal => {
+    pal.classList.toggle('on', pal.dataset.bg === bg);
+  });
+}
+
+function tarjUpdatePreview(bg, acc, fg, spr, name, reward, sub){
+  const card = document.getElementById('tarj-wcard');
+  if(!card) return;
+  card.style.background = bg;
+  card.style.color = fg;
+  card.style.setProperty('--t-acc', acc);
+
+  const el = id => document.getElementById(id);
+  if(el('twc-logo'))   el('twc-logo').style.color = acc;
+  if(el('twc-logo'))   el('twc-logo').textContent  = name;
+  if(el('twc-biz'))    el('twc-biz').textContent   = sub || name;
+  if(el('twc-count'))  el('twc-count').innerHTML   = `<span style="color:${acc}">0</span>/${spr}`;
+  if(el('twc-count'))  el('twc-count').style.color = fg;
+  if(el('twc-reward')) el('twc-reward').style.color = acc;
+  if(el('twc-reward')) el('twc-reward').textContent = reward;
+
+  // Stamp dots
+  const stEl = el('twc-stamps');
+  if(stEl){
+    stEl.innerHTML = '';
+    stEl.style.gridTemplateColumns = `repeat(${Math.min(spr,5)},1fr)`;
+    for(let i=0;i<spr;i++){
+      const s = document.createElement('div');
+      s.className = 'tarj-wcs';
+      const filled = i < Math.round(spr * 0.5);
+      if(filled){ s.style.background = acc; s.style.borderColor = acc; s.textContent = '★'; }
+      else { s.textContent = i === spr-1 ? '★' : (i+1); }
+      stEl.appendChild(s);
+    }
+  }
+}
+
+// Face tabs
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('.tarj-face-tab').forEach(t => t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tarj-face-tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    const card = document.getElementById('tarj-wcard');
+    if(!card) return;
+    if(t.dataset.face==='back')  card.style.transform = 'translateY(-160px)';
+    else if(t.dataset.face==='lock') card.style.transform = 'scale(.88)';
+    else card.style.transform = '';
+  }));
+
+  document.querySelectorAll('.tarj-dev-tab').forEach(t => t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tarj-dev-tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+  }));
+
+  document.querySelectorAll('.tarj-insp-tab').forEach(t => t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tarj-insp-tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.querySelectorAll('.tarj-insp-panel').forEach(p=>p.classList.remove('on'));
+    const panel = document.getElementById('tarj-panel-'+t.dataset.panel);
+    if(panel) panel.classList.add('on');
+  }));
+
+  document.querySelectorAll('.tarj-pal').forEach(pal => pal.addEventListener('click', ()=>{
+    document.querySelectorAll('.tarj-pal').forEach(x=>x.classList.remove('on'));
+    pal.classList.add('on');
+    if(_tarjSelected){
+      tarjUpdatePreview(pal.dataset.bg, pal.dataset.acc, pal.dataset.fg,
+        _tarjStampCount,
+        document.getElementById('ti-name')?.value || _tarjSelected.name,
+        document.getElementById('ti-reward')?.value || _tarjSelected.reward_name,
+        document.getElementById('ti-cat')?.value
+      );
+    }
+  }));
+
+  document.getElementById('tarj-scount-minus')?.addEventListener('click', ()=>{
+    _tarjStampCount = Math.max(3, _tarjStampCount - 1);
+    document.getElementById('tarj-scount-val').textContent = _tarjStampCount;
+    _previewRefresh();
+  });
+  document.getElementById('tarj-scount-plus')?.addEventListener('click', ()=>{
+    _tarjStampCount = Math.min(20, _tarjStampCount + 1);
+    document.getElementById('tarj-scount-val').textContent = _tarjStampCount;
+    _previewRefresh();
+  });
+
+  document.querySelectorAll('.tarj-tog').forEach(t => t.addEventListener('click', ()=>t.classList.toggle('on')));
+
+  // Live update from identity fields
+  ['ti-name','ti-cat','ti-reward'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', _previewRefresh);
+  });
+});
+
+function _previewRefresh(){
+  const onPal = document.querySelector('.tarj-pal.on');
+  const bg  = onPal?.dataset.bg  || _tarjSelected?.bg_color     || '#26170c';
+  const acc = onPal?.dataset.acc || _tarjSelected?.accent_color || '#ffca48';
+  const fg  = onPal?.dataset.fg  || _tarjSelected?.text_color   || '#ffffff';
+  tarjUpdatePreview(
+    bg, acc, fg, _tarjStampCount,
+    document.getElementById('ti-name')?.value   || '—',
+    document.getElementById('ti-reward')?.value || '—',
+    document.getElementById('ti-cat')?.value    || ''
+  );
+}
+
+async function tarjSaveCard(){
+  if(!_tarjSelected) return;
+  const btn = document.getElementById('tarj-save-btn');
+  if(btn){ btn.textContent='Guardando…'; btn.disabled=true; }
+  const onPal = document.querySelector('.tarj-pal.on');
+  const payload = {
+    pin: PIN,
+    name:              document.getElementById('ti-name')?.value   || _tarjSelected.name,
+    card_name:         document.getElementById('ti-cat')?.value    || _tarjSelected.card_name,
+    reward_name:       document.getElementById('ti-reward')?.value || _tarjSelected.reward_name,
+    stamps_per_reward: _tarjStampCount,
+    bg_color:          onPal?.dataset.bg  || _tarjSelected.bg_color,
+    accent_color:      onPal?.dataset.acc || _tarjSelected.accent_color,
+    text_color:        onPal?.dataset.fg  || _tarjSelected.text_color,
+  };
+  try {
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${_tarjSelected.id}?pin=${PIN}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+    });
+    showToast('Tarjeta guardada');
+    loadTarjetas();
+  } catch(e){ showToast('Error al guardar','error'); }
+  finally { if(btn){btn.textContent='Guardar';btn.disabled=false;} }
+}
+
+function tarjShareQR(){
+  if(!_tarjSelected) return;
+  showSection('fidelizacion'); // QR section
+}
+
+function tarjExportPasses(){
+  window.open(`${BASE}/api/biz/${BIZ_SLUG}/export-passes?pin=${PIN}`, '_blank');
 }
 
 async function deleteCardProgram(id){
