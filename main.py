@@ -8796,3 +8796,26 @@ async def send_review_test(slug: str, pin: str = "", email: str = "", store: str
         from_name = getattr(biz, "email_from_name", "") or biz.name,
     )
     return {"sent": sent, "to": email, "store": store_name, "review_url": review_url}
+
+
+@app.delete("/api/zubadmin/businesses/{slug}")
+async def zubadmin_delete_business(slug: str, request: Request, db: Session = Depends(get_db)):
+    """ZubAdmin: permanently delete a business and ALL its data (cascade)."""
+    if not _zubadmin_authenticated(request):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    row = db.execute(text("SELECT id FROM businesses WHERE slug=:slug"), {"slug": slug}).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    bid = str(row[0])
+    lc_sub  = "SELECT lc.id FROM loyalty_cards lc JOIN customers c ON c.id=lc.customer_id WHERE c.business_id=:bid"
+    cust_sub = "SELECT id FROM customers WHERE business_id=:bid"
+    db.execute(text(f"DELETE FROM push_subscriptions WHERE card_id IN ({lc_sub})"), {"bid": bid})
+    db.execute(text(f"DELETE FROM stamp_transactions  WHERE card_id IN ({lc_sub})"), {"bid": bid})
+    db.execute(text(f"DELETE FROM loyalty_cards WHERE customer_id IN ({cust_sub})"), {"bid": bid})
+    db.execute(text("DELETE FROM customers   WHERE business_id=:bid"), {"bid": bid})
+    db.execute(text("DELETE FROM card_config WHERE business_id=:bid"), {"bid": bid})
+    db.execute(text("DELETE FROM campaigns   WHERE business_id=:bid"), {"bid": bid})
+    db.execute(text("DELETE FROM stores      WHERE business_id=:bid"), {"bid": bid})
+    db.execute(text("DELETE FROM businesses  WHERE id=:bid"),          {"bid": bid})
+    db.commit()
+    return {"ok": True, "deleted": slug}
