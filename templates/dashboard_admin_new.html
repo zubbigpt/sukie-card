@@ -9555,6 +9555,35 @@ function switchPassTab(platform, cid) {
   }
 }
 
+// ── TARJETAS GRID LOADER ────────────────────────────────────────────────────
+async function loadTarjetas(){
+  const grid = document.getElementById('tarjetas-grid');
+  if(!grid) return;
+  grid.innerHTML = '<div style="font-size:.82rem;color:var(--brown-light);padding:4px">Cargando...</div>';
+  try {
+    const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs?pin=${PIN}`);
+    const programs = await res.json();
+    grid.innerHTML = '';
+    if(!programs.length){
+      grid.innerHTML = '<div style="font-size:.88rem;color:var(--brown-light);padding:12px 0">Aún no tienes tarjetas. Crea tu primera tarjeta con el botón "Nueva tarjeta".</div>';
+      return;
+    }
+    programs.forEach(p => {
+      const wrap = buildCardMockup(p);
+      grid.appendChild(wrap);
+    });
+  } catch(e){
+    console.error('loadTarjetas', e);
+    grid.innerHTML = '<div style="color:#cc2222;font-size:.82rem;padding:8px">Error al cargar tarjetas.</div>';
+  }
+}
+
+async function deleteCardProgram(id){
+  if(!confirm('¿Eliminar esta tarjeta? Esta acción no se puede deshacer.')) return;
+  await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs/${id}?pin=${PIN}`, {method:'DELETE'});
+  loadTarjetas();
+}
+
 // ── MODAL NUEVA TARJETA ──────────────────────────────────────────────────────
 function openNewCardModal(){
   document.getElementById('modal-nueva-tarjeta').style.display = 'flex';
