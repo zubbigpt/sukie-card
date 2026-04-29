@@ -331,6 +331,58 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
 @media (max-width: 600px) {
   .how-grid, .types-grid, .pricing-wrap, .tst-grid, .footer-cols { grid-template-columns: 1fr; }
 }
+
+/* ── PHOTO SECTIONS ── */
+.photo-hero { position: relative; height: 80vh; min-height: 520px; overflow: hidden; }
+.photo-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.photo-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 30%, rgba(26,20,16,.65) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 48px 64px; }
+.photo-hero-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 70%, transparent); margin-bottom: 16px; }
+.photo-hero-title { font-family: var(--font-display); font-size: clamp(36px, 5vw, 72px); color: var(--bg); line-height: 1.05; max-width: 660px; }
+.photo-hero-title em { font-style: italic; color: var(--accent); }
+
+.scroll-story { display: grid; grid-template-columns: 1fr 1fr; min-height: 280vh; position: relative; }
+.scroll-sticky-img { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.scroll-sticky-img img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.scroll-panels { padding: 0; display: flex; flex-direction: column; }
+.scroll-panel { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 80px 64px; opacity: 0; transform: translateY(32px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.scroll-panel.visible { opacity: 1; transform: translateY(0); }
+.sp-num { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 24px; }
+.sp-title { font-family: var(--font-display); font-size: clamp(32px, 4vw, 52px); line-height: 1.1; margin-bottom: 20px; }
+.sp-title em { font-style: italic; color: var(--accent); }
+.sp-body { font-size: 17px; line-height: 1.65; color: var(--ink-2); max-width: 440px; }
+
+.photo-phone { display: grid; grid-template-columns: 1fr 1fr; min-height: 90vh; overflow: hidden; }
+.photo-phone-img { position: relative; overflow: hidden; }
+.photo-phone-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; transform: scale(1.08); transition: transform 1.2s var(--ease); }
+.photo-phone-img.in-view img { transform: scale(1); }
+.photo-phone-copy { display: flex; flex-direction: column; justify-content: center; padding: 80px 64px; background: var(--ink); color: var(--bg); }
+.photo-phone-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 50%, transparent); margin-bottom: 24px; }
+.photo-phone-title { font-family: var(--font-display); font-size: clamp(32px, 4vw, 56px); line-height: 1.05; margin-bottom: 24px; }
+.photo-phone-title em { font-style: italic; color: var(--accent); }
+.photo-phone-body { font-size: 17px; line-height: 1.65; color: color-mix(in oklab, var(--bg) 70%, transparent); max-width: 440px; margin-bottom: 36px; }
+.photo-phone-points { display: flex; flex-direction: column; gap: 16px; }
+.ppp { display: flex; gap: 16px; align-items: flex-start; font-size: 15px; color: color-mix(in oklab, var(--bg) 80%, transparent); }
+.ppp-n { font-family: var(--font-mono); font-size: 11px; color: var(--accent); padding-top: 3px; flex-shrink: 0; }
+
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 900px) {
+  .scroll-story, .photo-phone { grid-template-columns: 1fr; }
+  .scroll-story { min-height: auto; }
+  .scroll-sticky-img { position: relative; height: 65vw; min-height: 260px; }
+  .scroll-panels { display: block; }
+  .scroll-panel { min-height: auto; padding: 40px 24px 48px; opacity: 1 !important; transform: none !important; border-bottom: 1px solid var(--line-soft); }
+  .scroll-panel:last-child { border-bottom: none; }
+  .photo-phone { min-height: auto; }
+  .photo-phone-img { height: 65vw; min-height: 260px; }
+  .photo-phone-copy { padding: 40px 24px 56px; }
+  .photo-hero { height: 65vw; min-height: 300px; }
+  .photo-hero-overlay { padding: 24px 20px; }
+  .photo-hero-title { font-size: clamp(22px, 6vw, 36px); }
+  .sp-title { font-size: clamp(24px, 6vw, 36px); }
+  .photo-phone-title { font-size: clamp(26px, 7vw, 40px); }
+}
 </style>
 </head>
 <body>
@@ -392,6 +444,39 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
   </div>
 </section>
 
+<!-- ── PHOTO HERO ── -->
+<div class="photo-hero reveal">
+  <img src="/static/img/zubcardweb.png" alt="Panadería con ZubCard" loading="lazy"/>
+  <div class="photo-hero-overlay">
+    <div class="photo-hero-tag">— En el local / 00</div>
+    <h2 class="photo-hero-title">La fidelización<br>que tus clientes<br><em>ya esperan.</em></h2>
+  </div>
+</div>
+
+<!-- ── SCROLL STORY ── -->
+<section class="scroll-story" style="background: var(--bg);">
+  <div class="scroll-sticky-img">
+    <img src="/static/img/webland3.png" alt="Local con ZubCard" loading="lazy"/>
+  </div>
+  <div class="scroll-panels">
+    <div class="scroll-panel" id="sp1">
+      <div class="sp-num">— 01 / 03</div>
+      <h3 class="sp-title">Configura tu tarjeta<br><em>en minutos.</em></h3>
+      <p class="sp-body">Entra al panel, elige tus colores, pon tu logo y define cuántos sellos quieres. Sin diseñador, sin código. Tu tarjeta lista antes de terminar el café.</p>
+    </div>
+    <div class="scroll-panel" id="sp2">
+      <div class="sp-num">— 02 / 03</div>
+      <h3 class="sp-title">El cliente escanea<br>y <em>ya está dentro.</em></h3>
+      <p class="sp-body">Pega el QR en la caja. El cliente lo escanea, deja su email y recibe la tarjeta en su wallet. Sin apps, sin descargas, sin fricciones.</p>
+    </div>
+    <div class="scroll-panel" id="sp3">
+      <div class="sp-num">— 03 / 03</div>
+      <h3 class="sp-title">Cada visita,<br><em>un sello más cerca.</em></h3>
+      <p class="sp-body">Tú sumas sellos desde el móvil. El wallet se actualiza en tiempo real. Cuando llegan al premio, vuelven. Así de simple.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ── TICKER ── -->
 <div class="ticker">
   <div class="ticker-track">
@@ -443,6 +528,24 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
     </div>
   </div>
 </section>
+
+<!-- ── PHONE CLOSE-UP ── -->
+<div class="photo-phone">
+  <div class="photo-phone-img" id="phoneImgBlock">
+    <img src="/static/img/close-up-phone.png" alt="Cliente escaneando QR con ZubCard" loading="lazy"/>
+  </div>
+  <div class="photo-phone-copy reveal">
+    <div class="photo-phone-tag">— En la práctica / 02</div>
+    <h2 class="photo-phone-title">Un escaneo.<br><em>Cliente fidelizado.</em></h2>
+    <p class="photo-phone-body">Desde el panel, el empleado escanea la tarjeta del cliente en un toque. El sello queda registrado y el wallet se actualiza al instante.</p>
+    <div class="photo-phone-points">
+      <div class="ppp"><span class="ppp-n">01 /</span><span>Sin apps que descargar — funciona en cualquier móvil</span></div>
+      <div class="ppp"><span class="ppp-n">02 /</span><span>Sincronización instantánea con Apple Wallet y Google Wallet</span></div>
+      <div class="ppp"><span class="ppp-n">03 /</span><span>Notificación push cuando el cliente suma un sello</span></div>
+      <div class="ppp"><span class="ppp-n">04 /</span><span>Alerta de geolocalización al pasar cerca de tu local</span></div>
+    </div>
+  </div>
+</div>
 
 <!-- ── DEMO / WALLET ── -->
 <section class="demo-strip">
@@ -757,6 +860,15 @@ footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
 </footer>
 
 <script>
+  // Scroll animations
+  const _io = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.classList.add('in-view'); }), { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => _io.observe(el));
+  document.querySelectorAll('.scroll-panel').forEach(el => {
+    new IntersectionObserver(entries => entries.forEach(e => { e.isIntersecting ? e.target.classList.add('visible') : e.target.classList.remove('visible'); }), { threshold: 0.45 }).observe(el);
+  });
+  const _pib = document.getElementById('phoneImgBlock');
+  if (_pib) new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.classList.add('in-view'); }), { threshold: 0.15 }).observe(_pib);
+
   // Build QR mock
   const qr = document.getElementById('qr1');
   if (qr) {
