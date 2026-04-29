@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="es" data-palette="cream" data-type="serif-geist">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZubCard · Tarjetas de fidelización que viven en el móvil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS (inlined from tokens.css) ── */
+:root {
+  --bg: #f4ede2;
+  --bg-2: #ede4d5;
+  --surface: #ffffff;
+  --ink: #1a1410;
+  --ink-2: #4a4239;
+  --ink-3: #8a7f71;
+  --line: #d9cdbc;
+  --line-soft: #e7ddcc;
+  --accent: oklch(0.64 0.15 55);
+  --accent-ink: #1a1410;
+  --success: oklch(0.65 0.13 155);
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Geist', 'Inter Tight', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --r-sm: 6px;
+  --r: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--font-ui); -webkit-font-smoothing: antialiased; font-feature-settings: "ss01","cv01"; margin: 0; overflow-x: hidden; }
+* { box-sizing: border-box; }
+a { color: inherit; }
+
+/* ── NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 32px;
+  background: color-mix(in oklab, var(--bg) 85%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display);
+  font-size: 22px; font-style: italic;
+  color: var(--ink); text-decoration: none;
+  letter-spacing: -.02em;
+}
+.logo-mark {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: var(--ink); color: var(--bg);
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  font-style: normal;
+}
+.nav-links { display: flex; gap: 28px; }
+.nav-links a { font-size: 14px; color: var(--ink-2); text-decoration: none; font-weight: 500; transition: color .15s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none; cursor: pointer; border: 1px solid transparent;
+  transition: all .18s var(--ease);
+  white-space: nowrap;
+}
+.btn-primary { background: var(--ink); color: var(--bg); }
+.btn-primary:hover { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn-ghost:hover { border-color: var(--ink); }
+.btn-lg { padding: 14px 24px; font-size: 15px; }
+.btn-xl { padding: 18px 30px; font-size: 16px; }
+
+/* ── HERO ── */
+.hero { padding: 80px 32px 40px; position: relative; }
+.hero-inner { max-width: 1400px; margin: 0 auto; }
+.hero-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 40px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  flex-wrap: wrap; gap: 16px;
+}
+.hero-meta-row { display: flex; gap: 32px; flex-wrap: wrap; }
+.hero-meta-row span strong { color: var(--ink); font-weight: 600; margin-right: 6px; }
+.hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 64px; align-items: end; }
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(62px, 9.5vw, 168px);
+  line-height: .92;
+  letter-spacing: -.035em;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+.hero-title em { font-style: italic; color: var(--accent); }
+.hero-title .line { display: block; }
+.hero-title .indent { padding-left: 2em; }
+.hero-sub { max-width: 440px; font-size: 18px; line-height: 1.5; color: var(--ink-2); margin-bottom: 28px; }
+.hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+.hero-proof {
+  display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase;
+}
+.proof-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 4px color-mix(in oklab, var(--success) 25%, transparent); }
+
+/* Hero visual — phones stack */
+.hero-visual { position: relative; aspect-ratio: 4/5; max-height: 640px; }
+.phone {
+  position: absolute;
+  width: 62%;
+  aspect-ratio: 9/19.5;
+  border-radius: 38px;
+  background: #1a1410;
+  padding: 7px;
+  box-shadow: 0 30px 80px rgba(26,20,16,.25), 0 0 0 1px rgba(0,0,0,.1);
+  overflow: hidden;
+}
+.phone-screen { width: 100%; height: 100%; border-radius: 32px; overflow: hidden; position: relative; background: #f4ede2; }
+.phone-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 86px; height: 24px; background: #000; border-radius: 14px; z-index: 3; }
+.phone.apple { right: 0; top: 6%; z-index: 2; transform: rotate(5deg); }
+.phone.android { left: 0; bottom: 0; z-index: 1; transform: rotate(-7deg); }
+
+/* ── TICKER ── */
+.ticker {
+  background: var(--ink); color: var(--bg);
+  overflow: hidden; padding: 18px 0;
+  font-family: var(--font-display);
+  font-size: 32px; font-style: italic;
+  line-height: 1; letter-spacing: -.01em;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.ticker-track { display: flex; gap: 48px; white-space: nowrap; animation: tick 40s linear infinite; width: max-content; }
+.ticker-track span { display: inline-flex; align-items: center; gap: 48px; }
+.ticker-track .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+/* ── SECTIONS ── */
+section { padding: 100px 32px; }
+.sec-inner { max-width: 1400px; margin: 0 auto; }
+.sec-head {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: end;
+  margin-bottom: 60px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.sec-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.sec-h2 { font-family: var(--font-display); font-size: clamp(44px, 6vw, 88px); line-height: .96; letter-spacing: -.03em; font-weight: 400; margin: 0; }
+.sec-h2 em { font-style: italic; color: var(--accent); }
+.sec-lede { font-size: 17px; line-height: 1.55; color: var(--ink-2); max-width: 420px; justify-self: end; margin: 0; }
+
+/* ── HOW IT WORKS ── */
+.how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.step {
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  display: flex; flex-direction: column;
+  min-height: 420px;
+  transition: transform .3s var(--ease), border-color .2s;
+}
+.step:hover { transform: translateY(-4px); border-color: var(--ink); }
+.step-num { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); letter-spacing: .1em; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+.step-num .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.step-visual { flex: 1; border-radius: var(--r); overflow: hidden; position: relative; margin-bottom: 20px; min-height: 180px; background: var(--bg-2); display: grid; place-items: center; }
+.step-title { font-family: var(--font-display); font-size: 32px; line-height: 1.02; letter-spacing: -.02em; margin-bottom: 8px; }
+.step-title em { font-style: italic; color: var(--accent); }
+.step-desc { font-size: 14px; line-height: 1.55; color: var(--ink-2); margin: 0; }
+
+/* QR mock */
+.qr-mock { width: 140px; height: 140px; background: var(--ink); padding: 12px; border-radius: 12px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+.qr-mock i { background: var(--bg); aspect-ratio: 1; border-radius: 1px; }
+
+/* Stamp viz */
+.stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 12px; width: 100%; max-width: 240px; }
+.stamp { aspect-ratio: 1; border-radius: 50%; border: 1.5px dashed var(--ink-3); display: grid; place-items: center; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+.stamp.filled { background: var(--ink); border: 1.5px solid var(--ink); color: var(--accent); }
+.stamp.reward { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* ── DEMO STRIP ── */
+.demo-strip { padding: 120px 32px; background: var(--ink); color: var(--bg); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.demo-inner { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.demo-strip .sec-tag { color: color-mix(in oklab, var(--bg) 60%, transparent); }
+.demo-strip .sec-h2 { color: var(--bg); }
+.demo-strip .sec-h2 em { color: var(--accent); }
+.demo-features { margin-top: 32px; display: grid; gap: 14px; }
+.demo-feat { display: grid; grid-template-columns: 48px 1fr; gap: 18px; padding: 14px 0; border-top: 1px solid color-mix(in oklab, var(--bg) 12%, transparent); align-items: center; }
+.demo-feat:last-child { border-bottom: 1px solid color-mix(in oklab, var(--bg) 12%, transparent); }
+.demo-feat .n { font-family: var(--font-mono); font-size: 12px; color: color-mix(in oklab, var(--bg) 50%, transparent); letter-spacing: .1em; }
+.demo-feat .t { font-family: var(--font-display); font-size: 22px; letter-spacing: -.01em; }
+.demo-feat .t em { font-style: italic; color: var(--accent); }
+.demo-visual { position: relative; aspect-ratio: 1/1; max-height: 580px; }
+.demo-visual .phone { left: 10%; top: 5%; width: 70%; transform: rotate(-4deg); box-shadow: 0 40px 100px rgba(0,0,0,.5); }
+.wallet-logo { position: absolute; right: 8%; top: 12%; font-family: var(--font-mono); font-size: 11px; color: var(--bg); letter-spacing: .14em; text-transform: uppercase; opacity: .5; }
+.wallet-logo.two { top: auto; bottom: 10%; right: auto; left: 8%; }
+
+/* ── BUSINESS TYPES ── */
+.types-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.biz { background: var(--bg); padding: 24px; min-height: 320px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; transition: background .25s; }
+.biz:hover { background: var(--surface); }
+.biz-img { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity .4s var(--ease); }
+.biz:hover .biz-img { opacity: 1; }
+.biz-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.75) 100%); }
+.biz-content { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+.biz:hover .biz-content, .biz:hover .biz-name, .biz:hover .biz-desc, .biz:hover .biz-num { color: #fff; }
+.biz-num { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .1em; }
+.biz-name { font-family: var(--font-display); font-size: 44px; line-height: .95; letter-spacing: -.02em; color: var(--ink); margin: 0; }
+.biz-desc { font-size: 13px; line-height: 1.5; color: var(--ink-2); margin-top: 10px; max-width: 240px; margin-bottom: 0; }
+
+/* ── PRICING ── */
+.pricing-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.price-card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; transition: transform .3s var(--ease); }
+.price-card:hover { transform: translateY(-4px); }
+.price-card.featured { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.price-tier { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.price-card.featured .price-tier { color: color-mix(in oklab, var(--bg) 55%, transparent); }
+.price-featured-pill { display: inline-block; background: var(--accent); color: var(--accent-ink); font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-left: 8px; letter-spacing: .08em; }
+.price-promo-pill { display: inline-block; background: #e63946; color: #fff; font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-left: 8px; letter-spacing: .08em; text-transform: uppercase; }
+.price-old { font-family: var(--font-ui); font-size: 18px; font-weight: 500; color: color-mix(in oklab, var(--bg) 50%, transparent); margin: 20px 0 4px; }
+.price-old span { text-decoration: line-through; text-decoration-color: #e63946; text-decoration-thickness: 2px; }
+.price-amount { font-family: var(--font-display); font-size: 84px; line-height: 1; letter-spacing: -.04em; margin: 0 0 6px; display: flex; align-items: baseline; gap: 6px; }
+.price-amount .euro { font-size: 44px; font-family: var(--font-display); margin-right: 2px; }
+.price-amount .per { font-size: 18px; font-family: var(--font-ui); font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+.price-card.featured .price-amount .per { color: color-mix(in oklab, var(--bg) 55%, transparent); }
+.price-save { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; font-weight: 600; margin: 8px 0 18px; }
+.price-card.featured .price-save { color: var(--accent); }
+.price-amount sup { font-size: 30px; vertical-align: top; margin-top: 10px; display: inline-block; font-family: var(--font-ui); font-weight: 500; }
+.price-amount sub { font-size: 16px; font-family: var(--font-ui); font-weight: 500; color: var(--ink-3); }
+.price-card.featured .price-amount sub { color: color-mix(in oklab, var(--bg) 55%, transparent); }
+.price-desc { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin-bottom: 24px; }
+.price-card.featured .price-desc { color: color-mix(in oklab, var(--bg) 75%, transparent); }
+.price-features { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 10px; }
+.price-features li { font-size: 14px; line-height: 1.4; display: grid; grid-template-columns: 20px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line-soft); }
+.price-card.featured .price-features li { border-top-color: color-mix(in oklab, var(--bg) 14%, transparent); }
+.price-features .tick { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); display: inline-grid; place-items: center; color: var(--accent-ink); font-size: 10px; }
+.price-cta { margin-top: auto; }
+.price-card .btn-primary { width: 100%; justify-content: center; }
+.price-card.featured .btn-primary { background: var(--accent); color: var(--accent-ink); }
+.price-card.featured .btn-primary:hover { background: var(--bg); color: var(--ink); }
+
+/* ── TESTIMONIALS ── */
+.tst-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.tst { background: var(--bg-2); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; border: 1px solid var(--line-soft); }
+.tst-stars { display: flex; gap: 3px; margin-bottom: 16px; }
+.tst-stars span { width: 12px; height: 12px; background: var(--accent); clip-path: polygon(50% 0, 61% 38%, 100% 38%, 69% 60%, 79% 100%, 50% 75%, 21% 100%, 31% 60%, 0 38%, 39% 38%); }
+.tst-quote { font-family: var(--font-display); font-size: 24px; line-height: 1.25; letter-spacing: -.01em; flex: 1; margin: 0 0 24px; }
+.tst-quote em { font-style: italic; color: var(--accent); }
+.tst-author { display: flex; align-items: center; gap: 12px; }
+.tst-avatar { width: 44px; height: 44px; border-radius: 50%; background-size: cover; background-position: center; border: 1px solid var(--line); }
+.tst-info { font-size: 13px; }
+.tst-info strong { display: block; font-weight: 600; color: var(--ink); }
+.tst-info span { color: var(--ink-3); font-size: 12px; }
+
+/* ── FAQ ── */
+.faq-wrap { display: grid; grid-template-columns: .6fr 1fr; gap: 80px; }
+.faq-list { display: flex; flex-direction: column; }
+.faq { border-top: 1px solid var(--line); padding: 20px 0; cursor: pointer; }
+.faq:last-child { border-bottom: 1px solid var(--line); }
+.faq-q { display: flex; justify-content: space-between; align-items: center; gap: 24px; font-family: var(--font-display); font-size: 26px; line-height: 1.2; letter-spacing: -.01em; font-weight: 400; }
+.faq-toggle { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-mono); font-size: 16px; flex-shrink: 0; transition: all .2s; }
+.faq.open .faq-toggle { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); transform: rotate(45deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height .4s var(--ease), margin-top .2s; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+.faq.open .faq-a { max-height: 400px; margin-top: 14px; }
+
+/* ── CTA ── */
+.cta-banner { padding: 140px 32px; background: var(--accent); color: var(--accent-ink); text-align: center; position: relative; overflow: hidden; }
+.cta-banner h2 { font-family: var(--font-display); font-size: clamp(56px, 10vw, 180px); line-height: .92; letter-spacing: -.04em; font-weight: 400; max-width: 1200px; margin: 0 auto 32px; }
+.cta-banner h2 em { font-style: italic; }
+.cta-banner p { font-size: 18px; max-width: 520px; margin: 0 auto 40px; line-height: 1.5; }
+.cta-banner .btn-xl { background: var(--ink); color: var(--bg); }
+.cta-banner .btn-xl:hover { background: var(--bg); color: var(--ink); }
+.cta-fine { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; margin-top: 20px; opacity: .7; }
+
+/* ── FOOTER ── */
+footer { background: var(--ink); color: var(--bg); padding: 80px 32px 28px; }
+.footer-inner { max-width: 1400px; margin: 0 auto; }
+.footer-lead { font-family: var(--font-display); font-size: clamp(48px, 7vw, 120px); line-height: .95; letter-spacing: -.03em; font-weight: 400; padding-bottom: 60px; border-bottom: 1px solid color-mix(in oklab, var(--bg) 14%, transparent); margin: 0; }
+.footer-lead em { font-style: italic; color: var(--accent); }
+.footer-cols { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; padding: 48px 0; }
+.footer-col h5 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in oklab, var(--bg) 55%, transparent); margin: 0 0 14px; font-weight: 600; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.footer-col a { color: color-mix(in oklab, var(--bg) 75%, transparent); text-decoration: none; font-size: 14px; transition: color .15s; }
+.footer-col a:hover { color: var(--bg); }
+.footer-col p { font-size: 13px; line-height: 1.6; color: color-mix(in oklab, var(--bg) 65%, transparent); max-width: 280px; margin: 0; }
+.footer-bot { display: flex; justify-content: space-between; padding-top: 24px; border-top: 1px solid color-mix(in oklab, var(--bg) 14%, transparent); font-family: var(--font-mono); font-size: 11px; color: color-mix(in oklab, var(--bg) 55%, transparent); letter-spacing: .1em; text-transform: uppercase; flex-wrap: wrap; gap: 12px; }
+
+/* ── Wallet card (inside phones) ── */
+.wcard-wrap { padding: 10px 10px 0; background: #f2f2f7; height: 100%; display: flex; flex-direction: column; }
+.wcard-wrap.android { background: #f1f3f4; }
+.wcard-top { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 16px 8px 0; font-family: -apple-system, system-ui, sans-serif; font-size: 10px; color: #000; font-weight: 600; }
+.wcard-top-center { flex: 1; text-align: center; font-size: 11px; font-weight: 700; }
+.wcard-title { font-size: 12px; color: #8a8a8e; text-align: center; padding: 16px 0 12px; font-weight: 500; font-family: -apple-system, system-ui, sans-serif; }
+.wcard-android-title { font-size: 13px; color: #202124; font-weight: 500; padding: 16px 16px 8px; font-family: 'Google Sans', system-ui, sans-serif; }
+.wcard { margin: 0 12px; border-radius: 16px; background: #1a1410; color: var(--bg); padding: 16px; display: flex; flex-direction: column; box-shadow: 0 4px 16px rgba(0,0,0,.15); font-family: -apple-system, system-ui, sans-serif; }
+.wcard-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.wcard-logo { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--accent); letter-spacing: -.01em; }
+.wcard-biz { font-size: 9px; color: rgba(244,237,226,.55); letter-spacing: .15em; text-transform: uppercase; margin-top: 2px; }
+.wcard-reward-n { text-align: right; }
+.wcard-reward-n .n { font-family: var(--font-display); font-size: 28px; line-height: 1; color: var(--accent); }
+.wcard-reward-n .l { font-size: 8px; color: rgba(244,237,226,.5); letter-spacing: .12em; text-transform: uppercase; margin-top: 2px; }
+.wcard-stamps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 10px 0; }
+.wc-stamp { aspect-ratio: 1; border-radius: 50%; border: 1px dashed rgba(244,237,226,.25); }
+.wc-stamp.on { background: var(--accent); border-color: var(--accent); }
+.wcard-bot { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 4px; border-top: 1px solid rgba(244,237,226,.1); font-size: 9px; color: rgba(244,237,226,.6); }
+.wcard-bot strong { color: var(--accent); font-weight: 500; }
+.wcard.android { background: linear-gradient(180deg, #2d1f14 0%, #1a1410 100%); }
+
+@media (max-width: 900px) {
+  .hero-grid, .sec-head, .demo-inner, .faq-wrap { grid-template-columns: 1fr; gap: 32px; }
+  .how-grid, .types-grid, .pricing-wrap, .tst-grid, .footer-cols { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; }
+  section { padding: 64px 20px; }
+  .hero { padding: 40px 20px 20px; }
+  .hero-visual { max-height: 520px; }
+  .phone { width: 70%; }
+}
+@media (max-width: 600px) {
+  .how-grid, .types-grid, .pricing-wrap, .tst-grid, .footer-cols { grid-template-columns: 1fr; }
+}
+
+/* ── PHOTO SECTIONS (preview only) ── */
+.photo-hero {
+  position: relative;
+  height: 80vh;
+  min-height: 520px;
+  overflow: hidden;
+}
+.photo-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.photo-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 30%, rgba(26,20,16,.65) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 48px 64px;
+}
+.photo-hero-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--bg) 70%, transparent);
+  margin-bottom: 16px;
+}
+.photo-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 72px);
+  color: var(--bg);
+  line-height: 1.05;
+  max-width: 660px;
+}
+.photo-hero-title em { font-style: italic; color: var(--accent); }
+
+/* Sticky scroll story */
+.scroll-story {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 280vh;
+  position: relative;
+}
+.scroll-sticky-img {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.scroll-sticky-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.scroll-panels {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.scroll-panel {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 64px;
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.scroll-panel.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sp-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 24px;
+}
+.sp-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.sp-title em { font-style: italic; color: var(--accent); }
+.sp-body {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 440px;
+}
+
+/* Phone close-up section */
+.photo-phone {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 90vh;
+  overflow: hidden;
+}
+.photo-phone-img {
+  position: relative;
+  overflow: hidden;
+}
+.photo-phone-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.08);
+  transition: transform 1.2s var(--ease);
+}
+.photo-phone-img.in-view img {
+  transform: scale(1);
+}
+.photo-phone-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 64px;
+  background: var(--ink);
+  color: var(--bg);
+}
+.photo-phone-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--bg) 50%, transparent);
+  margin-bottom: 24px;
+}
+.photo-phone-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1.05;
+  margin-bottom: 24px;
+}
+.photo-phone-title em { font-style: italic; color: var(--accent); }
+.photo-phone-body {
+  font-size: 17px;
+  line-height: 1.65;
+  color: color-mix(in oklab, var(--bg) 70%, transparent);
+  max-width: 440px;
+  margin-bottom: 36px;
+}
+.photo-phone-points {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ppp {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  font-size: 15px;
+  color: color-mix(in oklab, var(--bg) 80%, transparent);
+}
+.ppp-n {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+/* Reveal on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  .scroll-story, .photo-phone { grid-template-columns: 1fr; }
+  .scroll-story { min-height: auto; }
+  .scroll-sticky-img { position: relative; height: 65vw; min-height: 260px; }
+  .scroll-panels { display: block; }
+  .scroll-panel {
+    min-height: auto;
+    padding: 40px 24px 48px;
+    opacity: 1 !important;
+    transform: none !important;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .scroll-panel:last-child { border-bottom: none; }
+  .photo-phone { min-height: auto; }
+  .photo-phone-img { height: 65vw; min-height: 260px; }
+  .photo-phone-copy { padding: 40px 24px 56px; }
+  .photo-hero { height: 65vw; min-height: 300px; }
+  .photo-hero-overlay { padding: 24px 20px; }
+  .photo-hero-title { font-size: clamp(22px, 6vw, 36px); }
+  .sp-title { font-size: clamp(24px, 6vw, 36px); }
+  .photo-phone-title { font-size: clamp(26px, 7vw, 40px); }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="/">
+    <span class="logo-mark">Z</span>
+    <span>Zubcard</span>
+  </a>
+  <div class="nav-links">
+    <a href="#how">Cómo funciona</a>
+    <a href="#for">Para quién</a>
+    <a href="#pricing">Precios</a>
+    <a href="/referidos">Referidos</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-right">
+    <a href="/app/login" class="btn btn-ghost">Entrar</a>
+    <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn btn-primary">Empezar gratis</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">
+      <div class="hero-meta-row">
+        <span><strong>ZC—001</strong>Fidelización digital</span>
+        <span><strong>v4.2</strong>Abril 2026</span>
+      </div>
+      <div class="hero-meta-row">
+        <span><span class="proof-dot"></span> Online · Listo para tu local</span>
+      </div>
+    </div>
+
+    <div class="hero-grid">
+      <h1 class="hero-title">
+        <span class="line">Cambia los</span>
+        <span class="line"><em>sellos de papel</em></span>
+        <span class="line indent">por tarjetas</span>
+        <span class="line indent">en el móvil.</span>
+      </h1>
+
+      <div>
+        <p class="hero-sub">ZubCard convierte tu programa de fidelización en una tarjeta digital que vive en Apple Wallet y Google Wallet. Sin apps, sin papel. Listo en minutos.</p>
+        <div class="hero-ctas">
+          <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn btn-primary btn-lg">Empezar gratis →</a>
+          <a href="{% if ref_code %}/demo/{{ ref_code }}{% else %}/demo{% endif %}" class="btn btn-ghost btn-lg">Ver demo en vivo</a>
+        </div>
+        <div class="hero-proof">
+          <span><span class="proof-dot"></span> 14 días gratis</span>
+          <span>Sin tarjeta</span>
+          <span>Cancela cuando quieras</span>
+        </div>
+
+        <div class="hero-visual" style="margin-top: 40px;" id="hero-phones"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PHOTO HERO (preview) ── -->
+<div class="photo-hero reveal">
+  <img src="/static/img/zubcardweb.png" alt="Panadería con ZubCard" loading="lazy"/>
+  <div class="photo-hero-overlay">
+    <div class="photo-hero-tag">— En el local / 00</div>
+    <h2 class="photo-hero-title">La fidelización<br>que tus clientes<br><em>ya esperan.</em></h2>
+  </div>
+</div>
+
+<!-- ── SCROLL STORY (preview) ── -->
+<section class="scroll-story" style="background: var(--bg);">
+  <div class="scroll-sticky-img">
+    <img src="/static/img/zubcardweb.png" alt="Local con ZubCard" loading="lazy"/>
+  </div>
+  <div class="scroll-panels">
+    <div class="scroll-panel" id="sp1">
+      <div class="sp-num">— 01 / 03</div>
+      <h3 class="sp-title">Configura tu tarjeta<br><em>en minutos.</em></h3>
+      <p class="sp-body">Entra al panel, elige tus colores, pon tu logo y define cuántos sellos quieres. Sin diseñador, sin código. Tu tarjeta lista antes de terminar el café.</p>
+    </div>
+    <div class="scroll-panel" id="sp2">
+      <div class="sp-num">— 02 / 03</div>
+      <h3 class="sp-title">El cliente escanea<br>y <em>ya está dentro.</em></h3>
+      <p class="sp-body">Pega el QR en la caja. El cliente lo escanea, deja su email y recibe la tarjeta en su wallet. Sin apps, sin descargas, sin fricciones.</p>
+    </div>
+    <div class="scroll-panel" id="sp3">
+      <div class="sp-num">— 03 / 03</div>
+      <h3 class="sp-title">Cada visita,<br><em>un sello más cerca.</em></h3>
+      <p class="sp-body">Tú sumas sellos desde el móvil. El wallet se actualiza en tiempo real. Cuando llegan al premio, vuelven. Así de simple.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── TICKER ── -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span>Café <span class="dot"></span> Panadería <span class="dot"></span> Cookies <span class="dot"></span> Barbería <span class="dot"></span> Pizzería <span class="dot"></span> Heladería <span class="dot"></span> Tienda <span class="dot"></span> Restaurante <span class="dot"></span></span>
+    <span>Café <span class="dot"></span> Panadería <span class="dot"></span> Cookies <span class="dot"></span> Barbería <span class="dot"></span> Pizzería <span class="dot"></span> Heladería <span class="dot"></span> Tienda <span class="dot"></span> Restaurante <span class="dot"></span></span>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how">
+  <div class="sec-inner">
+    <div class="sec-head">
+      <div>
+        <div class="sec-tag">— Cómo funciona / 01</div>
+        <h2 class="sec-h2">Tres pasos. <em>Cero fricción.</em></h2>
+      </div>
+      <p class="sec-lede">Personaliza tu tarjeta, pega el QR en el local y deja que la lealtad fluya. El cliente no descarga nada — abre el navegador y ya tiene su tarjeta en el wallet.</p>
+    </div>
+
+    <div class="how-grid">
+      <div class="step">
+        <div class="step-num"><span>STEP 01 / 03</span><span class="dot"></span></div>
+        <div class="step-visual"><div class="qr-mock" id="qr1"></div></div>
+        <h3 class="step-title">El cliente <em>escanea</em> el QR.</h3>
+        <p class="step-desc">Pegas un QR en la caja o la mesa. El cliente lo escanea con la cámara del móvil y se registra con su email en segundos.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"><span>STEP 02 / 03</span><span class="dot"></span></div>
+        <div class="step-visual">
+          <div class="stamp-grid">
+            <div class="stamp filled"></div><div class="stamp filled"></div><div class="stamp filled"></div><div class="stamp filled"></div><div class="stamp filled"></div>
+            <div class="stamp filled"></div><div class="stamp filled"></div><div class="stamp">8</div><div class="stamp">9</div><div class="stamp reward">★</div>
+          </div>
+        </div>
+        <h3 class="step-title">Cada compra, <em>un sello.</em></h3>
+        <p class="step-desc">Tu equipo escanea la tarjeta del cliente desde el móvil. Un toque y el sello queda registrado. Sincroniza con el wallet automáticamente.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"><span>STEP 03 / 03</span><span class="dot"></span></div>
+        <div class="step-visual" style="background: var(--ink); color: var(--accent);">
+          <div style="text-align:center;">
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 72px; color: var(--accent); line-height: 1;">★</div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--bg); letter-spacing: .14em; margin-top: 10px;">RECOMPENSA LISTA</div>
+          </div>
+        </div>
+        <h3 class="step-title">Llegan al premio, <em>vuelven.</em></h3>
+        <p class="step-desc">Al completar los sellos, el cliente recibe una notificación en el wallet. Canjea el premio en su próxima visita. Tú ganas un cliente recurrente.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PHONE CLOSE-UP (preview) ── -->
+<div class="photo-phone">
+  <div class="photo-phone-img" id="phoneImgBlock">
+    <img src="/static/img/close-up-phone.png" alt="Cliente escaneando QR con ZubCard" loading="lazy"/>
+  </div>
+  <div class="photo-phone-copy reveal">
+    <div class="photo-phone-tag">— En la práctica / 02</div>
+    <h2 class="photo-phone-title">Un escaneo.<br><em>Cliente fidelizado.</em></h2>
+    <p class="photo-phone-body">Desde el panel, el empleado escanea la tarjeta del cliente en un toque. El sello queda registrado y el wallet se actualiza al instante.</p>
+    <div class="photo-phone-points">
+      <div class="ppp"><span class="ppp-n">01 /</span><span>Sin apps que descargar — funciona en cualquier móvil</span></div>
+      <div class="ppp"><span class="ppp-n">02 /</span><span>Sincronización instantánea con Apple Wallet y Google Wallet</span></div>
+      <div class="ppp"><span class="ppp-n">03 /</span><span>Notificación push cuando el cliente suma un sello</span></div>
+      <div class="ppp"><span class="ppp-n">04 /</span><span>Alerta de geolocalización al pasar cerca de tu local</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DEMO / WALLET ── -->
+<section class="demo-strip">
+  <div class="demo-inner">
+    <div>
+      <div class="sec-tag">— La tarjeta / 02</div>
+      <h2 class="sec-h2" style="margin-top: 20px;">Vive en <em>Apple Wallet</em> y <em>Google Wallet</em>.</h2>
+      <p style="margin-top: 20px; max-width: 480px; font-size: 17px; line-height: 1.55; color: color-mix(in oklab, var(--bg) 75%, transparent);">Sin apps que descargar. Sin cuentas nuevas. La tarjeta se añade al wallet nativo del móvil — el mismo donde guardan sus tarjetas de embarque y billetes.</p>
+      <div class="demo-features">
+        <div class="demo-feat"><span class="n">01</span><span class="t"><em>Actualización</em> en tiempo real</span></div>
+        <div class="demo-feat"><span class="n">02</span><span class="t">Notificaciones <em>push</em> al añadir sello</span></div>
+        <div class="demo-feat"><span class="n">03</span><span class="t">Recordatorio <em>geolocalizado</em> al pasar por tu local</span></div>
+        <div class="demo-feat"><span class="n">04</span><span class="t">Tu <em>logo</em> y colores 100% personalizables</span></div>
+      </div>
+    </div>
+    <div class="demo-visual" id="demo-phones"></div>
+  </div>
+</section>
+
+<!-- ── BUSINESS TYPES ── -->
+<section id="for">
+  <div class="sec-inner">
+    <div class="sec-head">
+      <div>
+        <div class="sec-tag">— Para quién / 03</div>
+        <h2 class="sec-h2">Hecho para <em>negocios locales</em> con clientes que vuelven.</h2>
+      </div>
+      <p class="sec-lede">Si ya das tarjetas de sello de papel, o piensas que deberías tener un programa de fidelización, ZubCard es para ti. Sin instalar nada, sin cuotas ocultas.</p>
+    </div>
+
+    <div class="types-grid">
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1511920170033-f8396924c348?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">01 / 08</span>
+          <div>
+            <h3 class="biz-name">Cafés &<br><em style="font-style: italic; color: var(--accent);">cafeterías</em></h3>
+            <p class="biz-desc">10 cafés = 1 gratis. Clásico, efectivo, sin papel.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">02 / 08</span>
+          <div>
+            <h3 class="biz-name"><em style="font-style: italic; color: var(--accent);">Panaderías</em><br>& obradores</h3>
+            <p class="biz-desc">Pan recién hecho, clientes recurrentes.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">03 / 08</span>
+          <div>
+            <h3 class="biz-name">Cookie<br>shops</h3>
+            <p class="biz-desc">La docena doce, gratis. Así de simple.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">04 / 08</span>
+          <div>
+            <h3 class="biz-name">Barberías<br>& peluquerías</h3>
+            <p class="biz-desc">Corte nº 6, la casa invita.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">05 / 08</span>
+          <div>
+            <h3 class="biz-name">Pizzerías<br>& restaurantes</h3>
+            <p class="biz-desc">Lleva a los habituales al siguiente nivel.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1488900128323-21503983a07e?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">06 / 08</span>
+          <div>
+            <h3 class="biz-name">Heladerías<br>& postres</h3>
+            <p class="biz-desc">Recompensa la visita nº 10 con un extra dulce.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">07 / 08</span>
+          <div>
+            <h3 class="biz-name">Tiendas<br>de barrio</h3>
+            <p class="biz-desc">El trato de siempre, con memoria digital.</p>
+          </div>
+        </div>
+      </div>
+      <div class="biz">
+        <div class="biz-img" style="background-image: url('https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=900&q=80');"></div>
+        <div class="biz-content">
+          <span class="biz-num">08 / 08</span>
+          <div>
+            <h3 class="biz-name">Gimnasios<br>& estudios</h3>
+            <p class="biz-desc">Clase 10 gratis. Adiós a las tarjetas que se pierden.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES (stats) ── -->
+<section style="background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);">
+  <div class="sec-inner">
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden;">
+      <div style="background: var(--bg-2); padding: 40px 28px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase;">— 01 Setup</div>
+        <div style="font-family: var(--font-display); font-size: 88px; letter-spacing: -.04em; line-height: 1; margin: 20px 0 8px;">5<sub style="font-size: 24px; color: var(--ink-3);">min</sub></div>
+        <p style="font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0;">De registrarte a tener tu primer QR listo para imprimir.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 40px 28px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase;">— 02 Retorno</div>
+        <div style="font-family: var(--font-display); font-size: 88px; letter-spacing: -.04em; line-height: 1; margin: 20px 0 8px;">3.2<sub style="font-size: 24px; color: var(--ink-3);">×</sub></div>
+        <p style="font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0;">Más visitas de clientes fidelizados vs. sin programa.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 40px 28px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase;">— 03 Apps</div>
+        <div style="font-family: var(--font-display); font-size: 88px; letter-spacing: -.04em; line-height: 1; margin: 20px 0 8px;">0</div>
+        <p style="font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0;">Apps que tus clientes tienen que descargar. Cero.</p>
+      </div>
+      <div style="background: var(--bg-2); padding: 40px 28px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .14em; text-transform: uppercase;">— 04 Wallets</div>
+        <div style="font-family: var(--font-display); font-size: 88px; letter-spacing: -.04em; line-height: 1; margin: 20px 0 8px;">2</div>
+        <p style="font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0;">Apple Wallet + Google Wallet. Los dos, a la vez, siempre.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<section id="pricing">
+  <div class="sec-inner">
+    <div class="sec-head">
+      <div>
+        <div class="sec-tag">— Precios / 04</div>
+        <h2 class="sec-h2">Un precio por local. <em>Sin sorpresas.</em></h2>
+      </div>
+      <p class="sec-lede">Sin costes por cliente, sin comisiones por canje. Pagas por local, punto. Empieza con 14 días gratis — sin tarjeta.</p>
+    </div>
+
+    <div class="pricing-wrap" style="grid-template-columns: 1fr; max-width: 520px; margin: 0 auto;">
+      <div class="price-card featured">
+        <div class="price-tier">— Pro <span class="price-promo-pill">Oferta de lanzamiento</span></div>
+        <div class="price-old">Antes <span>79€/mes</span></div>
+        <div class="price-amount">39<span class="euro">€</span><span class="per">/mes</span></div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink-2);letter-spacing:.08em;margin:-4px 0 4px">+ IVA (21%)</div>
+        <div class="price-save">Ahorras 40€/mes · Solo para los primeros 20 negocios</div>
+        <p class="price-desc">Un único plan con todo lo que necesita tu local.</p>
+        <ul class="price-features">
+          <li><span class="tick">✓</span> Clientes ilimitados</li>
+          <li><span class="tick">✓</span> Apple + Google Wallet</li>
+          <li><span class="tick">✓</span> QR registro y scanner</li>
+          <li><span class="tick">✓</span> Dashboard con métricas en tiempo real</li>
+          <li><span class="tick">✓</span> Campañas push programadas</li>
+          <li><span class="tick">✓</span> Emails de bienvenida y cumpleaños</li>
+          <li><span class="tick">✓</span> Programa de referidos integrado</li>
+          <li><span class="tick">✓</span> Soporte prioritario</li>
+        </ul>
+        <div class="price-cta"><a class="btn btn-primary" href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}">Probar 14 días gratis</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section style="background: var(--bg-2);">
+  <div class="sec-inner">
+    <div class="sec-head">
+      <div>
+        <div class="sec-tag">— Clientes / 05</div>
+        <h2 class="sec-h2">Negocios reales, <em>clientes que vuelven.</em></h2>
+      </div>
+      <p class="sec-lede">Lo que dicen los dueños de los locales que ya cambiaron el papel por ZubCard.</p>
+    </div>
+
+    <div class="tst-grid">
+      <div class="tst">
+        <div class="tst-stars"><span></span><span></span><span></span><span></span><span></span></div>
+        <blockquote class="tst-quote">"En dos semanas ya teníamos <em>120 clientes</em> en el sistema. La tarjeta de papel la tiramos a la basura."</blockquote>
+        <div class="tst-author">
+          <div class="tst-avatar" style="background-image: url('https://sukiecookie.es/cdn/shop/files/SukieCookie.png'); background-size: contain; background-repeat: no-repeat; background-color: #fff;"></div>
+          <div class="tst-info"><strong>Yanir Lancry</strong><span>Sukie Cookie · Madrid</span></div>
+        </div>
+      </div>
+      <div class="tst">
+        <div class="tst-stars"><span></span><span></span><span></span><span></span><span></span></div>
+        <blockquote class="tst-quote">"Lo configuré un martes por la tarde. El miércoles ya estaba dando sellos. <em>Así de fácil.</em>"</blockquote>
+        <div class="tst-author">
+          <div class="tst-avatar" style="background-image: url('https://sukiecookie.es/cdn/shop/files/SukieCookie.png'); background-size: contain; background-repeat: no-repeat; background-color: #fff;"></div>
+          <div class="tst-info"><strong>Equipo Sukie</strong><span>Sukie Cookie · Valencia</span></div>
+        </div>
+      </div>
+      <div class="tst">
+        <div class="tst-stars"><span></span><span></span><span></span><span></span><span></span></div>
+        <blockquote class="tst-quote">"Los clientes ya no pierden la tarjeta. Y yo veo <em>quién vuelve</em> y cuándo desde el móvil."</blockquote>
+        <div class="tst-author">
+          <div class="tst-avatar" style="background: #2a7d5f; color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">S</div>
+          <div class="tst-info"><strong>Suculent</strong><span>Suculent Café · Valencia</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section id="faq">
+  <div class="sec-inner">
+    <div class="faq-wrap">
+      <div>
+        <div class="sec-tag">— FAQ / 06</div>
+        <h2 class="sec-h2" style="margin-top: 20px;">Dudas <em>razonables.</em></h2>
+        <p style="margin-top: 20px; font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 340px;">¿No está tu pregunta aquí? Escríbenos a <a href="mailto:hola@zubcard.com" style="color: var(--ink); text-decoration: underline;">hola@zubcard.com</a> — respondemos el mismo día.</p>
+      </div>
+      <div class="faq-list">
+        <div class="faq open" onclick="toggleFaq(this)">
+          <div class="faq-q">¿Mis clientes tienen que descargar una app? <span class="faq-toggle">+</span></div>
+          <div class="faq-a">No. La tarjeta se abre directamente en el navegador y se guarda en Apple Wallet o Google Wallet — las apps que ya vienen preinstaladas en el móvil. Cero descargas.</div>
+        </div>
+        <div class="faq" onclick="toggleFaq(this)">
+          <div class="faq-q">¿Cómo añaden sellos mis empleados? <span class="faq-toggle">+</span></div>
+          <div class="faq-a">Entran a la web del scanner desde el móvil del negocio, escanean el QR de la tarjeta del cliente y añaden el sello con un toque. No hace falta hardware extra.</div>
+        </div>
+        <div class="faq" onclick="toggleFaq(this)">
+          <div class="faq-q">¿Puedo personalizar el diseño de la tarjeta? <span class="faq-toggle">+</span></div>
+          <div class="faq-a">Sí — colores, logo, nombre del premio, número de sellos necesarios y mensaje de bienvenida. Todo desde el dashboard, en minutos.</div>
+        </div>
+        <div class="faq" onclick="toggleFaq(this)">
+          <div class="faq-q">¿Qué pasa si cambio de opinión? <span class="faq-toggle">+</span></div>
+          <div class="faq-a">Cancelas cuando quieras desde el dashboard. Sin permanencia, sin penalizaciones. Los datos de tus clientes son tuyos y te los exportamos.</div>
+        </div>
+        <div class="faq" onclick="toggleFaq(this)">
+          <div class="faq-q">¿Funciona sin internet en el local? <span class="faq-toggle">+</span></div>
+          <div class="faq-a">El scanner necesita conexión para sincronizar. Casi todos los datáfonos, wifis o datos móviles van bien. Si tu conexión se cae, los sellos quedan en cola y se aplican al recuperar señal.</div>
+        </div>
+        <div class="faq" onclick="toggleFaq(this)">
+          <div class="faq-q">¿Puedo ver qué clientes vuelven y cuáles no? <span class="faq-toggle">+</span></div>
+          <div class="faq-a">Sí. El dashboard te muestra clientes activos, inactivos, sellos totales, premios canjeados y tendencias por semana. También puedes enviar notificaciones push a los que llevan tiempo sin venir.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<div class="cta-banner">
+  <h2>Deja de imprimir <em>tarjetas de papel.</em></h2>
+  <p>14 días gratis. Sin tarjeta. Setup en 5 minutos.</p>
+  <a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}" class="btn btn-xl">Crear mi tarjeta digital →</a>
+  <div class="cta-fine">— Sin compromiso · Cancela cuando quieras</div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <p class="footer-lead">¿Tu negocio tiene <em>clientes que vuelven?</em><br>Entonces necesitas Zubcard.</p>
+
+    <div class="footer-cols">
+      <div class="footer-col">
+        <div class="logo" style="color: var(--bg); margin-bottom: 16px;">
+          <span class="logo-mark" style="background: var(--bg); color: var(--ink);">Z</span>
+          <span style="color: var(--bg);">Zubcard</span>
+        </div>
+        <p>Fidelización digital para negocios locales. Tarjetas que viven en el wallet del móvil — sin apps, sin papel, sin fricción.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Producto</h5>
+        <ul>
+          <li><a href="#how">Cómo funciona</a></li>
+          <li><a href="#pricing">Precios</a></li>
+          <li><a href="{% if ref_code %}/demo/{{ ref_code }}{% else %}/demo{% endif %}">Demo</a></li>
+          <li><a href="/app/register{% if ref_code %}?ref={{ ref_code }}{% endif %}">Registrarse</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Empresa</h5>
+        <ul>
+          <li><a href="/referidos">Referidos</a></li>
+          <li><a href="mailto:hola@zubcard.com">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="/aviso-legal">Aviso legal</a></li>
+          <li><a href="/privacidad">Privacidad</a></li>
+          <li><a href="/terminos">Términos de uso</a></li>
+          <li><a href="/cookies">Cookies</a></li>
+          <li><a href="mailto:hola@zubcard.com">hola@zubcard.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bot">
+      <span>© 2026 Zubcard · Hecho en España</span>
+      <span>v4.2 · zubcard.com</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Build QR mock
+  const qr = document.getElementById('qr1');
+  if (qr) {
+    const seed = [0,1,0,1,1,0,1,0,1,0, 1,0,1,1,0,0,1,0,1,1, 0,1,1,0,0,1,1,0,1,0,
+                  1,0,0,1,0,1,0,1,1,1, 0,1,1,0,1,1,0,0,1,0, 1,1,0,1,0,1,1,0,0,1,
+                  0,1,1,0,1,0,1,1,0,0, 1,0,1,1,0,1,0,1,0,1, 1,0,0,1,1,0,1,0,1,0, 0,1,0,1,0,1,1,0,1,0];
+    for (let i = 0; i < 100; i++) {
+      const c = document.createElement('i');
+      const x = i % 10, y = Math.floor(i/10);
+      const corner = (x<3 && y<3) || (x>6 && y<3) || (x<3 && y>6);
+      c.style.background = seed[i] || corner ? 'var(--bg)' : 'transparent';
+      qr.appendChild(c);
+    }
+  }
+
+  // FAQ toggle
+  function toggleFaq(el) {
+    document.querySelectorAll('.faq.open').forEach(f => { if (f !== el) f.classList.remove('open'); });
+    el.classList.toggle('open');
+    el.querySelector('.faq-toggle').textContent = el.classList.contains('open') ? '−' : '+';
+  }
+  window.toggleFaq = toggleFaq;
+
+  // Phones — render Apple Wallet + Google Wallet mockups
+  function renderPhone(variant, stamps = 7, total = 10) {
+    const isApple = variant === 'apple';
+    const stampsHtml = Array.from({length: total}, (_, i) =>
+      `<div class="wc-stamp${i < stamps ? ' on' : ''}"></div>`
+    ).join('');
+    const topBar = isApple
+      ? `<div class="wcard-top"><span>9:41</span><span class="wcard-top-center"></span><span>100%</span></div>
+         <div class="wcard-title">Tarjeta</div>`
+      : `<div class="wcard-top"><span>9:41</span><span class="wcard-top-center"></span><span>100%</span></div>
+         <div class="wcard-android-title">Google Wallet</div>`;
+    return `
+      <div class="phone-screen">
+        <div class="phone-notch"></div>
+        <div class="wcard-wrap${isApple ? '' : ' android'}">
+          ${topBar}
+          <div class="wcard${isApple ? '' : ' android'}">
+            <div class="wcard-head">
+              <div>
+                <div class="wcard-logo">Sukie Cookie</div>
+                <div class="wcard-biz">Madrid · Valencia · Online</div>
+              </div>
+              <div class="wcard-reward-n">
+                <div class="n">${stamps}/${total}</div>
+                <div class="l">Sellos</div>
+              </div>
+            </div>
+            <div class="wcard-stamps">${stampsHtml}</div>
+            <div class="wcard-bot">
+              <span>Próximo premio</span>
+              <strong>Café gratis ★</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Scroll animations (preview) ──
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in-view');
+        if (e.target.classList.contains('scroll-panel')) {
+          // hide siblings
+          e.target.parentElement.querySelectorAll('.scroll-panel').forEach(p => {
+            if (p !== e.target) p.classList.remove('visible');
+          });
+          e.target.classList.add('visible');
+        }
+      }
+    });
+  }, { threshold: 0.25 });
+
+  // reveal
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  // scroll panels
+  document.querySelectorAll('.scroll-panel').forEach(el => {
+    const panelIo = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+        else e.target.classList.remove('visible');
+      });
+    }, { threshold: 0.45 });
+    panelIo.observe(el);
+  });
+  // phone image parallax reveal
+  const phoneImgBlock = document.getElementById('phoneImgBlock');
+  if (phoneImgBlock) {
+    const imgIo = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+    }, { threshold: 0.15 });
+    imgIo.observe(phoneImgBlock);
+  }
+
+  document.getElementById('hero-phones').innerHTML = `
+    <div class="phone apple">${renderPhone('apple', 7, 10)}</div>
+    <div class="phone android">${renderPhone('android', 4, 8)}</div>
+  `;
+  document.getElementById('demo-phones').innerHTML = `
+    <div class="phone apple" style="left: 8%; top: 2%; width: 62%; transform: rotate(-3deg);">${renderPhone('apple', 7, 10)}</div>
+    <div class="phone android" style="right: 6%; bottom: 0; width: 56%; transform: rotate(4deg);">${renderPhone('android', 4, 8)}</div>
+    <div class="wallet-logo">Apple Wallet</div>
+    <div class="wallet-logo two">Google Wallet</div>
+  `;
+</script>
+</body>
+</html>

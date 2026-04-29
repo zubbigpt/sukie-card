@@ -4334,6 +4334,12 @@ async def zubcard_landing_preview(request: Request):
     return templates.TemplateResponse("index_new.html", {"request": request, "ref_code": ""})
 
 
+@app.get("/preview-photos", response_class=HTMLResponse)
+async def zubcard_photos_preview(request: Request):
+    """Preview de landing con fotos reales + animaciones de scroll."""
+    return templates.TemplateResponse("index_preview_photos.html", {"request": request, "ref_code": ""})
+
+
 @app.get("/preview-demo", response_class=HTMLResponse)
 async def zubcard_demo_preview(request: Request):
     return templates.TemplateResponse("demo_new.html", {"request": request, "ref_code": ""})
