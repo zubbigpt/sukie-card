@@ -864,6 +864,41 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 </head>
 <body>
 
+{% if show_paywall %}
+<!-- ══ STRIPE PAYWALL ══════════════════════════════════════════════════════ -->
+<div id="stripe-paywall" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(26,20,16,0.6)">
+  <div style="background:#f4ede2;border-radius:20px;padding:40px 36px;max-width:420px;width:100%;box-shadow:0 32px 80px rgba(26,20,16,0.35);text-align:center;font-family:'Geist',sans-serif">
+    <div style="width:56px;height:56px;background:#26170c;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.6rem">💳</div>
+    <h2 style="font-family:'Instrument Serif',sans-serif;font-size:1.8rem;font-weight:400;color:#26170c;margin:0 0 10px;line-height:1.2">Activa tu cuenta<br><em style="color:#C8922A">para continuar</em></h2>
+    <p style="color:#5c4a3a;font-size:.9rem;line-height:1.65;margin:0 0 8px">Tu cuenta está creada. Solo falta añadir un método de pago para activar los <strong>14 días de prueba gratuita</strong>.</p>
+    <p style="color:#8a7f71;font-size:.8rem;margin:0 0 28px">Sin compromiso — cancela antes del día 14 y no se te cobra nada.</p>
+    <div style="background:#fff8f5;border:1.5px solid #ffeade;border-radius:10px;padding:14px 18px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between">
+      <span style="color:#5c4a3a;font-size:.88rem;font-weight:600">Plan Pro mensual</span>
+      <span style="color:#26170c;font-size:1.1rem;font-weight:800">€39<span style="font-size:.7rem;font-weight:400;color:#8a7f71">/mes</span></span>
+    </div>
+    <a id="paywall-checkout-btn" href="#" onclick="startCheckout(event)" style="display:block;background:#26170c;color:#f4ede2;padding:15px 24px;border-radius:10px;text-decoration:none;font-weight:700;font-size:.95rem;margin-bottom:12px;transition:opacity .2s">
+      Añadir tarjeta — empezar prueba →
+    </a>
+    <p style="color:#a08d83;font-size:.72rem;margin:0">🔒 Pago seguro con Stripe · zubcard.com</p>
+  </div>
+</div>
+<script>
+async function startCheckout(e) {
+  e.preventDefault();
+  const btn = document.getElementById('paywall-checkout-btn');
+  btn.textContent = 'Cargando…';
+  btn.style.opacity = '.6';
+  try {
+    const res = await fetch('/api/biz/{{ biz_slug }}/subscription/checkout', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({pin: window._zc_pin || ''})});
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { btn.textContent = 'Error — inténtalo de nuevo'; btn.style.opacity='1'; }
+  } catch(err) { btn.textContent = 'Error — inténtalo de nuevo'; btn.style.opacity='1'; }
+}
+</script>
+<!-- ══ END PAYWALL ════════════════════════════════════════════════════════ -->
+{% endif %}
+
 <!-- ZUBADMIN BANNER — visible solo cuando se accede como super admin -->
 <div id="zubadmin-banner" style="display:none;position:sticky;top:0;z-index:9999;background:#26170c;color:#ffca48;padding:9px 20px;align-items:center;justify-content:space-between;font-family:'Geist',sans-serif;font-size:.82rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25)">
   <span>⚡ <strong>ZubCard Admin</strong> — Gestionando: <span id="zubadmin-biz-name"></span></span>

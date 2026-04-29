@@ -5473,6 +5473,12 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
         "accent_color":  biz.accent_color  or "#ffca48",
         "logo_url":      biz.logo_url or "",
         "trial_days_left": trial_days_left,
+        # Paywall popup: show if Stripe configured but subscription not active/trialing
+        "show_paywall": bool(
+            STRIPE_SECRET_KEY and STRIPE_PRICE_ID_PRO
+            and getattr(biz, "stripe_subscription_status", None)
+            in (None, "canceled", "past_due", "unpaid", "incomplete_expired")
+        ),
     })
 
 
