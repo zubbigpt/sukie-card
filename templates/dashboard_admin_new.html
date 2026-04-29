@@ -685,6 +685,34 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 
   /* Padding más agresivo en secciones internas */
   .content{padding:12px!important}
+
+  /* ── INLINE GRID FIXES: colapsar grids con columnas fijas en px ── */
+  /* Cualquier grid con columna fija (300px, 280px, 380px, 320px, 260px) */
+  [style*="grid-template-columns:1fr 300px"],
+  [style*="grid-template-columns:1fr 280px"],
+  [style*="grid-template-columns:1fr 380px"],
+  [style*="grid-template-columns:1fr 320px"],
+  [style*="grid-template-columns:1fr 260px"],
+  [style*="grid-template-columns:1fr 1.6fr"],
+  [style*="grid-template-columns:2fr 1fr"],
+  [style*="grid-template-columns:260px 1fr 300px"]{
+    grid-template-columns:1fr!important;
+  }
+  /* 3 y 4 columnas → 2 en tablet/móvil grande */
+  [style*="grid-template-columns:repeat(3,1fr)"],
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns:1fr 1fr 1fr"]{
+    grid-template-columns:repeat(2,1fr)!important;
+  }
+  /* bi-stats (4 kpi) → 2 col */
+  #bi-stats-grid{grid-template-columns:repeat(2,1fr)!important}
+  /* Overflow horizontal en cualquier hijo directo de .content */
+  .content > *{max-width:100%;overflow-x:hidden}
+  /* Evitar que modales/drawers desborden */
+  [style*="width:980px"],[style*="width:780px"],[style*="width:760px"],
+  [style*="width:680px"],[style*="width:600px"],[style*="width:560px"]{
+    width:100%!important;max-width:calc(100vw - 24px)!important
+  }
 }
 
 @media(max-width:420px){
@@ -693,6 +721,19 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
   .topbar-right{gap:6px!important}
   /* Avatar sólo en móvil pequeño */
   #topbar-bizname{display:none!important}
+  /* 2 col también a 1 col en pantallas muy pequeñas */
+  [style*="grid-template-columns:repeat(2,1fr)"],
+  [style*="grid-template-columns:repeat(3,1fr)"],
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns:1fr 1fr 1fr"],
+  [style*="grid-template-columns:1fr 300px"],
+  [style*="grid-template-columns:1fr 280px"],
+  [style*="grid-template-columns:1fr 380px"],
+  [style*="grid-template-columns:1fr 320px"],
+  [style*="grid-template-columns:1fr 260px"]{
+    grid-template-columns:1fr!important;
+  }
 }
 
 /* ── Tarjetas Studio ─────────────────────────────────────────────────── */
