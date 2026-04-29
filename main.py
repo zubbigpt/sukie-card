@@ -5432,6 +5432,22 @@ async def biz_dashboard(slug: str, request: Request, db: Session = Depends(get_d
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    # ── Force Stripe if user never completed checkout ──────────────────────────
+    # Accounts that confirmed email but skipped Stripe (stripe_customer_id is NULL)
+    # must complete payment before accessing the dashboard.
+    stripe_skipped = (
+        biz.email_confirmed
+        and not getattr(biz, "stripe_customer_id", None)
+        and not getattr(biz, "stripe_subscription_status", None)
+        and STRIPE_SECRET_KEY
+        and STRIPE_PRICE_ID_PRO
+    )
+    if stripe_skipped:
+        checkout_url = _create_stripe_trial_session(biz, db)
+        if checkout_url:
+            return RedirectResponse(checkout_url, status_code=302)
+
     # Trial days remaining (only relevant for free plan)
     from datetime import datetime, timezone
     biz_plan = _get_biz_plan(biz)
