@@ -188,5 +188,7 @@ class Business(Base):
     welcome_email_bg_color      = Column(String, nullable=True, default="")   # color fondo wrapper bienvenida
     welcome_email_accent_color  = Column(String, nullable=True, default="")   # color acento bienvenida
     welcome_email_banner_url    = Column(String, nullable=True, default="")   # imagen cabecera bienvenida
+    # ── Referral partner (optional) ───────────────────────────────────────────
+    referral_partner_id = Column(UUID(as_uuid=True), nullable=True)
     created_at      = Column(DateTime(timezone=True), server_default=func.now())
     updated_at      = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
