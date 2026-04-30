@@ -8867,6 +8867,19 @@ async def send_review_test(slug: str, pin: str = "", email: str = "", store: str
     return {"sent": sent, "to": email, "store": store_name, "review_url": review_url}
 
 
+@app.post("/api/zubadmin/businesses/{slug}/activate")
+async def zubadmin_activate_business(slug: str, request: Request, db: Session = Depends(get_db)):
+    """ZubAdmin: manually set a business to pro/trialing — bypasses Stripe webhook."""
+    if not _zubadmin_authenticated(request):
+        raise HTTPException(status_code=403, detail="No autorizado")
+    db.execute(text(
+        "UPDATE businesses SET plan='pro', stripe_subscription_status='trialing', "
+        "email_confirmed=TRUE WHERE slug=:slug"
+    ), {"slug": slug})
+    db.commit()
+    return {"ok": True, "slug": slug, "status": "trialing"}
+
+
 @app.delete("/api/zubadmin/businesses/{slug}")
 async def zubadmin_delete_business(slug: str, request: Request, db: Session = Depends(get_db)):
     """ZubAdmin: permanently delete a business and ALL its data (cascade)."""
