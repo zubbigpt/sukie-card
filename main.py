@@ -118,6 +118,7 @@ STRIPE_SECRET_KEY      = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_PRICE_ID_PRO    = os.environ.get("STRIPE_PRICE_ID_PRO", "")       # price_xxx
 STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")      # whsec_xxx
+GOOGLE_MAPS_API_KEY    = os.environ.get("GOOGLE_MAPS_API_KEY", "")        # Google Places API key
 STRIPE_PRO_PRICE_DISPLAY = os.environ.get("STRIPE_PRO_PRICE_DISPLAY", "€39")  # display only
 REFERRAL_COMMISSION_PCT  = float(os.environ.get("REFERRAL_COMMISSION_PCT", "20.0"))  # % comisión por referido/mes
 
@@ -4330,29 +4331,51 @@ def _photon_to_nominatim(features: list, spain_only: bool = True) -> list:
 
 @app.get("/api/geo/search")
 async def geo_search(q: str = "", limit: int = 5):
-    """Proxy geocoding search — uses Photon (better Spain coverage) with Nominatim fallback."""
+    """Proxy geocoding search — Google Places Autocomplete (primary) with Nominatim fallback."""
     if not q.strip():
         raise HTTPException(status_code=400, detail="q is required")
-    headers_nominatim = {"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"}
     try:
         async with httpx.AsyncClient(timeout=12) as client:
-            # 1st try: Photon (komoot) — great street-level coverage in Spain
-            # lat/lon bias = center of Spain (Madrid), bbox = strict Spain bounds
-            r1 = await client.get(
-                "https://photon.komoot.io/api/",
-                params={"q": q, "limit": limit * 3, "lat": "40.4", "lon": "-3.7",
-                        "bbox": "-9.5,35.5,4.5,44.0", "lang": "es"},
-                headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)"},
-            )
-            if r1.status_code == 200:
-                geojson = r1.json()
-                features = geojson.get("features", [])
-                if features:
-                    filtered = _photon_to_nominatim(features, spain_only=True)
-                    if filtered:
-                        return filtered[:limit]
+            # Primary: Google Places Autocomplete — best accuracy for Spain
+            if GOOGLE_MAPS_API_KEY:
+                r = await client.get(
+                    "https://maps.googleapis.com/maps/api/place/autocomplete/json",
+                    params={
+                        "input": q,
+                        "key": GOOGLE_MAPS_API_KEY,
+                        "language": "es",
+                        "components": "country:es",
+                        "types": "address|establishment|geocode",
+                    },
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    predictions = data.get("predictions", [])
+                    if predictions:
+                        results = []
+                        for p in predictions[:limit]:
+                            place_id = p.get("place_id")
+                            desc = p.get("description", "")
+                            # Get coordinates via Place Details
+                            det = await client.get(
+                                "https://maps.googleapis.com/maps/api/place/details/json",
+                                params={"place_id": place_id, "key": GOOGLE_MAPS_API_KEY,
+                                        "fields": "geometry,formatted_address", "language": "es"},
+                            )
+                            if det.status_code == 200:
+                                ddata = det.json().get("result", {})
+                                loc = ddata.get("geometry", {}).get("location", {})
+                                if loc:
+                                    results.append({
+                                        "lat": str(loc["lat"]),
+                                        "lon": str(loc["lng"]),
+                                        "display_name": ddata.get("formatted_address", desc),
+                                    })
+                        if results:
+                            return results
 
-            # Fallback: Nominatim with countrycodes=es
+            # Fallback: Nominatim countrycodes=es
+            headers_nominatim = {"User-Agent": "ZubCard/1.0 (hola@zubcard.com)", "Accept-Language": "es"}
             r2 = await client.get(
                 "https://nominatim.openstreetmap.org/search",
                 params={"format": "json", "q": q, "limit": limit, "countrycodes": "es"},
