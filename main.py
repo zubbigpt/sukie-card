@@ -291,6 +291,60 @@ def _ensure_google_wallet_class(sa: dict, issuer_id: str, biz_slug: str, biz_nam
         print(f"[Google Wallet] _ensure_class error (non-fatal): {e}")
 
 
+def _patch_google_wallet_objects(card_ids: list, issuer_id: str, bg_color: str, card_title: str):
+    """PATCH existing Google Wallet GenericObjects to update bg color and card title.
+    Called when a card program is edited. Non-fatal — errors are logged only."""
+    if not GOOGLE_WALLET_CREDENTIALS or not issuer_id or not card_ids:
+        return
+    try:
+        import google.auth.transport.requests as ga_req
+        import google.oauth2.service_account as ga_sa
+        import urllib.request, urllib.error
+
+        sa = json.loads(GOOGLE_WALLET_CREDENTIALS)
+        creds = ga_sa.Credentials.from_service_account_info(
+            sa,
+            scopes=["https://www.googleapis.com/auth/wallet_object.issuer"],
+        )
+        auth_req = ga_req.Request()
+        creds.refresh(auth_req)
+        token = creds.token
+
+        hex_bg = bg_color if bg_color and bg_color.startswith("#") else "#3A3426"
+
+        for card_id in card_ids:
+            object_id = f"{issuer_id}.{str(card_id).replace('-', '_')}"
+            patch_url = f"https://walletobjects.googleapis.com/walletobjects/v1/genericObject/{object_id}"
+            patch_body = json.dumps({
+                "hexBackgroundColor": hex_bg,
+                "cardTitle": {
+                    "defaultValue": {"language": "es", "value": card_title}
+                },
+            }).encode()
+            req = urllib.request.Request(
+                patch_url,
+                data=patch_body,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "X-HTTP-Method-Override": "PATCH",
+                },
+                method="POST",
+            )
+            try:
+                urllib.request.urlopen(req, timeout=5)
+                print(f"[Google Wallet] Patched object: {object_id}")
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    print(f"[Google Wallet] Object not found (skip): {object_id}")
+                else:
+                    print(f"[Google Wallet] PATCH error {e.code} for {object_id}: {e.read()[:200]}")
+            except Exception as ex:
+                print(f"[Google Wallet] PATCH exception for {object_id}: {ex}")
+    except Exception as e:
+        print(f"[Google Wallet] _patch_objects error (non-fatal): {e}")
+
+
 def generate_google_wallet_url(
     card_id: str,
     biz_slug: str,
@@ -7547,10 +7601,29 @@ async def update_card_program(slug: str, program_id: str, request: Request, pin:
                  "(SELECT id FROM customers WHERE business_id=:bid)"),
             {"bid": str(biz.id)}
         ).fetchall()
-        for row in cards:
-            await _push_wallet_update(row[0], db)
+        card_ids = [row[0] for row in cards]
+        for cid in card_ids:
+            await _push_wallet_update(cid, db)
     except Exception as _e:
-        print(f"[card-program patch] push error: {_e}")
+        print(f"[card-program patch] apple push error: {_e}")
+        card_ids = []
+
+    # Patch Google Wallet objects (bg color + card title)
+    try:
+        if card_ids and GOOGLE_WALLET_ISSUER_ID and GOOGLE_WALLET_CREDENTIALS:
+            import asyncio
+            new_name = body.get("name", "") or biz.name
+            new_bg   = body.get("bg_color", "#3A3426")
+            await asyncio.get_event_loop().run_in_executor(
+                None,
+                _patch_google_wallet_objects,
+                card_ids,
+                GOOGLE_WALLET_ISSUER_ID,
+                new_bg,
+                new_name,
+            )
+    except Exception as _e:
+        print(f"[card-program patch] google wallet patch error: {_e}")
 
     return {"status": "updated"}
 
