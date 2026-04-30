@@ -8642,6 +8642,75 @@ async def zubadmin_logout():
     return response
 
 
+@app.post("/api/biz/{slug}/resend-welcome/{card_id}")
+async def resend_welcome_email(slug: str, card_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Resend welcome email to a specific customer by their loyalty card ID."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+
+    card = db.query(models.LoyaltyCard).filter(models.LoyaltyCard.id == card_id).first()
+    if not card:
+        raise HTTPException(status_code=404, detail="Tarjeta no encontrada")
+
+    customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    prog = db.query(models.CardProgram).filter(models.CardProgram.business_id == biz.id).first()
+
+    name_for_email = customer.first_name or "Cliente"
+    stamps         = card.stamps or 0
+    real_card_url  = f"{BASE_URL}/card/{card_id}"
+    wallet_url     = f"{BASE_URL}/card/{card_id}/wallet.pkpass"
+    gw_url         = ""
+
+    try:
+        gw_color  = (prog.bg_color          if prog else None) or "#1a1410"
+        gw_accent = (prog.accent_color      if prog else None) or "#c77b3e"
+        gw_spr    = (prog.stamps_per_reward if prog else None) or 10
+        gw_reward = (prog.reward_name       if prog and prog.reward_name else None) or "Premio"
+        gw_logo   = (biz.logo_url           if biz and biz.logo_url else "") or ""
+        gw_cname  = (prog.name              if prog and prog.name else None) or (biz.name or "")
+        gw_url = generate_google_wallet_url(
+            card_id=str(card_id), biz_slug=slug, biz_name=biz.name or "",
+            customer_name=name_for_email, stamps=stamps, stamps_per_reward=gw_spr,
+            card_url=real_card_url, primary_color=gw_color, accent_color=gw_accent,
+            reward_name=gw_reward, logo_url=gw_logo,
+            award_balance=card.award_balance or 0, card_name=gw_cname,
+        ) or ""
+    except Exception as _e:
+        print(f"[resend-welcome] Google Wallet URL error: {_e}")
+
+    greeting   = getattr(biz, "welcome_email_greeting", "") or ""
+    footer     = getattr(biz, "welcome_email_footer", "") or ""
+    hdr_color  = getattr(biz, "welcome_email_header_color", "") or ""
+    text_color = getattr(biz, "welcome_email_text_color", "") or ""
+    bg_color   = getattr(biz, "welcome_email_bg_color", "") or ""
+    acc_color  = getattr(biz, "welcome_email_accent_color", "") or ""
+    banner_url = getattr(biz, "welcome_email_banner_url", "") or ""
+    served_banner = f"{BASE_URL}/biz/{slug}/welcome-banner.jpg" if banner_url else ""
+
+    html_body = render_welcome_email_new(
+        name=name_for_email, card_url=real_card_url, stamps=stamps,
+        wallet_url=wallet_url, google_wallet_url=gw_url,
+        welcome_greeting=greeting, welcome_footer=footer,
+        wel_hdr_color=hdr_color, wel_text_color=text_color,
+        wel_bg_color=bg_color, wel_accent_color=acc_color,
+        wel_banner_url=served_banner,
+        **_prog_email_kwargs(prog, biz),
+    )
+    custom_subject = (prog.welcome_email_subject if prog and prog.welcome_email_subject else None) or f"Bienvenido/a a {biz.name}"
+    sent = send_email(
+        to_email=customer.email,
+        subject=custom_subject,
+        html_body=html_body,
+        from_name=biz.email_from_name or biz.name,
+    )
+    return {"ok": sent, "to": customer.email}
+
+
 @app.get("/api/biz/{slug}/send-welcome-test")
 async def send_welcome_test(slug: str, pin: str = "", email: str = "", card_id: str = "", db: Session = Depends(get_db)):
     """Temp: send test welcome email. Pass card_id to get real Apple + Google Wallet URLs."""

@@ -4719,6 +4719,17 @@ async function startCheckout(e) {
       </div>
       <button class="btn-sm btn-primary" style="padding:12px 28px;font-size:.9rem" onclick="saveEdit()">Guardar cambios</button>
       <div id="e-msg" style="margin-top:10px;font-size:.83rem;min-height:20px"></div>
+      <hr style="margin:20px 0;border:none;border-top:1px solid var(--cream-border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--primary);margin-bottom:2px">Email de bienvenida</div>
+          <div style="font-size:.75rem;color:var(--brown-light)">Reenvía el email con el link de la tarjeta</div>
+        </div>
+        <button class="btn-sm" style="padding:9px 16px;font-size:.8rem;background:var(--cream);border:1.5px solid var(--cream-border);color:var(--primary);border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600" onclick="resendWelcomeEmail()" id="resend-welcome-btn">
+          📧 Reenviar bienvenida
+        </button>
+      </div>
+      <div id="resend-msg" style="margin-top:8px;font-size:.78rem;min-height:16px"></div>
     </div>
 
     <!-- TAB: ELIMINAR -->
@@ -5826,6 +5837,31 @@ async function redeemFromDrawer(){
 }
 
 // ── EDIT ──────────────────────────────────────────────────────────────────
+async function resendWelcomeEmail(){
+  if(!currentCardId) return;
+  const btn = document.getElementById('resend-welcome-btn');
+  const msg = document.getElementById('resend-msg');
+  btn.textContent = 'Enviando…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/resend-welcome/${currentCardId}?pin=${PIN}`, {method:'POST'});
+    const data = await res.json();
+    if(data.ok){
+      msg.style.color = 'var(--green)';
+      msg.textContent = `✓ Email reenviado a ${data.to}`;
+    } else {
+      msg.style.color = '#cc2222';
+      msg.textContent = 'Error al enviar. Verifica la configuración de email.';
+    }
+  } catch(e) {
+    msg.style.color = '#cc2222';
+    msg.textContent = 'Error de conexión.';
+  }
+  btn.textContent = '📧 Reenviar bienvenida';
+  btn.disabled = false;
+  setTimeout(() => { msg.textContent = ''; }, 5000);
+}
+
 async function saveEdit(){
   const payload={
     first_name:document.getElementById('e-first').value,
