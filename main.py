@@ -240,6 +240,56 @@ def _require_pro(biz):
     if _get_biz_plan(biz) != "pro":
         raise HTTPException(status_code=402, detail="upgrade_required")
 
+def _ensure_google_wallet_class(sa: dict, issuer_id: str, biz_slug: str, biz_name: str):
+    """Create the Google Wallet GenericClass for this business if it doesn't exist yet."""
+    try:
+        import google.auth.transport.requests as ga_req
+        import google.oauth2.service_account as ga_sa
+        import urllib.request, urllib.error
+
+        class_suffix = biz_slug.replace("-", "_")
+        class_id = f"{issuer_id}.{class_suffix}"
+
+        creds = ga_sa.Credentials.from_service_account_info(
+            sa,
+            scopes=["https://www.googleapis.com/auth/wallet_object.issuer"],
+        )
+        auth_req = ga_req.Request()
+        creds.refresh(auth_req)
+        token = creds.token
+
+        # Check if class exists
+        check_url = f"https://walletobjects.googleapis.com/walletobjects/v1/genericClass/{class_id}"
+        req = urllib.request.Request(check_url, headers={"Authorization": f"Bearer {token}"})
+        try:
+            urllib.request.urlopen(req, timeout=5)
+            return  # Class exists — nothing to do
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                return  # Unknown error — skip silently
+
+        # Class doesn't exist — create it
+        class_body = json.dumps({
+            "id": class_id,
+            "classTemplateInfo": {
+                "cardTemplateOverride": {
+                    "cardRowTemplateInfos": []
+                }
+            },
+        }).encode()
+        create_url = "https://walletobjects.googleapis.com/walletobjects/v1/genericClass"
+        create_req = urllib.request.Request(
+            create_url,
+            data=class_body,
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            method="POST",
+        )
+        urllib.request.urlopen(create_req, timeout=5)
+        print(f"[Google Wallet] Created class: {class_id}")
+    except Exception as e:
+        print(f"[Google Wallet] _ensure_class error (non-fatal): {e}")
+
+
 def generate_google_wallet_url(
     card_id: str,
     biz_slug: str,
@@ -262,6 +312,9 @@ def generate_google_wallet_url(
     try:
         import jwt as pyjwt
         sa = json.loads(GOOGLE_WALLET_CREDENTIALS)
+
+        # Ensure the Google Wallet class exists (create if missing)
+        _ensure_google_wallet_class(sa, GOOGLE_WALLET_ISSUER_ID, biz_slug, card_name or biz_name)
         issuer_id = GOOGLE_WALLET_ISSUER_ID
         class_suffix = biz_slug.replace("-", "_")
         class_id  = f"{issuer_id}.{class_suffix}"
