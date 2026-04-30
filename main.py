@@ -4399,7 +4399,7 @@ async def geo_search(q: str = "", limit: int = 5):
                         "key": GOOGLE_MAPS_API_KEY,
                         "language": "es",
                         "components": "country:es",
-                        "types": "address|establishment|geocode",
+                        "types": "geocode",
                     },
                 )
                 if r.status_code == 200:
