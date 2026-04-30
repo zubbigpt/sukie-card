@@ -7539,6 +7539,19 @@ async def update_card_program(slug: str, program_id: str, request: Request, pin:
         "bid":    str(biz.id),
     })
     db.commit()
+
+    # Push wallet update to all cards linked to this program
+    try:
+        cards = db.execute(
+            text("SELECT id FROM loyalty_cards WHERE customer_id IN "
+                 "(SELECT id FROM customers WHERE business_id=:bid)"),
+            {"bid": str(biz.id)}
+        ).fetchall()
+        for row in cards:
+            await _push_wallet_update(row[0], db)
+    except Exception as _e:
+        print(f"[card-program patch] push error: {_e}")
+
     return {"status": "updated"}
 
 
