@@ -9603,6 +9603,9 @@ async function loadTarjetas(){
     const res = await fetch(`${BASE}/api/biz/${BIZ_SLUG}/card-programs?pin=${PIN}`);
     const programs = await res.json();
     grid.innerHTML = '';
+    // Hide "Nueva tarjeta" button if a program already exists (1 per business)
+    const newCardBtn = document.querySelector('button[onclick="openNewCardModal()"]');
+    if(newCardBtn) newCardBtn.style.display = programs.length ? 'none' : '';
     if(!programs.length){
       grid.innerHTML = '<div style="font-size:.88rem;color:var(--brown-light);padding:12px 0">Aún no tienes tarjetas. Crea tu primera tarjeta con el botón "Nueva tarjeta".</div>';
       return;

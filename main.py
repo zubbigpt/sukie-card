@@ -7541,13 +7541,12 @@ async def create_card_program(slug: str, request: Request, db: Session = Depends
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
-    # Free plan: max 1 card program
-    if _get_biz_plan(biz) != "pro":
-        count = db.execute(text(
-            "SELECT COUNT(*) FROM card_programs WHERE business_id=:bid AND status='active'"
-        ), {"bid": str(biz.id)}).scalar() or 0
-        if count >= FREE_LIMITS["max_card_programs"]:
-            raise HTTPException(status_code=402, detail="upgrade_required")
+    # Max 1 card program per business (all plans)
+    count = db.execute(text(
+        "SELECT COUNT(*) FROM card_programs WHERE business_id=:bid AND status='active'"
+    ), {"bid": str(biz.id)}).scalar() or 0
+    if count >= 1:
+        raise HTTPException(status_code=400, detail="Solo se permite 1 programa de tarjeta por negocio")
     row = db.execute(text(
         "INSERT INTO card_programs (business_id, name, emoji, stamps_per_reward, reward_name, bg_color, accent_color, text_color, status) "
         "VALUES (:bid, :name, :emoji, :stamps, :reward, :bg, :accent, :txt, 'active') RETURNING id"
