@@ -4294,26 +4294,35 @@ def get_push_sub_count(slug: str, pin: str = "", db: Session = Depends(get_db)):
     return {"count": row[0] if row else 0}
 
 
-def _photon_to_nominatim(features: list) -> list:
-    """Convert Photon GeoJSON features to Nominatim-style dicts."""
+def _photon_to_nominatim(features: list, spain_only: bool = True) -> list:
+    """Convert Photon GeoJSON features to Nominatim-style dicts.
+    spain_only: filter out results outside Spain bbox."""
+    # Spain bounding box (strict)
+    SPAIN_LON_MIN, SPAIN_LON_MAX = -9.5, 4.5
+    SPAIN_LAT_MIN, SPAIN_LAT_MAX = 35.5, 44.0
     results = []
     for f in features:
         props = f.get("properties", {})
         coords = f.get("geometry", {}).get("coordinates", [None, None])
         if not coords[0]:
             continue
+        lon, lat = coords[0], coords[1]
+        # Strict Spain bbox filter
+        if spain_only:
+            if not (SPAIN_LON_MIN <= lon <= SPAIN_LON_MAX and SPAIN_LAT_MIN <= lat <= SPAIN_LAT_MAX):
+                continue
         parts = []
-        if props.get("name"):      parts.append(props["name"])
+        if props.get("name"):        parts.append(props["name"])
         if props.get("housenumber"): parts.append(props["housenumber"])
-        if props.get("street"):    parts.append(props["street"])
-        if props.get("postcode"):  parts.append(props["postcode"])
-        if props.get("city"):      parts.append(props["city"])
-        if props.get("state"):     parts.append(props["state"])
-        if props.get("country"):   parts.append(props["country"])
+        if props.get("street"):      parts.append(props["street"])
+        if props.get("postcode"):    parts.append(props["postcode"])
+        if props.get("city"):        parts.append(props["city"])
+        if props.get("state"):       parts.append(props["state"])
+        if props.get("country"):     parts.append(props["country"])
         display = ", ".join(p for p in parts if p)
         results.append({
-            "lat": str(coords[1]),
-            "lon": str(coords[0]),
+            "lat": str(lat),
+            "lon": str(lon),
             "display_name": display,
         })
     return results
@@ -4328,16 +4337,20 @@ async def geo_search(q: str = "", limit: int = 5):
     try:
         async with httpx.AsyncClient(timeout=12) as client:
             # 1st try: Photon (komoot) — great street-level coverage in Spain
+            # lat/lon bias = center of Spain (Madrid), bbox = strict Spain bounds
             r1 = await client.get(
                 "https://photon.komoot.io/api/",
-                params={"q": q, "limit": limit, "bbox": "-9.5,35.5,4.5,44.0"},
+                params={"q": q, "limit": limit * 3, "lat": "40.4", "lon": "-3.7",
+                        "bbox": "-9.5,35.5,4.5,44.0", "lang": "es"},
                 headers={"User-Agent": "ZubCard/1.0 (hola@zubcard.com)"},
             )
             if r1.status_code == 200:
                 geojson = r1.json()
                 features = geojson.get("features", [])
                 if features:
-                    return _photon_to_nominatim(features)
+                    filtered = _photon_to_nominatim(features, spain_only=True)
+                    if filtered:
+                        return filtered[:limit]
 
             # Fallback: Nominatim with countrycodes=es
             r2 = await client.get(
