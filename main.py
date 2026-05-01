@@ -1920,8 +1920,9 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     google_review_url    = getattr(biz, "google_review_url", "") or "" if biz else ""
     review_trigger_stamps = getattr(biz, "review_trigger_stamps", 0) or 0 if biz else 0
 
-    # Load business-scoped card_title for the page header
-    card_title = (biz.card_title if biz else None) or biz_name or CARD_TITLE
+    # card_title: card program name takes priority over business name
+    card_title = (_show_prog.name if _show_prog and _show_prog.name else None) \
+                 or (biz.card_title if biz else None) or biz_name or CARD_TITLE
     if customer and customer.business_id:
         row = db.execute(
             text("SELECT config FROM card_config WHERE business_id=:bid ORDER BY updated_at DESC LIMIT 1"),
