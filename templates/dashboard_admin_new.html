@@ -9049,6 +9049,8 @@ function renderDevices(devices){
         <span style="background:${statusBg[dev.status]};color:${statusColor[dev.status]};border-radius:50px;padding:3px 10px;font-size:.7rem;font-weight:700">${statusLabel[dev.status]||dev.status}</span>
         ${dev.status==='pending'?`<button class="btn-sm btn-primary" style="font-size:.72rem;padding:4px 12px" onclick="approveDevice('${dev.id}')">Aprobar</button>`:''}
         ${dev.status==='approved'?`<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:4px 10px;color:#c62828" onclick="revokeDevice('${dev.id}')">Revocar</button>`:''}
+        ${dev.status==='rejected'?`<button class="btn-sm btn-primary" style="font-size:.72rem;padding:4px 12px" onclick="approveDevice('${dev.id}')">Re-aprobar</button>`:''}
+        ${dev.status==='rejected'?`<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:4px 10px;color:#888" onclick="deleteDevice('${dev.id}')">Eliminar</button>`:''}
       </div>
     </div>
   `).join('');
@@ -9068,6 +9070,15 @@ async function revokeDevice(id){
     await fetch(`${BASE}/api/biz/${BIZ_SLUG}/scanner-devices/${id}/revoke?pin=${PIN}`,{method:'POST'});
     await loadDevices();
     showToast('Dispositivo revocado','success');
+  }catch(e){ showToast('Error','error'); }
+}
+
+async function deleteDevice(id){
+  if(!confirm('¿Eliminar este dispositivo de la lista?')) return;
+  try{
+    await fetch(`${BASE}/api/biz/${BIZ_SLUG}/scanner-devices/${id}?pin=${PIN}`,{method:'DELETE'});
+    await loadDevices();
+    showToast('Dispositivo eliminado','success');
   }catch(e){ showToast('Error','error'); }
 }
 

@@ -6516,6 +6516,20 @@ def revoke_scanner_device(slug: str, device_id: str, pin: str = "", db: Session 
     return {"status": "revoked"}
 
 
+@app.delete("/api/biz/{slug}/scanner-devices/{device_id}")
+def delete_scanner_device(slug: str, device_id: str, pin: str = "", db: Session = Depends(get_db)):
+    """Admin: permanently delete a scanner device entry."""
+    verify_pin(pin, db)
+    biz = get_business_by_slug(slug, db)
+    if not biz:
+        raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    db.execute(text(
+        "DELETE FROM scanner_devices WHERE id=:id AND business_id=:bid"
+    ), {"id": device_id, "bid": str(biz.id)})
+    db.commit()
+    return {"status": "deleted"}
+
+
 # ════════════════════════════════════════════════════════════════════════════════
 # PASSCODES
 # ════════════════════════════════════════════════════════════════════════════════
