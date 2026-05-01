@@ -495,6 +495,13 @@
 
   <!-- SCREEN 2: CAMERA -->
   <div class="screen" id="screen-camera">
+    <!-- Tap-to-start overlay (shown after auto-login on iOS where getUserMedia needs user gesture) -->
+    <div id="tap-to-start" style="display:none;position:absolute;inset:0;z-index:10;background:var(--bg,#fdf8f5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:32px;text-align:center">
+      <span class="material-symbols-outlined" style="font-size:64px;color:var(--honey,#ffca48)">qr_code_scanner</span>
+      <div style="font-size:1.1rem;font-weight:700">Toca para activar la cámara</div>
+      <div style="font-size:.85rem;color:#888">El navegador necesita un toque para acceder a la cámara</div>
+      <button class="btn btn-primary" onclick="hideTapOverlay()" style="font-size:1rem;padding:14px 32px">📷 Iniciar escáner</button>
+    </div>
     <div class="card">
       <div class="card-head">
         <h2><span class="material-symbols-outlined">qr_code_scanner</span> Escanear tarjeta cliente</h2>
@@ -672,7 +679,14 @@ async function doLogin(silent = false) {
     employeeStore = data.store || BIZ_NAME;
     updateTopBar();
     errEl.style.display = 'none';
-    startCamera();
+    if (silent) {
+      // Auto-login on page load: iOS blocks getUserMedia without user gesture.
+      // Show tap-to-start overlay so user provides the gesture.
+      showScreen('camera');
+      document.getElementById('tap-to-start').style.display = 'flex';
+    } else {
+      startCamera();
+    }
   } catch(e) {
     if (!silent) {
       errEl.textContent = 'Error de red. Inténtalo de nuevo.';
@@ -702,6 +716,12 @@ function logout() {
   document.getElementById('pin-error').style.display = 'none';
   document.getElementById('employee-badge').textContent = 'Caja';
   showScreen('pin');
+}
+
+function hideTapOverlay() {
+  const overlay = document.getElementById('tap-to-start');
+  if (overlay) overlay.style.display = 'none';
+  startCamera();
 }
 
 // CAMERA
