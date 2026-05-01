@@ -3722,25 +3722,6 @@ async def admin_legacy(request: Request):
     return RedirectResponse("/zubadmin", status_code=301)
 
 
-# ── TEMP: endpoint SQL directo (borrar tras uso) ──────────────────────────────
-@app.post("/api/zubadmin/exec-sql")
-def exec_sql_temp(request_data: dict, db: Session = Depends(get_db)):
-    """TEMP endpoint — delete after use"""
-    if request_data.get("pin") != ZUBADMIN_PIN:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    statements = request_data.get("sql", [])
-    results = []
-    for stmt in statements:
-        try:
-            r = db.execute(text(stmt))
-            db.commit()
-            results.append({"sql": stmt[:80], "rowcount": r.rowcount})
-        except Exception as e:
-            db.rollback()
-            results.append({"sql": stmt[:80], "error": str(e)})
-    return {"results": results}
-# ── END TEMP ──────────────────────────────────────────────────────────────────
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ══════════════════════════════════════════════════════════════════════════════
