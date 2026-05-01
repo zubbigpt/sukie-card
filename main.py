@@ -193,6 +193,19 @@ def _get_biz_plan(biz) -> str:
     return (getattr(biz, "plan", None) or "free").lower()
 
 
+def _require_active_subscription(biz) -> None:
+    """Raise 402 if business doesn't have an active or trialing Stripe subscription.
+    Only enforced when Stripe is fully configured (prevents breaking dev environments).
+    Manually activated businesses (stripe_subscription_status='active') pass through."""
+    if not STRIPE_SECRET_KEY or not STRIPE_PRICE_ID_PRO:
+        return  # Stripe not configured — allow everything
+    if not biz:
+        return
+    status = (getattr(biz, "stripe_subscription_status", None) or "").lower()
+    if status not in ("active", "trialing"):
+        raise HTTPException(status_code=402, detail="subscription_required")
+
+
 def _create_stripe_trial_session(biz, db: Session) -> str | None:
     """Create a Stripe Checkout session with 14-day trial for new registrations.
     Collects card details upfront but only charges after the trial ends.
@@ -2005,6 +2018,7 @@ async def public_register(request: Request, background_tasks: BackgroundTasks, d
     slug = str(body.get("slug") or "").strip()
     biz = get_business_by_slug(slug, db) if slug else None
     biz_id = biz.id if biz else None
+    _require_active_subscription(biz)
 
     fn = (body.get("first_name") or "").strip() or "Cliente"
     ln = (body.get("last_name") or "").strip()
@@ -2516,6 +2530,7 @@ async def add_stamps(card_id: str, request: Request, db: Session = Depends(get_d
     # Resolve per-business stamps_per_reward
     customer = db.query(models.Customer).filter(models.Customer.id == card.customer_id).first()
     biz = db.query(models.Business).filter(models.Business.id == customer.business_id).first() if (customer and customer.business_id) else None
+    _require_active_subscription(biz)
     stamps_per_reward = (biz.stamps_per_reward or STAMPS_PER_REWARD) if biz else STAMPS_PER_REWARD
 
     n = int(body.get("stamps", 1))
@@ -6887,6 +6902,7 @@ def create_campaign(slug: str, pin: str = "", payload: dict = Body(...), db: Ses
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_active_subscription(biz)
     _require_pro(biz)   # ← Free plan cannot create campaigns
     camp_id = str(uuid.uuid4())
     scheduled_at = payload.get("scheduled_at")  # ISO string or None
@@ -7056,6 +7072,7 @@ async def send_campaign(slug: str, campaign_id: str, pin: str = "", db: Session 
     biz = get_business_by_slug(slug, db)
     if not biz:
         raise HTTPException(status_code=404, detail="Negocio no encontrado")
+    _require_active_subscription(biz)
     _require_pro(biz)   # ← Free plan cannot send campaigns
     camp = db.execute(text(
         "SELECT name, subject, body, segment, type FROM campaigns WHERE id=:id AND business_id=:bid"
