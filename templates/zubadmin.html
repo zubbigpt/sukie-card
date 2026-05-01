@@ -343,8 +343,13 @@
         <div class="stat-box"><div class="stat-val" id="st-free">—</div><div class="stat-label">Plan Free</div></div>
         <div class="stat-box"><div class="stat-val" id="st-clients">—</div><div class="stat-label">Clientes totales</div></div>
       </div>
-      <div class="search-wrap">
-        <input type="text" id="search-input" placeholder="Buscar negocio..." oninput="filterBiz()">
+      <div class="search-wrap" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="search-input" placeholder="Buscar negocio..." oninput="filterBiz()" style="flex:1;min-width:180px">
+        <div style="display:flex;gap:4px">
+          <button id="filter-all" onclick="setPlanFilter('all')" style="padding:7px 14px;border-radius:6px;border:1.5px solid #26170c;background:#26170c;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer">Todos</button>
+          <button id="filter-pro" onclick="setPlanFilter('pro')" style="padding:7px 14px;border-radius:6px;border:1.5px solid #e0d0c8;background:#fff;color:#9a8579;font-size:.78rem;font-weight:700;cursor:pointer">PRO</button>
+          <button id="filter-free" onclick="setPlanFilter('free')" style="padding:7px 14px;border-radius:6px;border:1.5px solid #e0d0c8;background:#fff;color:#9a8579;font-size:.78rem;font-weight:700;cursor:pointer">FREE</button>
+        </div>
       </div>
       <div class="biz-grid" id="biz-grid">
         <div class="empty-state">Cargando negocios...</div>
@@ -551,14 +556,31 @@ function renderBiz(list) {
   }).join('');
 }
 
+let activePlanFilter = 'all';
+
+function setPlanFilter(plan) {
+  activePlanFilter = plan;
+  ['all','pro','free'].forEach(p => {
+    const btn = document.getElementById('filter-' + p);
+    if (!btn) return;
+    const active = p === plan;
+    btn.style.background = active ? '#26170c' : '#fff';
+    btn.style.color = active ? '#fff' : '#9a8579';
+    btn.style.borderColor = active ? '#26170c' : '#e0d0c8';
+  });
+  filterBiz();
+}
+
 function filterBiz() {
   const q = document.getElementById('search-input').value.toLowerCase();
-  if (!q) { renderBiz(allBiz); return; }
-  renderBiz(allBiz.filter(b =>
+  let result = allBiz;
+  if (activePlanFilter !== 'all') result = result.filter(b => (b.plan || 'free') === activePlanFilter);
+  if (q) result = result.filter(b =>
     (b.name || '').toLowerCase().includes(q) ||
     (b.slug || '').toLowerCase().includes(q) ||
     (b.email || '').toLowerCase().includes(q)
-  ));
+  );
+  renderBiz(result);
 }
 
 // ── TABS ─────────────────────────────────────────────────────────────────────
