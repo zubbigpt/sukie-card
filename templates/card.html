@@ -427,6 +427,10 @@ body {
       <div class="w-name">Google Wallet</div>
     </div>
   </a>
+  <a id="android-browser-link" href="{{ request.url }}" target="_blank" rel="noopener"
+     style="display:none;text-align:center;font-size:.78rem;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;padding:4px 0;grid-column:1/-1">
+    Ver mi tarjeta en el navegador →
+  </a>
   {% endif %}
 </div>
 <script>
@@ -438,6 +442,10 @@ body {
   var ab = document.getElementById('apple-wallet-btn');
   var gb = document.getElementById('google-wallet-btn');
   if (ws) ws.style.display = 'grid';
+  if (isAndroid) {
+    var bl = document.getElementById('android-browser-link');
+    if (bl) bl.style.display = 'block';
+  }
 })();
 </script>
 {% endif %}
