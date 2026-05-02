@@ -10000,9 +10000,12 @@ function lpUpdatePreview(){
   const showPhone   = document.getElementById('cfg-field_phone')?.checked;
   const showBirth   = document.getElementById('cfg-field_birthdate')?.checked;
   const showLast    = document.getElementById('cfg-field_lastname')?.checked;
-  const lpBgColor   = document.getElementById('cfg-card_bg_color')?.value ||
-                      window.BIZ_PRIMARY_COLOR || '#26170c';
-  const lpAccentColor = document.getElementById('cfg-card_accent_color')?.value ||
+  const _firstCard   = Object.values(window._cardRegistry || {})[0];
+  const lpBgColor    = (_firstCard?.bg_color)     ||
+                       document.getElementById('cfg-card_bg_color')?.value ||
+                       window.BIZ_PRIMARY_COLOR || '#26170c';
+  const lpAccentColor = (_firstCard?.accent_color) ||
+                        document.getElementById('cfg-card_accent_color')?.value ||
                         window.BIZ_ACCENT_COLOR || '#ffca48';
 
   // Hero title (multi-line)
