@@ -285,6 +285,7 @@ def _ensure_google_wallet_class(sa: dict, issuer_id: str, biz_slug: str, biz_nam
         # Class doesn't exist — create it
         class_body = json.dumps({
             "id": class_id,
+            "reviewStatus": "underReview",
             "classTemplateInfo": {
                 "cardTemplateOverride": {
                     "cardRowTemplateInfos": []
