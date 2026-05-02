@@ -10013,7 +10013,7 @@ function lpUpdatePreview(){
   const heroLines  = heroRaw.split('\n');
   const heroHTML   = heroLines.map((l,i) =>
     i === heroLines.length-1
-      ? `<span style="color:#785a00">${l}</span>`
+      ? `<span style="color:${lpAccentColor}">${l}</span>`
       : l
   ).join('<br>');
 
@@ -10061,15 +10061,15 @@ function lpUpdatePreview(){
     <!-- BENEFITS -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px">
       <div style="background:#fff;border-radius:6px;padding:6px 4px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07)">
-        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:.55rem">⚡</div>
+        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px"><span class="material-symbols-outlined" style="font-size:12px;color:${textColor};font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20">bolt</span></div>
         <div style="font-size:.34rem;color:#555;line-height:1.4;font-weight:700;font-family:'Manrope',sans-serif">1 sello<br>por compra</div>
       </div>
       <div style="background:#fff;border-radius:6px;padding:6px 4px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07)">
-        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:.55rem">🎁</div>
+        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px"><span class="material-symbols-outlined" style="font-size:12px;color:${textColor};font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20">card_giftcard</span></div>
         <div style="font-size:.34rem;color:#555;line-height:1.4;font-weight:700;font-family:'Manrope',sans-serif">Premio cada<br>${stampsN} sellos</div>
       </div>
       <div style="background:#fff;border-radius:6px;padding:6px 4px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07)">
-        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:.55rem">🎂</div>
+        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px"><span class="material-symbols-outlined" style="font-size:12px;color:${textColor};font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 20">cake</span></div>
         <div style="font-size:.34rem;color:#555;line-height:1.4;font-weight:700;font-family:'Manrope',sans-serif">Sorpresa en<br>tu cumple</div>
       </div>
     </div>
