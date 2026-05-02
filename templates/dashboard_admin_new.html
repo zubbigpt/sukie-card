@@ -744,16 +744,63 @@ table.stitch-table tbody td{padding:12px 18px;font-size:.86rem;color:var(--prima
 <!-- ══ STRIPE PAYWALL ══════════════════════════════════════════════════════ -->
 <div id="stripe-paywall" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(26,20,16,0.6)">
   <div style="background:#f4ede2;border-radius:20px;padding:40px 36px;max-width:420px;width:100%;box-shadow:0 32px 80px rgba(26,20,16,0.35);text-align:center;font-family:'Geist',sans-serif">
-    <div style="width:56px;height:56px;background:#26170c;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.6rem">💳</div>
-    <h2 style="font-family:'Instrument Serif',sans-serif;font-size:1.8rem;font-weight:400;color:#26170c;margin:0 0 10px;line-height:1.2">Activa tu cuenta<br><em style="color:#C8922A">para continuar</em></h2>
-    <p style="color:#5c4a3a;font-size:.9rem;line-height:1.65;margin:0 0 8px">Tu cuenta está creada. Solo falta añadir un método de pago para activar los <strong>14 días de prueba gratuita</strong>.</p>
-    <p style="color:#8a7f71;font-size:.8rem;margin:0 0 28px">Sin compromiso — cancela antes del día 14 y no se te cobra nada.</p>
-    <div style="background:#fff8f5;border:1.5px solid #ffeade;border-radius:10px;padding:14px 18px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between">
+
+    <!-- Icono -->
+    <div style="width:56px;height:56px;background:#26170c;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+      <span class="material-symbols-outlined" style="color:#f4ede2;font-size:1.7rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24">loyalty</span>
+    </div>
+
+    <!-- Título -->
+    <h2 style="font-family:'Instrument Serif',sans-serif;font-size:1.8rem;font-weight:400;color:#26170c;margin:0 0 6px;line-height:1.2">Cómo funciona tu<br><em style="color:#C8922A">prueba gratuita</em></h2>
+    <p style="color:#8a7f71;font-size:.82rem;margin:0 0 28px">Sin compromiso — cancela cuando quieras</p>
+
+    <!-- 3 pasos -->
+    <div style="text-align:left;margin-bottom:28px;position:relative">
+      <div style="position:absolute;left:19px;top:38px;bottom:38px;width:2px;background:#e0d5c8;z-index:0"></div>
+
+      <!-- Paso 1 -->
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;position:relative;z-index:1">
+        <div style="width:38px;height:38px;min-width:38px;background:#26170c;border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:#f4ede2;font-size:1.1rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24">card_giftcard</span>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#26170c;font-size:.9rem">Hoy — Confirmas tu prueba</div>
+          <div style="color:#8a7f71;font-size:.8rem;margin-top:2px">Añades tu tarjeta pero no se te cobra nada.</div>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;position:relative;z-index:1">
+        <div style="width:38px;height:38px;min-width:38px;background:#C8922A;border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:#fff;font-size:1.1rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24">loyalty</span>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#26170c;font-size:.9rem">14 días — Todo incluido</div>
+          <div style="color:#8a7f71;font-size:.8rem;margin-top:2px">Sellos, push notifications, campañas de email, cumpleaños automáticos — sin límites.</div>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div style="display:flex;align-items:flex-start;gap:16px;position:relative;z-index:1">
+        <div style="width:38px;height:38px;min-width:38px;background:#e0d5c8;border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <span class="material-symbols-outlined" style="color:#26170c;font-size:1.1rem;font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24">credit_card</span>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#26170c;font-size:.9rem">Día 15 — Solo si te convence</div>
+          <div style="color:#8a7f71;font-size:.8rem;margin-top:2px">Tu suscripción empieza el día 15. Cancela antes y no pagas nada.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Precio -->
+    <div style="background:#fff8f5;border:1.5px solid #ffeade;border-radius:10px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
       <span style="color:#5c4a3a;font-size:.88rem;font-weight:600">Plan Pro mensual</span>
       <span style="color:#26170c;font-size:1.1rem;font-weight:800">€39<span style="font-size:.7rem;font-weight:400;color:#8a7f71">/mes</span></span>
     </div>
+
+    <!-- CTA -->
     <a id="paywall-checkout-btn" href="#" onclick="startCheckout(event)" style="display:block;background:#26170c;color:#f4ede2;padding:15px 24px;border-radius:10px;text-decoration:none;font-weight:700;font-size:.95rem;margin-bottom:10px;transition:opacity .2s">
-      Añadir tarjeta — empezar prueba →
+      Empezar prueba gratuita →
     </a>
     <a href="https://calendar.app.google/7d4a8FXS1jjy1Qsg7" target="_blank" style="display:block;background:transparent;color:#5c4a3a;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.88rem;margin-bottom:12px;border:1.5px solid #d4c4b4;transition:all .2s" onmouseover="this.style.borderColor='#26170c'" onmouseout="this.style.borderColor='#d4c4b4'">
       ¿Tienes dudas? Habla con Yanir →
