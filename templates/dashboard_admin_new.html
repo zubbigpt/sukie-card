@@ -10024,28 +10024,33 @@ function lpUpdatePreview(){
     showBirth ? `<div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>` : '',
   ].join('');
 
-  const bgColor = document.getElementById('cfg-bg_color_text')?.value ||
-                  document.getElementById('cfg-bg_color')?.value || '#fff8f5';
+  const bgColor   = document.getElementById('cfg-bg_color_text')?.value ||
+                    document.getElementById('cfg-bg_color')?.value || '#fff8f5';
+  const textColor = document.getElementById('cfg-text_color_text')?.value ||
+                    document.getElementById('cfg-text_color')?.value || '#26170c';
+  const linkColor = document.getElementById('cfg-link_color_text')?.value ||
+                    document.getElementById('cfg-link_color')?.value || '#a0006b';
+  // Derive a muted version of textColor for secondary text (50% opacity via hex isn't trivial; use as-is with opacity)
   screen.style.background = bgColor;
   screen.innerHTML = `
     <!-- HEADER -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #f0e8e2">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(0,0,0,.08)">
       <div style="display:flex;align-items:center;gap:5px">
         <div style="width:24px;height:24px;border-radius:2px;background:#ffca48;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',sans-serif;font-size:.85rem;color:#785a00;flex-shrink:0">${(bizName[0]||'Z').toUpperCase()}</div>
         <div>
-          <div style="font-size:.42rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#26170c;line-height:1.2">${bizName.length>20?bizName.substring(0,20)+'…':bizName}</div>
-          <div style="font-size:.38rem;color:#a08d83;letter-spacing:.3px">Programa de fidelización</div>
+          <div style="font-size:.42rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${textColor};line-height:1.2">${bizName.length>20?bizName.substring(0,20)+'…':bizName}</div>
+          <div style="font-size:.38rem;color:${textColor};opacity:.6;letter-spacing:.3px">Programa de fidelización</div>
         </div>
       </div>
       <div style="background:#ffca48;color:#785a00;font-size:.35rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:2px 5px;border-radius:2px">ACTIVO</div>
     </div>
     <!-- HERO -->
     <div style="margin-bottom:9px">
-      <div style="font-size:.36rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#a08d83;margin-bottom:3px;display:flex;align-items:center;gap:3px">
+      <div style="font-size:.36rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${textColor};opacity:.6;margin-bottom:3px;display:flex;align-items:center;gap:3px">
         <span style="display:inline-block;width:9px;height:1.5px;background:#ffca48;flex-shrink:0"></span>Tarjeta de sellos
       </div>
-      <div style="font-family:'Instrument Serif',sans-serif;font-size:1.25rem;line-height:.9;color:#26170c;margin-bottom:3px">${heroHTML}</div>
-      <div style="font-size:.44rem;color:#a08d83;line-height:1.5">${subShort}</div>
+      <div style="font-family:'Instrument Serif',sans-serif;font-size:1.25rem;line-height:.9;color:${textColor};margin-bottom:3px">${heroHTML}</div>
+      <div style="font-size:.44rem;color:${textColor};opacity:.7;line-height:1.5">${subShort}</div>
     </div>
     <!-- CARD MOCK — Apple Wallet canvas -->
     <div id="lp-aw-pass" style="background:${lpBgColor};border-radius:6px;overflow:hidden;margin-bottom:7px;color:#fff">
@@ -10076,12 +10081,13 @@ function lpUpdatePreview(){
     </div>
     <!-- FORM -->
     <div style="background:#fff;border-radius:5px;padding:7px 6px;box-shadow:0 2px 8px rgba(38,23,12,.08)">
-      <div style="font-family:'Instrument Serif',sans-serif;font-size:.9rem;letter-spacing:-.3px;color:#26170c;margin-bottom:1px">CREA TU TARJETA.</div>
-      <div style="font-size:.36rem;color:#a08d83;margin-bottom:5px">30 segundos · completamente gratis</div>
-      <div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>
-      <div style="background:#fff8f5;border-radius:2px;height:13px;margin-bottom:3px"></div>
+      <div style="font-family:'Instrument Serif',sans-serif;font-size:.9rem;letter-spacing:-.3px;color:${textColor};margin-bottom:1px">CREA TU TARJETA.</div>
+      <div style="font-size:.36rem;color:${textColor};opacity:.6;margin-bottom:5px">30 segundos · completamente gratis</div>
+      <div style="background:#f5f0eb;border-radius:2px;height:13px;margin-bottom:3px"></div>
+      <div style="background:#f5f0eb;border-radius:2px;height:13px;margin-bottom:3px"></div>
       ${extraFields}
       <div style="height:18px;border-radius:2px;background:${btnColor};display:flex;align-items:center;justify-content:center;font-size:.34rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-top:3px">${btnShort}</div>
+      <div style="font-size:.3rem;color:${linkColor};text-align:center;margin-top:4px">Términos y condiciones · Privacidad</div>
     </div>
   `;
   // Render Apple Wallet canvas strip inside the preview
