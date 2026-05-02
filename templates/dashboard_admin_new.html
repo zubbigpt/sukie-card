@@ -860,9 +860,10 @@ async function startCheckout(e) {
         </a>
       </div>
 
-      <a onclick="showSection('passcodes')" id="nav-passcodes">
+      <!-- passcodes nav hidden temporarily -->
+      <!-- <a onclick="showSection('passcodes')" id="nav-passcodes">
         <span class="material-symbols-outlined icon">vpn_key</span> PassCodes / Pin
-      </a>
+      </a> -->
 
       <a onclick="showSection('stores')" id="nav-stores">
         <span class="material-symbols-outlined icon">storefront</span> Tiendas / Locales
@@ -2909,8 +2910,8 @@ async function startCheckout(e) {
         <!-- campaign editor now uses #camp-editor-overlay modal -->
       </div>
 
-      <!-- ═══ PASSCODES ═══ -->
-      <div class="section" id="section-passcodes">
+      <!-- ═══ PASSCODES ═══ (hidden temporarily) -->
+      <div class="section" id="section-passcodes" style="display:none!important">
         <div class="section-header">
           <div style="flex:1">
             <h1>Seguridad &amp; PassCodes</h1>
