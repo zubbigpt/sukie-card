@@ -23,6 +23,17 @@
     --font-display: 'Instrument Serif', Georgia, serif;
     --font-ui: 'Geist', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    /* Card program colors (overridden per business) */
+    --card-bg: {{ primary_color }};
+    --card-accent: {{ accent_color }};
+    --card-text: {{ label_color }};
+  }
+  /* Scope card program colors to the card component */
+  .card {
+    --ink: var(--card-bg);
+    --accent: var(--card-accent);
+    --bg: var(--card-text);
+    /* --accent-ink keeps page default (#1a1410) for contrast on light accents */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
