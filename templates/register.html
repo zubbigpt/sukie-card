@@ -127,7 +127,7 @@ body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--prim
 <style>
   :root {
     {% if lp_bg_color %}--surface: {{ lp_bg_color }};--surface-low: {{ lp_bg_color }};{% endif %}
-    {% if lp_text_color %}--primary: {{ lp_text_color }};--primary-mid: {{ lp_text_color }};{% endif %}
+    {% if lp_text_color %}--primary: {{ lp_text_color }};--primary-mid: {{ lp_text_color }};--outline: {{ lp_text_color }};--outline-var: {{ lp_text_color }};{% endif %}
     {% if lp_link_color %}--honey-dark: {{ lp_link_color }};{% endif %}
   }
   {% if lp_button_color %}.btn-cta { background: {{ lp_button_color }} !important; }
