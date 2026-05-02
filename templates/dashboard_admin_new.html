@@ -6,7 +6,7 @@
 <title>{{ biz_name }} Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -10035,62 +10035,53 @@ function lpUpdatePreview(){
                     document.getElementById('cfg-link_color')?.value || '#a0006b';
   // Derive a muted version of textColor for secondary text (50% opacity via hex isn't trivial; use as-is with opacity)
   screen.style.background = bgColor;
+  screen.style.padding = '14px 12px 16px';
   screen.innerHTML = `
-    <!-- HEADER -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(0,0,0,.08)">
-      <div style="display:flex;align-items:center;gap:5px">
-        <div style="width:24px;height:24px;border-radius:2px;background:#ffca48;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',sans-serif;font-size:.85rem;color:#785a00;flex-shrink:0">${(bizName[0]||'Z').toUpperCase()}</div>
-        <div>
-          <div style="font-size:.42rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${textColor};line-height:1.2">${bizName.length>20?bizName.substring(0,20)+'…':bizName}</div>
-          <div style="font-size:.38rem;color:${textColor};opacity:.6;letter-spacing:.3px">Programa de fidelización</div>
-        </div>
-      </div>
-      <div style="background:#ffca48;color:#785a00;font-size:.35rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:2px 5px;border-radius:2px">ACTIVO</div>
+    <!-- EYEBROW -->
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+      <span style="display:inline-block;width:14px;height:2px;background:#ffca48;flex-shrink:0"></span>
+      <div style="font-size:.42rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:${textColor};opacity:.65">Tarjeta de sellos</div>
     </div>
-    <!-- HERO -->
-    <div style="margin-bottom:9px">
-      <div style="font-size:.36rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${textColor};opacity:.6;margin-bottom:3px;display:flex;align-items:center;gap:3px">
-        <span style="display:inline-block;width:9px;height:1.5px;background:#ffca48;flex-shrink:0"></span>Tarjeta de sellos
-      </div>
-      <div style="font-family:'Instrument Serif',sans-serif;font-size:1.25rem;line-height:.9;color:${textColor};margin-bottom:3px">${heroHTML}</div>
-      <div style="font-size:.44rem;color:${textColor};opacity:.7;line-height:1.5">${subShort}</div>
-    </div>
-    <!-- CARD MOCK — Apple Wallet canvas -->
-    <div id="lp-aw-pass" style="background:${lpBgColor};border-radius:6px;overflow:hidden;margin-bottom:7px;color:#fff">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 7px 3px">
-        <span style="font-size:.38rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.88">${cardName.length>20?cardName.substring(0,20)+'…':cardName}</span>
-        <span style="font-size:.34rem;font-weight:700;opacity:.75">0/${stampsN} <span style="font-size:.26rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
+    <!-- TITLE -->
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:2.1rem;line-height:.88;letter-spacing:-1px;color:${textColor};margin-bottom:8px">${heroHTML}</div>
+    <!-- DESCRIPTION -->
+    <div style="font-size:.54rem;color:${textColor};opacity:.7;line-height:1.7;margin-bottom:12px;font-family:'Manrope',sans-serif">${subShort}</div>
+    <!-- CARD MOCK -->
+    <div id="lp-aw-pass" style="background:${lpBgColor};border-radius:10px;overflow:hidden;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px 3px">
+        <span style="font-size:.38rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#fff;opacity:.88">${cardName.length>20?cardName.substring(0,20)+'…':cardName}</span>
+        <span style="font-size:.34rem;font-weight:700;color:#fff;opacity:.75">0/${stampsN} <span style="font-size:.26rem;font-weight:600;letter-spacing:.08em;opacity:.7">SELLOS</span></span>
       </div>
       <div id="lp-strip-wrap" style="width:100%;line-height:0"></div>
-      <div style="display:flex;justify-content:space-between;padding:5px 7px 6px">
-        <div><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">TITULAR</div><div style="font-size:.4rem;font-weight:800">TU NOMBRE</div></div>
-        <div style="text-align:right"><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.5;margin-bottom:1px">PREMIO</div><div style="font-size:.4rem;font-weight:800" style="color:${lpAccentColor}">${stampsN} sellos</div></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 8px 7px">
+        <div><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#fff;opacity:.5;margin-bottom:1px">TITULAR</div><div style="font-size:.42rem;font-weight:800;color:#fff">TU NOMBRE</div></div>
+        <div style="text-align:right"><div style="font-size:.28rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#fff;opacity:.5;margin-bottom:1px">PREMIO</div><div style="font-size:.42rem;font-weight:800;color:${lpAccentColor}">${stampsN} sellos</div></div>
       </div>
     </div>
     <!-- BENEFITS -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:7px">
-      <div style="background:#fff;border-radius:3px;padding:5px 3px;text-align:center;box-shadow:0 1px 4px rgba(38,23,12,.07)">
-        <div style="font-size:.65rem">⚡</div>
-        <div style="font-size:.34rem;color:#a08d83;line-height:1.4;font-weight:600">1 sello<br>por compra</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px">
+      <div style="background:#fff;border-radius:6px;padding:6px 4px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07)">
+        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:.55rem">⚡</div>
+        <div style="font-size:.34rem;color:#555;line-height:1.4;font-weight:700;font-family:'Manrope',sans-serif">1 sello<br>por compra</div>
       </div>
-      <div style="background:#fff;border-radius:3px;padding:5px 3px;text-align:center;box-shadow:0 1px 4px rgba(38,23,12,.07)">
-        <div style="font-size:.65rem">🎁</div>
-        <div style="font-size:.34rem;color:#a08d83;line-height:1.4;font-weight:600">Premio cada<br>${stampsN} sellos</div>
+      <div style="background:#fff;border-radius:6px;padding:6px 4px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07)">
+        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:.55rem">🎁</div>
+        <div style="font-size:.34rem;color:#555;line-height:1.4;font-weight:700;font-family:'Manrope',sans-serif">Premio cada<br>${stampsN} sellos</div>
       </div>
-      <div style="background:#fff;border-radius:3px;padding:5px 3px;text-align:center;box-shadow:0 1px 4px rgba(38,23,12,.07)">
-        <div style="font-size:.65rem">🎂</div>
-        <div style="font-size:.34rem;color:#a08d83;line-height:1.4;font-weight:600">Sorpresa en<br>tu cumple</div>
+      <div style="background:#fff;border-radius:6px;padding:6px 4px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07)">
+        <div style="width:18px;height:18px;background:${lpAccentColor}40;border-radius:4px;display:flex;align-items:center;justify-content:center;margin:0 auto 3px;font-size:.55rem">🎂</div>
+        <div style="font-size:.34rem;color:#555;line-height:1.4;font-weight:700;font-family:'Manrope',sans-serif">Sorpresa en<br>tu cumple</div>
       </div>
     </div>
     <!-- FORM -->
-    <div style="background:#fff;border-radius:5px;padding:7px 6px;box-shadow:0 2px 8px rgba(38,23,12,.08)">
-      <div style="font-family:'Instrument Serif',sans-serif;font-size:.9rem;letter-spacing:-.3px;color:${textColor};margin-bottom:1px">CREA TU TARJETA.</div>
-      <div style="font-size:.36rem;color:${textColor};opacity:.6;margin-bottom:5px">30 segundos · completamente gratis</div>
-      <div style="background:#f5f0eb;border-radius:2px;height:13px;margin-bottom:3px"></div>
-      <div style="background:#f5f0eb;border-radius:2px;height:13px;margin-bottom:3px"></div>
+    <div style="background:#fff;border-radius:8px;padding:9px 8px;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:-.3px;color:#1a1410;margin-bottom:1px">CREA TU TARJETA.</div>
+      <div style="font-size:.36rem;color:#888;margin-bottom:6px;font-family:'Manrope',sans-serif">30 segundos · completamente gratis</div>
+      <div style="background:#f5f0eb;border-radius:4px;height:14px;margin-bottom:4px"></div>
+      <div style="background:#f5f0eb;border-radius:4px;height:14px;margin-bottom:4px"></div>
       ${extraFields}
-      <div style="height:18px;border-radius:2px;background:${btnColor};display:flex;align-items:center;justify-content:center;font-size:.34rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-top:3px">${btnShort}</div>
-      <div style="font-size:.3rem;color:${linkColor};text-align:center;margin-top:4px">Términos y condiciones · Privacidad</div>
+      <div style="height:20px;border-radius:4px;background:${btnColor};display:flex;align-items:center;justify-content:center;font-size:.35rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fff;margin-top:4px;font-family:'Manrope',sans-serif">${btnShort}</div>
+      <div style="font-size:.3rem;color:${linkColor};text-align:center;margin-top:5px;font-family:'Manrope',sans-serif">Términos y condiciones · Privacidad</div>
     </div>
   `;
   // Render Apple Wallet canvas strip inside the preview
