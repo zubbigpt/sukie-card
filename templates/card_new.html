@@ -49,13 +49,67 @@
   .club-header .club-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
   .club-header .club-tagline { font-family: var(--font-display); font-size: 32px; line-height: 1.05; letter-spacing: -.02em; margin-top: 6px; }
 
-  /* CARD */
+  /* CARD - Pass-style (matches Apple/Google Wallet) */
   .card {
     width: 100%; max-width: 440px;
-    border-radius: 24px; overflow: hidden;
+    border-radius: 18px; overflow: hidden;
     box-shadow: 0 30px 80px rgba(26,20,16,.18);
     background: var(--ink); color: var(--bg);
+    margin-bottom: 22px;
   }
+  .pass-card { padding: 0; }
+  .pass-top, .pass-bottom {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 14px 18px; gap: 12px;
+  }
+  .pass-top-left, .pass-bottom-left { flex: 1; min-width: 0; }
+  .pass-top-right, .pass-bottom-right { text-align: right; flex-shrink: 0; }
+  .pass-label {
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: var(--bg); opacity: .65; margin-bottom: 3px;
+  }
+  .pass-title {
+    font-family: var(--font-ui); font-size: 14px; font-weight: 800;
+    color: var(--bg); letter-spacing: -.01em; line-height: 1.15;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pass-stamps-count {
+    font-family: var(--font-ui); font-size: 22px; font-weight: 800;
+    color: var(--bg); letter-spacing: -.02em; line-height: 1;
+  }
+  .pass-stamps-count span { color: var(--bg); }
+  .pass-value {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 800;
+    color: var(--bg); letter-spacing: -.01em; line-height: 1.2;
+  }
+  .pass-strip {
+    position: relative; padding: 22px 18px;
+    background-size: cover; background-position: center;
+    background-color: color-mix(in oklab, var(--ink) 90%, #000);
+  }
+  .pass-strip::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--ink) 35%, transparent) 100%);
+    pointer-events: none;
+  }
+  .pass-strip .stamps-grid { position: relative; z-index: 1; gap: 10px; }
+  .pass-strip .stamp {
+    aspect-ratio: 1; border-radius: 50%;
+    border: 2px solid var(--bg);
+    background: transparent;
+    display: grid; place-items: center;
+    color: var(--bg); opacity: .85;
+  }
+  .pass-strip .stamp.filled {
+    background: var(--bg); color: var(--ink);
+    border-color: var(--bg); opacity: 1;
+  }
+  .pass-strip .stamp.filled::before { content: '★'; font-family: var(--font-display); font-size: 18px; }
+
+  .below-card { width: 100%; max-width: 440px; }
+
+  /* legacy styles below kept for stats/reward/QR */
   .card-header {
     padding: 26px 24px 22px; position: relative;
     background: var(--ink);
@@ -204,59 +258,66 @@
   <div class="club-tagline" id="club-tagline">{{ card_title }}</div>
 </div>
 
-<div class="card">
-  <div class="card-header" id="card-header">
-    <div class="card-header-top">
-      <div class="card-brand">
-        <div class="card-title-text">{{ card_title }}</div>
-        <div class="card-subtitle">Tarjeta de fidelidad</div>
-      </div>
+<!-- Pass-style card (matches Apple/Google Wallet design) -->
+<div class="card pass-card">
+  <!-- Top row: title + sellos count -->
+  <div class="pass-top">
+    <div class="pass-top-left">
+      <div class="pass-label">{{ biz_name|upper }}</div>
+      <div class="pass-title">{{ card_title|upper }}</div>
     </div>
-    <div class="card-member-info">
-      <div class="member-name">{{ first_name }}</div>
-      <div class="member-meta">
-        <div class="member-since" id="member-since"></div>
-      </div>
+    <div class="pass-top-right">
+      <div class="pass-label">Sellos</div>
+      <div class="pass-stamps-count" id="stamps-count">0/10</div>
     </div>
   </div>
+  <span id="member-since" style="display:none"></span>
 
-  <div class="card-body">
-    <!-- Stamps -->
-    <div class="stamps-label">
-      <span>— Tus sellos</span>
-      <span class="stamps-count" id="stamps-count">0/10</span>
-    </div>
+  <!-- Stamps grid with strip bg image -->
+  <div class="pass-strip" {% if strip_bg_url %}style="background-image:url('{{ strip_bg_url }}')"{% endif %}>
     <div class="stamps-grid" id="stamps-grid"></div>
-
-    <!-- Reward box -->
-    <div class="reward-progress" id="reward-box">
-      <div class="reward-emoji-big" id="reward-emoji">★</div>
-      <div class="reward-info">
-        <div class="reward-info-title" id="reward-name">Premio</div>
-        <div class="reward-info-sub" id="reward-desc"></div>
-      </div>
-      <div class="reward-badge" id="reward-badge">10 más</div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-value" id="total-stamps">0</div>
-        <div class="stat-label">— Sellos totales</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="total-rewards">0</div>
-        <div class="stat-label">— Premios canjeados</div>
-      </div>
-    </div>
-
-    <!-- QR -->
-    <div class="qr-section">
-      <div class="qr-label">— Muestra este QR en caja</div>
-      <div id="qrcode"></div>
-    </div>
-
   </div>
+
+  <!-- Bottom row: titular + premio -->
+  <div class="pass-bottom">
+    <div class="pass-bottom-left">
+      <div class="pass-label">Titular</div>
+      <div class="pass-value">{{ first_name|upper }}</div>
+    </div>
+    <div class="pass-bottom-right">
+      <div class="pass-label">Premio</div>
+      <div class="pass-value" id="reward-name">{{ reward_name|upper }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Below card: reward progress + stats + QR -->
+<div class="below-card">
+  <div class="reward-progress" id="reward-box">
+    <div class="reward-emoji-big">★</div>
+    <div class="reward-info">
+      <div class="reward-info-title">{{ reward_name }}</div>
+      <div class="reward-info-sub" id="reward-desc"></div>
+    </div>
+    <div class="reward-badge" id="reward-badge">10 más</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-value" id="total-stamps">0</div>
+      <div class="stat-label">— Sellos totales</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="total-rewards">0</div>
+      <div class="stat-label">— Premios canjeados</div>
+    </div>
+  </div>
+
+  <div class="qr-section">
+    <div class="qr-label">— Muestra este QR en caja</div>
+    <div id="qrcode"></div>
+  </div>
+</div>
 </div>
 
 {% if wallet_url or google_wallet_url %}

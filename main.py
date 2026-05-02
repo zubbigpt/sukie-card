@@ -1929,6 +1929,8 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
     primary_color        = (_show_prog.bg_color      if _show_prog and _show_prog.bg_color      else None) or (biz.primary_color if biz else None) or "#26170c"
     accent_color         = (_show_prog.accent_color  if _show_prog and _show_prog.accent_color  else None) or (biz.accent_color  if biz else None) or "#ffca48"
     label_color          = (_show_prog.text_color    if _show_prog and _show_prog.text_color     else None) or "#ffffff"
+    strip_bg_url         = (_show_prog.strip_bg_url  if _show_prog and _show_prog.strip_bg_url   else None) or ""
+    reward_name          = (_show_prog.reward_name   if _show_prog and _show_prog.reward_name    else None) or "Premio"
     biz_name             = (biz.name               if biz else None) or ""
     biz_slug             = (biz.slug               if biz else None) or ""
     stamps_per_reward_val = (biz.stamps_per_reward if biz else None) or STAMPS_PER_REWARD
@@ -1986,6 +1988,8 @@ def show_card(card_id: str, request: Request, db: Session = Depends(get_db)):
         "primary_color":     primary_color,
         "accent_color":      accent_color,
         "label_color":       label_color,
+        "strip_bg_url":      strip_bg_url,
+        "reward_name":       reward_name,
         "wallet_url":             f"{BASE_URL}/card/{card_id}/wallet.pkpass",
         "google_wallet_url":      google_wallet_url or "",
         "google_review_url":      google_review_url,
