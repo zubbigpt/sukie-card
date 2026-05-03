@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview Campaign Editor v2 — ZubCard</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4ede2;
+  --surface: #ffffff;
+  --ink: #1a1410;
+  --ink-2: #4a4239;
+  --ink-3: #8a7f71;
+  --line: #d9cdbc;
+  --line-soft: #e7ddcc;
+  --accent: #c8922a;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Geist', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); }
+body { padding: 24px; min-height: 100vh; }
+
+.shell { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: 540px 1fr; gap: 24px; }
+
+/* EDITOR (left) */
+.editor {
+  background: var(--surface); border-radius: 16px; padding: 22px;
+  box-shadow: 0 10px 30px rgba(26,20,16,.06);
+  max-height: 95vh; overflow-y: auto;
+}
+.editor h1 { font-family: var(--font-display); font-size: 24px; margin: 0 0 4px; font-weight: 400; }
+.editor .sub { font-size: 12px; color: var(--ink-3); margin-bottom: 18px; font-family: var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+
+.section { margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line-soft); }
+.section:last-child { border-bottom: none; }
+.section-title { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.section-title .material-symbols-outlined { font-size: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.field label { font-size: 11px; font-weight: 700; color: var(--ink-2); }
+.field input[type=text], .field input[type=number], .field textarea, .field select {
+  border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px;
+  font-family: var(--font-ui); font-size: 13px; color: var(--ink); background: var(--surface);
+}
+.field textarea { min-height: 80px; resize: vertical; font-family: var(--font-ui); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+.color-pair { display: flex; gap: 6px; align-items: center; }
+.color-pair input[type=color] { width: 36px; height: 32px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; padding: 0; background: none; }
+.color-pair input[type=text] { flex: 1; font-family: var(--font-mono); font-size: 11px; }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg); border-radius: 8px; margin-bottom: 6px; }
+.toggle-row label { font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.toggle-row .desc { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.switch { position: relative; width: 38px; height: 22px; background: var(--line); border-radius: 999px; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+.switch.on { background: #2da44e; }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.switch.on::after { transform: translateX(16px); }
+
+.tpl-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tpl-btn {
+  padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); font-size: 11px; font-weight: 700;
+  cursor: pointer; letter-spacing: .06em; text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.tpl-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.toolbar { display: flex; gap: 4px; margin-bottom: 8px; padding: 6px; background: var(--bg); border-radius: 8px; }
+.toolbar button { background: none; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 13px; color: var(--ink-2); }
+.toolbar button:hover { background: var(--line-soft); }
+
+.upload-zone {
+  border: 2px dashed var(--line); border-radius: 10px; padding: 20px; text-align: center;
+  cursor: pointer; transition: all .2s; font-size: 12px; color: var(--ink-3);
+}
+.upload-zone:hover { border-color: var(--ink); background: var(--bg); }
+.upload-zone .material-symbols-outlined { font-size: 28px; display: block; margin: 0 auto 6px; color: var(--ink-3); }
+
+.btn-primary { width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 10px; }
+
+/* PREVIEW (right) */
+.preview-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.preview-bar { display: flex; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+.device-toggle { display: flex; gap: 4px; background: var(--surface); padding: 4px; border-radius: 8px; border: 1px solid var(--line); }
+.device-toggle button { background: none; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; color: var(--ink-3); }
+.device-toggle button.active { background: var(--ink); color: var(--bg); }
+
+.email-frame {
+  background: #fff; border-radius: 16px; box-shadow: 0 30px 80px rgba(26,20,16,.12);
+  overflow: hidden; transition: max-width .25s ease;
+  max-width: 600px; width: 100%;
+}
+.email-frame.mobile { max-width: 380px; }
+
+.email-meta { padding: 14px 22px; background: #fafafa; border-bottom: 1px solid #eee; font-size: 12px; color: #666; }
+.email-meta strong { color: #222; }
+
+.email-banner {
+  padding: 28px 32px; transition: all .25s;
+  display: flex; align-items: center; gap: 14px;
+}
+.email-banner-name { font-family: var(--font-display); font-size: 28px; line-height: 1; }
+.email-banner-logo { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.2); display: grid; place-items: center; font-weight: 800; font-family: var(--font-mono); flex-shrink: 0; }
+
+.email-body { padding: 28px 32px; line-height: 1.6; font-size: 15px; transition: all .25s; }
+.email-body p { margin: 0 0 12px; }
+.email-body strong.highlight { color: var(--accent); font-weight: 800; }
+
+/* Mini tarjeta cliente */
+.mini-card {
+  border-radius: 14px; padding: 18px; margin: 16px 0;
+  background: #d0abf8; color: #fff;
+}
+.mini-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.mini-card-title { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.mini-card-count { font-size: 22px; font-weight: 800; }
+.mini-card-stamps { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.mini-stamp { aspect-ratio: 1; border-radius: 50%; border: 1.5px solid #fff; opacity: .35; }
+.mini-stamp.filled { background: #fef9e3; border-color: #fef9e3; opacity: 1; }
+.mini-card-foot { font-size: 11px; margin-top: 12px; opacity: .85; }
+
+/* Productos destacados */
+.products-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 16px 0; }
+.product-card { background: #f7f3ed; border-radius: 10px; padding: 10px; text-align: center; }
+.product-img { width: 100%; aspect-ratio: 1; background: #ddd; border-radius: 8px; margin-bottom: 6px; background-size: cover; background-position: center; }
+.product-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.product-price { font-size: 12px; color: var(--ink-3); }
+
+/* Countdown */
+.countdown {
+  background: #1a1410; color: #fff; border-radius: 12px;
+  padding: 18px; margin: 16px 0; text-align: center;
+}
+.countdown-label { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .6; margin-bottom: 8px; font-family: var(--font-mono); }
+.countdown-time { font-family: var(--font-display); font-size: 36px; letter-spacing: -.02em; }
+
+/* QR */
+.qr-block { text-align: center; margin: 18px 0; padding: 16px; background: #fafafa; border-radius: 12px; }
+.qr-block img { width: 120px; height: 120px; }
+.qr-block .qr-label { font-size: 11px; color: #888; margin-top: 8px; letter-spacing: .1em; text-transform: uppercase; font-family: var(--font-mono); }
+
+.email-cta { padding: 0 32px 24px; }
+.email-cta a {
+  display: inline-block; padding: 13px 28px; border-radius: 10px;
+  font-weight: 800; text-decoration: none; transition: all .2s;
+}
+
+.email-footer { padding: 22px 32px; border-top: 1px solid #eee; text-align: center; }
+.email-footer .socials { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
+.email-footer .socials a { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; }
+.email-footer .legal { font-size: 11px; line-height: 1.5; }
+
+@media (max-width: 1100px) {
+  .shell { grid-template-columns: 1fr; }
+  .editor { max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═════════════════════ EDITOR ═════════════════════ -->
+  <div class="editor">
+    <h1>Editor de Campaña <em style="color:var(--accent)">v2</em></h1>
+    <div class="sub">— Preview · todas las opciones nuevas</div>
+
+    <!-- Templates -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">stacks</span> Plantilla</div>
+      <div class="tpl-tabs">
+        <button class="tpl-btn active">Branded</button>
+        <button class="tpl-btn">Promo</button>
+        <button class="tpl-btn">Cumpleaños</button>
+        <button class="tpl-btn">Recuperar</button>
+        <button class="tpl-btn">Evento</button>
+        <button class="tpl-btn">Nuevo producto</button>
+      </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">mail</span> Asunto</div>
+      <div class="field">
+        <input type="text" id="subject" value="Te echamos de menos, {nombre}" placeholder="Asunto del email">
+      </div>
+      <div class="toggle-row">
+        <div>
+          <label for="ab-toggle">A/B test del asunto</label>
+          <div class="desc">Prueba 2 asuntos y manda el ganador</div>
+        </div>
+        <div class="switch" id="ab-toggle"></div>
+      </div>
+      <div class="field" id="ab-second" style="display:none">
+        <input type="text" placeholder="Segunda variante del asunto">
+      </div>
+    </div>
+
+    <!-- Banner -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">view_day</span> Banner</div>
+      <div class="row">
+        <div class="field">
+          <label>Color de fondo</label>
+          <div class="color-pair">
+            <input type="color" id="banner-bg" value="#1a1410">
+            <input type="text" id="banner-bg-text" value="#1a1410">
+          </div>
+        </div>
+        <div class="field">
+          <label>Color del texto</label>
+          <div class="color-pair">
+            <input type="color" id="banner-text" value="#ffffff">
+            <input type="text" id="banner-text-text" value="#ffffff">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Texto del banner</label>
+          <input type="text" id="banner-name" value="Cookilleta">
+        </div>
+        <div class="field">
+          <label>Altura (px)</label>
+          <input type="number" id="banner-height" value="80" min="50" max="200">
+        </div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <label for="banner-logo-toggle">Mostrar logo redondo</label>
+          <div class="desc">Avatar circular junto al nombre</div>
+        </div>
+        <div class="switch on" id="banner-logo-toggle"></div>
+      </div>
+    </div>
+
+    <!-- Cuerpo -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">format_color_text</span> Cuerpo del email</div>
+      <div class="row">
+        <div class="field">
+          <label>Fondo del email</label>
+          <div class="color-pair">
+            <input type="color" id="body-bg" value="#ffffff">
+            <input type="text" id="body-bg-text" value="#ffffff">
+          </div>
+        </div>
+        <div class="field">
+          <label>Color del texto</label>
+          <div class="color-pair">
+            <input type="color" id="body-text" value="#1a1410">
+            <input type="text" id="body-text-text" value="#1a1410">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Color de links</label>
+          <div class="color-pair">
+            <input type="color" id="body-link" value="#c8922a">
+            <input type="text" id="body-link-text" value="#c8922a">
+          </div>
+        </div>
+        <div class="field">
+          <label>Destacados (negrita variables)</label>
+          <div class="color-pair">
+            <input type="color" id="body-highlight" value="#c8922a">
+            <input type="text" id="body-highlight-text" value="#c8922a">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipografía</label>
+        <select id="body-font">
+          <option value="Geist">Geist (sans)</option>
+          <option value="Instrument Serif">Instrument Serif (serif)</option>
+          <option value="Helvetica">Helvetica</option>
+          <option value="Georgia">Georgia</option>
+        </select>
+      </div>
+
+      <div class="toolbar">
+        <button title="Negrita"><b>B</b></button>
+        <button title="Cursiva"><i>I</i></button>
+        <button title="Subrayar"><u>U</u></button>
+        <button title="Variables">{x}</button>
+      </div>
+      <div class="field">
+        <textarea id="email-body">Hace tiempo que no nos visitas y queremos invitarte a volver. Tu tarjeta sigue esperándote con {sellos} sellos acumulados.
+
+Vuelve esta semana y completa tu {premio} con un detalle especial de nuestra parte.
+
+Te esperamos,
+{negocio}</textarea>
+      </div>
+    </div>
+
+    <!-- Imagen header -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">image</span> Imagen de cabecera (opcional)</div>
+      <div class="upload-zone">
+        <span class="material-symbols-outlined">add_photo_alternate</span>
+        Arrastra o haz click — JPG/PNG · 1200×480
+      </div>
+    </div>
+
+    <!-- Botón -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">smart_button</span> Botón de acción</div>
+      <div class="field">
+        <label>Texto</label>
+        <input type="text" id="btn-text" value="Ver mi tarjeta →">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Color fondo</label>
+          <div class="color-pair">
+            <input type="color" id="btn-bg" value="#1a1410">
+            <input type="text" id="btn-bg-text" value="#1a1410">
+          </div>
+        </div>
+        <div class="field">
+          <label>Color texto</label>
+          <div class="color-pair">
+            <input type="color" id="btn-color" value="#ffffff">
+            <input type="text" id="btn-color-text" value="#ffffff">
+          </div>
+        </div>
+      </div>
+      <div class="row3">
+        <div class="field">
+          <label>Redondeo</label>
+          <select id="btn-radius">
+            <option value="6">Cuadrado</option>
+            <option value="10" selected>Suave</option>
+            <option value="999">Pill</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estilo</label>
+          <select id="btn-style">
+            <option value="solid">Sólido</option>
+            <option value="gradient">Gradient</option>
+            <option value="outline">Borde</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Sombra</label>
+          <select id="btn-shadow">
+            <option value="none">Sin</option>
+            <option value="soft" selected>Suave</option>
+            <option value="strong">Fuerte</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloques modulares -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">widgets</span> Bloques opcionales</div>
+
+      <div class="toggle-row">
+        <div>
+          <label>Mini tarjeta del cliente</label>
+          <div class="desc">Muestra los sellos actuales</div>
+        </div>
+        <div class="switch on" id="block-card"></div>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <label>Productos destacados (3)</label>
+          <div class="desc">Cards con foto + nombre + precio</div>
+        </div>
+        <div class="switch" id="block-products"></div>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <label>Countdown / urgencia</label>
+          <div class="desc">Tiempo restante para usar la oferta</div>
+        </div>
+        <div class="switch" id="block-countdown"></div>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <label>QR personalizado</label>
+          <div class="desc">QR único del cliente para canjear en caja</div>
+        </div>
+        <div class="switch" id="block-qr"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">space_bar</span> Footer</div>
+      <div class="row">
+        <div class="field">
+          <label>Color fondo</label>
+          <div class="color-pair">
+            <input type="color" id="footer-bg" value="#fafafa">
+            <input type="text" id="footer-bg-text" value="#fafafa">
+          </div>
+        </div>
+        <div class="field">
+          <label>Color texto</label>
+          <div class="color-pair">
+            <input type="color" id="footer-text" value="#888888">
+            <input type="text" id="footer-text-text" value="#888888">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Texto legal</label>
+        <textarea id="footer-text-content" style="min-height:50px">Has recibido este email porque eres parte de nuestro programa de fidelización.
+© 2026 Cookilleta</textarea>
+      </div>
+      <div class="row3">
+        <div class="field">
+          <label>Instagram URL</label>
+          <input type="text" id="social-ig" placeholder="https://instagram.com/...">
+        </div>
+        <div class="field">
+          <label>Facebook URL</label>
+          <input type="text" id="social-fb" placeholder="https://facebook.com/...">
+        </div>
+        <div class="field">
+          <label>Web URL</label>
+          <input type="text" id="social-web" placeholder="https://...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="section">
+      <div class="section-title"><span class="material-symbols-outlined">schedule</span> Programar envío</div>
+      <div class="toggle-row">
+        <div>
+          <label>Programar envío</label>
+          <div class="desc">Manda en una fecha y hora futura</div>
+        </div>
+        <div class="switch" id="schedule-toggle"></div>
+      </div>
+      <div class="row" id="schedule-fields" style="display:none;margin-top:8px">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date">
+        </div>
+        <div class="field">
+          <label>Hora</label>
+          <input type="text" placeholder="10:00">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary">Guardar campaña</button>
+  </div>
+
+
+  <!-- ═════════════════════ PREVIEW ═════════════════════ -->
+  <div class="preview-wrap">
+    <div class="preview-bar">
+      <span>Vista previa del email</span>
+      <div class="device-toggle">
+        <button class="active" id="dev-desktop"><span class="material-symbols-outlined" style="font-size:14px">desktop_windows</span></button>
+        <button id="dev-mobile"><span class="material-symbols-outlined" style="font-size:14px">smartphone</span></button>
+      </div>
+    </div>
+
+    <div class="email-frame" id="email-frame">
+      <div class="email-meta">Para: <strong>cliente@email.com</strong> · Asunto: <strong id="prev-subject">Te echamos de menos, Ana</strong></div>
+
+      <div class="email-banner" id="prev-banner">
+        <div class="email-banner-logo" id="prev-logo">C</div>
+        <div class="email-banner-name" id="prev-banner-name">Cookilleta</div>
+      </div>
+
+      <div class="email-body" id="prev-body">
+        <p>Te echamos de menos, <strong>Ana</strong></p>
+        <p id="prev-paragraph">Hace tiempo que no nos visitas y queremos invitarte a volver. Tu tarjeta sigue esperándote con <strong class="highlight">7 sellos</strong> acumulados.</p>
+        <p>Vuelve esta semana y completa tu <strong class="highlight">café gratis</strong> con un detalle especial de nuestra parte.</p>
+
+        <!-- Mini card -->
+        <div class="mini-card" id="prev-mini-card">
+          <div class="mini-card-head">
+            <div class="mini-card-title">Tu tarjeta</div>
+            <div class="mini-card-count">7/10</div>
+          </div>
+          <div class="mini-card-stamps">
+            <div class="mini-stamp filled"></div><div class="mini-stamp filled"></div><div class="mini-stamp filled"></div><div class="mini-stamp filled"></div><div class="mini-stamp filled"></div><div class="mini-stamp filled"></div><div class="mini-stamp filled"></div><div class="mini-stamp"></div><div class="mini-stamp"></div><div class="mini-stamp"></div>
+          </div>
+          <div class="mini-card-foot">Te quedan 3 sellos para tu premio</div>
+        </div>
+
+        <!-- Products -->
+        <div class="products-row" id="prev-products" style="display:none">
+          <div class="product-card">
+            <div class="product-img" style="background:linear-gradient(135deg,#d0abf8,#fef9e3)"></div>
+            <div class="product-name">Caja 4</div>
+            <div class="product-price">€12,90</div>
+          </div>
+          <div class="product-card">
+            <div class="product-img" style="background:linear-gradient(135deg,#fef9e3,#d0abf8)"></div>
+            <div class="product-name">Caja 8</div>
+            <div class="product-price">€22,90</div>
+          </div>
+          <div class="product-card">
+            <div class="product-img" style="background:linear-gradient(135deg,#d0abf8,#a585d4)"></div>
+            <div class="product-name">Caja 12</div>
+            <div class="product-price">€32,90</div>
+          </div>
+        </div>
+
+        <!-- Countdown -->
+        <div class="countdown" id="prev-countdown" style="display:none">
+          <div class="countdown-label">— La oferta acaba en</div>
+          <div class="countdown-time">02:14:35</div>
+        </div>
+
+        <!-- QR -->
+        <div class="qr-block" id="prev-qr" style="display:none">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=zubcard.com/c/ana123" alt="QR">
+          <div class="qr-label">Tu QR personal — muéstralo en caja</div>
+        </div>
+
+        <p>Te esperamos,<br><strong>Cookilleta</strong></p>
+      </div>
+
+      <div class="email-cta">
+        <a href="#" id="prev-btn" style="background:#1a1410;color:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.15)">Ver mi tarjeta →</a>
+      </div>
+
+      <div class="email-footer" id="prev-footer">
+        <div class="socials" id="prev-socials" style="display:none">
+          <a href="#" style="background:#1a1410;color:#fff" id="sg-ig"><span class="material-symbols-outlined" style="font-size:16px">photo_camera</span></a>
+          <a href="#" style="background:#1a1410;color:#fff" id="sg-fb"><span class="material-symbols-outlined" style="font-size:16px">thumb_up</span></a>
+          <a href="#" style="background:#1a1410;color:#fff" id="sg-web"><span class="material-symbols-outlined" style="font-size:16px">language</span></a>
+        </div>
+        <div class="legal" id="prev-legal">Has recibido este email porque eres parte de nuestro programa de fidelización.<br>© 2026 Cookilleta</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Sync color picker ↔ text input
+document.querySelectorAll('.color-pair').forEach(pair => {
+  const color = pair.querySelector('input[type=color]');
+  const text = pair.querySelector('input[type=text]');
+  if (color && text) {
+    color.addEventListener('input', () => { text.value = color.value; updatePreview(); });
+    text.addEventListener('input', () => { if(/^#[0-9a-fA-F]{6}$/.test(text.value)) { color.value = text.value; updatePreview(); } });
+  }
+});
+
+// Toggle switches
+document.querySelectorAll('.switch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    sw.classList.toggle('on');
+    const id = sw.id;
+    if (id === 'ab-toggle') document.getElementById('ab-second').style.display = sw.classList.contains('on') ? 'flex' : 'none';
+    if (id === 'schedule-toggle') document.getElementById('schedule-fields').style.display = sw.classList.contains('on') ? 'grid' : 'none';
+    updatePreview();
+  });
+});
+
+// Template tabs
+document.querySelectorAll('.tpl-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Device toggle
+document.getElementById('dev-desktop').addEventListener('click', () => {
+  document.getElementById('email-frame').classList.remove('mobile');
+  document.getElementById('dev-desktop').classList.add('active');
+  document.getElementById('dev-mobile').classList.remove('active');
+});
+document.getElementById('dev-mobile').addEventListener('click', () => {
+  document.getElementById('email-frame').classList.add('mobile');
+  document.getElementById('dev-mobile').classList.add('active');
+  document.getElementById('dev-desktop').classList.remove('active');
+});
+
+// All inputs trigger preview update
+document.querySelectorAll('.editor input, .editor textarea, .editor select').forEach(el => {
+  el.addEventListener('input', updatePreview);
+  el.addEventListener('change', updatePreview);
+});
+
+function updatePreview() {
+  // Subject
+  const subj = document.getElementById('subject').value.replace('{nombre}', 'Ana');
+  document.getElementById('prev-subject').textContent = subj;
+
+  // Banner
+  const banner = document.getElementById('prev-banner');
+  banner.style.background = document.getElementById('banner-bg').value;
+  banner.style.color = document.getElementById('banner-text').value;
+  banner.style.minHeight = document.getElementById('banner-height').value + 'px';
+  document.getElementById('prev-banner-name').textContent = document.getElementById('banner-name').value;
+  const showLogo = document.getElementById('banner-logo-toggle').classList.contains('on');
+  document.getElementById('prev-logo').style.display = showLogo ? 'grid' : 'none';
+  document.getElementById('prev-logo').textContent = (document.getElementById('banner-name').value || 'C').charAt(0);
+  document.getElementById('prev-logo').style.color = document.getElementById('banner-text').value;
+
+  // Body
+  const body = document.getElementById('prev-body');
+  body.style.background = document.getElementById('body-bg').value;
+  body.style.color = document.getElementById('body-text').value;
+  body.style.fontFamily = document.getElementById('body-font').value + ', sans-serif';
+  document.getElementById('email-frame').style.background = document.getElementById('body-bg').value;
+  document.querySelectorAll('#prev-body .highlight').forEach(s => {
+    s.style.color = document.getElementById('body-highlight').value;
+  });
+
+  // Body text
+  const txt = document.getElementById('email-body').value;
+  const lines = txt.split('\n\n');
+  let html = '<p>Te echamos de menos, <strong>Ana</strong></p>';
+  lines.forEach(line => {
+    const replaced = line
+      .replace(/\{sellos\}/g, '<strong class="highlight">7 sellos</strong>')
+      .replace(/\{premio\}/g, '<strong class="highlight">café gratis</strong>')
+      .replace(/\{nombre\}/g, '<strong>Ana</strong>')
+      .replace(/\{negocio\}/g, '<strong>' + document.getElementById('banner-name').value + '</strong>')
+      .replace(/\n/g, '<br>');
+    html += '<p>' + replaced + '</p>';
+  });
+  // Re-insert blocks
+  const miniCardOn = document.getElementById('block-card').classList.contains('on');
+  const productsOn = document.getElementById('block-products').classList.contains('on');
+  const countdownOn = document.getElementById('block-countdown').classList.contains('on');
+  const qrOn = document.getElementById('block-qr').classList.contains('on');
+
+  let blocksHtml = '';
+  if (miniCardOn) blocksHtml += document.getElementById('prev-mini-card').outerHTML;
+  if (productsOn) blocksHtml += document.getElementById('prev-products').outerHTML.replace('display:none','');
+  if (countdownOn) blocksHtml += document.getElementById('prev-countdown').outerHTML.replace('display:none','');
+  if (qrOn) blocksHtml += document.getElementById('prev-qr').outerHTML.replace('display:none','');
+
+  body.innerHTML = html.replace('<p>Te esperamos', blocksHtml + '<p>Te esperamos');
+  // Re-apply highlight color
+  document.querySelectorAll('#prev-body .highlight').forEach(s => {
+    s.style.color = document.getElementById('body-highlight').value;
+  });
+
+  // Button
+  const btn = document.getElementById('prev-btn');
+  btn.textContent = document.getElementById('btn-text').value;
+  const btnStyle = document.getElementById('btn-style').value;
+  const btnBg = document.getElementById('btn-bg').value;
+  const btnColor = document.getElementById('btn-color').value;
+  const btnRadius = document.getElementById('btn-radius').value;
+  const btnShadow = document.getElementById('btn-shadow').value;
+
+  btn.style.borderRadius = btnRadius + 'px';
+  btn.style.color = btnColor;
+
+  if (btnStyle === 'solid') {
+    btn.style.background = btnBg;
+    btn.style.border = 'none';
+  } else if (btnStyle === 'gradient') {
+    btn.style.background = `linear-gradient(135deg, ${btnBg}, ${shadeColor(btnBg, 30)})`;
+    btn.style.border = 'none';
+  } else if (btnStyle === 'outline') {
+    btn.style.background = 'transparent';
+    btn.style.border = `2px solid ${btnBg}`;
+    btn.style.color = btnBg;
+  }
+
+  if (btnShadow === 'none') btn.style.boxShadow = 'none';
+  else if (btnShadow === 'soft') btn.style.boxShadow = '0 4px 14px rgba(0,0,0,.12)';
+  else if (btnShadow === 'strong') btn.style.boxShadow = '0 8px 24px rgba(0,0,0,.25)';
+
+  // Footer
+  const footer = document.getElementById('prev-footer');
+  footer.style.background = document.getElementById('footer-bg').value;
+  footer.style.color = document.getElementById('footer-text').value;
+  document.getElementById('prev-legal').innerHTML = document.getElementById('footer-text-content').value.replace(/\n/g,'<br>');
+
+  const ig = document.getElementById('social-ig').value;
+  const fb = document.getElementById('social-fb').value;
+  const web = document.getElementById('social-web').value;
+  const anySocial = ig || fb || web;
+  document.getElementById('prev-socials').style.display = anySocial ? 'flex' : 'none';
+  document.getElementById('sg-ig').style.display = ig ? 'grid' : 'none';
+  document.getElementById('sg-fb').style.display = fb ? 'grid' : 'none';
+  document.getElementById('sg-web').style.display = web ? 'grid' : 'none';
+}
+
+function shadeColor(color, percent) {
+  const num = parseInt(color.slice(1), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+  const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+  const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+  return '#' + (0x1000000 + R*0x10000 + G*0x100 + B).toString(16).slice(1);
+}
+
+updatePreview();
+</script>
+
+</body>
+</html>
