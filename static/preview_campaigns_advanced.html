@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview Campaigns Advanced — ZubCard</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4ede2;
+  --bg-2: #ede4d5;
+  --surface: #ffffff;
+  --ink: #1a1410;
+  --ink-2: #4a4239;
+  --ink-3: #8a7f71;
+  --line: #d9cdbc;
+  --line-soft: #e7ddcc;
+  --accent: #c8922a;
+  --green: #2da44e;
+  --red: #d73a49;
+  --blue: #0969da;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Geist', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); }
+body { padding: 24px; min-height: 100vh; }
+
+.shell { max-width: 1400px; margin: 0 auto; }
+.head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 14px; }
+h1 { font-family: var(--font-display); font-size: 32px; margin: 0; font-weight: 400; }
+h1 em { color: var(--accent); }
+.sub { font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+
+/* Tabs */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
+.tab {
+  padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2);
+  transition: all .2s;
+}
+.tab .material-symbols-outlined { font-size: 16px; }
+.tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tab:hover:not(.active) { border-color: var(--ink); }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Cards / panels */
+.card {
+  background: var(--surface); border-radius: 14px; padding: 22px;
+  box-shadow: 0 6px 20px rgba(26,20,16,.04); margin-bottom: 18px;
+}
+.card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.card-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0; }
+
+.btn {
+  padding: 9px 14px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); cursor: pointer; font-size: 12px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px; color: var(--ink);
+}
+.btn:hover { border-color: var(--ink); }
+.btn-dark { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.material-symbols-outlined { font-size: 16px; vertical-align: middle; }
+
+/* ═══════ ANALYTICS ═══════ */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.kpi {
+  background: var(--surface); padding: 16px; border-radius: 12px;
+  border: 1px solid var(--line-soft);
+}
+.kpi-label { font-size: 11px; color: var(--ink-3); letter-spacing: .12em; text-transform: uppercase; font-family: var(--font-mono); }
+.kpi-value { font-family: var(--font-display); font-size: 36px; line-height: 1; margin-top: 6px; }
+.kpi-delta { font-size: 12px; margin-top: 4px; font-weight: 700; }
+.kpi-delta.up { color: var(--green); }
+.kpi-delta.down { color: var(--red); }
+
+.chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 18px; }
+
+.bar-chart { padding: 14px; }
+.bar-chart .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bar-row .bar-label { width: 100px; font-size: 12px; color: var(--ink-2); }
+.bar-row .bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-row .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #e0a93b); border-radius: 4px; }
+.bar-row .bar-num { width: 60px; text-align: right; font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+
+.heatmap { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+.heat-cell { aspect-ratio: 1; border-radius: 2px; background: var(--bg); }
+
+.activity-list { padding: 0; }
+.activity-item {
+  padding: 10px 0; border-bottom: 1px solid var(--line-soft);
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-icon { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.activity-icon.open { background: #d4f4dc; color: #146c2e; }
+.activity-icon.click { background: #d0e8ff; color: #0a4d8c; }
+.activity-icon.unsub { background: #ffe2e0; color: #8c0a0a; }
+.activity-time { margin-left: auto; font-size: 11px; color: var(--ink-3); font-family: var(--font-mono); }
+
+/* ═══════ A/B TEST ═══════ */
+.ab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ab-variant {
+  border: 2px solid var(--line); border-radius: 12px; padding: 16px;
+  position: relative; transition: all .2s;
+}
+.ab-variant.winner { border-color: var(--green); background: #f0fdf4; }
+.ab-variant .ab-tag {
+  position: absolute; top: -10px; left: 14px; font-size: 10px;
+  padding: 4px 10px; border-radius: 999px; font-family: var(--font-mono);
+  letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+}
+.ab-tag.a { background: var(--ink); color: var(--bg); }
+.ab-tag.b { background: var(--accent); color: #fff; }
+.ab-tag.win { background: var(--green); color: #fff; }
+.ab-subj { font-weight: 700; font-size: 14px; margin-bottom: 12px; padding: 8px; background: var(--bg); border-radius: 6px; }
+.ab-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ab-stat-label { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .12em; }
+.ab-stat-val { font-family: var(--font-display); font-size: 24px; }
+
+/* ═══════ DRIP / AUTOMATION ═══════ */
+.drip-canvas {
+  background: var(--bg); border-radius: 12px; padding: 24px;
+  min-height: 500px; position: relative; overflow: auto;
+}
+.drip-node {
+  background: var(--surface); border: 2px solid var(--line);
+  border-radius: 12px; padding: 14px; width: 280px;
+  position: relative; cursor: grab;
+  box-shadow: 0 4px 12px rgba(26,20,16,.06);
+}
+.drip-node.trigger { border-color: var(--accent); }
+.drip-node.action { border-color: var(--ink); }
+.drip-node.delay { border-color: var(--ink-3); border-style: dashed; }
+.drip-node.condition { border-color: var(--blue); }
+.drip-node-head { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-3); text-transform: uppercase; font-family: var(--font-mono); letter-spacing: .12em; margin-bottom: 6px; }
+.drip-node-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.drip-node-desc { font-size: 12px; color: var(--ink-2); }
+
+.drip-flow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.drip-arrow { width: 2px; height: 24px; background: var(--line); position: relative; }
+.drip-arrow::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--line);
+}
+
+.drip-branch { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; max-width: 700px; }
+.drip-branch-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.drip-branch-label { font-family: var(--font-mono); font-size: 10px; padding: 4px 10px; border-radius: 999px; letter-spacing: .12em; text-transform: uppercase; }
+.branch-yes { background: #d4f4dc; color: #146c2e; }
+.branch-no { background: #ffe2e0; color: #8c0a0a; }
+
+/* ═══════ SEGMENTATION ═══════ */
+.seg-builder { background: var(--surface); border-radius: 12px; padding: 18px; }
+.seg-rule {
+  display: flex; gap: 8px; align-items: center; padding: 10px;
+  background: var(--bg); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.seg-rule select, .seg-rule input { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 12px; font-family: var(--font-ui); background: #fff; }
+.seg-rule .seg-and { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 700; padding: 0 8px; }
+.seg-result {
+  margin-top: 16px; padding: 14px; background: var(--ink); color: var(--bg);
+  border-radius: 10px; display: flex; justify-content: space-between; align-items: center;
+}
+.seg-result-num { font-family: var(--font-display); font-size: 32px; }
+
+.smart-segs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.smart-seg {
+  border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+  cursor: pointer; transition: all .2s;
+}
+.smart-seg:hover { border-color: var(--ink); }
+.smart-seg-icon { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; margin-bottom: 8px; background: var(--bg); }
+.smart-seg-name { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+.smart-seg-count { font-size: 11px; color: var(--ink-3); font-family: var(--font-mono); }
+
+/* ═══════ CUSTOMER PREVIEW ═══════ */
+.customer-picker {
+  display: flex; gap: 8px; align-items: center; padding: 14px;
+  background: var(--bg); border-radius: 10px; margin-bottom: 14px;
+}
+.customer-picker input {
+  flex: 1; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 8px; font-size: 13px; font-family: var(--font-ui); background: #fff;
+}
+.cp-grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+.cp-info { background: var(--surface); border-radius: 12px; padding: 18px; }
+.cp-info h3 { margin: 0 0 8px; font-size: 18px; font-family: var(--font-display); font-weight: 400; }
+.cp-stat { padding: 10px 0; border-bottom: 1px solid var(--line-soft); display: flex; justify-content: space-between; font-size: 13px; }
+.cp-stat:last-child { border-bottom: none; }
+.cp-stat .l { color: var(--ink-3); }
+.cp-stat .v { font-weight: 700; }
+
+.email-mock {
+  background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+.email-mock-meta { padding: 12px 18px; background: #fafafa; font-size: 12px; color: #666; border-bottom: 1px solid #eee; }
+.email-mock-banner { padding: 22px; background: #1a1410; color: #fff; }
+.email-mock-banner h2 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 400; }
+.email-mock-body { padding: 22px; line-height: 1.6; font-size: 14px; }
+.email-mock-body strong.dyn { color: #c8922a; background: #fff8e7; padding: 1px 5px; border-radius: 3px; }
+
+.toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 999px;
+  font-size: 13px; box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="head">
+    <div>
+      <h1>Campañas <em>avanzadas</em></h1>
+      <div class="sub">— Preview · fases siguientes</div>
+    </div>
+    <a class="btn" href="/static/preview_campaign_editor_v2.html">← Volver al editor v2</a>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="analytics"><span class="material-symbols-outlined">analytics</span> Analytics & tracking</div>
+    <div class="tab" data-tab="ab"><span class="material-symbols-outlined">science</span> A/B testing results</div>
+    <div class="tab" data-tab="drip"><span class="material-symbols-outlined">device_hub</span> Automatización (drip)</div>
+    <div class="tab" data-tab="seg"><span class="material-symbols-outlined">filter_alt</span> Segmentación</div>
+    <div class="tab" data-tab="customer"><span class="material-symbols-outlined">person_search</span> Vista cliente</div>
+    <div class="tab" data-tab="library"><span class="material-symbols-outlined">collections_bookmark</span> Biblioteca</div>
+  </div>
+
+
+  <!-- ════════════════ ANALYTICS ════════════════ -->
+  <div class="panel active" id="panel-analytics">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">📊 Campaña: Recuperar clientes inactivos</h2>
+        <div>
+          <span class="sub">Enviada hace 2 días · 248 destinatarios</span>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Enviados</div>
+          <div class="kpi-value">248</div>
+          <div class="kpi-delta">100%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Aperturas</div>
+          <div class="kpi-value">142</div>
+          <div class="kpi-delta up">↑ 57.3%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Clicks</div>
+          <div class="kpi-value">68</div>
+          <div class="kpi-delta up">↑ 27.4%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Conversiones</div>
+          <div class="kpi-value">21</div>
+          <div class="kpi-delta up">↑ 8.5%</div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="card" style="margin: 0">
+          <div class="card-title" style="font-size:16px;margin-bottom:14px">Aperturas por hora</div>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">8:00–10:00</span><div class="bar-track"><div class="bar-fill" style="width:34%"></div></div><span class="bar-num">28</span></div>
+            <div class="bar-row"><span class="bar-label">10:00–12:00</span><div class="bar-track"><div class="bar-fill" style="width:62%"></div></div><span class="bar-num">52</span></div>
+            <div class="bar-row"><span class="bar-label">12:00–14:00</span><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div><span class="bar-num">38</span></div>
+            <div class="bar-row"><span class="bar-label">14:00–16:00</span><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><span class="bar-num">14</span></div>
+            <div class="bar-row"><span class="bar-label">16:00–18:00</span><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="bar-num">10</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin: 0">
+          <div class="card-title" style="font-size:16px;margin-bottom:14px">Última actividad</div>
+          <div class="activity-list">
+            <div class="activity-item"><div class="activity-icon click"><span class="material-symbols-outlined">touch_app</span></div><div><strong>Ana M.</strong> hizo click en CTA</div><span class="activity-time">2m</span></div>
+            <div class="activity-item"><div class="activity-icon open"><span class="material-symbols-outlined">visibility</span></div><div><strong>Carlos R.</strong> abrió el email</div><span class="activity-time">12m</span></div>
+            <div class="activity-item"><div class="activity-icon click"><span class="material-symbols-outlined">touch_app</span></div><div><strong>Sofía L.</strong> hizo click en CTA</div><span class="activity-time">28m</span></div>
+            <div class="activity-item"><div class="activity-icon open"><span class="material-symbols-outlined">visibility</span></div><div><strong>Miguel V.</strong> abrió el email</div><span class="activity-time">1h</span></div>
+            <div class="activity-item"><div class="activity-icon unsub"><span class="material-symbols-outlined">close</span></div><div><strong>Laura P.</strong> se dio de baja</div><span class="activity-time">2h</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin: 0">
+        <div class="card-title" style="font-size:16px;margin-bottom:14px">Heatmap: cuándo abren tus clientes (últimos 30 días)</div>
+        <div class="heatmap" id="heatmap"></div>
+        <div style="display:flex;gap:14px;margin-top:12px;align-items:center;font-family:var(--font-mono);font-size:11px;color:var(--ink-3)">
+          <span>Menos</span>
+          <span style="display:flex;gap:2px">
+            <span style="width:14px;height:14px;background:var(--bg);border-radius:2px"></span>
+            <span style="width:14px;height:14px;background:#f4dba0;border-radius:2px"></span>
+            <span style="width:14px;height:14px;background:#e0a93b;border-radius:2px"></span>
+            <span style="width:14px;height:14px;background:#c8922a;border-radius:2px"></span>
+            <span style="width:14px;height:14px;background:#7a560f;border-radius:2px"></span>
+          </span>
+          <span>Más</span>
+          <span style="margin-left:auto"><strong>Mejor hora detectada:</strong> Martes 11:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ A/B TEST ════════════════ -->
+  <div class="panel" id="panel-ab">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">🧪 A/B Test: Asunto del email</h2>
+        <span class="sub">Test ejecutándose · 2/3 días</span>
+      </div>
+
+      <div class="ab-grid">
+        <div class="ab-variant winner">
+          <span class="ab-tag win">★ Ganador</span>
+          <div class="ab-subj">"Te echamos de menos, Ana 💛"</div>
+          <div class="ab-stats">
+            <div>
+              <div class="ab-stat-label">Aperturas</div>
+              <div class="ab-stat-val">62.4%</div>
+            </div>
+            <div>
+              <div class="ab-stat-label">Clicks</div>
+              <div class="ab-stat-val">31.8%</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:#dcfce7;border-radius:8px;font-size:12px;color:#146c2e;">
+            <strong>+18.5%</strong> sobre la variante B — alta confianza estadística
+          </div>
+        </div>
+
+        <div class="ab-variant">
+          <span class="ab-tag b">B</span>
+          <div class="ab-subj">"Tu tarjeta sigue esperándote"</div>
+          <div class="ab-stats">
+            <div>
+              <div class="ab-stat-label">Aperturas</div>
+              <div class="ab-stat-val">52.6%</div>
+            </div>
+            <div>
+              <div class="ab-stat-label">Clicks</div>
+              <div class="ab-stat-val">22.1%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn btn-dark"><span class="material-symbols-outlined">send</span> Enviar ganador al resto (180 personas)</button>
+        <button class="btn"><span class="material-symbols-outlined">timer</span> Esperar 1 día más</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ DRIP CAMPAIGNS ════════════════ -->
+  <div class="panel" id="panel-drip">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">⚡ Automatización: Onboarding de cliente nuevo</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn"><span class="material-symbols-outlined">add</span> Nuevo paso</button>
+          <button class="btn btn-primary"><span class="material-symbols-outlined">play_arrow</span> Activar</button>
+        </div>
+      </div>
+
+      <div class="drip-canvas">
+        <div class="drip-flow">
+          <div class="drip-node trigger" style="width:340px">
+            <div class="drip-node-head"><span class="material-symbols-outlined">flag</span> Trigger</div>
+            <div class="drip-node-title">Cliente se registra</div>
+            <div class="drip-node-desc">Cualquier nuevo registro en cualquier negocio</div>
+          </div>
+          <div class="drip-arrow"></div>
+
+          <div class="drip-node action">
+            <div class="drip-node-head"><span class="material-symbols-outlined">mail</span> Email</div>
+            <div class="drip-node-title">Email de bienvenida</div>
+            <div class="drip-node-desc">Template "Welcome" con sello de bienvenida</div>
+          </div>
+          <div class="drip-arrow"></div>
+
+          <div class="drip-node delay">
+            <div class="drip-node-head"><span class="material-symbols-outlined">schedule</span> Espera</div>
+            <div class="drip-node-title">3 días</div>
+            <div class="drip-node-desc">Después del email anterior</div>
+          </div>
+          <div class="drip-arrow"></div>
+
+          <div class="drip-node condition" style="width:340px">
+            <div class="drip-node-head"><span class="material-symbols-outlined">help</span> Condición</div>
+            <div class="drip-node-title">¿Tiene al menos 1 sello?</div>
+            <div class="drip-node-desc">Verificar visitas desde el registro</div>
+          </div>
+
+          <div class="drip-branch">
+            <div class="drip-branch-col">
+              <div class="drip-arrow"></div>
+              <span class="drip-branch-label branch-yes">SÍ</span>
+              <div class="drip-node action">
+                <div class="drip-node-head"><span class="material-symbols-outlined">mail</span> Email</div>
+                <div class="drip-node-title">"¡Gracias por volver!"</div>
+                <div class="drip-node-desc">Recordatorio del premio</div>
+              </div>
+              <div class="drip-arrow"></div>
+              <div class="drip-node action">
+                <div class="drip-node-head"><span class="material-symbols-outlined">stop</span> Fin</div>
+                <div class="drip-node-title">Termina secuencia</div>
+              </div>
+            </div>
+            <div class="drip-branch-col">
+              <div class="drip-arrow"></div>
+              <span class="drip-branch-label branch-no">NO</span>
+              <div class="drip-node action">
+                <div class="drip-node-head"><span class="material-symbols-outlined">redeem</span> Email + cupón</div>
+                <div class="drip-node-title">"Vuelve y consigue 10% off"</div>
+                <div class="drip-node-desc">Cupón único por 7 días</div>
+              </div>
+              <div class="drip-arrow"></div>
+              <div class="drip-node delay">
+                <div class="drip-node-head"><span class="material-symbols-outlined">schedule</span> Espera</div>
+                <div class="drip-node-title">7 días</div>
+              </div>
+              <div class="drip-arrow"></div>
+              <div class="drip-node action">
+                <div class="drip-node-head"><span class="material-symbols-outlined">notifications</span> Push</div>
+                <div class="drip-node-title">Last call</div>
+                <div class="drip-node-desc">Notificación final</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)">
+        <span><strong style="color:var(--ink)">5</strong> personas en este flujo ahora</span>
+        <span><strong style="color:var(--ink)">142</strong> completaron el último mes</span>
+        <span><strong style="color:var(--green)">38%</strong> tasa de conversión</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">Plantillas de automatización</h2>
+        <span class="sub">— click para usar</span>
+      </div>
+      <div class="smart-segs">
+        <div class="smart-seg">
+          <div class="smart-seg-icon">🎉</div>
+          <div class="smart-seg-name">Bienvenida nuevo cliente</div>
+          <div class="smart-seg-count">3 emails · 7 días</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">🎂</div>
+          <div class="smart-seg-name">Cumpleaños</div>
+          <div class="smart-seg-count">1 email · disparo en fecha</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">💔</div>
+          <div class="smart-seg-name">Win-back inactivos</div>
+          <div class="smart-seg-count">2 emails · 30 días sin visita</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">🏆</div>
+          <div class="smart-seg-name">Felicitar al canjear premio</div>
+          <div class="smart-seg-count">1 email · disparo al canje</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">⏰</div>
+          <div class="smart-seg-name">Recordatorio sellos por expirar</div>
+          <div class="smart-seg-count">1 email · 7 días antes</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">⭐</div>
+          <div class="smart-seg-name">Pedir reseña Google</div>
+          <div class="smart-seg-count">1 email · al canjear premio</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ SEGMENTATION ════════════════ -->
+  <div class="panel" id="panel-seg">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">🎯 Segmentación avanzada</h2>
+        <button class="btn btn-dark"><span class="material-symbols-outlined">save</span> Guardar segmento</button>
+      </div>
+
+      <div class="seg-builder">
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase">— Cliente cumple TODAS estas reglas:</div>
+
+        <div class="seg-rule">
+          <select><option>Sellos totales</option></select>
+          <select><option>mayor que</option></select>
+          <input type="number" value="5" style="width:80px">
+          <button class="btn" style="margin-left:auto;padding:5px 8px"><span class="material-symbols-outlined">close</span></button>
+        </div>
+
+        <div class="seg-rule">
+          <select><option>Última visita</option></select>
+          <select><option>hace más de</option></select>
+          <input type="number" value="14" style="width:80px">
+          <select><option>días</option></select>
+          <button class="btn" style="margin-left:auto;padding:5px 8px"><span class="material-symbols-outlined">close</span></button>
+        </div>
+
+        <div class="seg-rule">
+          <select><option>Tiene email opt-in</option></select>
+          <select><option>=</option></select>
+          <select><option>Sí</option></select>
+          <button class="btn" style="margin-left:auto;padding:5px 8px"><span class="material-symbols-outlined">close</span></button>
+        </div>
+
+        <div class="seg-rule">
+          <select><option>Cumpleaños</option></select>
+          <select><option>en los próximos</option></select>
+          <input type="number" value="7" style="width:80px">
+          <select><option>días</option></select>
+          <button class="btn" style="margin-left:auto;padding:5px 8px"><span class="material-symbols-outlined">close</span></button>
+        </div>
+
+        <button class="btn" style="margin-top:6px"><span class="material-symbols-outlined">add</span> Añadir regla</button>
+
+        <div class="seg-result">
+          <div>
+            <div style="font-size:11px;opacity:.7;letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-mono)">Clientes que cumplen</div>
+            <div class="seg-result-num">87</div>
+          </div>
+          <button class="btn btn-primary"><span class="material-symbols-outlined">campaign</span> Crear campaña con este segmento</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">Segmentos inteligentes (auto-actualizables)</h2>
+      </div>
+      <div class="smart-segs">
+        <div class="smart-seg">
+          <div class="smart-seg-icon">🔥</div>
+          <div class="smart-seg-name">VIP — top 10% sellos</div>
+          <div class="smart-seg-count">28 clientes</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">😴</div>
+          <div class="smart-seg-name">Inactivos — sin visita 30+ días</div>
+          <div class="smart-seg-count">142 clientes</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">🆕</div>
+          <div class="smart-seg-name">Nuevos — registro últimos 7 días</div>
+          <div class="smart-seg-count">23 clientes</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">🎂</div>
+          <div class="smart-seg-name">Cumpleaños este mes</div>
+          <div class="smart-seg-count">19 clientes</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">⚡</div>
+          <div class="smart-seg-name">Cerca del premio (8+/10 sellos)</div>
+          <div class="smart-seg-count">34 clientes</div>
+        </div>
+        <div class="smart-seg">
+          <div class="smart-seg-icon">💎</div>
+          <div class="smart-seg-name">Acaban de canjear</div>
+          <div class="smart-seg-count">12 clientes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ CUSTOMER PREVIEW ════════════════ -->
+  <div class="panel" id="panel-customer">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">👁 Vista previa con datos reales</h2>
+        <span class="sub">— Ve el email exactamente como lo recibirá un cliente concreto</span>
+      </div>
+
+      <div class="customer-picker">
+        <span class="material-symbols-outlined" style="color:var(--ink-3)">search</span>
+        <input type="text" value="Ana Martínez · ana.m@email.com" placeholder="Buscar cliente...">
+        <button class="btn">Buscar otro</button>
+      </div>
+
+      <div class="cp-grid">
+        <div class="cp-info">
+          <h3>Ana Martínez</h3>
+          <div style="font-size:12px;color:var(--ink-3);margin-bottom:14px">ana.m@email.com</div>
+          <div class="cp-stat"><span class="l">Sellos actuales</span><span class="v">7/10</span></div>
+          <div class="cp-stat"><span class="l">Premio próximo</span><span class="v">Café gratis</span></div>
+          <div class="cp-stat"><span class="l">Sellos totales</span><span class="v">23</span></div>
+          <div class="cp-stat"><span class="l">Última visita</span><span class="v">Hace 12 días</span></div>
+          <div class="cp-stat"><span class="l">Premios canjeados</span><span class="v">2</span></div>
+          <div class="cp-stat"><span class="l">Cumpleaños</span><span class="v">15 jun</span></div>
+          <div class="cp-stat"><span class="l">Idioma</span><span class="v">ES</span></div>
+          <div class="cp-stat"><span class="l">Opt-in email</span><span class="v" style="color:var(--green)">✓ Sí</span></div>
+        </div>
+
+        <div class="email-mock">
+          <div class="email-mock-meta">Para: <strong>ana.m@email.com</strong> · Asunto: <strong>Te echamos de menos, Ana 💛</strong></div>
+          <div class="email-mock-banner">
+            <h2>Cookilleta</h2>
+          </div>
+          <div class="email-mock-body">
+            <p><strong style="font-size:18px">¡Buenas tardes, <span class="dyn">Ana</span>!</strong></p>
+            <p>Hace <span class="dyn">12 días</span> que no nos visitas y queremos invitarte a volver. Tu tarjeta sigue esperándote con <span class="dyn">7 sellos</span> acumulados.</p>
+            <p>Vuelve esta semana y completa tu <span class="dyn">café gratis</span>.</p>
+            <div style="background:#f7f3ed;border-radius:10px;padding:14px;margin:16px 0;text-align:center">
+              <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#999;font-family:monospace;margin-bottom:6px">Tu código personal</div>
+              <div style="font-family:monospace;font-size:22px;font-weight:800;letter-spacing:.1em">ANA-7B2X-9</div>
+              <div style="font-size:11px;color:#888;margin-top:4px">Válido hasta el 15 de mayo · 1 uso</div>
+            </div>
+            <p>Te quedan <strong>3 sellos</strong> para tu premio.</p>
+            <p style="text-align:center;margin:24px 0">
+              <a href="#" style="display:inline-block;background:#1a1410;color:#fff;padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:800">Ver mi tarjeta →</a>
+            </p>
+            <p>Te esperamos,<br><strong>Cookilleta</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff8e7;border-radius:10px;font-size:13px;color:#7a560f;display:flex;gap:10px;align-items:center">
+        <span class="material-symbols-outlined">lightbulb</span>
+        Las palabras <strong>resaltadas en amarillo</strong> son variables dinámicas. Cada cliente verá las suyas.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ LIBRARY ════════════════ -->
+  <div class="panel" id="panel-library">
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">📚 Biblioteca de campañas</h2>
+        <button class="btn btn-dark"><span class="material-symbols-outlined">add</span> Nueva campaña</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px">
+        <div class="card" style="margin:0;cursor:pointer">
+          <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#1a1410,#4a4239);margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-size:22px">Bienvenida</div>
+          <div style="font-weight:700;margin-bottom:4px">Onboarding nuevo cliente</div>
+          <div style="font-size:11px;color:var(--ink-3);font-family:var(--font-mono);letter-spacing:.08em">Mi plantilla · 47 envíos</div>
+        </div>
+        <div class="card" style="margin:0;cursor:pointer">
+          <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#d0abf8,#fef9e3);margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-size:22px">Promo verano</div>
+          <div style="font-weight:700;margin-bottom:4px">Promo de temporada</div>
+          <div style="font-size:11px;color:var(--ink-3);font-family:var(--font-mono);letter-spacing:.08em">Mi plantilla · 124 envíos</div>
+        </div>
+        <div class="card" style="margin:0;cursor:pointer">
+          <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#c8922a,#f4dba0);margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-size:22px">🎂</div>
+          <div style="font-weight:700;margin-bottom:4px">Cumpleaños</div>
+          <div style="font-size:11px;color:var(--ink-3);font-family:var(--font-mono);letter-spacing:.08em">Mi plantilla · 89 envíos</div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">— Galería ZubCard (plantillas pre-hechas)</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="card" style="margin:0;cursor:pointer;padding:14px">
+          <div style="height:80px;border-radius:6px;background:#fff8e7;margin-bottom:8px;display:grid;place-items:center;font-size:24px">⭐</div>
+          <div style="font-weight:700;font-size:12px">Pedir reseña</div>
+        </div>
+        <div class="card" style="margin:0;cursor:pointer;padding:14px">
+          <div style="height:80px;border-radius:6px;background:#fff8e7;margin-bottom:8px;display:grid;place-items:center;font-size:24px">🆕</div>
+          <div style="font-weight:700;font-size:12px">Nuevo producto</div>
+        </div>
+        <div class="card" style="margin:0;cursor:pointer;padding:14px">
+          <div style="height:80px;border-radius:6px;background:#fff8e7;margin-bottom:8px;display:grid;place-items:center;font-size:24px">📅</div>
+          <div style="font-weight:700;font-size:12px">Evento especial</div>
+        </div>
+        <div class="card" style="margin:0;cursor:pointer;padding:14px">
+          <div style="height:80px;border-radius:6px;background:#fff8e7;margin-bottom:8px;display:grid;place-items:center;font-size:24px">🎁</div>
+          <div style="font-weight:700;font-size:12px">Regalo sorpresa</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2 class="card-title">📜 Historial de campañas enviadas</h2>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="text-align:left;border-bottom:1px solid var(--line-soft);font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)">
+            <th style="padding:10px 8px">Campaña</th>
+            <th style="padding:10px 8px">Enviada</th>
+            <th style="padding:10px 8px;text-align:right">Destinatarios</th>
+            <th style="padding:10px 8px;text-align:right">Aperturas</th>
+            <th style="padding:10px 8px;text-align:right">Clicks</th>
+            <th style="padding:10px 8px;text-align:right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line-soft)"><td style="padding:12px 8px;font-weight:600">Recuperar inactivos abril</td><td>Hace 2 días</td><td style="text-align:right">248</td><td style="text-align:right;color:var(--green);font-weight:700">57.3%</td><td style="text-align:right;color:var(--green);font-weight:700">27.4%</td><td style="text-align:right"><button class="btn" style="padding:5px 10px;font-size:11px">Duplicar</button></td></tr>
+          <tr style="border-bottom:1px solid var(--line-soft)"><td style="padding:12px 8px;font-weight:600">Caja 4 — promo lanzamiento</td><td>Hace 6 días</td><td style="text-align:right">412</td><td style="text-align:right;color:var(--green);font-weight:700">48.2%</td><td style="text-align:right;color:var(--accent);font-weight:700">19.8%</td><td style="text-align:right"><button class="btn" style="padding:5px 10px;font-size:11px">Duplicar</button></td></tr>
+          <tr style="border-bottom:1px solid var(--line-soft)"><td style="padding:12px 8px;font-weight:600">Cumpleaños marzo</td><td>Hace 1 mes</td><td style="text-align:right">19</td><td style="text-align:right;color:var(--green);font-weight:700">73.7%</td><td style="text-align:right;color:var(--green);font-weight:700">52.6%</td><td style="text-align:right"><button class="btn" style="padding:5px 10px;font-size:11px">Duplicar</button></td></tr>
+          <tr><td style="padding:12px 8px;font-weight:600">Reseña Google — pilot</td><td>Hace 1 mes</td><td style="text-align:right">38</td><td style="text-align:right;color:var(--green);font-weight:700">68.4%</td><td style="text-align:right;color:var(--green);font-weight:700">31.6%</td><td style="text-align:right"><button class="btn" style="padding:5px 10px;font-size:11px">Duplicar</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Heatmap dummy data
+const heatmap = document.getElementById('heatmap');
+if (heatmap) {
+  const colors = ['var(--bg)', '#f4dba0', '#e0a93b', '#c8922a', '#7a560f'];
+  // 7 days × 24 hours = 168 cells, but show as 24 cells × 7 rows
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      const cell = document.createElement('div');
+      cell.className = 'heat-cell';
+      // Higher activity 9-13h on weekdays
+      let intensity = 0;
+      if (h >= 9 && h <= 13 && d < 5) intensity = Math.floor(Math.random() * 3) + 2;
+      else if (h >= 17 && h <= 20) intensity = Math.floor(Math.random() * 2) + 1;
+      else intensity = Math.random() > 0.7 ? 1 : 0;
+      cell.style.background = colors[intensity];
+      heatmap.appendChild(cell);
+    }
+  }
+}
+</script>
+
+</body>
+</html>
