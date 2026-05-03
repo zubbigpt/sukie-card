@@ -4533,6 +4533,83 @@ async function startCheckout(e) {
           </div>
           <input id="cmp-cta-url" class="field-input" placeholder="URL del botón (opcional) — ej: https://tutienda.com/oferta" oninput="campUpdatePreview()" style="margin-top:8px;font-size:.78rem">
         </div>
+
+        <!-- ─── PERSONALIZACIÓN AVANZADA (collapsible) ─── -->
+        <details id="cmp-adv-banner" style="border:1px solid var(--cream-border);border-radius:6px;padding:10px 12px">
+          <summary style="cursor:pointer;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:.9rem">view_day</span> Banner del email</summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+            <!-- Logo upload -->
+            <div>
+              <label style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--brown-light);display:block;margin-bottom:4px">Logo de la empresa</label>
+              <div id="cmp-logo-dropzone" style="border:1.5px dashed var(--cream-border);border-radius:6px;padding:10px;text-align:center;cursor:pointer;font-size:.72rem;color:var(--brown)" onclick="document.getElementById('cmp-logo-file').click()">
+                <div id="cmp-logo-empty">
+                  <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--brown-light);vertical-align:middle">image</span>
+                  Subir logo (PNG/JPG · cuadrado recomendado)
+                </div>
+                <div id="cmp-logo-preview" style="display:none">
+                  <img id="cmp-logo-img" style="max-height:48px;max-width:100%;border-radius:6px;background:#fff;padding:4px">
+                  <button class="btn-sm btn-ghost" style="font-size:.65rem;margin-left:6px;color:var(--red)" onclick="event.stopPropagation();campClearLogo()">Quitar</button>
+                </div>
+              </div>
+              <input type="file" id="cmp-logo-file" accept="image/*" style="display:none" onchange="campUploadLogo(this.files[0])">
+              <input type="hidden" id="cmp-logo-url">
+            </div>
+            <!-- Banner colors -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+                <span>Fondo:</span>
+                <input type="color" id="cmp-banner-bg" value="#26170c" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+              </label>
+              <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+                <span>Texto:</span>
+                <input type="color" id="cmp-banner-text" value="#ffffff" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+              </label>
+              <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:4px">
+                <span>Altura:</span>
+                <input type="number" id="cmp-banner-height" value="60" min="40" max="200" oninput="campUpdatePreview()" style="width:55px;padding:3px 6px;border:1.5px solid var(--cream-border);border-radius:4px;font-size:.72rem;background:white">
+                <span style="color:var(--brown-light)">px</span>
+              </label>
+            </div>
+            <input id="cmp-banner-name" class="field-input" placeholder="Texto del banner (vacío = nombre del negocio)" oninput="campUpdatePreview()" style="font-size:.78rem">
+          </div>
+        </details>
+
+        <details id="cmp-adv-body" style="border:1px solid var(--cream-border);border-radius:6px;padding:10px 12px">
+          <summary style="cursor:pointer;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:.9rem">format_color_fill</span> Cuerpo del email</summary>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+            <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+              <span>Fondo:</span>
+              <input type="color" id="cmp-body-bg" value="#ffffff" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+            </label>
+            <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+              <span>Texto:</span>
+              <input type="color" id="cmp-body-text" value="#26170c" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+            </label>
+            <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+              <span>Links:</span>
+              <input type="color" id="cmp-body-link" value="#b5651d" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+            </label>
+          </div>
+        </details>
+
+        <details id="cmp-adv-footer" style="border:1px solid var(--cream-border);border-radius:6px;padding:10px 12px">
+          <summary style="cursor:pointer;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--brown);display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:.9rem">space_bar</span> Footer</summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+                <span>Fondo:</span>
+                <input type="color" id="cmp-footer-bg" value="#faf7f3" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+              </label>
+              <label style="font-size:.7rem;color:var(--brown);display:inline-flex;align-items:center;gap:5px;cursor:pointer">
+                <span>Texto:</span>
+                <input type="color" id="cmp-footer-text" value="#888888" oninput="campUpdatePreview()" style="width:30px;height:26px;border:1.5px solid var(--cream-border);border-radius:4px;cursor:pointer;padding:0">
+              </label>
+            </div>
+            <input id="cmp-footer-ig" class="field-input" placeholder="Instagram URL (opcional)" oninput="campUpdatePreview()" style="font-size:.75rem">
+            <input id="cmp-footer-fb" class="field-input" placeholder="Facebook URL (opcional)" oninput="campUpdatePreview()" style="font-size:.75rem">
+            <input id="cmp-footer-web" class="field-input" placeholder="Web URL (opcional)" oninput="campUpdatePreview()" style="font-size:.75rem">
+          </div>
+        </details>
       </div>
       <!-- ── PREVIEW PANE ── -->
       <div class="camp-preview-pane">
@@ -7659,7 +7736,23 @@ async function editCampaign(id){
     const ctaFull=document.getElementById('cmp-cta-full'); if(ctaFull) ctaFull.checked=!!c.cta_full;
     const ctaRadius=document.getElementById('cmp-cta-radius'); if(ctaRadius && c.cta_radius) ctaRadius.value=c.cta_radius;
     const ctaUrl=document.getElementById('cmp-cta-url'); if(ctaUrl) ctaUrl.value=c.cta_url||'';
+    // Customization v2 fields
+    const setVal=(id,v)=>{const el=document.getElementById(id);if(el && v!==undefined && v!==null && v!=='') el.value=v;};
+    setVal('cmp-logo-url',     c.logo_url);
+    setVal('cmp-banner-bg',    c.banner_bg);
+    setVal('cmp-banner-text',  c.banner_text);
+    setVal('cmp-banner-height',c.banner_height);
+    setVal('cmp-banner-name',  c.banner_name);
+    setVal('cmp-body-bg',      c.body_bg);
+    setVal('cmp-body-text',    c.body_text);
+    setVal('cmp-body-link',    c.body_link);
+    setVal('cmp-footer-bg',    c.footer_bg);
+    setVal('cmp-footer-text',  c.footer_text);
+    setVal('cmp-footer-ig',    c.footer_ig);
+    setVal('cmp-footer-fb',    c.footer_fb);
+    setVal('cmp-footer-web',   c.footer_web);
     if(typeof campRefreshImagePreview==='function') campRefreshImagePreview();
+    if(typeof campRefreshLogoPreview==='function') campRefreshLogoPreview();
     openCampModal();
     campUpdatePreview();
   }catch(e){ showToast('Error cargando campaña','error'); }
@@ -7834,6 +7927,41 @@ function campClearImage(){
   campRefreshImagePreview();
   campUpdatePreview();
 }
+// ─── Logo upload (banner customization v2) ───
+async function campUploadLogo(file){
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ showToast('El archivo debe ser una imagen','error'); return; }
+  if(file.size > 4*1024*1024){ showToast('Logo máx 4MB','error'); return; }
+  const fd=new FormData(); fd.append('file', file);
+  try{
+    const r=await fetch(`${BASE}/api/biz/${BIZ_SLUG}/campaigns/upload-image?pin=${PIN}`,{method:'POST', body:fd});
+    const data=await r.json();
+    if(!r.ok){ showToast(data.detail||'Error subiendo logo','error'); return; }
+    const url=data.url || data.image_url;
+    const hidden=document.getElementById('cmp-logo-url');
+    if(hidden) hidden.value=url;
+    campRefreshLogoPreview();
+    campUpdatePreview();
+    showToast('Logo subido','ok');
+  }catch(e){ showToast('Error de red','error'); }
+}
+function campRefreshLogoPreview(){
+  const url=document.getElementById('cmp-logo-url')?.value||'';
+  const empty=document.getElementById('cmp-logo-empty');
+  const prev=document.getElementById('cmp-logo-preview');
+  const img=document.getElementById('cmp-logo-img');
+  if(!empty||!prev||!img) return;
+  if(url){ empty.style.display='none'; prev.style.display=''; img.src=url; }
+  else{ empty.style.display=''; prev.style.display='none'; img.src=''; }
+}
+function campClearLogo(){
+  const hidden=document.getElementById('cmp-logo-url');
+  if(hidden) hidden.value='';
+  const fileInp=document.getElementById('cmp-logo-file');
+  if(fileInp) fileInp.value='';
+  campRefreshLogoPreview();
+  campUpdatePreview();
+}
 // Drag-and-drop binding (runs once on modal open)
 function _bindImgDropzone(){
   const dz=document.getElementById('cmp-img-dropzone');
@@ -7891,19 +8019,43 @@ function campUpdatePreview(){
   const ctaColor=document.getElementById('cmp-cta-color')?.value||'#b5651d';
   const ctaFull=document.getElementById('cmp-cta-full')?.checked||false;
   const ctaRadius=document.getElementById('cmp-cta-radius')?.value||'8';
+  // ─── New customization fields ───
+  const logoUrl   = document.getElementById('cmp-logo-url')?.value||'';
+  const bannerBg  = document.getElementById('cmp-banner-bg')?.value||'#26170c';
+  const bannerText= document.getElementById('cmp-banner-text')?.value||'#ffffff';
+  const bannerH   = parseInt(document.getElementById('cmp-banner-height')?.value)||60;
+  const bannerName= (document.getElementById('cmp-banner-name')?.value||'').trim();
+  const bodyBg   = document.getElementById('cmp-body-bg')?.value||'#ffffff';
+  const bodyText = document.getElementById('cmp-body-text')?.value||'#26170c';
+  const bodyLink = document.getElementById('cmp-body-link')?.value||'#b5651d';
+  const footBg   = document.getElementById('cmp-footer-bg')?.value||'#faf7f3';
+  const footText = document.getElementById('cmp-footer-text')?.value||'#888888';
+  const footIg   = document.getElementById('cmp-footer-ig')?.value||'';
+  const footFb   = document.getElementById('cmp-footer-fb')?.value||'';
+  const footWeb  = document.getElementById('cmp-footer-web')?.value||'';
   const pv=document.getElementById('cmp-preview');
   if(!pv) return;
+  const bizDisplayName = bannerName || '{{ biz_name }}';
   const imgHtml=imgUrl?`<img src="${imgUrl}" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.style.display='none'">`:'';
+  const logoHtml = logoUrl?`<img src="${logoUrl}" style="width:${Math.max(28,bannerH-24)}px;height:${Math.max(28,bannerH-24)}px;border-radius:50%;object-fit:cover;background:#fff;padding:3px;flex-shrink:0">`:'';
   const ctaHtml=cta?`<div style="padding:4px 24px 24px;text-align:center"><span style="display:${ctaFull?'block':'inline-block'};background:${ctaColor};color:#fff;padding:12px 28px;border-radius:${ctaRadius}px;font-weight:700;font-size:.85rem;letter-spacing:.03em;text-decoration:none">${_campSubstitutePreviewText(cta)}</span></div>`:'';
+  // Footer socials
+  const socialsArr = [];
+  if(footIg) socialsArr.push(`<a href="${footIg}" style="color:${footText};text-decoration:none;margin:0 6px;font-weight:700">IG</a>`);
+  if(footFb) socialsArr.push(`<a href="${footFb}" style="color:${footText};text-decoration:none;margin:0 6px;font-weight:700">FB</a>`);
+  if(footWeb)socialsArr.push(`<a href="${footWeb}" style="color:${footText};text-decoration:none;margin:0 6px;font-weight:700">Web</a>`);
+  const socialsHtml = socialsArr.length?`<div style="margin-bottom:8px">${socialsArr.join('·')}</div>`:'';
   pv.innerHTML=`
     <div class="ep-meta">Para: cliente@email.com &nbsp;·&nbsp; Asunto: <strong>${_campSubstitutePreviewText(subj)}</strong></div>
-    <div class="ep-chrome">
+    <div class="ep-chrome" style="background:${bodyBg};color:${bodyText}">
       ${imgHtml}
-      <div class="ep-header-bar"><h2>${'{{ biz_name }}'}</h2></div>
-      <div class="ep-body-content">${_campSubstitutePreviewVars(body)}</div>
+      <div class="ep-header-bar" style="background:${bannerBg};color:${bannerText};min-height:${bannerH}px;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 20px"><div style="display:flex;align-items:center;gap:12px">${logoHtml}<h2 style="color:${bannerText};margin:0">${bizDisplayName}</h2></div></div>
+      <div class="ep-body-content" style="color:${bodyText}">${_campSubstitutePreviewVars(body)}</div>
       ${ctaHtml}
-      <div class="ep-footer-bar">Has recibido este email porque eres parte de nuestro programa de fidelización.<br>© 2026 ${'{{ biz_name }}'}</div>
+      <div class="ep-footer-bar" style="background:${footBg};color:${footText}">${socialsHtml}Has recibido este email porque eres parte de nuestro programa de fidelización.<br>© 2026 ${bizDisplayName}</div>
     </div>`;
+  // Apply link color to body
+  pv.querySelectorAll('.ep-body-content a').forEach(a=>a.style.color=bodyLink);
 }
 async function campSave(action){
   const name=document.getElementById('cmp-name')?.value.trim();
@@ -7924,6 +8076,20 @@ async function campSave(action){
   const cta_full=document.getElementById('cmp-cta-full')?.checked||false;
   const cta_radius=document.getElementById('cmp-cta-radius')?.value||'8';
   const cta_url=document.getElementById('cmp-cta-url')?.value||'';
+  // ─── Customization v2 ───
+  const logo_url     = document.getElementById('cmp-logo-url')?.value||'';
+  const banner_bg    = document.getElementById('cmp-banner-bg')?.value||'';
+  const banner_text  = document.getElementById('cmp-banner-text')?.value||'';
+  const banner_height= document.getElementById('cmp-banner-height')?.value||'';
+  const banner_name  = document.getElementById('cmp-banner-name')?.value||'';
+  const body_bg      = document.getElementById('cmp-body-bg')?.value||'';
+  const body_text    = document.getElementById('cmp-body-text')?.value||'';
+  const body_link    = document.getElementById('cmp-body-link')?.value||'';
+  const footer_bg    = document.getElementById('cmp-footer-bg')?.value||'';
+  const footer_text  = document.getElementById('cmp-footer-text')?.value||'';
+  const footer_ig    = document.getElementById('cmp-footer-ig')?.value||'';
+  const footer_fb    = document.getElementById('cmp-footer-fb')?.value||'';
+  const footer_web   = document.getElementById('cmp-footer-web')?.value||'';
   // sync hidden fields for backward compat
   const hn=document.getElementById('nc-name'); if(hn) hn.value=name;
   const hs=document.getElementById('nc-subject'); if(hs) hs.value=subject;
@@ -7939,7 +8105,10 @@ async function campSave(action){
     const r=await fetch(url,{
       method,headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,subject,body,segment,type:campType,status,
-        image_url:img_url, cta_text:cta, cta_color, cta_full, cta_radius, cta_url})
+        image_url:img_url, cta_text:cta, cta_color, cta_full, cta_radius, cta_url,
+        logo_url, banner_bg, banner_text, banner_height, banner_name,
+        body_bg, body_text, body_link,
+        footer_bg, footer_text, footer_ig, footer_fb, footer_web})
     });
     const data=await r.json();
     if(!r.ok){

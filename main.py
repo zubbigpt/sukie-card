@@ -6671,6 +6671,25 @@ def _pack_campaign_meta(payload: dict, body: str) -> str:
             "radius": str(payload.get("cta_radius") or "8"),
             "url":    (payload.get("cta_url") or "").strip(),
         }
+    # ─── Customization v2: banner / body / footer ───
+    banner = {}
+    for k_in, k_out in [("logo_url","logo"), ("banner_bg","bg"), ("banner_text","text"),
+                         ("banner_height","height"), ("banner_name","name")]:
+        v = (payload.get(k_in) or "")
+        if isinstance(v, str): v = v.strip()
+        if v not in ("", None): banner[k_out] = v
+    if banner: meta["banner"] = banner
+    body_style = {}
+    for k_in, k_out in [("body_bg","bg"), ("body_text","text"), ("body_link","link")]:
+        v = (payload.get(k_in) or "").strip()
+        if v: body_style[k_out] = v
+    if body_style: meta["body_style"] = body_style
+    footer = {}
+    for k_in, k_out in [("footer_bg","bg"), ("footer_text","text"),
+                         ("footer_ig","ig"), ("footer_fb","fb"), ("footer_web","web")]:
+        v = (payload.get(k_in) or "").strip()
+        if v: footer[k_out] = v
+    if footer: meta["footer"] = footer
     if not meta:
         return body or ""
     import json as _json
@@ -6720,15 +6739,47 @@ def _render_campaign_email_html(biz, body_content_html: str, meta: dict,
     """Wrap the user-written body with a styled email chrome (header, CTA, footer).
     Uses the same design as the preview in the dashboard for consistency."""
     biz_name = getattr(biz, "name", None) or "ZubCard"
-    header_bg = "#26170c"
-    header_color = "#ffffff"
+    # ─── Banner customization (v2) ───
+    banner_meta = (meta.get("banner") if isinstance(meta, dict) else {}) or {}
+    header_bg    = banner_meta.get("bg")    or "#26170c"
+    header_color = banner_meta.get("text")  or "#ffffff"
+    banner_height= banner_meta.get("height") or "60"
+    try: banner_height = int(banner_height)
+    except: banner_height = 60
+    banner_name  = (banner_meta.get("name") or "").strip() or biz_name
+    logo_url     = (banner_meta.get("logo") or "").strip()
+    # Body styling
+    body_style = (meta.get("body_style") if isinstance(meta, dict) else {}) or {}
+    body_bg    = body_style.get("bg")   or "#ffffff"
+    body_text  = body_style.get("text") or "#26170c"
+    body_link  = body_style.get("link") or "#b5651d"
+    # Footer
+    footer_meta = (meta.get("footer") if isinstance(meta, dict) else {}) or {}
+    foot_bg   = footer_meta.get("bg")   or "#faf7f3"
+    foot_text = footer_meta.get("text") or "#888888"
+    foot_ig   = (footer_meta.get("ig")  or "").strip()
+    foot_fb   = (footer_meta.get("fb")  or "").strip()
+    foot_web  = (footer_meta.get("web") or "").strip()
+    socials_parts = []
+    if foot_ig:  socials_parts.append(f'<a href="{foot_ig}" style="color:{foot_text};text-decoration:none;margin:0 6px;font-weight:700">Instagram</a>')
+    if foot_fb:  socials_parts.append(f'<a href="{foot_fb}" style="color:{foot_text};text-decoration:none;margin:0 6px;font-weight:700">Facebook</a>')
+    if foot_web: socials_parts.append(f'<a href="{foot_web}" style="color:{foot_text};text-decoration:none;margin:0 6px;font-weight:700">Web</a>')
+    socials_html = ('<div style="margin-bottom:8px">' + ' · '.join(socials_parts) + '</div>') if socials_parts else ''
     # Resolve variables in body + subject
     body_html = _resolve_campaign_vars(body_content_html or "", first_name=first_name,
                                        stamps=stamps, reward_name=reward_name, biz_name=biz_name)
+    # Apply link color via inline replacement for <a> tags inside body
+    if body_html and "<a " in body_html:
+        import re as _re
+        body_html = _re.sub(r'<a (?![^>]*style=)', f'<a style="color:{body_link}" ', body_html)
     # Image header
     img_url = (meta.get("image_url") or "").strip() if isinstance(meta, dict) else ""
     img_html = (f'<img src="{img_url}" alt="" style="width:100%;max-height:260px;object-fit:cover;display:block;border:0">'
                 if img_url else "")
+    # Logo in banner
+    logo_size = max(28, banner_height - 24)
+    logo_html = (f'<img src="{logo_url}" alt="" style="width:{logo_size}px;height:{logo_size}px;border-radius:50%;object-fit:cover;background:#fff;padding:3px;vertical-align:middle;margin-right:10px">'
+                 if logo_url else "")
     # CTA button
     cta_html = ""
     cta = meta.get("cta") if isinstance(meta, dict) else None
@@ -6749,20 +6800,22 @@ def _render_campaign_email_html(biz, body_content_html: str, meta: dict,
             f'</td></tr></table>'
         )
     # Full email HTML
+    banner_padding = max(12, banner_height - 36)
     return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{subject}</title></head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#26170c">
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:{body_text}">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f5f5;padding:24px 12px">
   <tr><td align="center">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06)">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:{body_bg};border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06)">
       {f'<tr><td style="padding:0">{img_html}</td></tr>' if img_html else ''}
-      <tr><td style="background:{header_bg};color:{header_color};padding:20px 24px;text-align:center;font-size:20px;font-weight:700;letter-spacing:.02em">{biz_name}</td></tr>
-      <tr><td style="padding:28px 28px 8px;font-size:15px;line-height:1.65;color:#26170c">{body_html}</td></tr>
-      {f'<tr><td style="padding:8px 0">{cta_html}</td></tr>' if cta_html else '<tr><td style="padding:0 0 24px"></td></tr>'}
-      <tr><td style="padding:18px 24px;background:#faf7f3;border-top:1px solid #eee;font-size:11px;color:#888;text-align:center;line-height:1.6">
-        Has recibido este email porque eres parte del programa de fidelización de {biz_name}.<br>
-        © {_now_year()} {biz_name}
+      <tr><td style="background:{header_bg};color:{header_color};padding:{banner_padding}px 24px;text-align:center;font-size:20px;font-weight:700;letter-spacing:.02em">{logo_html}<span style="vertical-align:middle">{banner_name}</span></td></tr>
+      <tr><td style="padding:28px 28px 8px;font-size:15px;line-height:1.65;color:{body_text};background:{body_bg}">{body_html}</td></tr>
+      {f'<tr><td style="padding:8px 0;background:{body_bg}">{cta_html}</td></tr>' if cta_html else f'<tr><td style="padding:0 0 24px;background:{body_bg}"></td></tr>'}
+      <tr><td style="padding:18px 24px;background:{foot_bg};border-top:1px solid #eee;font-size:11px;color:{foot_text};text-align:center;line-height:1.6">
+        {socials_html}
+        Has recibido este email porque eres parte del programa de fidelización de {banner_name}.<br>
+        © {_now_year()} {banner_name}
       </td></tr>
     </table>
   </td></tr>
@@ -6862,6 +6915,9 @@ def get_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depen
         raise HTTPException(status_code=404, detail="Campaña no encontrada")
     meta, body_stripped = _parse_campaign_meta(row[3] or "")
     cta = meta.get("cta") if isinstance(meta, dict) else None
+    banner = (meta.get("banner") if isinstance(meta, dict) else {}) or {}
+    bstyle = (meta.get("body_style") if isinstance(meta, dict) else {}) or {}
+    footer = (meta.get("footer") if isinstance(meta, dict) else {}) or {}
     return {
         "id": str(row[0]),
         "name": row[1] or "",
@@ -6880,6 +6936,20 @@ def get_campaign(slug: str, campaign_id: str, pin: str = "", db: Session = Depen
         "cta_full":   bool((cta or {}).get("full")) if cta else False,
         "cta_radius": (cta or {}).get("radius", "") if cta else "",
         "cta_url":    (cta or {}).get("url", "")    if cta else "",
+        # Customization v2
+        "logo_url":      banner.get("logo", ""),
+        "banner_bg":     banner.get("bg", ""),
+        "banner_text":   banner.get("text", ""),
+        "banner_height": banner.get("height", ""),
+        "banner_name":   banner.get("name", ""),
+        "body_bg":       bstyle.get("bg", ""),
+        "body_text":     bstyle.get("text", ""),
+        "body_link":     bstyle.get("link", ""),
+        "footer_bg":     footer.get("bg", ""),
+        "footer_text":   footer.get("text", ""),
+        "footer_ig":     footer.get("ig", ""),
+        "footer_fb":     footer.get("fb", ""),
+        "footer_web":    footer.get("web", ""),
     }
 
 
