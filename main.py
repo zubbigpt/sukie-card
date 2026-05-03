@@ -7116,17 +7116,11 @@ async def send_campaign_test(slug: str, request: Request, db: Session = Depends(
     if custom_name:
         first_name = custom_name
     # Reconstruir meta desde los campos top-level del payload de test
-    test_meta = {}
-    if body.get("image_url"):
-        test_meta["image_url"] = body.get("image_url")
-    if body.get("cta_text"):
-        test_meta["cta"] = {
-            "text":   body.get("cta_text"),
-            "color":  body.get("cta_color") or "#b5651d",
-            "full":   bool(body.get("cta_full")),
-            "radius": str(body.get("cta_radius") or "8"),
-            "url":    body.get("cta_url") or "",
-        }
+    # Reuse _pack_campaign_meta logic: just simulate a pack and parse to get the meta dict
+    packed_test = _pack_campaign_meta({**body, "type": "email"}, "")
+    test_meta, _ = _parse_campaign_meta(packed_test)
+    if not isinstance(test_meta, dict):
+        test_meta = {}
     # El body viene del frontend directamente (no tiene zc-meta prefix)
     reward_name = db.execute(text(
         "SELECT reward_name FROM card_programs WHERE business_id=:bid "

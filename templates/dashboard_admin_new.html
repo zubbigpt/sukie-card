@@ -8159,6 +8159,20 @@ async function campSendTest(){
   const cta_full=document.getElementById('cmp-cta-full')?.checked||false;
   const cta_radius=document.getElementById('cmp-cta-radius')?.value||'8';
   const cta_url=document.getElementById('cmp-cta-url')?.value||'';
+  // Customization v2 fields
+  const logo_url     = document.getElementById('cmp-logo-url')?.value||'';
+  const banner_bg    = document.getElementById('cmp-banner-bg')?.value||'';
+  const banner_text  = document.getElementById('cmp-banner-text')?.value||'';
+  const banner_height= document.getElementById('cmp-banner-height')?.value||'';
+  const banner_name  = document.getElementById('cmp-banner-name')?.value||'';
+  const body_bg      = document.getElementById('cmp-body-bg')?.value||'';
+  const body_text    = document.getElementById('cmp-body-text')?.value||'';
+  const body_link    = document.getElementById('cmp-body-link')?.value||'';
+  const footer_bg    = document.getElementById('cmp-footer-bg')?.value||'';
+  const footer_text  = document.getElementById('cmp-footer-text')?.value||'';
+  const footer_ig    = document.getElementById('cmp-footer-ig')?.value||'';
+  const footer_fb    = document.getElementById('cmp-footer-fb')?.value||'';
+  const footer_web   = document.getElementById('cmp-footer-web')?.value||'';
   if(isPush && !body){ showToast('Escribe el mensaje push antes de probar','error'); return; }
   if(!isPush && !subject){ showToast('Escribe el asunto antes de probar','error'); return; }
 
@@ -8182,7 +8196,10 @@ async function campSendTest(){
         test_email:testEmail.trim().toLowerCase(),
         image_url:img_url,
         cta_text:cta,
-        cta_color, cta_full, cta_radius, cta_url
+        cta_color, cta_full, cta_radius, cta_url,
+        logo_url, banner_bg, banner_text, banner_height, banner_name,
+        body_bg, body_text, body_link,
+        footer_bg, footer_text, footer_ig, footer_fb, footer_web
       })
     });
     const data=await r.json();
